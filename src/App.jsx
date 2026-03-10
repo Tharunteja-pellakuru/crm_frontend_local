@@ -1,34 +1,68 @@
 import React, { useState } from "react";
-import Sidebar from "./components/Sidebar";
-import Dashboard from "./components/Dashboard";
-import ClientList from "./components/ClientList";
-import ClientDetail from "./components/ClientDetail";
-import ProjectBoard from "./components/ProjectBoard";
-import ProjectOverview from "./components/ProjectOverview";
-import EnquiryList from "./components/EnquiryList";
-import FollowUpList from "./components/FollowUpList";
-import Settings from "./components/Settings";
-import LoginPage from "./components/LoginPage";
-import { Menu, Zap, X } from "lucide-react";
-import Logo from "./components/Logo";
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useParams, useLocation } from "react-router-dom";
+import Layout from "./layouts/Layout";
+import Dashboard from "./pages/dashboard/Dashboard";
+import ClientList from "./pages/clients/ClientList";
+import ClientDetail from "./pages/clients/ClientDetail";
+import ProjectBoard from "./pages/projects/ProjectBoard";
+import ProjectOverview from "./pages/projects/ProjectOverview";
+import EnquiryList from "./pages/enquiries/EnquiryList";
+import FollowUpList from "./pages/followups/FollowUpList";
+import Settings from "./pages/settings/Settings";
+import LoginPage from "./pages/auth/LoginPage";
 import {
   MOCK_CLIENTS,
   MOCK_ENQUIRIES,
   MOCK_FOLLOW_UPS,
   MOCK_ACTIVITIES,
   MOCK_PROJECTS,
-} from "./utils/constants";
+} from "./constants/mockData";
 
-const App = () => {
+// Wrappers to extract ID from URL params and pass to detail components
+const ClientDetailWrapper = ({ clients, type, activities, onUpdateClient, onAddActivity, onSelectProject }) => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const client = clients.find(c => c.id === id);
+  
+  if (!client) return <Navigate to={`/${type}`} replace />;
+
+  return (
+    <ClientDetail 
+       client={client} 
+       onBack={() => navigate(`/${type}`)}
+       onUpdateClient={onUpdateClient}
+       onAddActivity={onAddActivity}
+       activities={activities}
+       initialTab={location.state?.tab || "overview"}
+       onSelectProject={onSelectProject}
+    />
+  );
+};
+
+const ProjectOverviewWrapper = ({ projects, clients, followUps, onUpdateProject }) => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const project = projects.find(p => p.id === id);
+  
+  if (!project) return <Navigate to="/projects" replace />;
+  
+  return (
+    <ProjectOverview
+      project={project}
+      client={clients.find(c => c.id === project.clientId)}
+      onBack={() => navigate("/projects")}
+      onUpdateProject={onUpdateProject}
+      followUps={followUps}
+    />
+  );
+};
+
+// Main Routing Component
+const AppRoutes = () => {
+  const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [activeTab, setActiveTab] = useState("dashboard");
-  const [selectedClient, setSelectedClient] = useState(null);
-  const [detailTab, setDetailTab] = useState("overview");
-  const [selectedProject, setSelectedProject] = useState(null);
-  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-  const [followUpTab, setFollowUpTab] = useState("All");
-  const isSidebarCollapsed = false;
-
+  
   // State management for data
   const [clients, setClients] = useState(MOCK_CLIENTS);
   const [enquiries, setEnquiries] = useState(MOCK_ENQUIRIES);
@@ -43,8 +77,7 @@ const App = () => {
       name: "GPT-4o Mini",
       provider: "openai",
       modelId: "gpt-4o-mini",
-      apiKey:
-        "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",
+      apiKey: "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",
       isDefault: false,
     },
     {
@@ -65,7 +98,7 @@ const App = () => {
     },
     {
       id: "gemini-3-flash",
-      name: "Gemini 3 Flash (Preview - Low Quota)",
+      name: "Gemini 3 Flash( Low Quota)",
       provider: "gemini",
       modelId: "gemini-3-flash-preview",
       apiKey: "AIzaSyDhJO18qUjRCfeSfyOcB4L_SZU9zhSgv8E",
@@ -76,13 +109,12 @@ const App = () => {
       name: "Claude 3.5 Sonnet",
       provider: "anthropic",
       modelId: "claude-3-5-sonnet-20241022",
-      apiKey:
-        "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",
+      apiKey: "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",
       isDefault: false,
     },
     {
       id: "groq-llama-3-70b",
-      name: "Llama 3 (Groq - Ultra Fast)",
+      name: "Llama 3(Groq)",
       provider: "groq",
       modelId: "llama-3.3-70b-versatile",
       apiKey: "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",
@@ -96,9 +128,7 @@ const App = () => {
   };
 
   const handleUpdateAiModel = (updatedModel) => {
-    setAiModels(
-      aiModels.map((m) => (m.id === updatedModel.id ? updatedModel : m)),
-    );
+    setAiModels(aiModels.map((m) => (m.id === updatedModel.id ? updatedModel : m)));
   };
 
   const handleDeleteAiModel = (id) => {
@@ -106,40 +136,21 @@ const App = () => {
   };
 
   const handleClearNotifications = () => {
-    setEnquiries((prev) =>
-      prev.map((e) => (e.status === "new" ? { ...e, status: "read" } : e)),
-    );
+    setEnquiries((prev) => prev.map((e) => (e.status === "new" ? { ...e, status: "read" } : e)));
   };
 
   const handleLogin = () => {
     setIsLoggedIn(true);
+    navigate('/dashboard');
   };
 
   const handleLogout = () => {
     setIsLoggedIn(false);
-    setActiveTab("dashboard");
-    setSelectedClient(null);
   };
 
   const handleClientSelect = (client, tab = "overview") => {
-    setSelectedClient(client);
-    setDetailTab(tab);
-    setActiveTab("client-detail");
-    setIsMobileSidebarOpen(false);
-  };
-
-  const handleBackToClients = () => {
-    const returnTab = selectedClient?.status === "Lead" ? "leads" : "clients";
-    setSelectedClient(null);
-    setActiveTab(returnTab);
-  };
-
-  const handleTabChange = (tab, subTab = "All") => {
-    setActiveTab(tab);
-    setFollowUpTab(subTab);
-    setSelectedClient(null);
-    setDetailTab("overview");
-    setIsMobileSidebarOpen(false);
+    const routeType = client.status === "Lead" ? "leads" : "clients";
+    navigate(`/${routeType}/${client.id}`, { state: { tab } });
   };
 
   const handleDeleteClient = (id) => {
@@ -149,14 +160,13 @@ const App = () => {
   const handleAddClient = (data) => {
     const newClient = {
       id: `c-${Date.now()}`,
-      ...data, // includes projectName, projectCategory, status, etc.
+      ...data,
       avatar: `https://picsum.photos/100/100?random=${clients.length + 10}`,
       joinedDate: data.onboardingDate || new Date().toISOString().split("T")[0],
       lastContact: new Date().toISOString().split("T")[0],
       industry: data.projectCategory || data.industry || "Unknown",
       company: data.projectName || data.company || "Independent",
-      notes:
-        data.status === "Lead"
+      notes: data.status === "Lead"
           ? data.notes
           : `${data.notes || ""}\n\n[Project Details]\nProject: ${data.projectName}\nStatus: ${data.projectStatus}\nDescription: ${data.projectDescription}\nDeadline: ${data.deadline}\nScope: ${data.scopeDocument}`,
     };
@@ -183,69 +193,60 @@ const App = () => {
   };
 
   const handleUpdateClient = (updatedClient) => {
-    setClients((prev) =>
-      prev.map((c) => (c.id === updatedClient.id ? updatedClient : c)),
-    );
-    setSelectedClient(updatedClient); // Sync current detail view
+    setClients((prev) => prev.map((c) => (c.id === updatedClient.id ? updatedClient : c)));
   };
 
   const handleDismissLead = (id) => {
-    setClients((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, status: "Dismissed" } : c)),
-    );
+    setClients((prev) => prev.map((c) => (c.id === id ? { ...c, status: "Dismissed" } : c)));
   };
 
   const handleRestoreLead = (id) => {
-    setClients((prev) =>
-      prev.map((c) =>
-        c.id === id ? { ...c, status: "Lead", isConverted: false } : c,
-      ),
-    );
+    setClients((prev) => prev.map((c) => c.id === id ? { ...c, status: "Lead", isConverted: false } : c));
   };
 
   const handleProjectSelect = (project) => {
-    setSelectedProject(project);
-    setActiveTab("project-detail");
-    setIsMobileSidebarOpen(false);
-  };
-
-  const handleBackToProjects = () => {
-    setSelectedProject(null);
-    setActiveTab("projects");
+    navigate(`/projects/${project.id}`);
   };
 
   const handleUpdateProject = (updatedProject) => {
-    setProjects((prev) =>
-      prev.map((p) => (p.id === updatedProject.id ? updatedProject : p)),
-    );
-    setSelectedProject(updatedProject); // Sync current detail view
+    setProjects((prev) => prev.map((p) => (p.id === updatedProject.id ? updatedProject : p)));
   };
 
-  const renderContent = () => {
-    switch (activeTab) {
-      case "dashboard":
-        return (
+  const handleNavigateFollowUp = (tab, subTab = "All") => {
+      // In follow-ups page it sets sub tab directly, but React route will match typeFilter
+      // For cross-tab navigation
+      if(tab === "followups") navigate(`/${tab}`);
+      else navigate(`/${tab}`);
+  };
+
+  return (
+    <Routes>
+      <Route path="/login" element={isLoggedIn ? <Navigate to="/dashboard" replace /> : <LoginPage onLogin={handleLogin} />} />
+      
+      <Route element={isLoggedIn ? <Layout onLogout={handleLogout} enquiries={enquiries} followUps={followUps} clients={clients} /> : <Navigate to="/login" replace />}>
+        
+        {/* Main Pages */}
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/dashboard" element={
           <Dashboard
             followUps={followUps}
             clients={clients}
             enquiries={enquiries}
             onSelectFollowUp={handleClientSelect}
-            onViewAllFollowUps={() => setActiveTab("followups")}
-            onNavigate={handleTabChange}
+            onViewAllFollowUps={() => navigate("/followups")}
+            onNavigate={(tab) => navigate(`/${tab}`)}
             onClearNotifications={handleClearNotifications}
           />
-        );
-      case "enquiries":
-        return (
+        } />
+        
+        <Route path="/enquiries" element={
           <EnquiryList
             enquiries={enquiries}
             onPromote={(enquiry, type) => {
               const newClient = {
                 id: `c-${Date.now()}`,
                 name: enquiry.name,
-                company: enquiry.website
-                  ? enquiry.website.replace(/^https?:\/\//, "").split("/")[0]
-                  : "Independent",
+                company: enquiry.website ? enquiry.website.replace(/^https?:\/\//, "").split("/")[0] : "Independent",
                 email: enquiry.email,
                 phone: enquiry.phone,
                 status: "Lead",
@@ -259,130 +260,82 @@ const App = () => {
               };
               setClients([newClient, ...clients]);
               setEnquiries((prev) => prev.filter((e) => e.id !== enquiry.id));
-              setActiveTab("leads");
+              navigate("/leads");
             }}
-            onDismiss={(id) =>
-              setEnquiries((prev) =>
-                prev.map((e) =>
-                  e.id === id ? { ...e, status: "dismissed" } : e,
-                ),
-              )
-            }
-            onHold={(id) =>
-              setEnquiries((prev) =>
-                prev.map((e) => (e.id === id ? { ...e, status: "hold" } : e)),
-              )
-            }
-            onRestore={(id) =>
-              setEnquiries((prev) =>
-                prev.map((e) => (e.id === id ? { ...e, status: "new" } : e)),
-              )
-            }
-            onDelete={(id) =>
-              setEnquiries((prev) => prev.filter((e) => e.id !== id))
-            }
-            onDeleteAll={() =>
-              setEnquiries((prev) =>
-                prev.filter((e) => e.status !== "dismissed"),
-              )
-            }
-            onUpdate={(updated) =>
-              setEnquiries((prev) =>
-                prev.map((e) =>
-                  e.id === updated.id ? { ...e, ...updated } : e,
-                ),
-              )
-            }
-            onClearAiAnalysis={() => {
-              setEnquiries((prev) =>
-                prev.map((e) => ({ ...e, aiAnalysis: undefined })),
-              );
-            }}
+            onDismiss={(id) => setEnquiries((prev) => prev.map((e) => e.id === id ? { ...e, status: "dismissed" } : e))}
+            onHold={(id) => setEnquiries((prev) => prev.map((e) => (e.id === id ? { ...e, status: "hold" } : e)))}
+            onRestore={(id) => setEnquiries((prev) => prev.map((e) => e.id === id ? { ...e, status: "new", aiAnalysis: e.aiAnalysis ? { ...e.aiAnalysis, isRelevant: true } : null } : e))}
+            onDelete={(id) => setEnquiries((prev) => prev.filter((e) => e.id !== id))}
+            onDeleteAll={() => setEnquiries((prev) => prev.filter((e) => e.status !== "dismissed"))}
+            onUpdate={(updated) => setEnquiries((prev) => prev.map((e) => e.id === updated.id ? { ...e, ...updated } : e))}
             onAdd={(data) => {
-              const newEnquiry = {
-                id: `e-${Date.now()}`,
-                ...data,
-                date: new Date().toISOString(),
-                status: "new",
-              };
+              const newEnquiry = { id: `e-${Date.now()}`, ...data, date: new Date().toISOString(), status: "new" };
               setEnquiries([newEnquiry, ...enquiries]);
             }}
             aiModels={aiModels}
           />
-        );
-      case "followups":
-      case "followups-clients":
-      case "followups-leads":
-        return (
+        } />
+        
+        {/* Follow Ups */}
+        <Route path="/followups" element={
           <FollowUpList
             followUps={followUps}
             clients={clients}
-            typeFilter={
-              activeTab === "followups-clients"
-                ? "Active"
-                : activeTab === "followups-leads"
-                  ? "Lead"
-                  : "All"
-            }
-            activeFilter={followUpTab}
-            setActiveFilter={setFollowUpTab}
-            onToggleStatus={(id) =>
-              setFollowUps((prev) =>
-                prev.map((f) =>
-                  f.id === id
-                    ? {
-                        ...f,
-                        status:
-                          f.status === "completed" ? "pending" : "completed",
-                      }
-                    : f,
-                ),
-              )
-            }
-            onAddFollowUp={(data) =>
-              setFollowUps([
-                { id: `f-${Date.now()}`, status: "pending", ...data },
-                ...followUps,
-              ])
-            }
-            onEditFollowUp={(updatedFollowUp) =>
-              setFollowUps((prev) =>
-                prev.map((f) =>
-                  f.id === updatedFollowUp.id ? updatedFollowUp : f,
-                ),
-              )
-            }
-            onDeleteFollowUp={(id) =>
-              setFollowUps((prev) => prev.filter((f) => f.id !== id))
-            }
+            typeFilter="All"
+            onToggleStatus={(id) => setFollowUps((prev) => prev.map((f) => f.id === id ? { ...f, status: f.status === "completed" ? "pending" : "completed" } : f))}
+            onAddFollowUp={(data) => setFollowUps([{ id: `f-${Date.now()}`, status: "pending", ...data }, ...followUps])}
+            onEditFollowUp={(updated) => setFollowUps((prev) => prev.map((f) => f.id === updated.id ? updated : f))}
+            onDeleteFollowUp={(id) => setFollowUps((prev) => prev.filter((f) => f.id !== id))}
             onSelectClient={handleClientSelect}
-            onNavigate={handleTabChange}
+            onNavigate={(tab) => navigate(`/${tab}`)}
           />
-        );
-      case "leads":
-        return (
+        } />
+        
+        <Route path="/followups-clients" element={
+          <FollowUpList
+            followUps={followUps}
+            clients={clients}
+            typeFilter="Active"
+            onToggleStatus={(id) => setFollowUps((prev) => prev.map((f) => f.id === id ? { ...f, status: f.status === "completed" ? "pending" : "completed" } : f))}
+            onAddFollowUp={(data) => setFollowUps([{ id: `f-${Date.now()}`, status: "pending", ...data }, ...followUps])}
+            onEditFollowUp={(updated) => setFollowUps((prev) => prev.map((f) => f.id === updated.id ? updated : f))}
+            onDeleteFollowUp={(id) => setFollowUps((prev) => prev.filter((f) => f.id !== id))}
+            onSelectClient={handleClientSelect}
+            onNavigate={(tab) => navigate(`/${tab}`)}
+          />
+        } />
+        
+        <Route path="/followups-leads" element={
+          <FollowUpList
+            followUps={followUps}
+            clients={clients}
+            typeFilter="Lead"
+            onToggleStatus={(id) => setFollowUps((prev) => prev.map((f) => f.id === id ? { ...f, status: f.status === "completed" ? "pending" : "completed" } : f))}
+            onAddFollowUp={(data) => setFollowUps([{ id: `f-${Date.now()}`, status: "pending", ...data }, ...followUps])}
+            onEditFollowUp={(updated) => setFollowUps((prev) => prev.map((f) => f.id === updated.id ? updated : f))}
+            onDeleteFollowUp={(id) => setFollowUps((prev) => prev.filter((f) => f.id !== id))}
+            onSelectClient={handleClientSelect}
+            onNavigate={(tab) => navigate(`/${tab}`)}
+          />
+        } />
+
+        {/* Clients and Leads */}
+        <Route path="/leads" element={
           <ClientList
-            clients={clients.filter(
-              (c) =>
-                c.status === "Lead" ||
-                c.status === "Dismissed" ||
-                c.isConverted,
-            )}
+            clients={clients.filter((c) => c.status === "Lead" || c.status === "Dismissed" || c.isConverted)}
             onSelectClient={handleClientSelect}
             onDeleteClient={handleDeleteClient}
             onOnboardClient={handleOnboardClient}
             onDismissLead={handleDismissLead}
             onRestoreLead={handleRestoreLead}
             onAddClient={handleAddClient}
-            onAddActivity={(data) =>
-              setActivities([{ id: `a-${Date.now()}`, ...data }, ...activities])
-            }
+            onAddActivity={(data) => setActivities([{ id: `a-${Date.now()}`, ...data }, ...activities])}
             allClients={clients}
             title="Leads"
           />
-        );
-      case "clients":
-        return (
+        } />
+        
+        <Route path="/clients" element={
           <ClientList
             clients={clients.filter((c) => c.status === "Active")}
             onSelectClient={handleClientSelect}
@@ -390,168 +343,46 @@ const App = () => {
             onAddClient={handleAddClient}
             allClients={clients}
           />
-        );
-      case "client-detail":
-        return selectedClient ? (
-          <ClientDetail
-            client={selectedClient}
-            onBack={handleBackToClients}
-            onUpdateClient={handleUpdateClient}
-            onAddActivity={(data) =>
-              setActivities([{ id: `a-${Date.now()}`, ...data }, ...activities])
-            }
-            activities={activities}
-            initialTab={detailTab}
-            onSelectProject={handleProjectSelect}
-          />
-        ) : (
-          <ClientList clients={clients} onSelectClient={handleClientSelect} />
-        );
-      case "projects":
-        return (
+        } />
+
+        {/* Projects */}
+        <Route path="/projects" element={
           <ProjectBoard
             projects={projects}
             clients={clients}
             onAddClient={handleAddClient}
-            onAddProject={(projectData) =>
-              setProjects([
-                { id: `p-${Date.now()}`, ...projectData },
-                ...projects,
-              ])
-            }
+            onAddProject={(projectData) => setProjects([{ id: `p-${Date.now()}`, ...projectData }, ...projects])}
             onUpdateProject={handleUpdateProject}
             onSelectProject={handleProjectSelect}
           />
-        );
-      case "project-detail":
-        return selectedProject ? (
-          <ProjectOverview
-            project={selectedProject}
-            client={clients.find((c) => c.id === selectedProject.clientId)}
-            onBack={handleBackToProjects}
-            onUpdateProject={handleUpdateProject}
-            followUps={followUps}
-          />
-        ) : (
-          <ProjectBoard
-            projects={projects}
-            clients={clients}
-            onAddClient={handleAddClient}
-            onAddProject={(projectData) =>
-              setProjects([
-                { id: `p-${Date.now()}`, ...projectData },
-                ...projects,
-              ])
-            }
-            onUpdateProject={handleUpdateProject}
-            onSelectProject={handleProjectSelect}
-          />
-        );
-      case "settings":
-        return (
+        } />
+        
+        {/* Settings */}
+        <Route path="/settings" element={
           <Settings
             aiModels={aiModels}
             onAddAiModel={handleAddAiModel}
             onUpdateAiModel={handleUpdateAiModel}
             onDeleteAiModel={handleDeleteAiModel}
           />
-        );
-      default:
-        return (
-          <Dashboard
-            followUps={followUps}
-            clients={clients}
-            enquiries={enquiries}
-            onSelectFollowUp={handleClientSelect}
-            onViewAllFollowUps={() => setActiveTab("followups")}
-            onNavigate={handleTabChange}
-            onClearNotifications={handleClearNotifications}
-          />
-        );
-    }
-  };
+        } />
 
-  // Auth Gate
-  if (!isLoggedIn) {
-    return <LoginPage onLogin={handleLogin} />;
-  }
+        {/* Dynamic Inner Detail Pages */}
+        <Route path="/clients/:id" element={<ClientDetailWrapper clients={clients} type="clients" activities={activities} onUpdateClient={handleUpdateClient} onAddActivity={(data) => setActivities([{ id: `a-${Date.now()}`, ...data }, ...activities])} onSelectProject={handleProjectSelect} />} />
+        <Route path="/leads/:id" element={<ClientDetailWrapper clients={clients} type="leads" activities={activities} onUpdateClient={handleUpdateClient} onAddActivity={(data) => setActivities([{ id: `a-${Date.now()}`, ...data }, ...activities])} onSelectProject={handleProjectSelect} />} />
+        <Route path="/projects/:id" element={<ProjectOverviewWrapper projects={projects} clients={clients} followUps={followUps} onUpdateProject={handleUpdateProject} />} />
 
-  return (
-    <div className="flex min-h-screen bg-background overflow-x-hidden">
-      {/* Sidebar Backdrop for Mobile */}
-      {isMobileSidebarOpen && (
-        <div
-          className="fixed inset-0 bg-primary/30 backdrop-blur-xl z-[105] min-[1201px]:hidden transition-all duration-500 ease-in-out"
-          onClick={() => setIsMobileSidebarOpen(false)}
-        />
-      )}
-
-      {/* Sidebar */}
-      <div
-        className={`fixed inset-y-0 left-0 transform ${isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full"} min-[1201px]:translate-x-0 transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] z-[110] min-[1201px]:z-20 min-[1201px]:animate-slide-right`}
-      >
-        <Sidebar
-          activeTab={
-            activeTab === "client-detail"
-              ? selectedClient?.status === "Lead"
-                ? "leads"
-                : "clients"
-              : activeTab === "project-detail"
-                ? "projects"
-                : activeTab
-          }
-          setActiveTab={handleTabChange}
-          onLogout={handleLogout}
-          enquiryCount={
-            enquiries.filter((e) => e.status === "new" || e.status === "read")
-              .length
-          }
-          followUpCount={followUps.filter((f) => f.status === "pending").length}
-          clientFollowUpCount={
-            followUps.filter((f) => {
-              if (f.status !== "pending") return false;
-              const client = clients.find((c) => c.id === f.clientId);
-              return client?.status === "Active";
-            }).length
-          }
-          leadFollowUpCount={
-            followUps.filter((f) => {
-              if (f.status !== "pending") return false;
-              const client = clients.find((c) => c.id === f.clientId);
-              return client?.status === "Lead";
-            }).length
-          }
-          isCollapsed={isSidebarCollapsed}
-          onCloseMobile={() => setIsMobileSidebarOpen(false)}
-        />
-      </div>
-
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-[1201px]:ml-72 w-full transition-all duration-300 min-[1201px]:animate-slide-left">
-        {/* Mobile Top Bar */}
-        <header className="min-[1201px]:hidden flex items-center justify-between bg-[#18254D] text-white p-5 fixed top-0 left-0 right-0 z-[100] shadow-lg h-24">
-          <Logo size={200} showText={false} className="!gap-2.5" />
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setIsMobileSidebarOpen(!isMobileSidebarOpen);
-            }}
-            className="p-2.5 bg-white/10 rounded-xl hover:bg-white/20 transition-all active:scale-95 flex items-center justify-center border border-white/10"
-          >
-            {isMobileSidebarOpen ? (
-              <X size={24} strokeWidth={3} />
-            ) : (
-              <Menu size={24} strokeWidth={3} />
-            )}
-          </button>
-        </header>
-
-        <main className="flex-1 p-4 min-[1201px]:p-8 w-full max-w-full overflow-x-hidden mt-28 min-[1201px]:mt-4">
-          <div className="max-w-7xl mx-auto pb-20">{renderContent()}</div>
-        </main>
-      </div>
-    </div>
+        {/* Fallback routing */}
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      </Route>
+    </Routes>
   );
 };
 
-export default App;
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AppRoutes />
+    </BrowserRouter>
+  );
+}
