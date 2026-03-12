@@ -12,6 +12,7 @@ import Layout from "./layouts/Layout";
 import Dashboard from "./pages/dashboard/Dashboard";
 import ClientList from "./pages/clients/ClientList";
 import ClientDetail from "./pages/clients/ClientDetail";
+import LeadList from "./pages/leads/LeadList";
 import ProjectBoard from "./pages/projects/ProjectBoard";
 import ProjectOverview from "./pages/projects/ProjectOverview";
 import EnquiryList from "./pages/enquiries/EnquiryList";
@@ -540,34 +541,36 @@ const AppRoutes = () => {
         />
 
         {/* Clients and Leads */}
+        {/* Leads */}
         <Route
           path="/leads"
           element={
-            <ClientList
-              clients={clients.filter(
+            <LeadList
+              leads={clients.filter(
                 (c) =>
                   c.status === "Lead" ||
                   c.status === "Dismissed" ||
                   c.isConverted,
               )}
-              onSelectClient={handleClientSelect}
-              onDeleteClient={handleDeleteClient}
-              onOnboardClient={handleOnboardClient}
+              onSelectLead={handleClientSelect}
+              onDeleteLead={handleDeleteClient}
+              onOnboardLead={handleOnboardClient}
               onDismissLead={handleDismissLead}
               onRestoreLead={handleRestoreLead}
-              onAddClient={handleAddClient}
+              onAddLead={handleAddClient}
               onAddActivity={(data) =>
                 setActivities([
                   { id: `a-${Date.now()}`, ...data },
                   ...activities,
                 ])
               }
-              allClients={clients}
-              title="Leads"
+              allLeads={clients}
+              allClients={clients.filter((c) => c.status !== "Lead")}
             />
           }
         />
 
+        {/* Clients */}
         <Route
           path="/clients"
           element={

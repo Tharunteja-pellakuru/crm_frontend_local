@@ -16,9 +16,16 @@ const DatePicker = ({ label, value, onChange, placeholder }) => {
   useEffect(() => {
     if (isOpen && triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect();
+      const dropdownHeight = 320; // Approximate height of dropdown
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const spaceAbove = rect.top;
+      
+      // Position above if not enough space below, but enough space above
+      const positionAbove = spaceBelow < dropdownHeight && spaceAbove > dropdownHeight;
+      
       setDropdownStyle({
         position: 'fixed',
-        top: `${rect.bottom + 8}px`,
+        top: positionAbove ? `${rect.top - dropdownHeight - 8}px` : `${rect.bottom + 8}px`,
         left: `${rect.left}px`,
         width: `${Math.max(rect.width, 240)}px`,
         zIndex: 9999

@@ -105,7 +105,7 @@ const EnquiryList = ({
     email: "",
     phone: "",
     website: "",
-    leadType: "Warm",
+    leadType: "Hot",
     leadCategory: "Tech",
     notes: "",
   });
@@ -335,21 +335,34 @@ const EnquiryList = ({
     setLeadModalOpen(true);
   };
 
-  const confirmLeadConversion = () => {
-    if (selectedEnquiry) {
-      // Create a temporary updated enquiry object to pass the edited data
+  const confirmLeadConversion = async () => {
+    if (!selectedEnquiry) return;
+    try {
       const updatedEnquiry = {
-        ...selectedEnquiry,
-        name: promoteFormData.name,
+        full_name: promoteFormData.name,
         email: promoteFormData.email,
-        phone: promoteFormData.phone,
-        website: promoteFormData.website,
-        projectCategory: promoteFormData.leadCategory,
+        phone_number: promoteFormData.phone,
+        website_url: promoteFormData.website,
+        lead_category: promoteFormData.leadCategory,
+        lead_status: promoteFormData.leadType,
         message: promoteFormData.notes,
       };
-      onPromote(updatedEnquiry, promoteFormData.leadType);
+
+      console.log(updatedEnquiry);
+
+      const res = await fetch("/api/add-lead", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updatedEnquiry),
+      });
+
+      onPromote(updatedEnquiry, selectedEnquiry.uuid);
       setLeadModalOpen(false);
       setSelectedEnquiry(null);
+    } catch (err) {
+      console.log("Lead Creation Failed", err);
     }
   };
 
@@ -988,7 +1001,7 @@ const EnquiryList = ({
               </div>
               <button
                 onClick={() => setLeadModalOpen(false)}
-                className="p-1.5 hover:bg-white/10 rounded-lg transition-colors"
+                className="p-1.5 hover:bg-white rounded-lg transition-colors"
               >
                 <X size={20} />
               </button>

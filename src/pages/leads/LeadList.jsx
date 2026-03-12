@@ -30,17 +30,18 @@ import {
 } from "lucide-react";
 import DatePicker from "../../components/ui/DatePicker";
 
-const ClientList = ({
-  clients,
-  onSelectClient,
-  onAddClient,
-  onDeleteClient,
-  onOnboardClient,
+const LeadList = ({
+  leads,
+  onSelectLead,
+  onAddLead,
+  onDeleteLead,
+  onOnboardLead,
   onDismissLead,
   onRestoreLead,
   onAddActivity,
+  allLeads = [],
   allClients = [],
-  title = "Clients",
+  title = "Leads",
 }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("All");
@@ -150,8 +151,8 @@ const ClientList = ({
     company: "",
     email: "",
     phone: "",
-    status: "Active",
-    leadType: undefined,
+    status: title === "Leads" ? "Lead" : "Active",
+    leadType: title === "Leads" ? "Warm" : undefined,
     industry: "",
     notes: "",
     projectName: "",
@@ -163,8 +164,8 @@ const ClientList = ({
 
   const handleOnboardSubmit = (e) => {
     e.preventDefault();
-    if (onOnboardClient && onboardingLeadId) {
-      onOnboardClient(onboardingLeadId, onboardingData);
+    if (onOnboardLead && onboardingLeadId) {
+      onOnboardLead(onboardingLeadId, onboardingData);
       setShowOnboardModal(false);
       setOnboardingLeadId(null);
 
@@ -188,40 +189,39 @@ const ClientList = ({
     }
   };
 
-  const filteredClients = clients.filter((client) => {
+  const filteredLeads = leads.filter((lead) => {
     const matchesSearch =
-      client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      client.company.toLowerCase().includes(searchTerm.toLowerCase());
+      lead.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      lead.company.toLowerCase().includes(searchTerm.toLowerCase());
 
-    let matchesStatus =
-      filterStatus === "All" || client.status === filterStatus;
+    let matchesStatus = filterStatus === "All" || lead.status === filterStatus;
     let matchesLeadType = true;
     let matchesCategory = true;
 
     if (title === "Leads") {
       // Sub-filter by Lead View (Pending, Converted, Dismissed)
       if (leadView === "Pending") {
-        if (client.status !== "Lead" || client.isConverted) return false;
+        if (lead.status !== "Lead" || lead.isConverted) return false;
       } else if (leadView === "Converted") {
-        if (!client.isConverted || client.status === "Dismissed") return false;
+        if (!lead.isConverted || lead.status === "Dismissed") return false;
       } else if (leadView === "Dismissed") {
-        if (client.status !== "Dismissed") return false;
+        if (lead.status !== "Dismissed") return false;
       }
 
       matchesLeadType =
-        leadTypeFilter === "All" || client.leadType === leadTypeFilter;
+        leadTypeFilter === "All" || lead.leadType === leadTypeFilter;
     }
 
     // Filter by category (Tech/Media)
     if (categoryFilter !== "All") {
       matchesCategory =
-        client.projectCategory === categoryFilter ||
-        client.industry === categoryFilter;
+        lead.projectCategory === categoryFilter ||
+        lead.industry === categoryFilter;
     }
 
     // Date Range Filter
     if (startDate || endDate) {
-      const joinedDate = new Date(client.joinedDate);
+      const joinedDate = new Date(lead.joinedDate);
       if (startDate && joinedDate < new Date(startDate)) return false;
       if (endDate) {
         const end = new Date(endDate);
@@ -233,9 +233,9 @@ const ClientList = ({
     return matchesSearch && matchesStatus && matchesLeadType && matchesCategory;
   });
 
-  const getStatusBadge = (client) => {
-    if (client.status === "Lead" && client.leadType) {
-      switch (client.leadType) {
+  const getStatusBadge = (lead) => {
+    if ((lead.status === "Lead" || lead.isConverted) && lead.leadType) {
+      switch (lead.leadType) {
         case "Hot":
           return {
             label: "Hot",
@@ -263,7 +263,7 @@ const ClientList = ({
       }
     }
 
-    switch (client.status) {
+    switch (lead.status) {
       case "Lead":
         return {
           label: "Lead",
@@ -302,7 +302,7 @@ const ClientList = ({
         };
       default:
         return {
-          label: client.status,
+          label: lead.status,
           className: "bg-slate-100 text-slate-700 border-slate-200",
           icon: null,
         };
@@ -324,8 +324,8 @@ const ClientList = ({
         company: "",
         email: "",
         phone: "",
-        status: "Active",
-        leadType: undefined,
+        status: title === "Leads" ? "Lead" : "Active",
+        leadType: title === "Leads" ? "Warm" : undefined,
         industry: "",
         notes: "",
         projectName: "",
@@ -344,10 +344,11 @@ const ClientList = ({
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
           <div className="max-w-2xl">
             <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-primary tracking-tight mb-2">
-              Clients
+              {title}
             </h2>
             <p className="text-xs md:text-sm text-textMuted font-medium leading-relaxed">
-              Manage your network of "clients" and strategic partnerships.
+              Manage your network of {title.toLowerCase()} and strategic
+              partnerships.
             </p>
           </div>
           <div className="w-full lg:w-auto">
@@ -360,7 +361,7 @@ const ClientList = ({
                 strokeWidth={2.5}
                 className="group-hover:rotate-90 transition-transform"
               />
-              Add Client
+              Add {title === "Leads" ? "Lead" : "Client"}
             </button>
           </div>
         </div>
@@ -376,7 +377,7 @@ const ClientList = ({
               />
               <input
                 type="text"
-                placeholder={`Search $"clients"...`}
+                placeholder={`Search ${title.toLowerCase()}...`}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full h-[38px] pl-11 pr-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium focus:outline-none focus:ring-4 focus:ring-secondary/10 focus:border-secondary transition-all"
@@ -554,16 +555,16 @@ const ClientList = ({
               <thead>
                 <tr className="bg-slate-50/50">
                   <th className="px-6 py-4 text-left text-[10px] font-bold text-slate-400  tracking-widest border-b border-slate-100">
-                    "Client Name"
+                    {title === "Leads" ? "Lead Name" : "Client Name"}
                   </th>
                   <th className="px-6 py-4 text-left text-[10px] font-bold text-slate-400  tracking-widest border-b border-slate-100">
                     Contact Details
                   </th>
                   <th className="px-6 py-4 text-left text-[10px] font-bold text-slate-400  tracking-widest border-b border-slate-100">
-                    "Client Category"
+                    {title === "Leads" ? "Lead Category" : "Client Category"}
                   </th>
                   <th className="px-6 py-4 text-center text-[10px] font-bold text-slate-400  tracking-widest border-b border-slate-100">
-                    "Status"
+                    {title === "Leads" ? "Lead Status" : "Status"}
                   </th>
                   <th className="px-6 py-4 text-right text-[10px] font-bold text-slate-400  tracking-widest border-b border-slate-100">
                     Control
@@ -571,22 +572,22 @@ const ClientList = ({
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {filteredClients.map((client) => {
-                  const status = getStatusBadge(client);
+                {filteredLeads.map((lead) => {
+                  const status = getStatusBadge(lead);
                   return (
                     <tr
-                      key={client.id}
-                      onClick={() => onSelectClient(client)}
+                      key={lead.id}
+                      onClick={() => onSelectLead(lead)}
                       className="group hover:bg-slate-50/50 cursor-pointer transition-all"
                     >
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-6">
                           <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-primary flex items-center justify-center text-white font-bold text-xl border-2 border-slate-50 shadow-lg shrink-0">
-                            {client.name.charAt(0).toUpperCase()}
+                            {lead.name.charAt(0).toUpperCase()}
                           </div>
                           <div className="min-w-0">
                             <div className="font-bold text-sm text-primary tracking-tight leading-none mb-1 group-hover:text-secondary transition-colors">
-                              {client.name}
+                              {lead.name}
                             </div>
                           </div>
                         </div>
@@ -596,13 +597,13 @@ const ClientList = ({
                           <div className="flex items-center gap-2 text-primary">
                             <Phone size={12} className="text-secondary" />
                             <span className="text-xs font-bold whitespace-nowrap">
-                              {client.phone || "N/A"}
+                              {lead.phone || "N/A"}
                             </span>
                           </div>
                           <div className="flex items-center gap-2 text-slate-400 mt-1">
                             <Mail size={12} />
                             <span className="text-[10px] font-bold truncate max-w-[150px]">
-                              {client.email || "N/A"}
+                              {lead.email || "N/A"}
                             </span>
                           </div>
                         </div>
@@ -610,18 +611,16 @@ const ClientList = ({
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
                           <div
-                            className={`w-2 h-2 rounded-full ${client.projectCategory === "Tech" ? "bg-secondary" : client.projectCategory === "Media" ? "bg-blue-400" : "bg-slate-300"}`}
+                            className={`w-2 h-2 rounded-full ${lead.projectCategory === "Tech" ? "bg-secondary" : lead.projectCategory === "Media" ? "bg-blue-400" : "bg-slate-300"}`}
                           />
                           <span className="text-sm font-bold text-primary">
-                            {client.projectCategory ||
-                              client.industry ||
-                              "Other"}
+                            {lead.projectCategory || lead.industry || "Other"}
                           </span>
                         </div>
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex justify-center">
-                          {client.status === "Lead" ? (
+                          {lead.status === "Lead" ? (
                             <div className="flex flex-col items-center w-full">
                               <span
                                 className={`px-4 py-1.5 rounded-xl text-[10px] font-bold border  flex items-center gap-2 shadow-sm transition-all ${status.className}`}
@@ -633,9 +632,9 @@ const ClientList = ({
                           ) : (
                             <div className="flex flex-col items-center w-full">
                               <span
-                                className={`px-3 py-1 rounded-lg text-[10px] font-bold  tracking-widest ${client.status === "Active" ? "bg-success/10 text-success border border-success/20" : "bg-slate-100 text-slate-400 border border-slate-200"}`}
+                                className={`px-3 py-1 rounded-lg text-[10px] font-bold  tracking-widest ${lead.status === "Active" ? "bg-success/10 text-success border border-success/20" : "bg-slate-100 text-slate-400 border border-slate-200"}`}
                               >
-                                {client.status || "Active"}
+                                {lead.status || "Active"}
                               </span>
                             </div>
                           )}
@@ -646,15 +645,15 @@ const ClientList = ({
                           className="flex justify-end gap-3"
                           onClick={(e) => e.stopPropagation()}
                         >
-                          {onOnboardClient && client.status === "Lead" && (
+                          {onOnboardLead && lead.status === "Lead" && (
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setOnboardingLeadId(client.id);
+                                setOnboardingLeadId(lead.id);
                                 setOnboardingData({
-                                  name: client.name,
-                                  email: client.email,
-                                  phone: client.phone,
+                                  name: lead.name,
+                                  email: lead.email,
+                                  phone: lead.phone,
                                   clientType: "New",
                                   status: "Active",
                                   projectName: "",
@@ -676,12 +675,12 @@ const ClientList = ({
                               <UserCheck size={18} />
                             </button>
                           )}
-                          {onDeleteClient &&
+                          {onDeleteLead &&
                             (title !== "Leads" || leadView === "Dismissed") && (
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  onDeleteClient(client.id);
+                                  onDeleteLead(lead.id);
                                 }}
                                 className="p-2.5 bg-white border border-slate-200 rounded-lg text-slate-300 hover:text-error hover:border-error hover:bg-error/5 transition-all active:scale-90 shadow-sm"
                               >
@@ -689,12 +688,12 @@ const ClientList = ({
                               </button>
                             )}
                           {onDismissLead &&
-                            (client.status === "Lead" || client.isConverted) &&
-                            client.status !== "Dismissed" && (
+                            (lead.status === "Lead" || lead.isConverted) &&
+                            lead.status !== "Dismissed" && (
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  onDismissLead(client.id);
+                                  onDismissLead(lead.id);
                                 }}
                                 className="p-2.5 bg-white border border-slate-200 rounded-lg text-slate-300 hover:text-amber-500 hover:border-amber-500 hover:bg-amber-50 transition-all active:scale-90 shadow-sm"
                                 title="Dismiss Lead"
@@ -703,12 +702,12 @@ const ClientList = ({
                               </button>
                             )}
                           {onRestoreLead &&
-                            client.isConverted &&
-                            client.status !== "Dismissed" && (
+                            lead.isConverted &&
+                            lead.status !== "Dismissed" && (
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  onRestoreLead(client.id);
+                                  onRestoreLead(lead.id);
                                 }}
                                 className="p-2.5 bg-white border border-slate-200 rounded-lg text-slate-300 hover:text-blue-500 hover:border-blue-500 hover:bg-blue-50 transition-all active:scale-90 shadow-sm"
                                 title="Revert as Lead"
@@ -716,11 +715,11 @@ const ClientList = ({
                                 <RotateCcw size={18} />
                               </button>
                             )}
-                          {onRestoreLead && client.status === "Dismissed" && (
+                          {onRestoreLead && lead.status === "Dismissed" && (
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                onRestoreLead(client.id);
+                                onRestoreLead(lead.id);
                               }}
                               className="p-2.5 bg-white border border-slate-200 rounded-lg text-slate-300 hover:text-blue-500 hover:border-blue-500 hover:bg-blue-50 transition-all active:scale-90 shadow-sm"
                               title="Restore Lead"
@@ -733,7 +732,7 @@ const ClientList = ({
                     </tr>
                   );
                 })}
-                {filteredClients.length === 0 && (
+                {filteredLeads.length === 0 && (
                   <tr>
                     <td colSpan={5} className="px-10 py-32 text-center">
                       <div className="w-14 h-14 bg-slate-50 text-slate-200 p-4 rounded-xl mb-4 shadow-inner flex items-center justify-center mx-auto">
@@ -755,29 +754,29 @@ const ClientList = ({
 
         {/* Mobile Card List View */}
         <div className="lg:hidden grid grid-cols-1 md:grid-cols-2 gap-4">
-          {filteredClients.map((client) => {
-            const status = getStatusBadge(client);
+          {filteredLeads.map((lead) => {
+            const status = getStatusBadge(lead);
             return (
               <div
-                key={client.id}
-                onClick={() => onSelectClient(client)}
+                key={lead.id}
+                onClick={() => onSelectLead(lead)}
                 className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all active:scale-[0.98]"
               >
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white font-bold text-lg border-2 border-slate-50 shadow-md shrink-0">
-                      {client.name.charAt(0).toUpperCase()}
+                      {lead.name.charAt(0).toUpperCase()}
                     </div>
                     <div className="min-w-0">
                       <div className="font-bold text-sm text-primary truncate">
-                        {client.name}
+                        {lead.name}
                       </div>
                       <div className="flex items-center gap-1.5 mt-0.5">
                         <div
-                          className={`w-1.5 h-1.5 rounded-full ${client.projectCategory === "Tech" ? "bg-secondary" : client.projectCategory === "Media" ? "bg-blue-400" : "bg-slate-300"}`}
+                          className={`w-1.5 h-1.5 rounded-full ${lead.projectCategory === "Tech" ? "bg-secondary" : lead.projectCategory === "Media" ? "bg-blue-400" : "bg-slate-300"}`}
                         />
                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                          {client.projectCategory || client.industry || "Other"}
+                          {lead.projectCategory || lead.industry || "Other"}
                         </span>
                       </div>
                     </div>
@@ -791,14 +790,10 @@ const ClientList = ({
                 </div>
 
                 <div className="space-y-3 mb-4">
-                  {client.status === "Lead" ? (
+                  {lead.status === "Lead" ? (
                     <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
                       <p className="text-xs text-primary/80 font-medium italic line-clamp-2">
-                        "
-                        {client.notes ||
-                          client.industry ||
-                          "No notes available"}
-                        "
+                        "{lead.notes || lead.industry || "No notes available"}"
                       </p>
                     </div>
                   ) : (
@@ -808,7 +803,7 @@ const ClientList = ({
                           <Phone size={14} />
                         </div>
                         <span className="text-xs font-bold whitespace-nowrap">
-                          {client.phone || "N/A"}
+                          {lead.phone || "N/A"}
                         </span>
                       </div>
                       <div className="flex items-center gap-2.5 text-slate-500">
@@ -816,7 +811,7 @@ const ClientList = ({
                           <Mail size={14} />
                         </div>
                         <span className="text-xs font-bold truncate">
-                          {client.email || "N/A"}
+                          {lead.email || "N/A"}
                         </span>
                       </div>
                     </div>
@@ -828,7 +823,7 @@ const ClientList = ({
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        onSelectClient(client);
+                        onSelectLead(lead);
                       }}
                       className="flex items-center gap-1 text-[10px] font-bold text-secondary uppercase tracking-widest hover:text-secondary/80 transition-colors"
                     >
@@ -840,15 +835,15 @@ const ClientList = ({
                     className="flex items-center gap-2"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    {onOnboardClient && client.status === "Lead" && (
+                    {onOnboardLead && lead.status === "Lead" && (
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          setOnboardingLeadId(client.id);
+                          setOnboardingLeadId(lead.id);
                           setOnboardingData({
-                            name: client.name,
-                            email: client.email,
-                            phone: client.phone,
+                            name: lead.name,
+                            email: lead.email,
+                            phone: lead.phone,
                             clientType: "New",
                             status: "Active",
                             projectName: "",
@@ -867,12 +862,12 @@ const ClientList = ({
                         <UserCheck size={16} />
                       </button>
                     )}
-                    {onDeleteClient &&
+                    {onDeleteLead &&
                       (title !== "Leads" || leadView === "Dismissed") && (
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            onDeleteClient(client.id);
+                            onDeleteLead(lead.id);
                           }}
                           className="p-2 bg-rose-50 text-rose-600 border border-rose-100 rounded-lg hover:bg-rose-100 transition-all active:scale-90"
                         >
@@ -880,12 +875,12 @@ const ClientList = ({
                         </button>
                       )}
                     {onDismissLead &&
-                      (client.status === "Lead" || client.isConverted) &&
-                      client.status !== "Dismissed" && (
+                      (lead.status === "Lead" || lead.isConverted) &&
+                      lead.status !== "Dismissed" && (
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            onDismissLead(client.id);
+                            onDismissLead(lead.id);
                           }}
                           className="p-2 bg-amber-50 text-amber-600 border border-amber-100 rounded-lg hover:bg-amber-100 transition-all active:scale-90"
                         >
@@ -898,10 +893,10 @@ const ClientList = ({
             );
           })}
 
-          {filteredClients.length === 0 && (
+          {filteredLeads.length === 0 && (
             <div className="col-span-full text-center py-10 bg-slate-50 rounded-2xl border border-dashed border-slate-300">
               <p className="text-sm font-bold text-slate-400">
-                No "clients" found matching your filters.
+                No {title.toLowerCase()} found matching your filters.
               </p>
             </div>
           )}
@@ -1405,34 +1400,36 @@ const ClientList = ({
                     </div>
 
                     {/* DATES */}
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] font-bold text-[#18254D]  tracking-widest ml-1">
-                        ONBOARDING DATE
-                      </label>
-                      <DatePicker
-                        value={formData.onboardingDate}
-                        onChange={(val) =>
-                          setFormData({
-                            ...formData,
-                            onboardingDate: val,
-                          })
-                        }
-                      />
-                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-[#18254D]  tracking-widest ml-1">
+                          ONBOARDING DATE
+                        </label>
+                        <DatePicker
+                          value={formData.onboardingDate}
+                          onChange={(val) =>
+                            setFormData({
+                              ...formData,
+                              onboardingDate: val,
+                            })
+                          }
+                        />
+                      </div>
 
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] font-bold text-[#18254D]  tracking-widest ml-1">
-                        DEADLINE (TENTATIVE)
-                      </label>
-                      <DatePicker
-                        value={formData.deadline}
-                        onChange={(val) =>
-                          setFormData({
-                            ...formData,
-                            deadline: val,
-                          })
-                        }
-                      />
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-[#18254D]  tracking-widest ml-1 whitespace-nowrap">
+                          DEADLINE (TENTATIVE)
+                        </label>
+                        <DatePicker
+                          value={formData.deadline}
+                          onChange={(val) =>
+                            setFormData({
+                              ...formData,
+                              deadline: val,
+                            })
+                          }
+                        />
+                      </div>
                     </div>
 
                     {/* SCOPE DOCUMENT */}
@@ -1780,15 +1777,14 @@ const ClientList = ({
                 <div className="h-[2px] flex-1 bg-slate-100 rounded-full" />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <div className="space-y-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="space-y-1.5 md:col-span-2">
                   <label className="text-[10px] font-bold text-[#18254D]  tracking-widest ml-1">
                     PROJECT NAME
                   </label>
                   <input
-                    required
                     type="text"
-                    placeholder="e.g. Website Redesign"
+                    placeholder="e.g. Route Optimization Platform"
                     className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
                     value={onboardingData.projectName}
                     onChange={(e) =>
@@ -1800,7 +1796,34 @@ const ClientList = ({
                   />
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-1.5 md:col-span-2">
+                  <label className="text-[10px] font-bold text-[#18254D]  tracking-widest ml-1">
+                    PROJECT CATEGORY
+                  </label>
+                  <div className="flex gap-2">
+                    {["Tech", "Media"].map((cat) => (
+                      <button
+                        key={cat}
+                        type="button"
+                        onClick={() =>
+                          setOnboardingData({
+                            ...onboardingData,
+                            projectCategory: cat,
+                          })
+                        }
+                        className={`flex-1 flex items-center justify-center p-2.5 border-2 rounded-xl transition-all font-bold  text-[10px] tracking-widest ${
+                          onboardingData.projectCategory === cat
+                            ? "border-primary bg-primary/5 text-primary shadow-sm"
+                            : "border-slate-100 text-slate-400 hover:border-slate-200"
+                        }`}
+                      >
+                        {cat}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
                   <label className="text-[10px] font-bold text-[#18254D]  tracking-widest ml-1">
                     PROJECT STATUS
                   </label>
@@ -1819,7 +1842,9 @@ const ClientList = ({
                       </span>
                       <ChevronDown
                         size={16}
-                        className={`text-slate-400 transition-transform ${isOnboardStatusDropdownOpen ? "rotate-180" : ""}`}
+                        className={`text-slate-400 transition-transform ${
+                          isOnboardStatusDropdownOpen ? "rotate-180" : ""
+                        }`}
                       />
                     </button>
 
@@ -1864,34 +1889,7 @@ const ClientList = ({
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-[#18254D]  tracking-widest ml-1">
-                    LEAD CATEGORY
-                  </label>
-                  <div className="flex gap-2">
-                    {["Tech", "Media"].map((cat) => (
-                      <button
-                        key={cat}
-                        type="button"
-                        onClick={() =>
-                          setOnboardingData({
-                            ...onboardingData,
-                            projectCategory: cat,
-                          })
-                        }
-                        className={`flex-1 flex items-center justify-center p-3 border-2 rounded-xl transition-all font-bold  text-[10px] tracking-widest ${
-                          onboardingData.projectCategory === cat
-                            ? "border-primary bg-primary/5 text-primary shadow-sm"
-                            : "border-slate-100 text-slate-400 hover:border-slate-200"
-                        }`}
-                      >
-                        {cat}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <label className="text-[10px] font-bold text-[#18254D]  tracking-widest ml-1">
                     PROJECT PRIORITY
                   </label>
@@ -1910,7 +1908,9 @@ const ClientList = ({
                       </span>
                       <ChevronDown
                         size={16}
-                        className={`text-slate-400 transition-transform ${isOnboardPriorityDropdownOpen ? "rotate-180" : ""}`}
+                        className={`text-slate-400 transition-transform ${
+                          isOnboardPriorityDropdownOpen ? "rotate-180" : ""
+                        }`}
                       />
                     </button>
 
@@ -1954,14 +1954,14 @@ const ClientList = ({
                   </div>
                 </div>
 
-                <div className="space-y-2 md:col-span-2">
+                <div className="space-y-1.5 md:col-span-2">
                   <label className="text-[10px] font-bold text-[#18254D]  tracking-widest ml-1">
                     PROJECT DESCRIPTION
                   </label>
                   <textarea
-                    rows={2}
-                    placeholder="Brief overview of the project scope..."
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-bold shadow-sm resize-none"
+                    rows={3}
+                    placeholder="Add any additional context..."
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium resize-none shadow-sm"
                     value={onboardingData.projectDescription}
                     onChange={(e) =>
                       setOnboardingData({
@@ -1972,61 +1972,60 @@ const ClientList = ({
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-[#18254D]  tracking-widest ml-1">
-                      PROJECT BUDGET
-                    </label>
-                    <div className="relative">
-                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">
-                        ₹
-                      </span>
-                      <input
-                        type="text"
-                        placeholder="e.g. 5,00,000"
-                        className="w-full pl-8 pr-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
-                        value={onboardingData.projectBudget}
-                        onChange={(e) =>
-                          setOnboardingData({
-                            ...onboardingData,
-                            projectBudget: e.target.value,
-                          })
-                        }
-                      />
+                <div className="space-y-1.5 md:col-span-2">
+                  <label className="text-[10px] font-bold text-[#18254D]  tracking-widest ml-1 flex items-center gap-1.5">
+                    PROJECT BUDGET (INR)
+                  </label>
+                  <div className="relative">
+                    <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-bold">
+                      ₹
                     </div>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-[#18254D]  tracking-widest ml-1">
-                      ONBOARDING DATE
-                    </label>
-                    <DatePicker
-                      value={onboardingData.onboardingDate}
-                      onChange={(val) =>
+                    <input
+                      type="text"
+                      placeholder="e.g. 5,00,000"
+                      className="w-full pl-8 pr-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium shadow-sm"
+                      value={onboardingData.projectBudget}
+                      onChange={(e) =>
                         setOnboardingData({
                           ...onboardingData,
-                          onboardingDate: val,
-                        })
-                      }
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-[#18254D]  tracking-widest ml-1">
-                      DEADLINE (TENTATIVE)
-                    </label>
-                    <DatePicker
-                      value={onboardingData.deadline}
-                      onChange={(val) =>
-                        setOnboardingData({
-                          ...onboardingData,
-                          deadline: val,
+                          projectBudget: e.target.value,
                         })
                       }
                     />
                   </div>
                 </div>
 
-                <div className="space-y-2 md:col-span-2">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-[#18254D] tracking-widest ml-1">
+                    ONBOARDING DATE
+                  </label>
+                  <DatePicker
+                    value={onboardingData.onboardingDate}
+                    onChange={(val) =>
+                      setOnboardingData({
+                        ...onboardingData,
+                        onboardingDate: val,
+                      })
+                    }
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-[#18254D] tracking-widest ml-1 whitespace-nowrap">
+                    DEADLINE (TENTATIVE)
+                  </label>
+                  <DatePicker
+                    value={onboardingData.deadline}
+                    onChange={(val) =>
+                      setOnboardingData({
+                        ...onboardingData,
+                        deadline: val,
+                      })
+                    }
+                  />
+                </div>
+
+                <div className="space-y-1.5 md:col-span-2">
                   <label className="text-[10px] font-bold text-[#18254D]  tracking-widest ml-1">
                     SCOPE DOCUMENT
                   </label>
@@ -2228,4 +2227,4 @@ const ClientList = ({
   );
 };
 
-export default ClientList;
+export default LeadList;
