@@ -27,13 +27,23 @@ import {
   ChevronDown,
   Globe,
 } from "lucide-react";
-import { MOCK_PROJECTS, MOCK_ACTIVITIES } from "../../constants/mockData";
+import { MOCK_ACTIVITIES } from "../../constants/mockData";
 import {
   generateClientSummary,
   suggestNextAction,
 } from "../../services/aiService";
 import DatePicker from "../../components/ui/DatePicker";
 import { countries } from "../../utils/countries";
+import {
+  indianStates,
+  commonCurrencies,
+  countryToCurrency,
+} from "../../utils/locationData";
+import SearchableDropdown from "../../components/common/SearchableDropdown";
+import {
+  CATEGORY_MAP,
+  REVERSE_CATEGORY_MAP,
+} from "../../constants/categoryConstants";
 
 const ClientDetail = ({
   client,
@@ -44,23 +54,29 @@ const ClientDetail = ({
   followUps = [],
   initialTab = "overview",
   onSelectProject,
+  projects = [],
 }) => {
   const isLead = client.status === "Lead" || client.status === "Dismissed";
   const [activeTab, setActiveTab] = useState(initialTab);
   const [nextAction, setNextAction] = useState("");
-  const [showEditModal, setShowEditModal] = useState(false);
   const [editFormData, setEditFormData] = useState({
     name: "",
     email: "",
     phone: "",
+    countryCode: "",
     leadType: "Warm",
     notes: "",
     website: "",
-    projectCategory: "Tech",
+    projectCategory: 1,
     country: "",
+    state: "",
+    currency: "",
+    organisationName: "",
+    clientStatus: "Active",
   });
 
   const [isCountryDropdownOpen, setIsCountryDropdownOpen] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [countrySearchTerm, setCountrySearchTerm] = useState("");
   const countryButtonRef = useRef(null);
   const [countryDropdownStyle, setCountryDropdownStyle] = useState({});
@@ -85,15 +101,37 @@ const ClientDetail = ({
   // Update form data when modal opens or client changes
   useEffect(() => {
     if (showEditModal && client) {
+      let localPhone = client.phone || "";
+      let usedCountryCode = "";
+
+      // Try to extract country code from the phone number
+      if (localPhone.startsWith("+")) {
+        // Find the matching country code from countries list
+        const matchingCountry = countries
+          .sort((a, b) => b.code.length - a.code.length) // Sort by length descending to match longest code first (e.g., +1-242 before +1)
+          .find((c) => localPhone.startsWith(c.code));
+
+        if (matchingCountry) {
+          usedCountryCode = matchingCountry.code;
+          localPhone = localPhone.substring(usedCountryCode.length).trim();
+        }
+      }
+
       setEditFormData({
         name: client.name || "",
         email: client.email || "",
-        phone: client.phone || "",
+        phone: localPhone,
+        countryCode: usedCountryCode,
         leadType: client.leadType || "Warm",
         notes: client.notes || "",
         website: client.website || "",
-        projectCategory: client.projectCategory || client.industry || "Tech",
+        projectCategory:
+          client.projectCategory || REVERSE_CATEGORY_MAP[client.industry] || 1,
         country: client.country || "",
+        state: client.state || "",
+        currency: client.currency || "",
+        organisationName: client.organisationName || "",
+        clientStatus: client.clientStatus || "Active",
       });
     }
   }, [showEditModal, client]);
@@ -107,10 +145,10 @@ const ClientDetail = ({
     time: new Date().toTimeString().split(" ")[0].substring(0, 5),
   });
 
-  const clientProjects = MOCK_PROJECTS.filter((p) => p.clientId === client.id);
+  const clientProjects = projects.filter((p) => p.clientId == client.id);
   const clientActivities = activities.filter((a) => a.clientId === client.id);
   const completedFollowUps = followUps.filter(
-    (f) => f.clientId == client.id && f.status === "completed"
+    (f) => f.clientId == client.id && f.status === "completed",
   );
 
   const handleLogInteraction = (e) => {
@@ -159,8 +197,8 @@ const ClientDetail = ({
                     {isLead
                       ? client.company || ""
                       : client.projectName ||
-                      client.company ||
-                      "Global Project"}
+                        client.company ||
+                        "Global Project"}
                   </span>
                   <span className="px-3 py-1 bg-secondary/10 text-secondary rounded-lg text-[9px] font-bold tracking-widest border border-secondary/20">
                     {client.status}
@@ -224,19 +262,29 @@ const ClientDetail = ({
                         const formDataToSubmit = {
                           name: editFormData.name,
                           email: editFormData.email,
-                          phone: editFormData.phone,
+                          phone: `${editFormData.countryCode}${editFormData.phone}`,
                           leadType: editFormData.leadType,
                           notes: editFormData.notes,
                           website: editFormData.website,
                           projectCategory: editFormData.projectCategory,
                           country: editFormData.country,
+                          state: editFormData.state,
+                          currency: editFormData.currency,
+                          organisationName: editFormData.organisationName,
+                          clientStatus: editFormData.clientStatus,
                         };
                         console.log("=== FORM SUBMISSION DEBUG ===");
-                        console.log("Submitting edit form with data:", formDataToSubmit);
-                        console.log("Website value being sent:", formDataToSubmit.website);
-                        
+                        console.log(
+                          "Submitting edit form with data:",
+                          formDataToSubmit,
+                        );
+                        console.log(
+                          "Website value being sent:",
+                          formDataToSubmit.website,
+                        );
+
                         await onUpdateClient(client.id, formDataToSubmit);
-                        
+
                         console.log("Lead updated successfully!");
                         console.log("=== END DEBUG ===");
                         setShowEditModal(false);
@@ -249,8 +297,8 @@ const ClientDetail = ({
                   className="p-5 space-y-4"
                 >
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-primary  tracking-widest ml-1">
-                      Full Name
+                    <label className="text-[10px] font-bold text-primary  tracking-widest ml-1 uppercase">
+                      FULL NAME
                     </label>
                     <input
                       required
@@ -268,8 +316,8 @@ const ClientDetail = ({
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-primary  tracking-widest ml-1">
-                      Email ID
+                    <label className="text-[10px] font-bold text-primary  tracking-widest ml-1 uppercase">
+                      EMAIL ID
                     </label>
                     <input
                       required
@@ -286,97 +334,38 @@ const ClientDetail = ({
                     />
                   </div>
 
-                  <div className="space-y-2 relative">
-                    <label className="text-[10px] font-bold text-primary  tracking-widest ml-1">
-                      Country Code
-                    </label>
-                    <button
-                      type="button"
-                      ref={countryButtonRef}
-                      onClick={() => setIsCountryDropdownOpen(!isCountryDropdownOpen)}
-                      className="w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium transition-all"
-                    >
-                      <span className={editFormData.country ? "text-primary" : "text-slate-400"}>
-                        {editFormData.country
-                          ? (countries.find((c) => c.code === editFormData.country)?.name || "Country") + " (" + editFormData.country + ")"
-                          : "Select Country Code"}
-                      </span>
-                      <ChevronDown
-                        size={16}
-                        className={`text-slate-400 transition-transform duration-300 ${isCountryDropdownOpen ? "rotate-180" : ""}`}
-                      />
-                    </button>
-
-                    {isCountryDropdownOpen &&
-                      createPortal(
-                        <>
-                          <div
-                            className="fixed inset-0 z-[9998]"
-                            onClick={() => setIsCountryDropdownOpen(false)}
-                          />
-                          <div
-                            className="country-dropdown bg-white border border-slate-200 rounded-xl shadow-2xl overflow-hidden z-[9999] animate-fade-in flex flex-col"
-                            style={countryDropdownStyle}
-                          >
-                            <div className="p-2 border-b border-slate-100 flex items-center gap-2 sticky top-0 bg-white z-10">
-                              <Search size={14} className="text-slate-400 ml-1" />
-                              <input
-                                autoFocus
-                                type="text"
-                                placeholder="Search country or code..."
-                                className="w-full bg-transparent border-none focus:ring-0 text-sm font-medium p-1"
-                                value={countrySearchTerm}
-                                onChange={(e) => setCountrySearchTerm(e.target.value)}
-                              />
-                            </div>
-                            <div className="max-h-[200px] overflow-y-auto py-1">
-                              {countries
-                                .filter(
-                                  (c) =>
-                                    c.name.toLowerCase().includes(countrySearchTerm.toLowerCase()) ||
-                                    c.code.includes(countrySearchTerm)
-                                )
-                                .map((c) => (
-                                  <button
-                                    key={c.name + c.code}
-                                    type="button"
-                                    onClick={() => {
-                                      setEditFormData({ ...editFormData, country: c.code });
-                                      setIsCountryDropdownOpen(false);
-                                      setCountrySearchTerm("");
-                                    }}
-                                    className={`w-full flex items-center justify-between px-4 py-2 hover:bg-slate-50 transition-colors text-left ${
-                                      editFormData.country === c.code ? "bg-secondary/5" : ""
-                                    }`}
-                                  >
-                                    <div className="flex flex-col">
-                                      <span className="text-sm font-bold text-primary">
-                                        {c.name}
-                                      </span>
-                                      <span className="text-[10px] text-slate-400 font-bold tracking-widest">
-                                        {c.code}
-                                      </span>
-                                    </div>
-                                    {editFormData.country === c.code && (
-                                      <Check size={16} className="text-secondary" />
-                                    )}
-                                  </button>
-                                ))}
-                            </div>
-                          </div>
-                        </>,
-                        document.body
-                      )}
+                  <div className="space-y-2">
+                    <SearchableDropdown
+                      label="Country Code"
+                      options={countries.map((c) => ({
+                        name: `${c.name} (${c.code})`,
+                        code: c.code,
+                      }))}
+                      value={editFormData.countryCode}
+                      onChange={(val) => {
+                        const selectedCountry = countries.find(
+                          (c) => c.code === val,
+                        );
+                        setEditFormData({
+                          ...editFormData,
+                          countryCode: val,
+                          country: selectedCountry
+                            ? selectedCountry.name
+                            : editFormData.country,
+                        });
+                      }}
+                      placeholder="Select Country Code"
+                    />
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-primary  tracking-widest ml-1">
-                      Phone Number
+                    <label className="text-[10px] font-bold text-primary  tracking-widest ml-1 uppercase">
+                      PHONE NUMBER
                     </label>
                     <input
                       required
                       type="tel"
-                      placeholder="e.g. +91 98765 43210"
+                      placeholder="e.g. 98765 43210"
                       className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
                       value={editFormData.phone}
                       onChange={(e) =>
@@ -389,8 +378,8 @@ const ClientDetail = ({
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-primary  tracking-widest ml-1">
-                      Website Url (Optional)
+                    <label className="text-[10px] font-bold text-primary  tracking-widest ml-1 uppercase">
+                      WEBSITE URL (OPTIONAL)
                     </label>
                     <input
                       type="text"
@@ -406,30 +395,119 @@ const ClientDetail = ({
                     />
                   </div>
 
+                  {!isLead && (
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-primary  tracking-widest ml-1 uppercase">
+                        ORGANISATION NAME
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Acme Corp"
+                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
+                        value={editFormData.organisationName}
+                        onChange={(e) =>
+                          setEditFormData({
+                            ...editFormData,
+                            organisationName: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                  )}
+
+                  {!isLead &&
+                    (editFormData.country === "India" ? (
+                      <SearchableDropdown
+                        label="CLIENT STATE"
+                        options={indianStates}
+                        value={editFormData.state}
+                        onChange={(val) =>
+                          setEditFormData({ ...editFormData, state: val })
+                        }
+                        placeholder="Select State"
+                      />
+                    ) : (
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-bold text-primary  tracking-widest ml-1 uppercase">
+                          CLIENT STATE
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="e.g. California"
+                          className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
+                          value={editFormData.state}
+                          onChange={(e) =>
+                            setEditFormData({
+                              ...editFormData,
+                              state: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                    ))}
+
+                  {!isLead && (
+                    <>
+                      <SearchableDropdown
+                        label="CLIENT CURRENCY"
+                        options={commonCurrencies.map((c) => ({
+                          name: `${c.code} (${c.symbol})`,
+                          code: c.code,
+                        }))}
+                        value={editFormData.currency}
+                        onChange={(val) =>
+                          setEditFormData({ ...editFormData, currency: val })
+                        }
+                        placeholder="Select Currency"
+                      />
+
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-bold text-primary  tracking-widest ml-1 uppercase">
+                          CLIENT STATUS
+                        </label>
+                        <select
+                          className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-bold"
+                          value={editFormData.clientStatus}
+                          onChange={(e) =>
+                            setEditFormData({
+                              ...editFormData,
+                              clientStatus: e.target.value,
+                            })
+                          }
+                        >
+                          <option value="Active">Active</option>
+                          <option value="Inactive">Inactive</option>
+                        </select>
+                      </div>
+                    </>
+                  )}
+
                   <div className="space-y-2">
                     <label className="text-[10px] font-bold text-primary  tracking-widest ml-1">
                       {isLead ? "Lead" : "Client"} Category
                     </label>
                     <div className="grid grid-cols-2 gap-3">
-                      {["Tech", "Social Media"].map((cat) => (
+                      {[1, 2, 3].map((catId) => (
                         <button
-                          key={cat}
+                          key={catId}
                           type="button"
                           onClick={() =>
                             setEditFormData({
                               ...editFormData,
-                              projectCategory: cat,
+                              projectCategory: catId,
                             })
                           }
                           className={`py-3 px-4 rounded-xl border-2 text-[10px] font-bold tracking-widest transition-all ${
-                            editFormData.projectCategory === cat
-                              ? cat === "Tech"
+                            editFormData.projectCategory === catId
+                              ? catId === 1
                                 ? "bg-secondary/10 border-secondary text-secondary shadow-md"
-                                : "bg-blue-500/10 border-blue-500 text-blue-500 shadow-md"
+                                : catId === 2
+                                  ? "bg-blue-500/10 border-blue-500 text-blue-500 shadow-md"
+                                  : "bg-purple-500/10 border-purple-500 text-purple-500 shadow-md"
                               : "bg-white border-slate-100 text-slate-400 hover:border-slate-300"
                           }`}
                         >
-                          {cat.toUpperCase()}
+                          {CATEGORY_MAP[catId].toUpperCase()}
                         </button>
                       ))}
                     </div>
@@ -450,14 +528,15 @@ const ClientDetail = ({
                               leadType: type,
                             })
                           }
-                          className={`flex flex-col items-center justify-center gap-2 p-3 rounded-xl border-2 transition-all ${editFormData.leadType === type
-                            ? type === "Hot"
-                              ? "bg-error/5 border-error text-error shadow-lg shadow-error/10 scale-[1.02]"
-                              : type === "Warm"
-                                ? "bg-warning/5 border-warning text-warning shadow-lg shadow-warning/10 scale-[1.02]"
-                                : "bg-info/5 border-info text-info shadow-lg shadow-info/10 scale-[1.02]"
-                            : "bg-slate-50 border-slate-100 text-slate-400 grayscale opacity-60 hover:opacity-100 hover:grayscale-0"
-                            }`}
+                          className={`flex flex-col items-center justify-center gap-2 p-3 rounded-xl border-2 transition-all ${
+                            editFormData.leadType === type
+                              ? type === "Hot"
+                                ? "bg-error/5 border-error text-error shadow-lg shadow-error/10 scale-[1.02]"
+                                : type === "Warm"
+                                  ? "bg-warning/5 border-warning text-warning shadow-lg shadow-warning/10 scale-[1.02]"
+                                  : "bg-info/5 border-info text-info shadow-lg shadow-info/10 scale-[1.02]"
+                              : "bg-slate-50 border-slate-100 text-slate-400 grayscale opacity-60 hover:opacity-100 hover:grayscale-0"
+                          }`}
                         >
                           {type === "Hot" ? (
                             <Flame size={18} strokeWidth={2.5} />
@@ -475,8 +554,8 @@ const ClientDetail = ({
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-primary  tracking-widest ml-1">
-                      Note
+                    <label className="text-[10px] font-bold text-primary  tracking-widest ml-1 uppercase">
+                      MESSAGE
                     </label>
                     <textarea
                       rows={3}
@@ -621,10 +700,11 @@ const ClientDetail = ({
                               type: type,
                             })
                           }
-                          className={`py-2 px-3 rounded-xl border text-[10px] font-bold  tracking-widest transition-all ${logData.type === type
-                            ? "bg-secondary border-secondary text-white shadow-md shadow-secondary/20"
-                            : "bg-white border-slate-100 text-slate-400 hover:border-slate-300"
-                            }`}
+                          className={`py-2 px-3 rounded-xl border text-[10px] font-bold  tracking-widest transition-all ${
+                            logData.type === type
+                              ? "bg-secondary border-secondary text-white shadow-md shadow-secondary/20"
+                              : "bg-white border-slate-100 text-slate-400 hover:border-slate-300"
+                          }`}
                         >
                           {type}
                         </button>
@@ -668,7 +748,18 @@ const ClientDetail = ({
                   Contact Details
                 </h3>
                 <div className="space-y-3">
-                  <div className="flex items-center gap-4 p-3.5 bg-white rounded-xl border border-slate-100 shadow-sm group hover:border-secondary">
+                  {client.organisationName && (
+                    <div className="flex items-center gap-4 p-3.5 bg-white rounded-xl border border-slate-100 shadow-sm group">
+                      <Briefcase
+                        size={14}
+                        className="text-slate-400 shrink-0"
+                      />
+                      <span className="text-xs font-bold text-primary truncate">
+                        {client.organisationName}
+                      </span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-4 p-3.5 bg-white rounded-xl border border-slate-100 shadow-sm group">
                     <Mail
                       size={14}
                       className="text-slate-400 group-hover:text-secondary shrink-0"
@@ -680,17 +771,34 @@ const ClientDetail = ({
                   <div className="flex items-center gap-4 p-3.5 bg-white rounded-xl border border-slate-100 shadow-sm group">
                     <Phone size={14} className="text-slate-400 shrink-0" />
                     <span className="text-xs font-bold text-primary truncate">
-                      {client.country ? `${client.country} ` : ""}{client.phone}
+                      {client.country ? `${client.country} ` : ""}
+                      {client.phone}
                     </span>
                   </div>
+                  {(client.state || client.country) && (
+                    <div className="flex items-center gap-4 p-3.5 bg-white rounded-xl border border-slate-100 shadow-sm group">
+                      <MapPin size={14} className="text-slate-400 shrink-0" />
+                      <span className="text-xs font-bold text-primary truncate">
+                        {client.state ? `${client.state}, ` : ""}
+                        {client.country}
+                      </span>
+                    </div>
+                  )}
                   {client.website && (
                     <a
-                      href={client.website.startsWith("http") ? client.website : `https://${client.website}`}
+                      href={
+                        client.website.startsWith("http")
+                          ? client.website
+                          : `https://${client.website}`
+                      }
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center gap-4 p-3.5 bg-white rounded-xl border border-slate-100 shadow-sm group hover:border-secondary transition-all"
                     >
-                      <Globe size={14} className="text-slate-400 group-hover:text-secondary shrink-0" />
+                      <Globe
+                        size={14}
+                        className="text-slate-400 group-hover:text-secondary shrink-0"
+                      />
                       <span className="text-xs font-bold text-primary truncate group-hover:text-secondary">
                         {client.website.replace(/^https?:\/\//, "")}
                       </span>
@@ -719,9 +827,7 @@ const ClientDetail = ({
                     id: "activity",
                     label: "Conversations",
                   },
-                  ...(!isLead
-                    ? [{ id: "projects", label: "Projects" }]
-                    : []),
+                  ...(!isLead ? [{ id: "projects", label: "Projects" }] : []),
                 ].map((tab) => (
                   <button
                     key={tab.id}
@@ -747,12 +853,13 @@ const ClientDetail = ({
                           Lead Status
                         </h3>
                         <p
-                          className={`text-lg font-bold tracking-tight  ${client.leadType === "Hot"
-                            ? "text-error"
-                            : client.leadType === "Warm"
-                              ? "text-warning"
-                              : "text-info"
-                            }`}
+                          className={`text-lg font-bold tracking-tight  ${
+                            client.leadType === "Hot"
+                              ? "text-error"
+                              : client.leadType === "Warm"
+                                ? "text-warning"
+                                : "text-info"
+                          }`}
                         >
                           {client.leadType || "Warm"}
                         </p>
@@ -781,7 +888,9 @@ const ClientDetail = ({
                           Project Category
                         </h3>
                         <p className="text-lg font-bold text-primary tracking-tight ">
-                          {client.projectCategory || client.industry || "Tech"}
+                          {CATEGORY_MAP[client.projectCategory] ||
+                            client.industry ||
+                            "Tech"}
                         </p>
                       </div>
                       <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 group relative overflow-hidden hover:shadow-md hover:border-secondary/30 transition-all">
@@ -795,36 +904,65 @@ const ClientDetail = ({
                           {client.projectPriority || "Medium"}
                         </p>
                       </div>
-                      <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 group relative overflow-hidden md:col-span-2 hover:shadow-md hover:border-secondary/30 transition-all">
-                        <div className="w-8 h-8 bg-info/10 text-info rounded-xl flex items-center justify-center mb-3 group-hover:bg-info group-hover:text-white transition-all border border-info/20">
-                          <Calendar size={16} strokeWidth={2.5} />
+                      <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 group relative overflow-hidden hover:shadow-md hover:border-secondary/30 transition-all">
+                        <div className="w-8 h-8 bg-green-500/10 text-green-600 rounded-xl flex items-center justify-center mb-3 group-hover:bg-green-600 group-hover:text-white transition-all border border-green-500/20">
+                          <span className="text-xs font-bold leading-none">
+                            $
+                          </span>
                         </div>
-                        <div className="flex justify-between items-end">
-                          <div>
-                            <h3 className="text-[9px] font-bold text-slate-400  tracking-widest mb-1">
-                              Current Deadline
-                            </h3>
-                            <p className="text-lg font-bold text-primary tracking-tighter ">
-                              {client.deadline
-                                ? new Date(client.deadline).toLocaleDateString(
-                                  [],
-                                  {
-                                    month: "long",
-                                    day: "numeric",
-                                    year: "numeric",
-                                  },
-                                )
-                                : "Not Set"}
+                        <h3 className="text-[9px] font-bold text-slate-400  tracking-widest mb-1">
+                          Billing Currency
+                        </h3>
+                        <p className="text-lg font-bold text-primary tracking-tight ">
+                          {client.currency || "USD"}
+                        </p>
+                      </div>
+                      <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 group relative overflow-hidden hover:shadow-md hover:border-secondary/30 transition-all">
+                        <div className="w-8 h-8 bg-blue-500/10 text-blue-600 rounded-xl flex items-center justify-center mb-3 group-hover:bg-blue-600 group-hover:text-white transition-all border border-blue-500/20">
+                          <CheckCircle2 size={16} strokeWidth={2.5} />
+                        </div>
+                        <h3 className="text-[9px] font-bold text-slate-400  tracking-widest mb-1">
+                          Client Status
+                        </h3>
+                        <p className="text-lg font-bold text-primary tracking-tight ">
+                          {client.clientStatus || "Active"}
+                        </p>
+                      </div>
+                      <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 group relative overflow-hidden md:col-span-2 hover:shadow-md hover:border-secondary/30 transition-all">
+                        <div className="w-8 h-8 bg-primary/10 text-primary rounded-xl flex items-center justify-center mb-3 group-hover:bg-primary group-hover:text-white transition-all border border-primary/20">
+                          <Briefcase size={16} strokeWidth={2.5} />
+                        </div>
+                        <h3 className="text-[9px] font-bold text-slate-400  tracking-widest mb-3 uppercase">
+                          Recent Projects
+                        </h3>
+                        <div className="space-y-3">
+                          {clientProjects.length > 0 ? (
+                            clientProjects.map((project) => (
+                              <div
+                                key={project.id}
+                                className="flex items-center justify-between p-3 bg-slate-50/50 rounded-xl border border-slate-100 group-hover:border-secondary/20 transition-all"
+                              >
+                                <div>
+                                  <h4 className="text-sm font-bold text-primary tracking-tight">
+                                    {project.name}
+                                  </h4>
+                                  <p className="text-[9px] font-bold text-slate-400  tracking-widest">
+                                    {project.status} • {project.progress}% Complete
+                                  </p>
+                                </div>
+                                <button
+                                  onClick={() => setActiveTab("projects")}
+                                  className="p-2 hover:bg-white rounded-lg text-slate-300 hover:text-secondary transition-all"
+                                >
+                                  <ChevronRight size={16} />
+                                </button>
+                              </div>
+                            ))
+                          ) : (
+                            <p className="text-xs font-medium text-slate-400 italic">
+                              No projects associated with this client.
                             </p>
-                          </div>
-                          <div className="text-right">
-                            <h3 className="text-[9px] font-bold text-slate-400  tracking-widest mb-1">
-                              Status
-                            </h3>
-                            <p className="text-xs font-bold text-secondary  tracking-widest">
-                              {client.projectStatus || "Active"}
-                            </p>
-                          </div>
+                          )}
                         </div>
                       </div>
                     </>
@@ -852,29 +990,49 @@ const ClientDetail = ({
                     <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
                       <div className="p-4">
                         <div className="relative border-l-2 border-slate-100 ml-3 space-y-4">
-                          {clientActivities.length === 0 && completedFollowUps.length === 0 ? (
+                          {clientActivities.length === 0 &&
+                          completedFollowUps.length === 0 ? (
                             <p className="ml-6 text-[10px] font-bold text-slate-300  tracking-widest py-4">
                               No conversations logged yet
                             </p>
                           ) : (
                             <>
                               {completedFollowUps.map((fu) => (
-                                <div key={`fu-${fu.id}`} className="ml-6 relative">
-                                  <div className={`absolute -left-[33px] w-6 h-6 rounded-lg flex items-center justify-center text-white shadow-sm z-10 ${
-                                    fu.followup_mode?.toLowerCase() === "call" ? "bg-success"
-                                    : fu.followup_mode?.toLowerCase() === "email" ? "bg-info"
-                                    : fu.followup_mode?.toLowerCase() === "meeting" ? "bg-secondary"
-                                    : fu.followup_mode?.toLowerCase() === "whatsapp" ? "bg-[#25D366]"
-                                    : "bg-success"
-                                  }`}>
-                                    {fu.followup_mode?.toLowerCase() === "call" ? (
+                                <div
+                                  key={`fu-${fu.id}`}
+                                  className="ml-6 relative"
+                                >
+                                  <div
+                                    className={`absolute -left-[33px] w-6 h-6 rounded-lg flex items-center justify-center text-white shadow-sm z-10 ${
+                                      fu.followup_mode?.toLowerCase() === "call"
+                                        ? "bg-success"
+                                        : fu.followup_mode?.toLowerCase() ===
+                                            "email"
+                                          ? "bg-info"
+                                          : fu.followup_mode?.toLowerCase() ===
+                                              "meeting"
+                                            ? "bg-secondary"
+                                            : fu.followup_mode?.toLowerCase() ===
+                                                "whatsapp"
+                                              ? "bg-[#25D366]"
+                                              : "bg-success"
+                                    }`}
+                                  >
+                                    {fu.followup_mode?.toLowerCase() ===
+                                    "call" ? (
                                       <Phone size={11} strokeWidth={2.5} />
-                                    ) : fu.followup_mode?.toLowerCase() === "email" ? (
+                                    ) : fu.followup_mode?.toLowerCase() ===
+                                      "email" ? (
                                       <Mail size={11} strokeWidth={2.5} />
-                                    ) : fu.followup_mode?.toLowerCase() === "meeting" ? (
+                                    ) : fu.followup_mode?.toLowerCase() ===
+                                      "meeting" ? (
                                       <Calendar size={11} strokeWidth={2.5} />
-                                    ) : fu.followup_mode?.toLowerCase() === "whatsapp" ? (
-                                      <MessageSquare size={11} strokeWidth={2.5} />
+                                    ) : fu.followup_mode?.toLowerCase() ===
+                                      "whatsapp" ? (
+                                      <MessageSquare
+                                        size={11}
+                                        strokeWidth={2.5}
+                                      />
                                     ) : (
                                       <Phone size={11} strokeWidth={2.5} />
                                     )}
@@ -883,23 +1041,31 @@ const ClientDetail = ({
                                     <div className="flex items-center justify-between mb-1.5">
                                       <span className="text-[9px] font-bold text-slate-400  tracking-widest">
                                         {fu.completed_at
-                                          ? new Date(fu.completed_at).toLocaleDateString([], {
+                                          ? new Date(
+                                              fu.completed_at,
+                                            ).toLocaleDateString([], {
                                               month: "short",
                                               day: "numeric",
                                               year: "numeric",
                                             })
                                           : fu.dueDate
-                                            ? new Date(fu.dueDate).toLocaleDateString([], {
+                                            ? new Date(
+                                                fu.dueDate,
+                                              ).toLocaleDateString([], {
                                                 month: "short",
                                                 day: "numeric",
                                                 year: "numeric",
                                               })
                                             : ""}
-                                        {fu.completed_at && " · " + new Date(fu.completed_at).toLocaleTimeString([], {
-                                          hour: "2-digit",
-                                          minute: "2-digit",
-                                          hour12: true,
-                                        })}
+                                        {fu.completed_at &&
+                                          " · " +
+                                            new Date(
+                                              fu.completed_at,
+                                            ).toLocaleTimeString([], {
+                                              hour: "2-digit",
+                                              minute: "2-digit",
+                                              hour12: true,
+                                            })}
                                       </span>
                                       <span className="text-[8px] font-bold  tracking-widest px-2 py-0.5 rounded-md bg-success/10 text-success">
                                         Follow-Up Completed
@@ -920,7 +1086,22 @@ const ClientDetail = ({
                                         )}
                                         {fu.completed_at && (
                                           <p className="text-[9px] font-bold text-slate-400 tracking-widest">
-                                            Completed At: {new Date(fu.completed_at).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" })}{" · "}{new Date(fu.completed_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true })}
+                                            Completed At:{" "}
+                                            {new Date(
+                                              fu.completed_at,
+                                            ).toLocaleDateString([], {
+                                              month: "short",
+                                              day: "numeric",
+                                              year: "numeric",
+                                            })}
+                                            {" · "}
+                                            {new Date(
+                                              fu.completed_at,
+                                            ).toLocaleTimeString([], {
+                                              hour: "2-digit",
+                                              minute: "2-digit",
+                                              hour12: true,
+                                            })}
                                           </p>
                                         )}
                                       </div>
@@ -931,14 +1112,15 @@ const ClientDetail = ({
                               {clientActivities.map((conv) => (
                                 <div key={conv.id} className="ml-6 relative">
                                   <div
-                                    className={`absolute -left-[33px] w-6 h-6 rounded-lg flex items-center justify-center text-white shadow-sm z-10 ${conv.type === "email"
-                                      ? "bg-info"
-                                      : conv.type === "call"
-                                        ? "bg-success"
-                                        : conv.type === "meeting"
-                                          ? "bg-secondary"
-                                          : "bg-slate-400"
-                                      }`}
+                                    className={`absolute -left-[33px] w-6 h-6 rounded-lg flex items-center justify-center text-white shadow-sm z-10 ${
+                                      conv.type === "email"
+                                        ? "bg-info"
+                                        : conv.type === "call"
+                                          ? "bg-success"
+                                          : conv.type === "meeting"
+                                            ? "bg-secondary"
+                                            : "bg-slate-400"
+                                    }`}
                                   >
                                     {conv.type === "call" ? (
                                       <Phone size={11} strokeWidth={2.5} />
@@ -961,12 +1143,13 @@ const ClientDetail = ({
                                         )}
                                       </span>
                                       <span
-                                        className={`text-[8px] font-bold  tracking-widest px-2 py-0.5 rounded-md ${conv.type === "call"
-                                          ? "bg-success/10 text-success"
-                                          : conv.type === "meeting"
-                                            ? "bg-secondary/10 text-secondary"
-                                            : "bg-info/10 text-info"
-                                          }`}
+                                        className={`text-[8px] font-bold  tracking-widest px-2 py-0.5 rounded-md ${
+                                          conv.type === "call"
+                                            ? "bg-success/10 text-success"
+                                            : conv.type === "meeting"
+                                              ? "bg-secondary/10 text-secondary"
+                                              : "bg-info/10 text-info"
+                                        }`}
                                       >
                                         {conv.type}
                                       </span>
@@ -1070,12 +1253,13 @@ const ClientDetail = ({
                           <div className="flex items-center justify-between p-4 bg-slate-50/50 border-b border-slate-100">
                             <div className="flex items-center gap-3">
                               <div
-                                className={`w-7 h-7 rounded-lg flex items-center justify-center text-white shadow-sm ${project.projectStatus === "Active"
-                                  ? "bg-secondary"
-                                  : project.projectStatus === "Completed"
-                                    ? "bg-success"
-                                    : "bg-info"
-                                  }`}
+                                className={`w-7 h-7 rounded-lg flex items-center justify-center text-white shadow-sm ${
+                                  project.projectStatus === "Active"
+                                    ? "bg-secondary"
+                                    : project.projectStatus === "Completed"
+                                      ? "bg-success"
+                                      : "bg-info"
+                                }`}
                               >
                                 <Briefcase size={14} strokeWidth={2.5} />
                               </div>
@@ -1089,12 +1273,13 @@ const ClientDetail = ({
                               </div>
                             </div>
                             <span
-                              className={`px-2.5 py-1 rounded-lg text-[8px] font-bold  tracking-widest border ${project.projectStatus === "Active"
-                                ? "bg-secondary/10 text-secondary border-secondary/20"
-                                : project.projectStatus === "Completed"
-                                  ? "bg-success/10 text-success border-success/20"
-                                  : "bg-info/10 text-info border-info/20"
-                                }`}
+                              className={`px-2.5 py-1 rounded-lg text-[8px] font-bold  tracking-widest border ${
+                                project.projectStatus === "Active"
+                                  ? "bg-secondary/10 text-secondary border-secondary/20"
+                                  : project.projectStatus === "Completed"
+                                    ? "bg-success/10 text-success border-success/20"
+                                    : "bg-info/10 text-info border-info/20"
+                              }`}
                             >
                               {project.projectStatus}
                             </span>
@@ -1106,14 +1291,15 @@ const ClientDetail = ({
                               {project.conversations.map((conv) => (
                                 <div key={conv.id} className="ml-6 relative">
                                   <div
-                                    className={`absolute -left-[33px] w-6 h-6 rounded-lg flex items-center justify-center text-white shadow-sm z-10 ${conv.type === "email"
-                                      ? "bg-info"
-                                      : conv.type === "call"
-                                        ? "bg-success"
-                                        : conv.type === "meeting"
-                                          ? "bg-secondary"
-                                          : "bg-slate-400"
-                                      }`}
+                                    className={`absolute -left-[33px] w-6 h-6 rounded-lg flex items-center justify-center text-white shadow-sm z-10 ${
+                                      conv.type === "email"
+                                        ? "bg-info"
+                                        : conv.type === "call"
+                                          ? "bg-success"
+                                          : conv.type === "meeting"
+                                            ? "bg-secondary"
+                                            : "bg-slate-400"
+                                    }`}
                                   >
                                     {conv.type === "call" ? (
                                       <Phone size={11} strokeWidth={2.5} />
@@ -1136,12 +1322,13 @@ const ClientDetail = ({
                                         )}
                                       </span>
                                       <span
-                                        className={`text-[8px] font-bold  tracking-widest px-2 py-0.5 rounded-md ${conv.type === "call"
-                                          ? "bg-success/10 text-success"
-                                          : conv.type === "meeting"
-                                            ? "bg-secondary/10 text-secondary"
-                                            : "bg-info/10 text-info"
-                                          }`}
+                                        className={`text-[8px] font-bold  tracking-widest px-2 py-0.5 rounded-md ${
+                                          conv.type === "call"
+                                            ? "bg-success/10 text-success"
+                                            : conv.type === "meeting"
+                                              ? "bg-secondary/10 text-secondary"
+                                              : "bg-info/10 text-info"
+                                        }`}
                                       >
                                         {conv.type}
                                       </span>

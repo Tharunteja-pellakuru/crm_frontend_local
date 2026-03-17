@@ -19,6 +19,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
+import { CATEGORY_MAP, REVERSE_CATEGORY_MAP } from "../../constants/categoryConstants";
 
 const FollowUpList = ({
   followUps,
@@ -99,7 +100,8 @@ const FollowUpList = ({
     // Category filter (Tech/Media)
     if (categoryFilter !== "All") {
       if (!client) return false;
-      if ((client.projectCategory || client.industry) !== categoryFilter)
+      const targetCatId = REVERSE_CATEGORY_MAP[categoryFilter];
+      if (client.projectCategory !== targetCatId && client.industry !== categoryFilter)
         return false;
     }
 
@@ -287,7 +289,7 @@ const FollowUpList = ({
                     onClick={() => setIsCategoryDropdownOpen(false)}
                   />
                   <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top">
-                    {["All", "Tech", "Social Media"].map((cat) => (
+                    {["All", "Tech", "Social Media", "Both"].map((cat) => (
                       <button
                         key={cat}
                         onClick={() => {

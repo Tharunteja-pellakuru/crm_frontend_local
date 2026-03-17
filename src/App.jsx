@@ -28,9 +28,22 @@ import {
   MOCK_PROJECTS,
 } from "./constants/mockData";
 import { BASE_URL } from "./constants/config";
+import {
+  CATEGORY_MAP,
+  REVERSE_CATEGORY_MAP,
+} from "./constants/categoryConstants";
 
 // Simple wrapper for client detail pages
-function ClientDetailWrapper({ clients, type, activities, followUps, onUpdateClient, onAddActivity, onSelectProject }) {
+function ClientDetailWrapper({
+  clients,
+  type,
+  activities,
+  followUps,
+  onUpdateClient,
+  onAddActivity,
+  onSelectProject,
+  projects,
+}) {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
@@ -48,12 +61,18 @@ function ClientDetailWrapper({ clients, type, activities, followUps, onUpdateCli
       followUps={followUps}
       initialTab={location.state?.tab || "overview"}
       onSelectProject={onSelectProject}
+      projects={projects}
     />
   );
 }
 
 // Simple wrapper for project overview
-function ProjectOverviewWrapper({ projects, clients, followUps, onUpdateProject }) {
+function ProjectOverviewWrapper({
+  projects,
+  clients,
+  followUps,
+  onUpdateProject,
+}) {
   const { id } = useParams();
   const navigate = useNavigate();
   const project = projects.find((p) => p.id == id);
@@ -80,7 +99,7 @@ function AppRoutes() {
     const token = localStorage.getItem("token");
     return !!(user && token);
   });
-  
+
   // Data states
   const [clients, setClients] = useState(MOCK_CLIENTS);
   const [enquiries, setEnquiries] = useState(MOCK_ENQUIRIES);
@@ -98,15 +117,17 @@ function AppRoutes() {
     fetch(`${BASE_URL}/api/ai-models`, {
       headers: getAuthHeaders(),
     })
-      .then((res) => res.ok ? res.json() : [])
+      .then((res) => (res.ok ? res.json() : []))
       .then((data) => {
-        setAiModels(data.map((m) => ({
-          id: m.id,
-          name: m.name,
-          provider: m.provider,
-          modelId: m.model_id,
-          isDefault: m.is_default,
-        })));
+        setAiModels(
+          data.map((m) => ({
+            id: m.id,
+            name: m.name,
+            provider: m.provider,
+            modelId: m.model_id,
+            isDefault: m.is_default,
+          })),
+        );
       })
       .catch(() => console.log("Failed to fetch AI models"));
   }, [isLoggedIn]);
@@ -133,37 +154,44 @@ function AppRoutes() {
       })
       .then((data) => {
         if (!data) return;
-        
+
         // Extract leads array from response
         const leadsArray = Array.isArray(data) ? data : data.leads || [];
-        
+
         // Transform API data to match component expected format
         const transformedLeads = leadsArray.map((lead) => ({
           id: lead.id?.toString() || lead.uuid,
           name: lead.full_name || "Unknown",
-          company: lead.website_url?.replace(/^https?:\/\//, "").split("/")[0] || "",
+          company:
+            lead.website_url?.replace(/^https?:\/\//, "").split("/")[0] || "",
           email: lead.email || "",
           phone: lead.phone_number || "",
           status: lead.lead_status === "Dismissed" ? "Dismissed" : "Lead",
           leadType: lead.lead_status || "Warm",
-          projectCategory: lead.lead_category || "Tech",
-          industry: lead.lead_category || "Tech",
+          projectCategory: lead.lead_category || 1,
+          industry: lead.lead_category || 1,
           website: lead.website_url || "",
           country: lead.country || "",
           notes: lead.message || "",
-          joinedDate: lead.created_at ? lead.created_at.split("T")[0] : new Date().toISOString().split("T")[0],
-          lastContact: lead.updated_at ? lead.updated_at.split("T")[0] : new Date().toISOString().split("T")[0],
+          joinedDate: lead.created_at
+            ? lead.created_at.split("T")[0]
+            : new Date().toISOString().split("T")[0],
+          lastContact: lead.updated_at
+            ? lead.updated_at.split("T")[0]
+            : new Date().toISOString().split("T")[0],
           avatar: `https://picsum.photos/100/100?random=${lead.id || Math.floor(Math.random() * 100)}`,
         }));
-        
+
         setLeads(transformedLeads);
-        
+
         // Also update clients state with real leads, keeping non-lead clients
-        setClients(prev => {
-          const nonLeads = prev.filter(c => c.status !== "Lead" && c.status !== "Dismissed");
+        setClients((prev) => {
+          const nonLeads = prev.filter(
+            (c) => c.status !== "Lead" && c.status !== "Dismissed",
+          );
           return [...nonLeads, ...transformedLeads];
         });
-        
+
         setLeadsLoading(false);
       })
       .catch(() => {
@@ -183,11 +211,72 @@ function AppRoutes() {
     fetch(`${BASE_URL}/api/get-followups`, {
       headers: getAuthHeaders(),
     })
-      .then((res) => res.ok ? res.json() : [])
+      .then((res) => (res.ok ? res.json() : []))
       .then((data) => {
         setFollowUps(data);
       })
       .catch(() => console.log("Failed to fetch followups"));
+  }, [isLoggedIn]);
+
+  // Fetch clients from API
+  useEffect(() => {
+    if (!isLoggedIn) {
+      setClients([]);
+      return;
+    }
+
+    fetch(`${BASE_URL}/api/get-clients`, {
+      headers: getAuthHeaders(),
+    })
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data) => {
+        const transformedClients = data.map((c) => ({
+          id: c.client_id.toString(),
+          name: c.client_name,
+          company: c.organisation_name,
+          email: "", // Not in table yet, add if needed
+          phone: "", // Not in table yet, add if needed
+          status: c.client_status || "Active",
+          country: c.client_country,
+          state: c.client_state,
+          currency: c.client_currency,
+          avatar: `https://picsum.photos/100/100?random=${c.client_id}`,
+          joinedDate: c.created_at?.split("T")[0] || new Date().toISOString().split("T")[0],
+          lastContact: c.updated_at?.split("T")[0] || new Date().toISOString().split("T")[0],
+        }));
+        setClients(transformedClients);
+      })
+      .catch(() => console.log("Failed to fetch clients"));
+  }, [isLoggedIn]);
+
+  // Fetch projects from API
+  useEffect(() => {
+    if (!isLoggedIn) {
+      setProjects([]);
+      return;
+    }
+
+    fetch(`${BASE_URL}/api/get-projects`, {
+      headers: getAuthHeaders(),
+    })
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data) => {
+        const transformedProjects = data.map((p) => ({
+          id: p.project_id.toString(),
+          clientId: p.client_id.toString(),
+          name: p.project_name,
+          description: p.project_description,
+          status: p.project_status,
+          budget: p.project_budget,
+          deadline: p.deadline_date?.split("T")[0],
+          onboardingDate: p.onboarding_date?.split("T")[0],
+          priority: p.project_priority,
+          category: p.project_category,
+          progress: 0, // Calculate or add to table if needed
+        }));
+        setProjects(transformedProjects);
+      })
+      .catch(() => console.log("Failed to fetch projects"));
   }, [isLoggedIn]);
 
   // Simple handlers
@@ -207,7 +296,10 @@ function AppRoutes() {
 
   function handleClientSelect(client, tab = "overview") {
     // Both active leads and dismissed leads should use the "leads" route
-    const route = (client.status === "Lead" || client.status === "Dismissed") ? "leads" : "clients";
+    const route =
+      client.status === "Lead" || client.status === "Dismissed"
+        ? "leads"
+        : "clients";
     navigate(`/${route}/${client.id}`, { state: { tab } });
   }
 
@@ -234,10 +326,10 @@ function AppRoutes() {
       if (res.ok) {
         const result = await res.json();
         console.log("Lead deleted successfully:", result);
-        
+
         // Remove from local state after successful API call
         setLeads((prev) => prev.filter((l) => l.id != id));
-        
+
         // Also update clients array to keep them in sync
         setClients((prev) => prev.filter((c) => c.id != id));
       } else {
@@ -262,7 +354,8 @@ function AppRoutes() {
           message: data.notes || "",
           website_url: data.website || "",
           country: data.country || "",
-          lead_category: data.projectCategory || data.industry || "Tech",
+          lead_category:
+            data.projectCategory || REVERSE_CATEGORY_MAP[data.industry] || 1,
         };
 
         const res = await fetch(`${BASE_URL}/api/add-lead`, {
@@ -274,59 +367,218 @@ function AppRoutes() {
         if (res.ok) {
           const result = await res.json();
           const newLead = {
-            id: result.lead?.id?.toString() || result.lead?.uuid || `new-${Date.now()}`,
+            id:
+              result.lead?.id?.toString() ||
+              result.lead?.uuid ||
+              `new-${Date.now()}`,
             name: result.lead?.full_name || data.name,
-            company: result.lead?.website_url ? result.lead.website_url.replace(/^https?:\/\//, "").split("/")[0] : "",
+            company: result.lead?.website_url
+              ? result.lead.website_url
+                  .replace(/^https?:\/\//, "")
+                  .split("/")[0]
+              : "",
             email: result.lead?.email || data.email,
             phone: result.lead?.phone_number || data.phone,
             status: "Lead",
             leadType: result.lead?.lead_status || data.leadType || "Warm",
-            projectCategory: result.lead?.lead_category || data.projectCategory || "Tech",
-            industry: result.lead?.lead_category || data.industry || "Tech",
-            country: result.lead?.country !== undefined ? result.lead.country : (data.country || ""),
+            projectCategory:
+              result.lead?.lead_category || data.projectCategory || 1,
+            industry: result.lead?.lead_category || data.industry || 1,
+            country:
+              result.lead?.country !== undefined
+                ? result.lead.country
+                : data.country || "",
             website: result.lead?.website_url || data.website || "",
             notes: result.lead?.message || data.notes || "",
-            joinedDate: result.lead?.created_at ? result.lead.created_at.split("T")[0] : new Date().toISOString().split("T")[0],
-            lastContact: result.lead?.updated_at ? result.lead.updated_at.split("T")[0] : new Date().toISOString().split("T")[0],
+            joinedDate: result.lead?.created_at
+              ? result.lead.created_at.split("T")[0]
+              : new Date().toISOString().split("T")[0],
+            lastContact: result.lead?.updated_at
+              ? result.lead.updated_at.split("T")[0]
+              : new Date().toISOString().split("T")[0],
             avatar: `https://picsum.photos/100/100?random=${result.lead?.id || Date.now() % 100}`,
           };
-          
+
           setLeads([newLead, ...leads]);
           setClients([newLead, ...clients]);
+          return newLead;
         } else {
           console.error("Failed to add lead:", await res.json());
           alert("Failed to add lead. Please try again.");
+          return null;
         }
       } catch (err) {
         console.error("Error adding lead:", err);
         alert("An error occurred while adding lead.");
+        return null;
       }
     } else {
-      const newClient = {
-        id: `c-${Date.now()}`,
-        ...data,
-        avatar: `https://picsum.photos/100/100?random=${clients.length + 10}`,
-        joinedDate: data.onboardingDate || new Date().toISOString().split("T")[0],
-        lastContact: new Date().toISOString().split("T")[0],
-        industry: data.projectCategory || data.industry || "Unknown",
-        company: data.projectName || data.company || "",
-        notes: `${data.notes || ""}\n\n[Project] ${data.projectName} | ${data.projectStatus}`,
-      };
-      
-      setClients([newClient, ...clients]);
+      try {
+        const payload = {
+          organisation_name: data.organisationName || data.projectName || data.company || "",
+          client_name: data.name,
+          client_country: data.country || "",
+          client_state: data.state || "",
+          client_currency: data.currency || "",
+          client_status: data.clientStatus || "Active",
+          lead_id: data.lead_id || null, // Optional if adding directly
+        };
+
+        const res = await fetch(`${BASE_URL}/api/add-client`, {
+          method: "POST",
+          headers: getAuthHeaders(),
+          body: JSON.stringify(payload),
+        });
+
+        if (res.ok) {
+          const result = await res.json();
+          const createdClient = result.client;
+          const newClient = {
+            id: createdClient.client_id.toString(),
+            name: createdClient.client_name,
+            company: createdClient.organisation_name,
+            email: data.email || "",
+            phone: data.phone || "",
+            status: "Active",
+            country: createdClient.client_country,
+            state: createdClient.client_state,
+            currency: createdClient.client_currency,
+            avatar: `https://picsum.photos/100/100?random=${createdClient.client_id}`,
+            joinedDate: createdClient.created_at?.split("T")[0] || new Date().toISOString().split("T")[0],
+            lastContact: new Date().toISOString().split("T")[0],
+          };
+
+          setClients([newClient, ...clients]);
+          return newClient;
+        } else {
+          console.error("Failed to add client:", await res.json());
+          alert("Failed to add client. Please try again.");
+          return null;
+        }
+      } catch (err) {
+        console.error("Error adding client:", err);
+        alert("An error occurred while adding client.");
+        return null;
+      }
     }
   }
 
-  function handleOnboardClient(id, data) {
-    setClients((prev) => prev.map((c) => 
-      c.id == id 
-        ? { ...c, ...data, status: data.status, isConverted: true }
-        : c
-    ));
+  async function handleOnboardClient(id, data) {
+    try {
+      // 1. Add Client
+      const clientPayload = {
+        organisation_name: data.organisationName || data.projectName || "",
+        client_name: data.name,
+        client_country: data.country || "",
+        client_state: data.state || "",
+        client_currency: data.currency || "",
+        client_status: data.clientStatus || "Active",
+        lead_id: id,
+      };
+
+      const clientRes = await fetch(`${BASE_URL}/api/add-client`, {
+        method: "POST",
+        headers: getAuthHeaders(),
+        body: JSON.stringify(clientPayload),
+      });
+
+      if (!clientRes.ok) {
+        throw new Error("Failed to create client");
+      }
+
+      const clientResult = await clientRes.json();
+      const newClient = clientResult.client;
+
+      // 2. Add Project if name exists
+      let newProject = null;
+      if (data.projectName) {
+        const projectFormData = new FormData();
+        projectFormData.append("project_name", data.projectName);
+        projectFormData.append("project_description", data.projectDescription || "");
+        projectFormData.append("project_category", data.projectCategory || 1);
+        projectFormData.append("project_status", data.projectStatus || "Planning");
+        projectFormData.append("project_priority", data.projectPriority || "High");
+        projectFormData.append("project_budget", parseInt(data.projectBudget) || 0);
+        projectFormData.append("onboarding_date", data.onboardingDate || new Date().toISOString().split("T")[0]);
+        projectFormData.append("deadline_date", data.deadline || "");
+        projectFormData.append("client_id", newClient.client_id);
+        
+        if (data.scopeDocument instanceof File) {
+          projectFormData.append("scope_document", data.scopeDocument);
+        } else if (data.scopeDocument) {
+          projectFormData.append("scope_document", data.scopeDocument);
+        }
+
+        const projectRes = await fetch(`${BASE_URL}/api/add-project`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: projectFormData,
+        });
+
+        if (projectRes.ok) {
+          const projectResult = await projectRes.json();
+          newProject = projectResult.project;
+        }
+      }
+
+      // 3. Update local states
+      // Transform new client to match frontend format
+      const transformedClient = {
+        id: newClient.client_id.toString(),
+        name: newClient.client_name,
+        email: data.email,
+        phone: data.phone,
+        status: "Active",
+        company: newClient.organisation_name,
+        country: newClient.client_country,
+        state: newClient.client_state,
+        currency: newClient.client_currency,
+        avatar: `https://picsum.photos/100/100?random=${newClient.client_id}`,
+        joinedDate: newClient.created_at?.split("T")[0] || new Date().toISOString().split("T")[0],
+        isConverted: true,
+      };
+
+      // Update clients state
+      setClients((prev) => [transformedClient, ...prev]);
+
+      // Update projects if created
+      if (newProject) {
+        setProjects((prev) => [{
+          id: newProject.project_id.toString(),
+          projectName: newProject.project_name,
+          projectDescription: newProject.project_description,
+          projectStatus: newProject.project_status,
+          projectCategory: newProject.project_category,
+          projectPriority: newProject.project_priority,
+          budget: newProject.project_budget,
+          onboardingDate: newProject.onboarding_date,
+          deadline: newProject.deadline_date,
+          scopeDocument: newProject.scope_document,
+          clientId: newProject.client_id.toString(),
+        }, ...prev]);
+      }
+
+      // Update leads state to mark as converted
+      setLeads((prev) =>
+        prev.map((c) =>
+          c.id == id
+            ? { ...c, isConverted: true }
+            : c,
+        ),
+      );
+
+      return { success: true };
+    } catch (error) {
+      console.error("Conversion error:", error);
+      alert("Failed to convert lead to client: " + error.message);
+      return { success: false };
+    }
   }
 
-  function handleUpdateClient(updated) {
-    setClients((prev) => prev.map((c) => (c.id == updated.id ? updated : c)));
+  function handleUpdateClient(id, data) {
+    setClients((prev) => prev.map((c) => (c.id == id ? { ...c, ...data } : c)));
   }
 
   async function handleDismissLead(id) {
@@ -348,7 +600,7 @@ function AppRoutes() {
           lead_status: "Dismissed",
           message: leadToUpdate.notes,
           website_url: leadToUpdate.website || "",
-          lead_category: leadToUpdate.projectCategory || "Tech",
+          lead_category: leadToUpdate.projectCategory || 1,
         }),
       });
 
@@ -357,27 +609,30 @@ function AppRoutes() {
       if (res.ok) {
         const result = await res.json();
         console.log("Lead dismissed successfully:", result);
-        
+
         // Transform API response to match frontend format
         const dismissedLead = {
           ...leadToUpdate,
           id: result.lead?.id?.toString() || id,
           name: result.lead?.full_name || leadToUpdate.name,
-          company: result.lead?.website_url ? result.lead.website_url.replace(/^https?:\/\//, "").split("/")[0] : "",
+          company: result.lead?.website_url
+            ? result.lead.website_url.replace(/^https?:\/\//, "").split("/")[0]
+            : "",
           email: result.lead?.email || leadToUpdate.email,
           phone: result.lead?.phone_number || leadToUpdate.phone,
           status: "Dismissed",
           leadType: result.lead?.lead_status || "Warm",
-          projectCategory: result.lead?.lead_category || leadToUpdate.projectCategory,
+          projectCategory:
+            result.lead?.lead_category || leadToUpdate.projectCategory,
           website: result.lead?.website_url || leadToUpdate.website,
           notes: result.lead?.message || leadToUpdate.notes,
         };
-        
+
         console.log("Transformed dismissed lead:", dismissedLead);
-        
+
         // Update local state after successful API call with complete data
         setLeads((prev) => prev.map((l) => (l.id == id ? dismissedLead : l)));
-        
+
         // Also update clients array to keep them in sync
         setClients((prev) => prev.map((c) => (c.id == id ? dismissedLead : c)));
       } else {
@@ -411,7 +666,7 @@ function AppRoutes() {
           lead_status: "Warm",
           message: leadToUpdate.notes,
           website_url: leadToUpdate.website || "",
-          lead_category: leadToUpdate.projectCategory || "Tech",
+          lead_category: leadToUpdate.projectCategory || 1,
         }),
       });
 
@@ -420,20 +675,23 @@ function AppRoutes() {
       if (res.ok) {
         const result = await res.json();
         console.log("Lead restored successfully:", result);
-        
+
         const restoredLead = {
           ...leadToUpdate,
           id: result.lead?.id?.toString() || id,
           name: result.lead?.full_name || leadToUpdate.name,
-          company: result.lead?.website_url ? result.lead.website_url.replace(/^https?:\/\//, "").split("/")[0] : "",
+          company: result.lead?.website_url
+            ? result.lead.website_url.replace(/^https?:\/\//, "").split("/")[0]
+            : "",
           email: result.lead?.email || leadToUpdate.email,
           phone: result.lead?.phone_number || leadToUpdate.phone,
           status: "Lead",
           leadType: result.lead?.lead_status || "Warm",
-          projectCategory: result.lead?.lead_category || leadToUpdate.projectCategory,
+          projectCategory:
+            result.lead?.lead_category || leadToUpdate.projectCategory,
           website: result.lead?.website_url || leadToUpdate.website,
           notes: result.lead?.message || leadToUpdate.notes,
-          isConverted: false
+          isConverted: false,
         };
 
         // Update local state after successful API call
@@ -457,20 +715,64 @@ function AppRoutes() {
       if (!leadToUpdate) return;
 
       // 1. Calculate the expected new state (Optimistic Update)
-      const websiteValue = editData.website !== undefined && editData.website !== null ? editData.website : (leadToUpdate.website || "");
-      const newCompany = websiteValue ? websiteValue.replace(/^https?:\/\//, "").split("/")[0] : "";
-      
+      const websiteValue =
+        editData.website !== undefined && editData.website !== null
+          ? editData.website
+          : leadToUpdate.website || "";
+      const newCompany = websiteValue
+        ? websiteValue.replace(/^https?:\/\//, "").split("/")[0]
+        : "";
+
       const optimisticLead = {
         ...leadToUpdate,
-        name: editData.name !== undefined && editData.name !== null ? editData.name : leadToUpdate.name,
-        company: newCompany,
-        email: editData.email !== undefined && editData.email !== null ? editData.email : leadToUpdate.email,
-        phone: editData.phone !== undefined && editData.phone !== null ? editData.phone : leadToUpdate.phone,
-        leadType: editData.leadType !== undefined && editData.leadType !== null ? editData.leadType : leadToUpdate.leadType,
-        projectCategory: editData.projectCategory !== undefined && editData.projectCategory !== null ? editData.projectCategory : (leadToUpdate.projectCategory || "Tech"),
+        name:
+          editData.name !== undefined && editData.name !== null
+            ? editData.name
+            : leadToUpdate.name,
+        company: editData.organisationName || newCompany,
+        email:
+          editData.email !== undefined && editData.email !== null
+            ? editData.email
+            : leadToUpdate.email,
+        phone:
+          editData.phone !== undefined && editData.phone !== null
+            ? editData.phone
+            : leadToUpdate.phone,
+        leadType:
+          editData.leadType !== undefined && editData.leadType !== null
+            ? editData.leadType
+            : leadToUpdate.leadType,
+        projectCategory:
+          editData.projectCategory !== undefined &&
+          editData.projectCategory !== null
+            ? editData.projectCategory
+            : leadToUpdate.projectCategory || 1,
         website: websiteValue,
-        notes: editData.notes !== undefined && editData.notes !== null ? editData.notes : leadToUpdate.notes,
-        country: editData.country !== undefined && editData.country !== null ? editData.country : (leadToUpdate.country || ""),
+        notes:
+          editData.notes !== undefined && editData.notes !== null
+            ? editData.notes
+            : leadToUpdate.notes,
+        country:
+          editData.country !== undefined && editData.country !== null
+            ? editData.country
+            : leadToUpdate.country || "",
+        state:
+          editData.state !== undefined && editData.state !== null
+            ? editData.state
+            : leadToUpdate.state || "",
+        currency:
+          editData.currency !== undefined && editData.currency !== null
+            ? editData.currency
+            : leadToUpdate.currency || "",
+        organisationName:
+          editData.organisationName !== undefined &&
+          editData.organisationName !== null
+            ? editData.organisationName
+            : leadToUpdate.organisationName || "",
+        clientStatus:
+          editData.clientStatus !== undefined && editData.clientStatus !== null
+            ? editData.clientStatus
+            : leadToUpdate.clientStatus || "Active",
       };
 
       // 2. Update state immediately
@@ -502,22 +804,84 @@ function AppRoutes() {
       }
 
       const updatedLead = await res.json();
-      
+
       // Update with final data from API if necessary (e.g. IDs, timestamps)
       const finalLead = {
         ...optimisticLead,
         id: updatedLead.lead?.id?.toString() || id,
-        joinedDate: updatedLead.lead?.created_at ? updatedLead.lead.created_at.split("T")[0] : leadToUpdate.joinedDate,
-        lastContact: updatedLead.lead?.updated_at ? updatedLead.lead.updated_at.split("T")[0] : optimisticLead.lastContact,
+        joinedDate: updatedLead.lead?.created_at
+          ? updatedLead.lead.created_at.split("T")[0]
+          : leadToUpdate.joinedDate,
+        lastContact: updatedLead.lead?.updated_at
+          ? updatedLead.lead.updated_at.split("T")[0]
+          : optimisticLead.lastContact,
       };
 
       setLeads((prev) => prev.map((l) => (l.id == id ? finalLead : l)));
       setClients((prev) => prev.map((c) => (c.id == id ? finalLead : c)));
-      
+
       return finalLead;
     } catch (error) {
       console.error("Error updating lead:", error);
       throw error;
+    }
+  }
+
+  async function handleAddProject(data) {
+    try {
+      const formData = new FormData();
+      formData.append("project_name", data.name);
+      formData.append("project_description", data.description || "");
+      formData.append("project_category", data.projectCategory || 1);
+      formData.append("project_status", data.projectStatus || "Planning");
+      formData.append("project_priority", data.projectPriority || "High");
+      formData.append("project_budget", parseInt(data.budget) || 0);
+      formData.append("onboarding_date", data.onboardingDate || new Date().toISOString().split("T")[0]);
+      formData.append("deadline_date", data.deadline || "");
+      formData.append("client_id", data.clientId);
+      
+      if (data.scopeDocument instanceof File) {
+        formData.append("scope_document", data.scopeDocument);
+      } else if (data.scopeDocument) {
+        formData.append("scope_document", data.scopeDocument);
+      }
+
+      const res = await fetch(`${BASE_URL}/api/add-project`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: formData,
+      });
+
+      if (res.ok) {
+        const result = await res.json();
+        const createdProject = result.project;
+        const newProject = {
+          id: createdProject.project_id.toString(),
+          projectName: createdProject.project_name,
+          projectDescription: createdProject.project_description,
+          projectStatus: createdProject.project_status,
+          projectCategory: createdProject.project_category,
+          projectPriority: createdProject.project_priority,
+          budget: createdProject.project_budget,
+          onboardingDate: createdProject.onboarding_date,
+          deadline: createdProject.deadline_date,
+          scopeDocument: createdProject.scope_document,
+          clientId: createdProject.client_id.toString(),
+        };
+
+        setProjects([newProject, ...projects]);
+        return newProject;
+      } else {
+        console.error("Failed to add project:", await res.json());
+        alert("Failed to add project. Please try again.");
+        return null;
+      }
+    } catch (err) {
+      console.error("Error adding project:", err);
+      alert("An error occurred while adding project.");
+      return null;
     }
   }
 
@@ -567,7 +931,9 @@ function AppRoutes() {
       });
 
       if (res.ok) {
-        setFollowUps((prev) => prev.map((f) => (f.id == updated.id ? updated : f)));
+        setFollowUps((prev) =>
+          prev.map((f) => (f.id == updated.id ? updated : f)),
+        );
       } else {
         console.error("Failed to update follow-up:", await res.json());
       }
@@ -593,22 +959,42 @@ function AppRoutes() {
     }
   }
 
-  async function handleToggleFollowUpStatus(id, brief = "", completed_at = "", completed_by = "") {
+  async function handleToggleFollowUpStatus(
+    id,
+    brief = "",
+    completed_at = "",
+    completed_by = "",
+  ) {
     try {
-      const followUp = followUps.find(f => f.id == id);
+      const followUp = followUps.find((f) => f.id == id);
       if (!followUp) return;
 
-      const nextStatus = followUp.status === "completed" ? "pending" : "completed";
+      const nextStatus =
+        followUp.status === "completed" ? "pending" : "completed";
       const res = await fetch(`${BASE_URL}/api/toggle-followup-status/${id}`, {
         method: "PUT",
         headers: getAuthHeaders(),
-        body: JSON.stringify({ status: nextStatus, brief, completed_at, completed_by }),
+        body: JSON.stringify({
+          status: nextStatus,
+          brief,
+          completed_at,
+          completed_by,
+        }),
       });
 
       if (res.ok) {
-        setFollowUps((prev) => prev.map((f) => 
-          f.id == id ? { ...f, status: nextStatus, followup_status: nextStatus, follow_brief: brief } : f
-        ));
+        setFollowUps((prev) =>
+          prev.map((f) =>
+            f.id == id
+              ? {
+                  ...f,
+                  status: nextStatus,
+                  followup_status: nextStatus,
+                  follow_brief: brief,
+                }
+              : f,
+          ),
+        );
       } else {
         console.error("Failed to toggle follow-up status:", await res.json());
       }
@@ -622,7 +1008,9 @@ function AppRoutes() {
     const newClient = {
       id: `c-${Date.now()}`,
       name: enquiry.name,
-      company: enquiry.website ? enquiry.website.replace(/^https?:\/\//, "").split("/")[0] : "",
+      company: enquiry.website
+        ? enquiry.website.replace(/^https?:\/\//, "").split("/")[0]
+        : "",
       email: enquiry.email,
       phone: enquiry.phone,
       status: "Lead",
@@ -630,7 +1018,7 @@ function AppRoutes() {
       avatar: `https://picsum.photos/100/100?random=${clients.length + 10}`,
       joinedDate: new Date().toISOString().split("T")[0],
       lastContact: new Date().toISOString().split("T")[0],
-      industry: "Unknown",
+      industry: 1,
       notes: enquiry.message,
       website: enquiry.website,
     };
@@ -640,15 +1028,27 @@ function AppRoutes() {
   }
 
   function handleUpdateEnquiry(updated) {
-    setEnquiries((prev) => prev.map((e) => (e.id == updated.id ? { ...e, ...updated } : e)));
+    setEnquiries((prev) =>
+      prev.map((e) => (e.id == updated.id ? { ...e, ...updated } : e)),
+    );
   }
 
   function handleAddEnquiry(data) {
-    setEnquiries([{ id: `e-${Date.now()}`, ...data, date: new Date().toISOString(), status: "new" }, ...enquiries]);
+    setEnquiries([
+      {
+        id: `e-${Date.now()}`,
+        ...data,
+        date: new Date().toISOString(),
+        status: "new",
+      },
+      ...enquiries,
+    ]);
   }
 
   function handleClearNotifications() {
-    setEnquiries((prev) => prev.map((e) => (e.status === "new" ? { ...e, status: "read" } : e)));
+    setEnquiries((prev) =>
+      prev.map((e) => (e.status === "new" ? { ...e, status: "read" } : e)),
+    );
   }
 
   // AI Model handlers
@@ -711,14 +1111,31 @@ function AppRoutes() {
     <Routes>
       <Route
         path="/login"
-        element={isLoggedIn ? <Navigate to="/dashboard" replace /> : <LoginPage onLogin={handleLogin} />}
+        element={
+          isLoggedIn ? (
+            <Navigate to="/dashboard" replace />
+          ) : (
+            <LoginPage onLogin={handleLogin} />
+          )
+        }
       />
 
       <Route
-        element={isLoggedIn ? <Layout onLogout={handleLogout} enquiries={enquiries} followUps={followUps} clients={clients} /> : <Navigate to="/login" replace />}
+        element={
+          isLoggedIn ? (
+            <Layout
+              onLogout={handleLogout}
+              enquiries={enquiries}
+              followUps={followUps}
+              clients={clients}
+            />
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        }
       >
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        
+
         <Route
           path="/dashboard"
           element={
@@ -743,20 +1160,49 @@ function AppRoutes() {
               enquiries={enquiries}
               aiModels={aiModels}
               onPromote={handlePromoteEnquiry}
-              onDismiss={(id) => setEnquiries((prev) => prev.map((e) => e.id == id ? { ...e, status: "dismissed" } : e))}
-              onHold={(id) => setEnquiries((prev) => prev.map((e) => e.id == id ? { ...e, status: "hold" } : e))}
-              onRestore={(id) => setEnquiries((prev) => prev.map((e) => e.id == id ? { ...e, status: "new" } : e))}
-              onDelete={(id) => setEnquiries((prev) => prev.filter((e) => e.id != id))}
-              onDeleteAll={() => setEnquiries((prev) => prev.filter((e) => e.status !== "dismissed"))}
+              onDismiss={(id) =>
+                setEnquiries((prev) =>
+                  prev.map((e) =>
+                    e.id == id ? { ...e, status: "dismissed" } : e,
+                  ),
+                )
+              }
+              onHold={(id) =>
+                setEnquiries((prev) =>
+                  prev.map((e) => (e.id == id ? { ...e, status: "hold" } : e)),
+                )
+              }
+              onRestore={(id) =>
+                setEnquiries((prev) =>
+                  prev.map((e) => (e.id == id ? { ...e, status: "new" } : e)),
+                )
+              }
+              onDelete={(id) =>
+                setEnquiries((prev) => prev.filter((e) => e.id != id))
+              }
+              onDeleteAll={() =>
+                setEnquiries((prev) =>
+                  prev.filter((e) => e.status !== "dismissed"),
+                )
+              }
               onUpdate={handleUpdateEnquiry}
               onAdd={handleAddEnquiry}
             />
           }
         />
 
-        <Route path="/followups" element={<FollowUpList {...followUpProps} typeFilter="All" />} />
-        <Route path="/followups-clients" element={<FollowUpList {...followUpProps} typeFilter="Active" />} />
-        <Route path="/followups-leads" element={<FollowUpList {...followUpProps} typeFilter="Lead" />} />
+        <Route
+          path="/followups"
+          element={<FollowUpList {...followUpProps} typeFilter="All" />}
+        />
+        <Route
+          path="/followups-clients"
+          element={<FollowUpList {...followUpProps} typeFilter="Active" />}
+        />
+        <Route
+          path="/followups-leads"
+          element={<FollowUpList {...followUpProps} typeFilter="Lead" />}
+        />
 
         <Route
           path="/leads"
@@ -796,7 +1242,7 @@ function AppRoutes() {
               projects={projects}
               clients={clients}
               onAddClient={handleAddClient}
-              onAddProject={(data) => setProjects([{ id: `p-${Date.now()}`, ...data }, ...projects])}
+              onAddProject={handleAddProject}
               onUpdateProject={handleUpdateProject}
               onSelectProject={handleProjectSelect}
             />
@@ -825,10 +1271,11 @@ function AppRoutes() {
               onUpdateClient={handleUpdateClient}
               onAddActivity={handleAddActivity}
               onSelectProject={handleProjectSelect}
+              projects={projects}
             />
           }
         />
-        
+
         <Route
           path="/leads/:id"
           element={
@@ -840,10 +1287,11 @@ function AppRoutes() {
               onUpdateClient={handleEditLead}
               onAddActivity={handleAddActivity}
               onSelectProject={handleProjectSelect}
+              projects={projects}
             />
           }
         />
-        
+
         <Route
           path="/projects/:id"
           element={

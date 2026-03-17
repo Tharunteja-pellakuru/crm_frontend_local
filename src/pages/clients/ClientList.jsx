@@ -29,6 +29,17 @@ import {
   Zap,
 } from "lucide-react";
 import DatePicker from "../../components/ui/DatePicker";
+import {
+  CATEGORY_MAP,
+  REVERSE_CATEGORY_MAP,
+} from "../../constants/categoryConstants";
+import { countries } from "../../utils/countries";
+import {
+  indianStates,
+  commonCurrencies,
+  countryToCurrency,
+} from "../../utils/locationData";
+import SearchableDropdown from "../../components/common/SearchableDropdown";
 
 const ClientList = ({
   clients,
@@ -139,7 +150,7 @@ const ClientList = ({
     status: "Active",
     projectName: "",
     projectStatus: "Planning",
-    projectCategory: "Tech",
+    projectCategory: 1,
     projectPriority: "High",
     projectDescription: "",
     projectBudget: "",
@@ -156,9 +167,14 @@ const ClientList = ({
     notes: "",
     projectName: "",
     projectStatus: "Planning",
-    projectCategory: "Tech",
+    projectCategory: 1,
     projectPriority: "Medium",
     projectDescription: "",
+    country: "",
+    state: "",
+    currency: "",
+    organisationName: "",
+    clientStatus: "Active",
   });
 
   const handleOnboardSubmit = (e) => {
@@ -181,9 +197,14 @@ const ClientList = ({
         status: "Active",
         projectName: "",
         projectStatus: "Planning",
-        projectCategory: "Tech",
+        projectCategory: 1,
         projectPriority: "Medium",
         projectDescription: "",
+        country: "",
+        state: "",
+        currency: "",
+        organisationName: "",
+        clientStatus: "Active",
       });
     }
   };
@@ -212,7 +233,7 @@ const ClientList = ({
         leadTypeFilter === "All" || client.leadType === leadTypeFilter;
     }
 
-    // Filter by category (Tech/Media)
+    // Filter by category (Tech/Media/Both)
     if (categoryFilter !== "All") {
       matchesCategory =
         client.projectCategory === categoryFilter ||
@@ -309,7 +330,7 @@ const ClientList = ({
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (onAddClient) {
       const submissionData = {
@@ -317,7 +338,7 @@ const ClientList = ({
         company: formData.company || "Independent",
         industry: formData.industry || "Unknown",
       };
-      onAddClient(submissionData);
+      await onAddClient(submissionData);
       setShowAddModal(false);
       setFormData({
         name: "",
@@ -330,7 +351,7 @@ const ClientList = ({
         notes: "",
         projectName: "",
         projectStatus: "Planning",
-        projectCategory: "Tech",
+        projectCategory: 1,
         projectPriority: "Medium",
         projectDescription: "",
       });
@@ -448,7 +469,9 @@ const ClientList = ({
                 className="w-full h-[38px] flex items-center justify-between gap-3 px-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-[10px] font-bold  tracking-widest text-[#18254D] hover:bg-white hover:border-slate-200 transition-all shadow-sm shadow-slate-200/50 group"
               >
                 <span>
-                  {categoryFilter === "All" ? "All Categories" : categoryFilter}
+                  {categoryFilter === "All"
+                    ? "All Categories"
+                    : CATEGORY_MAP[categoryFilter] || categoryFilter}
                 </span>
                 <ChevronDown
                   size={16}
@@ -468,22 +491,26 @@ const ClientList = ({
                       className="category-dropdown bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[9999] animate-fade-in-up origin-top"
                       style={categoryDropdownStyle}
                     >
-                      {["All", "Tech", "Social Media"].map((cat) => (
+                      {["All", 1, 2, 3].map((catId) => (
                         <button
-                          key={cat}
+                          key={catId}
                           onClick={() => {
-                            setCategoryFilter(cat);
+                            setCategoryFilter(catId);
                             setIsCategoryDropdownOpen(false);
                           }}
                           className={`w-full text-left px-4 py-2.5 text-[10px] font-bold  tracking-wider transition-colors ${
-                            cat === "All"
-                              ? "bg-[#18254D] text-white"
-                              : categoryFilter === cat
+                            catId === "All"
+                              ? categoryFilter === "All"
+                                ? "bg-[#18254D] text-white"
+                                : "text-[#18254D] hover:bg-slate-50"
+                              : categoryFilter === catId
                                 ? "bg-slate-100 text-[#18254D]"
                                 : "text-[#18254D] hover:bg-slate-50"
                           }`}
                         >
-                          {cat === "All" ? "All Categories" : cat}
+                          {catId === "All"
+                            ? "All Categories"
+                            : CATEGORY_MAP[catId]}
                         </button>
                       ))}
                     </div>
@@ -610,10 +637,10 @@ const ClientList = ({
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
                           <div
-                            className={`w-2 h-2 rounded-full ${client.projectCategory === "Tech" ? "bg-secondary" : client.projectCategory === "Social Media" ? "bg-blue-400" : "bg-slate-300"}`}
+                            className={`w-2 h-2 rounded-full ${client.projectCategory === 1 ? "bg-secondary" : client.projectCategory === 2 ? "bg-blue-400" : client.projectCategory === 3 ? "bg-purple-400" : "bg-slate-300"}`}
                           />
                           <span className="text-sm font-bold text-primary">
-                            {client.projectCategory ||
+                            {CATEGORY_MAP[client.projectCategory] ||
                               client.industry ||
                               "Other"}
                           </span>
@@ -658,7 +685,7 @@ const ClientList = ({
                                   clientType: "New",
                                   status: "Active",
                                   projectName: "",
-                                  projectCategory: "Tech",
+                                  projectCategory: 1,
                                   projectPriority: "High",
                                   projectDescription: "",
                                   onboardingDate: new Date()
@@ -774,10 +801,12 @@ const ClientList = ({
                       </div>
                       <div className="flex items-center gap-1.5 mt-0.5">
                         <div
-                          className={`w-1.5 h-1.5 rounded-full ${client.projectCategory === "Tech" ? "bg-secondary" : client.projectCategory === "Social Media" ? "bg-blue-400" : "bg-slate-300"}`}
+                          className={`w-1.5 h-1.5 rounded-full ${client.projectCategory === 1 ? "bg-secondary" : client.projectCategory === 2 ? "bg-blue-400" : client.projectCategory === 3 ? "bg-purple-400" : "bg-slate-300"}`}
                         />
                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                          {client.projectCategory || client.industry || "Other"}
+                          {CATEGORY_MAP[client.projectCategory] ||
+                            client.industry ||
+                            "Other"}
                         </span>
                       </div>
                     </div>
@@ -1013,20 +1042,20 @@ const ClientList = ({
                       LEAD CATEGORY
                     </label>
                     <div className="flex gap-2">
-                      {["Tech", "Social Media"].map((cat) => (
+                      {[1, 2, 3].map((catId) => (
                         <button
-                          key={cat}
+                          key={catId}
                           type="button"
                           onClick={() =>
-                            setFormData({ ...formData, projectCategory: cat })
+                            setFormData({ ...formData, projectCategory: catId })
                           }
                           className={`flex-1 flex items-center justify-center p-2.5 border-2 rounded-xl transition-all font-bold  text-[10px] tracking-widest ${
-                            formData.projectCategory === cat
+                            formData.projectCategory === catId
                               ? "border-primary bg-primary/5 text-primary shadow-sm"
                               : "border-slate-100 text-slate-400 hover:border-slate-200"
                           }`}
                         >
-                          {cat}
+                          {CATEGORY_MAP[catId]}
                         </button>
                       ))}
                     </div>
@@ -1180,9 +1209,113 @@ const ClientList = ({
                         className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
                         value={formData.phone}
                         onChange={(e) =>
-                          setFormData({ ...formData, phone: e.target.value })
+                          setFormData({
+                            ...formData,
+                            phone: e.target.value.replace(/\D/g, ""),
+                          })
                         }
                       />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-[#18254D]  tracking-widest ml-1 uppercase">
+                        ORGANISATION NAME
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Acme Corp"
+                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
+                        value={formData.organisationName || ""}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            organisationName: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+
+                    <SearchableDropdown
+                      label="CLIENT COUNTRY"
+                      options={countries.map((c) => ({
+                        name: c.name,
+                        code: c.name,
+                      }))}
+                      value={formData.country}
+                      onChange={(val) => {
+                        const countryCurrency = countryToCurrency[val];
+                        setFormData({
+                          ...formData,
+                          country: val,
+                          currency: countryCurrency
+                            ? countryCurrency.code
+                            : formData.currency,
+                          state: "", // Reset state when country changes
+                        });
+                      }}
+                      placeholder="Select Country"
+                    />
+
+                    {formData.country === "India" ? (
+                      <SearchableDropdown
+                        label="CLIENT STATE"
+                        options={indianStates}
+                        value={formData.state}
+                        onChange={(val) =>
+                          setFormData({ ...formData, state: val })
+                        }
+                        placeholder="Select State"
+                      />
+                    ) : (
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-[#18254D]  tracking-widest ml-1 uppercase">
+                          CLIENT STATE
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="e.g. California"
+                          className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
+                          value={formData.state || ""}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              state: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                    )}
+
+                    <SearchableDropdown
+                      label="CLIENT CURRENCY"
+                      options={commonCurrencies.map((c) => ({
+                        name: `${c.code} (${c.symbol})`,
+                        code: c.code,
+                      }))}
+                      value={formData.currency}
+                      onChange={(val) =>
+                        setFormData({ ...formData, currency: val })
+                      }
+                      placeholder="Select Currency"
+                    />
+
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-[#18254D]  tracking-widest ml-1 uppercase">
+                        CLIENT STATUS
+                      </label>
+                      <select
+                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-bold"
+                        value={formData.clientStatus || "Active"}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            clientStatus: e.target.value,
+                          })
+                        }
+                      >
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                      </select>
                     </div>
                   </div>
 
@@ -1249,7 +1382,7 @@ const ClientList = ({
                                   Select Status
                                 </p>
                               </div>
-                              {(formData.projectCategory === "Tech"
+                              {(formData.projectCategory === 1
                                 ? ["Planning", "In Progress", "Testing", "Live"]
                                 : ["Planning", "In Progress", "Completed"]
                               ).map((status) => (
@@ -1283,20 +1416,23 @@ const ClientList = ({
                         LEAD CATEGORY
                       </label>
                       <div className="flex gap-2">
-                        {["Tech", "Social Media"].map((cat) => (
+                        {[1, 2, 3].map((catId) => (
                           <button
-                            key={cat}
+                            key={catId}
                             type="button"
                             onClick={() =>
-                              setFormData({ ...formData, projectCategory: cat })
+                              setFormData({
+                                ...formData,
+                                projectCategory: catId,
+                              })
                             }
                             className={`flex-1 flex items-center justify-center p-2.5 border-2 rounded-xl transition-all font-bold  text-[10px] tracking-widest ${
-                              formData.projectCategory === cat
+                              formData.projectCategory === catId
                                 ? "border-primary bg-primary/5 text-primary shadow-sm"
                                 : "border-slate-100 text-slate-400 hover:border-slate-200"
                             }`}
                           >
-                            {cat}
+                            {CATEGORY_MAP[catId]}
                           </button>
                         ))}
                       </div>
@@ -1769,6 +1905,107 @@ const ClientList = ({
                     }
                   />
                 </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-[#18254D]  tracking-widest ml-1 uppercase">
+                    ORGANISATION NAME
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Acme Corp"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
+                    value={onboardingData.organisationName}
+                    onChange={(e) =>
+                      setOnboardingData({
+                        ...onboardingData,
+                        organisationName: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+
+                <SearchableDropdown
+                  label="CLIENT COUNTRY"
+                  options={countries.map((c) => ({
+                    name: c.name,
+                    code: c.name,
+                  }))}
+                  value={onboardingData.country}
+                  onChange={(val) => {
+                    const countryCurrency = countryToCurrency[val];
+                    setOnboardingData({
+                      ...onboardingData,
+                      country: val,
+                      currency: countryCurrency
+                        ? countryCurrency.code
+                        : onboardingData.currency,
+                      state: "", // Reset state when country changes
+                    });
+                  }}
+                  placeholder="Select Country"
+                />
+
+                {onboardingData.country === "India" ? (
+                  <SearchableDropdown
+                    label="CLIENT STATE"
+                    options={indianStates}
+                    value={onboardingData.state}
+                    onChange={(val) =>
+                      setOnboardingData({ ...onboardingData, state: val })
+                    }
+                    placeholder="Select State"
+                  />
+                ) : (
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-[#18254D]  tracking-widest ml-1 uppercase">
+                      CLIENT STATE
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. California"
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
+                      value={onboardingData.state}
+                      onChange={(e) =>
+                        setOnboardingData({
+                          ...onboardingData,
+                          state: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                )}
+
+                <SearchableDropdown
+                  label="CLIENT CURRENCY"
+                  options={commonCurrencies.map((c) => ({
+                    name: `${c.code} (${c.symbol})`,
+                    code: c.code,
+                  }))}
+                  value={onboardingData.currency}
+                  onChange={(val) =>
+                    setOnboardingData({ ...onboardingData, currency: val })
+                  }
+                  placeholder="Select Currency"
+                />
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-[#18254D]  tracking-widest ml-1 uppercase">
+                    CLIENT STATUS
+                  </label>
+                  <select
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-bold"
+                    value={onboardingData.clientStatus}
+                    onChange={(e) =>
+                      setOnboardingData({
+                        ...onboardingData,
+                        clientStatus: e.target.value,
+                      })
+                    }
+                  >
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
+                  </select>
+                </div>
               </div>
 
               {/* PROJECT DETAILS HEADING */}
@@ -1835,7 +2072,7 @@ const ClientList = ({
                               Select Status
                             </p>
                           </div>
-                          {(onboardingData.projectCategory === "Tech"
+                          {(onboardingData.projectCategory === 1
                             ? ["Planning", "In Progress", "Testing", "Live"]
                             : ["Planning", "In Progress", "Completed"]
                           ).map((status) => (
@@ -1869,23 +2106,23 @@ const ClientList = ({
                     LEAD CATEGORY
                   </label>
                   <div className="flex gap-2">
-                    {["Tech", "Social Media"].map((cat) => (
+                    {[1, 2, 3].map((catId) => (
                       <button
-                        key={cat}
+                        key={catId}
                         type="button"
                         onClick={() =>
                           setOnboardingData({
                             ...onboardingData,
-                            projectCategory: cat,
+                            projectCategory: catId,
                           })
                         }
                         className={`flex-1 flex items-center justify-center p-3 border-2 rounded-xl transition-all font-bold  text-[10px] tracking-widest ${
-                          onboardingData.projectCategory === cat
+                          onboardingData.projectCategory === catId
                             ? "border-primary bg-primary/5 text-primary shadow-sm"
                             : "border-slate-100 text-slate-400 hover:border-slate-200"
                         }`}
                       >
-                        {cat}
+                        {CATEGORY_MAP[catId]}
                       </button>
                     ))}
                   </div>

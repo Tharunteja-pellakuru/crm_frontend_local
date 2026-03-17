@@ -29,6 +29,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import DatePicker from "../../components/ui/DatePicker";
+import { CATEGORY_MAP, REVERSE_CATEGORY_MAP } from "../../constants/categoryConstants";
 import {
   analyzeEnquiryRelevance,
   batchAnalyzeEnquiries,
@@ -106,7 +107,7 @@ const EnquiryList = ({
     phone: "",
     website: "",
     leadType: "Hot",
-    leadCategory: "Social Media",
+    leadCategory: 2,
     notes: "",
   });
   const [showSimulateForm, setShowSimulateForm] = useState(false);
@@ -329,7 +330,7 @@ const EnquiryList = ({
       phone: enquiry.phone,
       website: enquiry.website,
       leadType: "Warm",
-      leadCategory: "Social Media",
+      leadCategory: 2,
       notes: enquiry.message,
     });
     setLeadModalOpen(true);

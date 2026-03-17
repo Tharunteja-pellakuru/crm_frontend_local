@@ -20,6 +20,7 @@ import {
   MessageSquare,
 } from "lucide-react";
 import DatePicker from "../../components/ui/DatePicker";
+import { CATEGORY_MAP, REVERSE_CATEGORY_MAP } from "../../constants/categoryConstants";
 
 const ProjectOverview = ({
   project,
@@ -32,7 +33,7 @@ const ProjectOverview = ({
   const [formData, setFormData] = useState({
     name: project?.name || "",
     status: project?.status || "Pending",
-    category: project?.category || "Tech",
+    category: project?.category || 1,
     priority: project?.priority || "Medium",
     progress: project?.progress || 0,
     deadline: project?.deadline || "",
@@ -107,11 +108,16 @@ const ProjectOverview = ({
   };
 
   const getCategoryColor = (category) => {
-    switch (category?.toLowerCase()) {
+    switch (category) {
+      case 1:
       case "tech":
         return "bg-secondary/10 text-secondary border-secondary/30";
+      case 2:
       case "social media":
         return "bg-warning/10 text-warning border-warning/30";
+      case 3:
+      case "both":
+        return "bg-purple-500/10 text-purple-500 border-purple-500/30";
       default:
         return "bg-slate-100 text-slate-600 border-slate-200";
     }
@@ -134,7 +140,7 @@ const ProjectOverview = ({
       >
         <div className="flex items-center gap-3">
           {Icon && <Icon size={16} className="text-secondary" />}
-          <span>{value}</span>
+          <span>{CATEGORY_MAP[value] || value}</span>
         </div>
         <ChevronDown
           size={14}
@@ -167,7 +173,7 @@ const ProjectOverview = ({
                     : "text-[#18254D] hover:bg-slate-50"
                   }`}
               >
-                {opt}
+                {CATEGORY_MAP[opt] || opt}
               </button>
             ))}
           </div>
@@ -340,7 +346,7 @@ const ProjectOverview = ({
                   value={formData.status}
                   field="status"
                   options={
-                    formData.category === "Tech"
+                    formData.category === 1
                       ? ["Pending", "In Progress", "Testing", "Live"]
                       : ["Pending", "In Progress", "Completed"]
                   }
@@ -393,7 +399,7 @@ const ProjectOverview = ({
                   label="Project Category"
                   value={formData.category}
                   field="category"
-                  options={["Tech", "Social Media"]}
+                  options={[1, 2, 3]}
                   icon={Tag}
                 />
               ) : (
@@ -403,11 +409,11 @@ const ProjectOverview = ({
                   </label>
                   <div className="flex items-center gap-3 px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold text-[#18254D]">
                     <Tag size={16} className="text-secondary" />
-                    <span>{formData.category}</span>
+                    <span>{CATEGORY_MAP[formData.category] || formData.category}</span>
                     <span
                       className={`ml-auto px-2 py-0.5 text-[8px] border rounded-md ${getCategoryColor(formData.category)}`}
                     >
-                      {formData.category}
+                      {CATEGORY_MAP[formData.category] || formData.category}
                     </span>
                   </div>
                 </div>

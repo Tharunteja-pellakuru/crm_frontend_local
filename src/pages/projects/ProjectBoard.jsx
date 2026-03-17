@@ -20,6 +20,14 @@ import {
   Search,
 } from "lucide-react";
 import DatePicker from "../../components/ui/DatePicker";
+import { CATEGORY_MAP, REVERSE_CATEGORY_MAP } from "../../constants/categoryConstants";
+import { countries } from "../../utils/countries";
+import {
+  indianStates,
+  commonCurrencies,
+  countryToCurrency,
+} from "../../utils/locationData";
+import SearchableDropdown from "../../components/common/SearchableDropdown";
 
 const TECH_COLUMNS = [
   {
@@ -194,11 +202,16 @@ const ProjectCard = ({
   };
 
   const getCategoryColor = (category) => {
-    switch (category?.toLowerCase()) {
+    switch (category) {
+      case 1:
       case "tech":
         return "bg-secondary/10 text-secondary border-secondary/30";
+      case 2:
       case "social media":
         return "bg-warning/10 text-warning border-warning/30";
+      case 3:
+      case "both":
+        return "bg-purple-500/10 text-purple-500 border-purple-500/30";
       default:
         return "bg-slate-100 text-slate-600 border-slate-200";
     }
@@ -233,8 +246,13 @@ const ProjectCard = ({
     >
       {/* Header with Company and Menu */}
       <div className="flex justify-between items-start mb-3">
-        <div className="px-3 py-1 bg-slate-50 border border-slate-100 rounded-lg text-[8px] font-bold text-slate-400  tracking-widest">
-          {client?.company || "N/A"}
+        <div className="flex flex-col gap-1">
+          <div className="px-3 py-1 bg-primary text-white rounded-lg text-[8px] font-bold tracking-widest w-fit">
+            {client?.name || "N/A"}
+          </div>
+          <div className="px-3 py-1 bg-slate-50 border border-slate-100 rounded-lg text-[8px] font-bold text-slate-400 tracking-widest w-fit">
+            {client?.company || "N/A"}
+          </div>
         </div>
         <div className="relative">
           <button
@@ -313,7 +331,7 @@ const ProjectCard = ({
         <span
           className={`px-2.5 py-1 text-[8px] font-bold  tracking-widest border rounded-md ${getCategoryColor(project.category)}`}
         >
-          {project.category || "Tech"}
+          {CATEGORY_MAP[project.category] || project.category || "Tech"}
         </span>
       </div>
 
@@ -375,7 +393,7 @@ const ProjectBoard = ({
   onSelectProject,
   onUpdateProject,
 }) => {
-  const [selectedCategory, setSelectedCategory] = useState("Tech");
+  const [selectedCategory, setSelectedCategory] = useState(1);
   const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -421,19 +439,23 @@ const ProjectBoard = ({
     name: "",
     email: "",
     phone: "",
-    status: "Active",
     projectName: "",
     projectStatus: "Planning",
-    projectCategory: "Tech",
+    projectCategory: 1,
     projectPriority: "Medium",
     projectDescription: "",
+    country: "",
+    state: "",
+    currency: "",
+    organisationName: "",
+    clientStatus: "Active",
     onboardingDate: new Date().toISOString().split("T")[0],
     deadline: "",
     budget: 0,
     scopeDocument: "",
   });
 
-  const COLUMNS = selectedCategory === "Tech" ? TECH_COLUMNS : MEDIA_COLUMNS;
+  const COLUMNS = selectedCategory === 1 ? TECH_COLUMNS : selectedCategory === 2 ? MEDIA_COLUMNS : ALL_COLUMNS;
 
   const getAvailableStatuses = (currentStatus) => {
     return COLUMNS.filter((col) => col.id !== currentStatus).map(
@@ -443,7 +465,7 @@ const ProjectBoard = ({
   const activeColumn = COLUMNS.find((c) => c.id === activeStage) || COLUMNS[0];
   const filteredProjects = projects.filter((p) => {
     const matchesStatus = p.status === activeStage;
-    const matchesCategory = (p.category || "Tech") === selectedCategory;
+    const matchesCategory = (p.category || 1) === selectedCategory;
     const query = searchQuery.toLowerCase();
     const matchesSearch =
       !query ||
@@ -468,50 +490,38 @@ const ProjectBoard = ({
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // 1. Create client first (or link to existing, though form is simplified to 'New' for now)
-    const clientId = `c-${Date.now()}`;
+    // 1. Create client first
     if (onAddClient) {
-      onAddClient({
-        id: clientId,
+      const newClient = await onAddClient({
         name: formData.name,
         email: formData.email,
         phone: formData.phone,
-        status: formData.status,
-        projectName: formData.projectName,
-        projectStatus: formData.projectStatus,
-        projectCategory: formData.projectCategory,
-        projectPriority: formData.projectPriority,
-        projectDescription: formData.projectDescription,
-        onboardingDate: formData.onboardingDate,
-        deadline: formData.deadline,
-        scopeDocument: formData.scopeDocument,
+        country: formData.country,
+        state: formData.state,
+        currency: formData.currency,
+        organisationName: formData.organisationName,
+        clientStatus: formData.clientStatus,
+        status: "Active",
       });
-    }
 
-    // 2. Create project entry
-    if (onAddProject) {
-      onAddProject({
-        clientId: clientId,
-        name: formData.projectName,
-        status: formData.projectStatus,
-        budget: formData.budget,
-        deadline: formData.deadline,
-        progress:
-          formData.projectStatus === "Live" ||
-            formData.projectStatus === "Completed"
-            ? 100
-            : formData.projectStatus === "Testing"
-              ? 75
-              : formData.projectStatus === "In Progress"
-                ? 40
-                : 10,
-        category: formData.projectCategory,
-        priority: formData.projectPriority,
-        description: formData.projectDescription,
-      });
+      if (newClient && newClient.id && onAddProject) {
+        // 2. Create project entry using the real client ID
+        await onAddProject({
+          clientId: newClient.id,
+          name: formData.projectName,
+          description: formData.projectDescription,
+          projectCategory: formData.projectCategory,
+          projectStatus: formData.projectStatus,
+          projectPriority: formData.projectPriority,
+          budget: formData.budget,
+          onboardingDate: formData.onboardingDate,
+          deadline: formData.deadline,
+          scopeDocument: formData.scopeDocument,
+        });
+      }
     }
 
     setShowAddModal(false);
@@ -520,14 +530,19 @@ const ProjectBoard = ({
       name: "",
       email: "",
       phone: "",
-      status: "Active",
       projectName: "",
       projectStatus: "Planning",
-      projectCategory: "Tech",
+      projectCategory: 1,
       projectPriority: "Medium",
       projectDescription: "",
+      country: "",
+      state: "",
+      currency: "",
+      organisationName: "",
+      clientStatus: "Active",
       onboardingDate: new Date().toISOString().split("T")[0],
       deadline: "",
+      budget: 0,
       scopeDocument: "",
     });
   };
@@ -587,9 +602,7 @@ const ProjectBoard = ({
                   className="w-full lg:w-auto flex items-center justify-between gap-3 px-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-[10px] font-bold  tracking-widest text-primary hover:bg-white hover:border-slate-200 transition-all min-w-[160px] shadow-sm shadow-slate-200/50 group"
                 >
                   <span>
-                    {selectedCategory === "Tech"
-                      ? "Tech Projects"
-                      : "Media Projects"}
+                    {CATEGORY_MAP[selectedCategory]} Projects
                   </span>
                   <ChevronDown
                     size={16}
@@ -613,16 +626,16 @@ const ProjectBoard = ({
                           Select Category
                         </p>
                       </div>
-                      {["Tech", "Social Media"].map((cat) => (
+                      {[1, 2, 3].map((catId) => (
                         <button
-                          key={cat}
-                          onClick={() => handleCategoryChange(cat)}
-                          className={`w-full text-left px-5 py-3.5 text-[10px] font-bold  tracking-widest transition-colors ${selectedCategory === cat
+                          key={catId}
+                          onClick={() => handleCategoryChange(catId)}
+                          className={`w-full text-left px-5 py-3.5 text-[10px] font-bold  tracking-widest transition-colors ${selectedCategory === catId
                             ? "bg-slate-100 text-secondary"
                             : "text-[#18254D] hover:bg-slate-50"
                             }`}
                         >
-                          {cat} Projects
+                          {CATEGORY_MAP[catId]} Projects
                         </button>
                       ))}
                     </div>
@@ -641,7 +654,7 @@ const ProjectBoard = ({
               const count = projects.filter(
                 (p) =>
                   p.status === column.id &&
-                  (p.category || "Tech") === selectedCategory,
+                  (p.category || 1) === selectedCategory,
               ).length;
               const isActive = activeStage === column.id;
               return (
@@ -871,7 +884,6 @@ const ProjectBoard = ({
                   />
                 </div>
 
-                {/* PHONE & STATUS */}
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-bold text-[#18254D]  tracking-widest ml-1">
                     PHONE NUMBER
@@ -883,9 +895,111 @@ const ProjectBoard = ({
                     className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium shadow-sm"
                     value={formData.phone}
                     onChange={(e) =>
-                      setFormData({ ...formData, phone: e.target.value })
+                      setFormData({
+                        ...formData,
+                        phone: e.target.value.replace(/\D/g, ""),
+                      })
                     }
                   />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-[#18254D]  tracking-widest ml-1 uppercase">
+                    ORGANISATION NAME
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Acme Corp"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium shadow-sm"
+                    value={formData.organisationName || ""}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        organisationName: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+
+                <SearchableDropdown
+                  label="CLIENT COUNTRY"
+                  options={countries.map((c) => ({
+                    name: c.name,
+                    code: c.name,
+                  }))}
+                  value={formData.country}
+                  onChange={(val) => {
+                    const countryCurrency = countryToCurrency[val];
+                    setFormData({
+                      ...formData,
+                      country: val,
+                      currency: countryCurrency
+                        ? countryCurrency.code
+                        : formData.currency,
+                      state: "", // Reset state when country changes
+                    });
+                  }}
+                  placeholder="Select Country"
+                />
+
+                {formData.country === "India" ? (
+                  <SearchableDropdown
+                    label="CLIENT STATE"
+                    options={indianStates}
+                    value={formData.state}
+                    onChange={(val) => setFormData({ ...formData, state: val })}
+                    placeholder="Select State"
+                  />
+                ) : (
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-[#18254D]  tracking-widest ml-1 uppercase">
+                      CLIENT STATE
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. California"
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium shadow-sm"
+                      value={formData.state || ""}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          state: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                )}
+
+                <SearchableDropdown
+                  label="CLIENT CURRENCY"
+                  options={commonCurrencies.map((c) => ({
+                    name: `${c.code} (${c.symbol})`,
+                    code: c.code,
+                  }))}
+                  value={formData.currency}
+                  onChange={(val) =>
+                    setFormData({ ...formData, currency: val })
+                  }
+                  placeholder="Select Currency"
+                />
+
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-[#18254D]  tracking-widest ml-1 uppercase">
+                    CLIENT STATUS
+                  </label>
+                  <select
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-bold shadow-sm"
+                    value={formData.clientStatus || "Active"}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        clientStatus: e.target.value,
+                      })
+                    }
+                  >
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
+                  </select>
                 </div>
 
               </div>
@@ -953,7 +1067,7 @@ const ProjectBoard = ({
                               Select Status
                             </p>
                           </div>
-                          {(formData.projectCategory === "Tech"
+                          {(formData.projectCategory === 1
                             ? ["Planning", "In Progress", "Testing", "Live"]
                             : ["Planning", "In Progress", "Completed"]
                           ).map((status) => (
@@ -986,23 +1100,23 @@ const ProjectBoard = ({
                     PROJECT CATEGORY
                   </label>
                   <div className="flex gap-2">
-                    {["Tech", "Social Media"].map((cat) => (
+                    {[1, 2, 3].map((catId) => (
                       <button
-                        key={cat}
+                        key={catId}
                         type="button"
                         onClick={() =>
                           setFormData({
                             ...formData,
-                            projectCategory: cat,
+                            projectCategory: catId,
                             projectStatus: "Planning",
                           })
                         }
-                        className={`flex-1 flex items-center justify-center p-2.5 border-2 rounded-xl transition-all font-bold  text-[10px] tracking-widest ${formData.projectCategory === cat
+                        className={`flex-1 flex items-center justify-center p-2.5 border-2 rounded-xl transition-all font-bold  text-[10px] tracking-widest ${formData.projectCategory === catId
                           ? "border-primary bg-primary/5 text-primary shadow-sm"
                           : "border-slate-100 text-slate-400 hover:border-slate-200"
                           }`}
                       >
-                        {cat}
+                        {CATEGORY_MAP[catId]}
                       </button>
                     ))}
                   </div>
@@ -1154,7 +1268,7 @@ const ProjectBoard = ({
                         if (file) {
                           setFormData({
                             ...formData,
-                            scopeDocument: file.name,
+                            scopeDocument: file,
                           });
                         }
                       }}
@@ -1166,8 +1280,11 @@ const ProjectBoard = ({
                       <span
                         className={`text-sm font-bold ${formData.scopeDocument ? "text-[#18254D]" : "text-slate-400"}`}
                       >
-                        {formData.scopeDocument ||
-                          "Click to upload scope document (PDF, DOCX)"}
+                        {formData.scopeDocument instanceof File 
+                          ? formData.scopeDocument.name 
+                          : typeof formData.scopeDocument === "string" && formData.scopeDocument 
+                            ? formData.scopeDocument
+                            : "Click to upload scope document (PDF)"}
                       </span>
                     </div>
                   </div>

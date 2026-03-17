@@ -108,7 +108,7 @@ const Settings = ({
     email: "",
     role: "Admin",
     status: "Active",
-    privileges: "Both",
+    privileges: 3,
   });
   const [editingAdminId, setEditingAdminId] = useState(null);
   const [editAdminData, setEditAdminData] = useState({
@@ -116,7 +116,7 @@ const Settings = ({
     email: "",
     role: "Admin",
     status: "Active",
-    privileges: "Both",
+    privileges: 3,
   });
 
   const [activeDropdown, setActiveDropdown] = useState(null);
@@ -258,7 +258,7 @@ const Settings = ({
       formData.append("full_name", profile.full_name || "");
       formData.append("role", profile.role || "");
       formData.append("email", profile.email || "");
-      formData.append("privileges", profile.privileges || "Both");
+      formData.append("privileges", profile.privileges || 3);
       formData.append(
         "status",
         profile.status !== undefined ? profile.status : 1,
@@ -376,7 +376,7 @@ const Settings = ({
             email: "",
             role: "Admin",
             status: "Active",
-            privileges: "Both",
+            privileges: 3,
           });
           setShowAddAdminForm(false);
           showToastMessage(`Admin created successfully! Default password: ${defaultPassword}`, "success");
@@ -447,7 +447,7 @@ const Settings = ({
       email: admin.email,
       role: admin.role,
       status: admin.status,
-      privileges: admin.privileges || "Both",
+      privileges: admin.privileges || 3,
     });
   };
 
@@ -458,7 +458,7 @@ const Settings = ({
       email: "",
       role: "Admin",
       status: "Active",
-      privileges: "Both",
+      privileges: 3,
     });
   };
 

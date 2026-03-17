@@ -11,7 +11,7 @@ export const MOCK_CLIENTS = [
     joinedDate: "2023-11-15",
     lastContact: "2023-11-20",
     industry: "Financial Services",
-    projectCategory: "Tech",
+    projectCategory: 1,
     notes:
       "Very interested in our API integration. Needs a demo by next Tuesday. Decision maker.",
   },
@@ -27,7 +27,7 @@ export const MOCK_CLIENTS = [
     joinedDate: "2023-11-10",
     lastContact: "2023-11-18",
     industry: "Logistics",
-    projectCategory: "Tech",
+    projectCategory: 1,
     notes:
       "Checking budget for the next quarter. Currently using a manual system. Open to a pilot program.",
   },
@@ -43,7 +43,7 @@ export const MOCK_CLIENTS = [
     joinedDate: "2023-10-05",
     lastContact: "2023-11-10",
     industry: "Healthcare",
-    projectCategory: "Tech",
+    projectCategory: 1,
     notes:
       "Early stage discussion. Need to follow up in 3 months once their new facility is ready.",
   },
@@ -58,7 +58,7 @@ export const MOCK_CLIENTS = [
     joinedDate: "2023-01-10",
     lastContact: "2023-11-15",
     industry: "Real Estate",
-    projectCategory: "Social Media",
+    projectCategory: 2,
     notes:
       "Long-term client. Satisfied with the current CRM flow. Looking to upgrade to the enterprise plan.",
   },
@@ -74,7 +74,7 @@ export const MOCK_CLIENTS = [
     joinedDate: "2023-08-20",
     lastContact: "2023-11-22",
     industry: "Technology",
-    projectCategory: "Tech",
+    projectCategory: 1,
     notes:
       "Excellent growth trajectory. Very responsive to new features. Expanding team.",
   },
@@ -89,7 +89,7 @@ export const MOCK_CLIENTS = [
     joinedDate: "2023-07-15",
     lastContact: "2023-11-21",
     industry: "Trading",
-    projectCategory: "Tech",
+    projectCategory: 1,
     notes:
       "Strategic partner. Regular quarterly reviews. High revenue account.",
   },
@@ -105,7 +105,7 @@ export const MOCK_CLIENTS = [
     joinedDate: "2023-10-25",
     lastContact: "2023-11-19",
     industry: "Education",
-    projectCategory: "Tech",
+    projectCategory: 1,
     notes: "Interest in student management features. Budget approval pending.",
   },
   {
@@ -119,7 +119,7 @@ export const MOCK_CLIENTS = [
     joinedDate: "2023-06-10",
     lastContact: "2023-11-20",
     industry: "Construction",
-    projectCategory: "Social Media",
+    projectCategory: 2,
     notes: "Long-standing partner. Multiple project tracking. Very satisfied.",
   },
   {
@@ -134,7 +134,7 @@ export const MOCK_CLIENTS = [
     joinedDate: "2023-11-01",
     lastContact: "2023-11-15",
     industry: "Retail",
-    projectCategory: "Tech",
+    projectCategory: 1,
     notes:
       "Inbound inquiry. Evaluating multiple solutions. Demo scheduled for next month.",
   },
@@ -149,7 +149,7 @@ export const MOCK_CLIENTS = [
     joinedDate: "2023-05-12",
     lastContact: "2023-11-22",
     industry: "Healthcare",
-    projectCategory: "Tech",
+    projectCategory: 1,
     notes: "Key account. 3 departments using system. Wants advanced analytics.",
   },
   {
@@ -164,7 +164,7 @@ export const MOCK_CLIENTS = [
     joinedDate: "2023-10-30",
     lastContact: "2023-11-18",
     industry: "Automotive",
-    projectCategory: "Tech",
+    projectCategory: 1,
     notes:
       "Good fit for our platform. Needs custom integration with ERP system.",
   },
@@ -179,7 +179,7 @@ export const MOCK_CLIENTS = [
     joinedDate: "2023-04-08",
     lastContact: "2023-11-21",
     industry: "Cloud Services",
-    projectCategory: "Tech",
+    projectCategory: 1,
     notes:
       "Technical integration partner. API excellence. Growing partnership.",
   },
@@ -194,7 +194,7 @@ export const MOCK_CLIENTS = [
     joinedDate: "2023-09-14",
     lastContact: "2023-11-20",
     industry: "Hospitality",
-    projectCategory: "Social Media",
+    projectCategory: 2,
     notes:
       "Multi-property rollout. Satisfied with customization. Referral source.",
   },
@@ -546,7 +546,7 @@ export const MOCK_PROJECTS = [
     deadline: "2026-03-15",
     progress: 15,
     priority: "High",
-    category: "Tech",
+    category: 1,
   },
   {
     id: "p2",
@@ -557,7 +557,7 @@ export const MOCK_PROJECTS = [
     deadline: "2026-04-20",
     progress: 5,
     priority: "Critical",
-    category: "Tech",
+    category: 1,
     description:
       "Build a patient-facing healthcare portal with appointment management, medical records, and telemedicine capabilities.",
   },
@@ -570,7 +570,7 @@ export const MOCK_PROJECTS = [
     deadline: "2026-03-30",
     progress: 0,
     priority: "High",
-    category: "Tech",
+    category: 1,
     description:
       "Integrate learning management system with existing educational platform to streamline course delivery.",
   },
@@ -583,7 +583,7 @@ export const MOCK_PROJECTS = [
     deadline: "2026-05-01",
     progress: 10,
     priority: "Medium",
-    category: "Tech",
+    category: 1,
   },
   {
     id: "p16",
@@ -594,7 +594,7 @@ export const MOCK_PROJECTS = [
     deadline: "2026-06-10",
     progress: 2,
     priority: "High",
-    category: "Tech",
+    category: 1,
   },
   {
     id: "p17",
@@ -605,7 +605,7 @@ export const MOCK_PROJECTS = [
     deadline: "2026-04-25",
     progress: 0,
     priority: "Medium",
-    category: "Tech",
+    category: 1,
   },
   {
     id: "p18",
@@ -616,7 +616,7 @@ export const MOCK_PROJECTS = [
     deadline: "2026-05-15",
     progress: 5,
     priority: "Medium",
-    category: "Tech",
+    category: 1,
   },
   {
     id: "p19",
@@ -627,7 +627,7 @@ export const MOCK_PROJECTS = [
     deadline: "2026-06-30",
     progress: 0,
     priority: "High",
-    category: "Tech",
+    category: 1,
   },
   {
     id: "p20",
@@ -638,7 +638,7 @@ export const MOCK_PROJECTS = [
     deadline: "2026-05-20",
     progress: 8,
     priority: "Critical",
-    category: "Tech",
+    category: 1,
   },
   {
     id: "p21",
@@ -649,7 +649,7 @@ export const MOCK_PROJECTS = [
     deadline: "2026-06-05",
     progress: 12,
     priority: "High",
-    category: "Tech",
+    category: 1,
   },
   {
     id: "p41",
@@ -660,7 +660,7 @@ export const MOCK_PROJECTS = [
     deadline: "2026-05-12",
     progress: 5,
     priority: "Medium",
-    category: "Social Media",
+    category: 2,
   },
   {
     id: "p42",
@@ -671,7 +671,7 @@ export const MOCK_PROJECTS = [
     deadline: "2026-05-25",
     progress: 8,
     priority: "High",
-    category: "Social Media",
+    category: 2,
   },
   {
     id: "p43",
@@ -682,7 +682,7 @@ export const MOCK_PROJECTS = [
     deadline: "2026-06-10",
     progress: 2,
     priority: "High",
-    category: "Social Media",
+    category: 2,
   },
 
   // IN PROGRESS - Status: In Progress (10)
@@ -695,7 +695,7 @@ export const MOCK_PROJECTS = [
     deadline: "2026-02-28",
     progress: 65,
     priority: "High",
-    category: "Tech",
+    category: 1,
     description:
       "Second phase of API integration connecting CRM with third-party payment processors and analytics tools.",
   },
@@ -708,7 +708,7 @@ export const MOCK_PROJECTS = [
     deadline: "2026-03-15",
     progress: 58,
     priority: "Critical",
-    category: "Tech",
+    category: 1,
     description:
       "Building minimum viable product for logistics management with route optimization and real-time tracking.",
   },
@@ -721,7 +721,7 @@ export const MOCK_PROJECTS = [
     deadline: "2026-02-15",
     progress: 72,
     priority: "Medium",
-    category: "Tech",
+    category: 1,
     description:
       "Upgrade existing analytics dashboard with new visualization components and advanced filtering capabilities.",
   },
@@ -734,7 +734,7 @@ export const MOCK_PROJECTS = [
     deadline: "2026-03-20",
     progress: 45,
     priority: "High",
-    category: "Tech",
+    category: 1,
   },
   {
     id: "p22",
@@ -745,7 +745,7 @@ export const MOCK_PROJECTS = [
     deadline: "2026-03-05",
     progress: 33,
     priority: "Medium",
-    category: "Tech",
+    category: 1,
   },
   {
     id: "p23",
@@ -756,7 +756,7 @@ export const MOCK_PROJECTS = [
     deadline: "2026-03-25",
     progress: 50,
     priority: "Critical",
-    category: "Tech",
+    category: 1,
   },
   {
     id: "p24",
@@ -767,7 +767,7 @@ export const MOCK_PROJECTS = [
     deadline: "2026-03-10",
     progress: 27,
     priority: "High",
-    category: "Tech",
+    category: 1,
   },
   {
     id: "p25",
@@ -778,7 +778,7 @@ export const MOCK_PROJECTS = [
     deadline: "2026-02-28",
     progress: 60,
     priority: "Medium",
-    category: "Tech",
+    category: 1,
   },
   {
     id: "p26",
@@ -789,7 +789,7 @@ export const MOCK_PROJECTS = [
     deadline: "2026-03-22",
     progress: 40,
     priority: "High",
-    category: "Tech",
+    category: 1,
   },
   {
     id: "p27",
@@ -800,7 +800,7 @@ export const MOCK_PROJECTS = [
     deadline: "2026-03-01",
     progress: 80,
     priority: "High",
-    category: "Tech",
+    category: 1,
   },
   {
     id: "p44",
@@ -811,7 +811,7 @@ export const MOCK_PROJECTS = [
     deadline: "2026-03-12",
     progress: 40,
     priority: "Medium",
-    category: "Social Media",
+    category: 2,
   },
   {
     id: "p45",
@@ -822,7 +822,7 @@ export const MOCK_PROJECTS = [
     deadline: "2026-03-08",
     progress: 55,
     priority: "Low",
-    category: "Social Media",
+    category: 2,
   },
   {
     id: "p46",
@@ -833,7 +833,7 @@ export const MOCK_PROJECTS = [
     deadline: "2026-03-18",
     progress: 30,
     priority: "High",
-    category: "Social Media",
+    category: 2,
   },
 
   // TESTING - Status: Testing (10)
@@ -846,7 +846,7 @@ export const MOCK_PROJECTS = [
     deadline: "2026-02-10",
     progress: 82,
     priority: "High",
-    category: "Tech",
+    category: 1,
   },
   {
     id: "p9",
@@ -857,7 +857,7 @@ export const MOCK_PROJECTS = [
     deadline: "2026-02-20",
     progress: 88,
     priority: "High",
-    category: "Tech",
+    category: 1,
   },
   {
     id: "p10",
@@ -868,7 +868,7 @@ export const MOCK_PROJECTS = [
     deadline: "2026-02-28",
     progress: 91,
     priority: "Critical",
-    category: "Tech",
+    category: 1,
   },
   {
     id: "p28",
@@ -879,7 +879,7 @@ export const MOCK_PROJECTS = [
     deadline: "2026-02-25",
     progress: 75,
     priority: "Medium",
-    category: "Tech",
+    category: 1,
   },
   {
     id: "p29",
@@ -890,7 +890,7 @@ export const MOCK_PROJECTS = [
     deadline: "2026-02-22",
     progress: 68,
     priority: "Low",
-    category: "Tech",
+    category: 1,
   },
   {
     id: "p30",
@@ -901,7 +901,7 @@ export const MOCK_PROJECTS = [
     deadline: "2026-02-18",
     progress: 83,
     priority: "High",
-    category: "Tech",
+    category: 1,
   },
   {
     id: "p31",
@@ -912,7 +912,7 @@ export const MOCK_PROJECTS = [
     deadline: "2026-02-26",
     progress: 90,
     priority: "Medium",
-    category: "Tech",
+    category: 1,
   },
   {
     id: "p32",
@@ -923,7 +923,7 @@ export const MOCK_PROJECTS = [
     deadline: "2026-02-24",
     progress: 70,
     priority: "High",
-    category: "Tech",
+    category: 1,
   },
   {
     id: "p33",
@@ -934,7 +934,7 @@ export const MOCK_PROJECTS = [
     deadline: "2026-02-27",
     progress: 95,
     priority: "Medium",
-    category: "Tech",
+    category: 1,
   },
   {
     id: "p34",
@@ -945,7 +945,7 @@ export const MOCK_PROJECTS = [
     deadline: "2026-02-29",
     progress: 89,
     priority: "Critical",
-    category: "Tech",
+    category: 1,
   },
   {
     id: "p47",
@@ -956,7 +956,7 @@ export const MOCK_PROJECTS = [
     deadline: "2026-02-26",
     progress: 100,
     priority: "High",
-    category: "Social Media",
+    category: 2,
   },
   {
     id: "p48",
@@ -967,7 +967,7 @@ export const MOCK_PROJECTS = [
     deadline: "2026-02-28",
     progress: 100,
     priority: "Medium",
-    category: "Social Media",
+    category: 2,
   },
 
   // LIVE - Status: Live (10)
@@ -980,7 +980,7 @@ export const MOCK_PROJECTS = [
     deadline: "2026-12-31",
     progress: 100,
     priority: "Medium",
-    category: "Tech",
+    category: 1,
   },
   {
     id: "p12",
@@ -991,7 +991,7 @@ export const MOCK_PROJECTS = [
     deadline: "2026-12-31",
     progress: 100,
     priority: "Critical",
-    category: "Tech",
+    category: 1,
   },
   {
     id: "p13",
@@ -1002,7 +1002,7 @@ export const MOCK_PROJECTS = [
     deadline: "2026-12-31",
     progress: 100,
     priority: "High",
-    category: "Tech",
+    category: 1,
   },
   {
     id: "p14",
@@ -1013,7 +1013,7 @@ export const MOCK_PROJECTS = [
     deadline: "2026-12-31",
     progress: 100,
     priority: "High",
-    category: "Tech",
+    category: 1,
   },
   {
     id: "p35",
@@ -1024,7 +1024,7 @@ export const MOCK_PROJECTS = [
     deadline: "2026-12-31",
     progress: 100,
     priority: "High",
-    category: "Tech",
+    category: 1,
   },
   {
     id: "p36",
@@ -1035,7 +1035,7 @@ export const MOCK_PROJECTS = [
     deadline: "2026-12-31",
     progress: 100,
     priority: "Critical",
-    category: "Tech",
+    category: 1,
   },
   {
     id: "p37",
@@ -1046,7 +1046,7 @@ export const MOCK_PROJECTS = [
     deadline: "2026-12-31",
     progress: 100,
     priority: "High",
-    category: "Tech",
+    category: 1,
   },
   {
     id: "p38",
@@ -1057,7 +1057,7 @@ export const MOCK_PROJECTS = [
     deadline: "2026-12-31",
     progress: 100,
     priority: "Medium",
-    category: "Tech",
+    category: 1,
   },
   {
     id: "p39",
@@ -1068,7 +1068,7 @@ export const MOCK_PROJECTS = [
     deadline: "2026-12-31",
     progress: 100,
     priority: "Critical",
-    category: "Tech",
+    category: 1,
   },
   {
     id: "p40",
@@ -1079,7 +1079,7 @@ export const MOCK_PROJECTS = [
     deadline: "2026-12-31",
     progress: 100,
     priority: "High",
-    category: "Tech",
+    category: 1,
   },
   {
     id: "p49",
@@ -1090,7 +1090,7 @@ export const MOCK_PROJECTS = [
     deadline: "2026-12-31",
     progress: 100,
     priority: "Medium",
-    category: "Social Media",
+    category: 2,
   },
   {
     id: "p50",
@@ -1101,7 +1101,7 @@ export const MOCK_PROJECTS = [
     deadline: "2026-12-31",
     progress: 100,
     priority: "Critical",
-    category: "Social Media",
+    category: 2,
   },
 ];
 
