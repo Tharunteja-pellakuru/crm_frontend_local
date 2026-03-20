@@ -731,7 +731,7 @@ const ClientList = ({
                               <UserCheck size={18} />
                             </button>
                           )}
-                          {onDeleteClient &&
+                          {/* {onDeleteClient &&
                             (title !== "Leads" || leadView === "Dismissed") && (
                               <button
                                 onClick={(e) => {
@@ -742,7 +742,7 @@ const ClientList = ({
                               >
                                 <Trash2 size={18} />
                               </button>
-                            )}
+                            )} */}
                           {onDismissLead &&
                             (client.status === "Lead" || client.isConverted) &&
                             client.status !== "Dismissed" && (
@@ -924,7 +924,7 @@ const ClientList = ({
                         <UserCheck size={16} />
                       </button>
                     )}
-                    {onDeleteClient &&
+                    {/* {onDeleteClient &&
                       (title !== "Leads" || leadView === "Dismissed") && (
                         <button
                           onClick={(e) => {
@@ -935,7 +935,7 @@ const ClientList = ({
                         >
                           <Trash2 size={16} />
                         </button>
-                      )}
+                      )} */}
                     {onDismissLead &&
                       (client.status === "Lead" || client.isConverted) &&
                       client.status !== "Dismissed" && (
