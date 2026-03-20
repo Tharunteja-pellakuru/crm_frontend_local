@@ -19,6 +19,7 @@ import {
   Monitor,
   Film,
   Search,
+  AlertTriangle,
 } from "lucide-react";
 import DatePicker from "../../components/ui/DatePicker";
 import {
@@ -121,6 +122,7 @@ const ProjectCard = ({
   onUpdateProject,
   availableStatuses,
   onSelectProject,
+  onDelete,
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const client = clients.find((c) => c.id === project.clientId);
@@ -291,7 +293,7 @@ const ProjectCard = ({
               <div
                 onClick={(e) => e.stopPropagation()}
                 className="absolute right-0 mt-2 w-48 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[70] animate-fade-in origin-top-right py-2 scale-90 -translate-y-2 translate-x-2"
-                style={{ transform: 'scale(1) translate(0, 0)' }}
+                style={{ transform: "scale(1) translate(0, 0)" }}
               >
                 <div className="px-4 py-2 border-b border-slate-50 mb-1">
                   <p className="text-[14px] font-black text-slate-400  tracking-widest">
@@ -316,6 +318,16 @@ const ProjectCard = ({
                     className="w-full text-left px-4 py-2.5 text-[12px] font-bold  tracking-widest text-slate-400 hover:bg-slate-50 hover:text-primary transition-colors"
                   >
                     Edit Details
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDelete && onDelete(project);
+                      setIsMenuOpen(false);
+                    }}
+                    className="w-full text-left px-4 py-2.5 text-[12px] font-bold  tracking-widest text-rose-400 hover:bg-rose-50 hover:text-rose-600 transition-colors border-t border-slate-50"
+                  >
+                    Delete Project
                   </button>
                 </div>
               </div>
@@ -359,8 +371,10 @@ const ProjectBoard = ({
   onAddClient,
   onSelectProject,
   onUpdateProject,
+  onDeleteProject,
 }) => {
   const [selectedCategory, setSelectedCategory] = useState(3);
+  const [projectToDelete, setProjectToDelete] = useState(null);
   const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -726,6 +740,7 @@ const ProjectBoard = ({
                             project.status,
                           )}
                           onSelectProject={onSelectProject}
+                          onDelete={setProjectToDelete}
                         />
                       ))}
                     </div>
@@ -743,6 +758,7 @@ const ProjectBoard = ({
                     onUpdateProject={onUpdateProject}
                     availableStatuses={getAvailableStatuses(project.status)}
                     onSelectProject={onSelectProject}
+                    onDelete={setProjectToDelete}
                   />
                 ))}
                 <button
@@ -1306,6 +1322,45 @@ const ProjectBoard = ({
           </div>
         </div>
       )}
+      {/* Delete Confirmation Modal */}
+      {projectToDelete &&
+        createPortal(
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-fade-in">
+            <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 overflow-hidden animate-scale-in">
+              <div className="p-6 text-center">
+                <div className="w-16 h-16 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-rose-100 shadow-sm">
+                  <AlertTriangle size={32} className="text-rose-500" />
+                </div>
+                <h3 className="text-xl font-bold text-primary mb-2">
+                  Confirm Deletion
+                </h3>
+                <p className="text-slate-500 text-sm font-medium leading-relaxed px-4">
+                  Are you sure you want to delete the project 
+                  <span className="text-primary font-bold"> "{projectToDelete.name}"</span>? 
+                  This action cannot be undone and all associated data will be removed.
+                </p>
+              </div>
+              <div className="bg-slate-50 p-4 border-t border-slate-100 flex gap-3">
+                <button
+                  onClick={() => setProjectToDelete(null)}
+                  className="flex-1 px-4 py-2.5 bg-white border border-slate-200 text-slate-600 rounded-xl text-xs font-bold tracking-widest hover:bg-slate-50 transition-all active:scale-95 uppercase"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    onDeleteProject && onDeleteProject(projectToDelete.project_id || projectToDelete.id);
+                    setProjectToDelete(null);
+                  }}
+                  className="flex-1 px-4 py-2.5 bg-rose-500 text-white rounded-xl text-xs font-bold tracking-widest hover:bg-rose-600 shadow-lg shadow-rose-200 transition-all active:scale-95 uppercase"
+                >
+                  Delete Project
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
     </div>
   );
 };
