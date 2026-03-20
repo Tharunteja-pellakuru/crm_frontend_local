@@ -319,6 +319,7 @@ const EnquiryList = ({
       return isBase;
     }
     if (activeTab === "hold") return e.status === "hold";
+    if (activeTab === "converted") return e.status === "converted";
     if (activeTab === "dismissed") {
       const isBase = e.status === "dismissed" || e.status === "irrelevant";
       if (
@@ -628,7 +629,7 @@ const EnquiryList = ({
       {/* Lead View Toggles (Enquiries) */}
       <div className="flex justify-center my-4 overflow-x-auto">
         <div className="inline-flex bg-slate-100/50 p-1 rounded-2xl border border-slate-200 shadow-sm leading-none h-[42px] items-center gap-1 whitespace-nowrap">
-          {["new", "hold", "dismissed"].map((tab) => {
+          {["new", "hold", "converted", "dismissed"].map((tab) => {
             const colors = {
               new: {
                 active: "text-blue-600 border-blue-100 bg-white",
@@ -637,6 +638,10 @@ const EnquiryList = ({
               hold: {
                 active: "text-orange-600 border-orange-100 bg-white",
                 hover: "hover:text-orange-500 hover:bg-white/50",
+              },
+              converted: {
+                active: "text-emerald-600 border-emerald-100 bg-white",
+                hover: "hover:text-emerald-500 hover:bg-white/50",
               },
               dismissed: {
                 active: "text-rose-600 border-rose-100 bg-white",
@@ -660,7 +665,9 @@ const EnquiryList = ({
                   ? "Inbox"
                   : tab === "hold"
                     ? "On Hold"
-                    : "Dismissed"}
+                    : tab === "converted"
+                      ? "Converted"
+                      : "Dismissed"}
               </button>
             );
           })}
@@ -688,9 +695,11 @@ const EnquiryList = ({
                     className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-base shadow-inner ${
                       activeTab === "hold"
                         ? "bg-amber-500"
-                        : activeTab === "dismissed"
-                          ? "bg-slate-700"
-                          : "bg-[#18254D]"
+                        : activeTab === "converted"
+                          ? "bg-emerald-600"
+                          : activeTab === "dismissed"
+                            ? "bg-slate-700"
+                            : "bg-[#18254D]"
                     }`}
                   >
                     {enquiry.name.charAt(0)}
