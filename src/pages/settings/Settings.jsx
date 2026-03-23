@@ -617,8 +617,8 @@ const Settings = ({
         </div>
 
         {/* Top Navigation Tabs */}
-        <div className="flex justify-start my-4 overflow-x-auto no-scrollbar pb-1">
-          <div className="inline-flex bg-slate-100/50 p-1 rounded-2xl border border-slate-200 shadow-sm leading-none h-[42px] items-center gap-1 whitespace-nowrap">
+        <div className="flex justify-center my-4 w-full px-1 sm:px-0">
+          <div className="flex flex-nowrap bg-slate-100/50 p-1 rounded-2xl border border-slate-200 shadow-sm leading-none w-full sm:w-auto items-center gap-0.5 sm:gap-1 overflow-x-auto no-scrollbar">
             {[
               { id: "profile", label: "My Profile" },
               { id: "security", label: "Security" },
@@ -628,7 +628,7 @@ const Settings = ({
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-6 h-full rounded-xl text-[12px] font-bold  tracking-wider transition-all flex items-center justify-center min-w-[100px] border border-transparent whitespace-nowrap ${
+                className={`flex-1 sm:flex-none px-2 sm:px-6 py-2.5 sm:py-2 rounded-xl text-[10px] sm:text-[12px] font-bold tracking-wider transition-all flex items-center justify-center min-w-[80px] sm:min-w-[120px] h-[34px] sm:h-auto border border-transparent whitespace-nowrap ${
                   activeTab === tab.id
                     ? "bg-white text-blue-600 shadow-md border-blue-50"
                     : "text-slate-400 hover:text-slate-500 hover:bg-white/50"
@@ -1169,42 +1169,42 @@ const Settings = ({
                                       {model.name}
                                     </h5>
                                     {!!model.isDefault && (
-                                      <span className="text-[13px] px-2 py-0.5 bg-primary text-white rounded-full font-bold tracking-widest uppercase">
+                                      <span className="text-[10px] px-2 py-0.5 bg-primary text-white rounded-full font-bold tracking-widest uppercase">
                                         Default
                                       </span>
                                     )}
                                   </div>
-                                  <p className="text-[12px] text-slate-400 font-mono font-bold truncate mt-0.5">
+                                  <p className="text-[11px] text-slate-400 font-mono font-bold truncate mt-0.5">
                                     {model.modelId}
                                   </p>
                                 </div>
                               </div>
-                              <div className="flex items-center justify-end gap-1.5 pt-3 sm:pt-0 border-t sm:border-t-0 border-slate-50">
+                              <div className="flex items-center justify-end gap-1.5 pt-3 sm:pt-0 border-t sm:border-t-0 border-slate-100 w-full sm:w-auto">
                                 <button
                                   onClick={() => {
                                     setEditingModelId(model.id);
                                     setEditModelData({ ...model });
                                   }}
-                                  className="p-2.5 hover:bg-slate-100 rounded-xl transition-all text-slate-400 hover:text-primary flex items-center gap-2 text-[12px] font-bold group"
+                                  className="flex-1 sm:flex-none p-2.5 hover:bg-slate-100 rounded-xl transition-all text-slate-400 hover:text-primary flex items-center justify-center gap-2 text-[12px] font-bold group"
                                   title="Edit model"
                                 >
                                   <Edit2
                                     size={16}
                                     className="group-hover:scale-110 transition-transform"
                                   />
-                                  <span className="sm:hidden">Edit</span>
+                                  <span>Edit</span>
                                 </button>
                                 {!model.isDefault && (
                                   <button
                                     onClick={() => onDeleteAiModel(model.id)}
-                                    className="p-2.5 hover:bg-red-50 rounded-xl transition-all text-slate-400 hover:text-red-500 flex items-center gap-2 text-[12px] font-bold group"
+                                    className="flex-1 sm:flex-none p-2.5 hover:bg-red-50 rounded-xl transition-all text-slate-400 hover:text-red-500 flex items-center justify-center gap-2 text-[12px] font-bold group"
                                     title="Delete model"
                                   >
                                     <Trash2
                                       size={16}
                                       className="group-hover:scale-110 transition-transform"
                                     />
-                                    <span className="sm:hidden">Delete</span>
+                                    <span>Delete</span>
                                   </button>
                                 )}
                               </div>
@@ -1266,59 +1266,62 @@ const Settings = ({
                       Update Password
                     </button>
                   ) : (
-                    <div className="space-y-5">
-                      <div className="space-y-2">
-                        <label className="text-[12px]  font-bold text-slate-500 tracking-widest">
-                          Current Password
-                        </label>
-                        <input
-                          type="password"
-                          value={passwordData.currentPassword}
-                          onChange={(e) =>
-                            setPasswordData({
-                              ...passwordData,
-                              currentPassword: e.target.value,
-                            })
-                          }
-                          placeholder="Enter current password"
-                          className="w-full h-[46px] px-4 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-secondary/30 focus:border-secondary focus:outline-none transition-all text-sm font-bold shadow-sm"
-                        />
+                    <div className="space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                        <div className="space-y-2">
+                          <label className="text-[12px]  font-bold text-slate-500 tracking-widest uppercase">
+                            Current Password
+                          </label>
+                          <input
+                            type="password"
+                            value={passwordData.currentPassword}
+                            onChange={(e) =>
+                              setPasswordData({
+                                ...passwordData,
+                                currentPassword: e.target.value,
+                              })
+                            }
+                            placeholder="Current password"
+                            className="w-full h-[46px] px-4 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-secondary/30 focus:border-secondary focus:outline-none transition-all text-sm font-bold shadow-sm"
+                          />
+                        </div>
+                        <div className="hidden md:block" /> {/* Spacer */}
+                        <div className="space-y-2">
+                          <label className="text-[12px]  font-bold text-slate-500 tracking-widest uppercase">
+                            New Password
+                          </label>
+                          <input
+                            type="password"
+                            value={passwordData.newPassword}
+                            onChange={(e) =>
+                              setPasswordData({
+                                ...passwordData,
+                                newPassword: e.target.value,
+                              })
+                            }
+                            placeholder="New password"
+                            className="w-full h-[46px] px-4 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-secondary/30 focus:border-secondary focus:outline-none transition-all text-sm font-bold shadow-sm"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-[12px]  font-bold text-slate-500 tracking-widest uppercase">
+                            Confirm New Password
+                          </label>
+                          <input
+                            type="password"
+                            value={passwordData.confirmPassword}
+                            onChange={(e) =>
+                              setPasswordData({
+                                ...passwordData,
+                                confirmPassword: e.target.value,
+                              })
+                            }
+                            placeholder="Confirm password"
+                            className="w-full h-[46px] px-4 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-secondary/30 focus:border-secondary focus:outline-none transition-all text-sm font-bold shadow-sm"
+                          />
+                        </div>
                       </div>
-                      <div className="space-y-2">
-                        <label className="text-[12px]  font-bold text-slate-500 tracking-widest">
-                          New Password
-                        </label>
-                        <input
-                          type="password"
-                          value={passwordData.newPassword}
-                          onChange={(e) =>
-                            setPasswordData({
-                              ...passwordData,
-                              newPassword: e.target.value,
-                            })
-                          }
-                          placeholder="Enter new password"
-                          className="w-full h-[46px] px-4 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-secondary/30 focus:border-secondary focus:outline-none transition-all text-sm font-bold shadow-sm"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-[12px]  font-bold text-slate-500 tracking-widest">
-                          Confirm New Password
-                        </label>
-                        <input
-                          type="password"
-                          value={passwordData.confirmPassword}
-                          onChange={(e) =>
-                            setPasswordData({
-                              ...passwordData,
-                              confirmPassword: e.target.value,
-                            })
-                          }
-                          placeholder="Confirm new password"
-                          className="w-full h-[46px] px-4 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-secondary/30 focus:border-secondary focus:outline-none transition-all text-sm font-bold shadow-sm"
-                        />
-                      </div>
-                      <div className="flex gap-3 pt-3">
+                      <div className="flex gap-3 pt-3 border-t border-slate-100">
                         <button
                           onClick={handleUpdatePassword}
                           className="flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white rounded-2xl hover:bg-slate-800 transition-all active:scale-95 text-[13px] font-bold tracking-wider shadow-lg shadow-primary/20"
@@ -1369,9 +1372,9 @@ const Settings = ({
                     <h4 className="font-bold text-slate-900 tracking-tight">
                       Add New Administrator
                     </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5">
-                      <div className="space-y-2 lg:col-span-1">
-                        <label className="text-[12px]  font-bold text-slate-500 tracking-widest">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                      <div className="space-y-2">
+                        <label className="text-[12px]  font-bold text-slate-500 tracking-widest uppercase">
                           Full Name
                         </label>
                         <input
@@ -1380,12 +1383,12 @@ const Settings = ({
                           onChange={(e) =>
                             setNewAdmin({ ...newAdmin, name: e.target.value })
                           }
-                          placeholder="Enter full name"
+                          placeholder="Full name"
                           className="w-full h-[46px] px-4 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-secondary/30 focus:border-secondary focus:outline-none transition-all text-sm font-bold shadow-sm"
                         />
                       </div>
-                      <div className="space-y-2 lg:col-span-1">
-                        <label className="text-[12px]  font-bold text-slate-500 tracking-widest">
+                      <div className="space-y-2">
+                        <label className="text-[12px]  font-bold text-slate-500 tracking-widest uppercase">
                           Email Address
                         </label>
                         <input
@@ -1397,7 +1400,7 @@ const Settings = ({
                               email: e.target.value,
                             })
                           }
-                          placeholder="name@parivartan.crm"
+                          placeholder="Email"
                           className="w-full h-[46px] px-4 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-secondary/30 focus:border-secondary focus:outline-none transition-all text-sm font-bold shadow-sm"
                         />
                       </div>
@@ -1419,19 +1422,21 @@ const Settings = ({
                           setNewAdmin({ ...newAdmin, status: val })
                         }
                       />
-                      <CustomDropdown
-                        label="Privileges"
-                        value={newAdmin.privileges}
-                        field="add_admin_privileges"
-                        options={[
-                          { value: 1, label: "Tech" },
-                          { value: 2, label: "Social Media" },
-                          { value: 3, label: "Both" },
-                        ]}
-                        onChange={(val) =>
-                          setNewAdmin({ ...newAdmin, privileges: val })
-                        }
-                      />
+                      <div className="sm:col-span-2 lg:col-span-1">
+                        <CustomDropdown
+                          label="Privileges"
+                          value={newAdmin.privileges}
+                          field="add_admin_privileges"
+                          options={[
+                            { value: 1, label: "Tech" },
+                            { value: 2, label: "Social Media" },
+                            { value: 3, label: "Both" },
+                          ]}
+                          onChange={(val) =>
+                            setNewAdmin({ ...newAdmin, privileges: val })
+                          }
+                        />
+                      </div>
                     </div>
                     <div className="flex gap-3 pt-3">
                       <button
@@ -1574,13 +1579,13 @@ const Settings = ({
                                 </div>
                               </div>
                             ) : (
-                              <>
-                                <div className="flex items-center gap-4 mb-2">
+                              <div className="flex flex-col gap-4">
+                                <div className="flex items-center gap-4">
                                   {admin.image ? (
                                     <img
                                       src={admin.image}
                                       alt={admin.name}
-                                      className="w-10 h-10 rounded-xl object-cover border border-slate-200"
+                                      className="w-12 h-12 rounded-xl object-cover border-2 border-slate-100 shadow-sm"
                                       onError={(e) => {
                                         e.target.style.display = "none";
                                         e.target.nextSibling.style.display =
@@ -1589,34 +1594,34 @@ const Settings = ({
                                     />
                                   ) : null}
                                   <div
-                                    className={`w-10 h-10 rounded-xl bg-primary flex items-center justify-center ${admin.image ? "hidden" : "flex"}`}
+                                    className={`w-12 h-12 rounded-xl bg-primary flex items-center justify-center border-2 border-slate-100 shadow-sm ${admin.image ? "hidden" : "flex"}`}
                                   >
-                                    <span className="text-sm font-bold text-white">
+                                    <span className="text-base font-bold text-white">
                                       {admin.name?.charAt(0).toUpperCase() ||
                                         "U"}
                                     </span>
                                   </div>
                                   <div>
-                                    <h5 className="font-bold text-slate-900 tracking-tight">
+                                    <h5 className="font-bold text-[#18254D] tracking-tight text-base">
                                       {admin.name}
                                     </h5>
-                                    <p className="text-[13px] font-bold text-slate-500">
+                                    <p className="text-[13px] font-medium text-slate-500 mt-0.5">
                                       {admin.email}
                                     </p>
                                   </div>
                                 </div>
-                                <div className="flex gap-3 mt-4 ml-14">
-                                  <span className="inline-block px-3 py-1 bg-primary/10 text-primary rounded-lg text-[12px] font-bold  tracking-widest">
+                                <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-50">
+                                  <span className="inline-flex items-center px-3 py-1 bg-primary/5 text-primary border border-primary/10 rounded-lg text-[11px] font-bold tracking-widest uppercase">
                                     {admin.role}
                                   </span>
-                                  <span className="inline-block px-3 py-1 bg-green-100/50 border border-green-200 text-green-700 rounded-lg text-[12px] font-bold  tracking-widest">
+                                  <span className={`inline-flex items-center px-3 py-1 rounded-lg text-[11px] font-bold tracking-widest uppercase border ${admin.status === "Active" ? "bg-emerald-50 text-emerald-700 border-emerald-100" : "bg-rose-50 text-rose-700 border-rose-100"}`}>
                                     {admin.status}
                                   </span>
-                                  <span className="inline-block px-3 py-1 bg-blue-100/50 border border-blue-200 text-blue-700 rounded-lg text-[12px] font-bold  tracking-widest">
-                                    {CATEGORY_MAP[admin.privileges] || "Both"}
+                                  <span className="inline-flex items-center px-3 py-1 bg-blue-50 text-blue-700 border border-blue-100 rounded-lg text-[11px] font-bold tracking-widest uppercase">
+                                    {CATEGORY_MAP[admin.privileges] || "Both"} Access
                                   </span>
                                 </div>
-                              </>
+                              </div>
                             )}
                           </div>
                           <div className="flex gap-2">
