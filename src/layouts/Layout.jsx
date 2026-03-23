@@ -58,7 +58,7 @@ const Layout = ({
 
         {/* Scalable Content Injection */}
         <main className="flex-1 p-4 min-[1201px]:p-8 w-full overflow-x-hidden mt-28 min-[1201px]:mt-4 flex flex-col">
-          <div key={location.pathname} className="max-w-7xl mx-auto pb-20 flex-1 w-full animate-fade-in-up">
+          <div key={location.pathname} className="max-w-7xl mx-auto pb-20 flex-1 w-full animate-fade-in">
             <Outlet />
           </div>
           <Footer />
