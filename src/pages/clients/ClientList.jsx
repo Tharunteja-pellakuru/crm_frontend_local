@@ -42,6 +42,7 @@ import {
   countryToCurrency,
 } from "../../utils/locationData";
 import SearchableDropdown from "../../components/common/SearchableDropdown";
+import { validateForm } from "../../utils/validation";
 
 const ClientList = ({
   clients,
@@ -184,6 +185,17 @@ const ClientList = ({
 
   const handleOnboardSubmit = (e) => {
     e.preventDefault();
+
+    const isValid = validateForm(onboardingData, {
+      name: { required: true, minLength: 2, label: "Full Name" },
+      email: { required: true, pattern: /^\S+@\S+\.\S+$/, label: "Email" },
+      phone: { required: true, minLength: 10, label: "Phone Number" },
+      projectName: { required: true, label: "Project Name" },
+      projectBudget: { required: true, type: "number", label: "Project Budget" }
+    });
+
+    if (!isValid) return;
+
     if (onOnboardClient && onboardingLeadId) {
       onOnboardClient(onboardingLeadId, onboardingData);
       setShowOnboardModal(false);
@@ -343,6 +355,15 @@ const ClientList = ({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const isValid = validateForm(formData, {
+      name: { required: true, minLength: 2, label: "Full Name" },
+      email: { required: true, pattern: /^\S+@\S+\.\S+$/, label: "Email" },
+      phone: { required: true, minLength: 10, label: "Phone Number" }
+    });
+
+    if (!isValid) return;
+
     if (onAddClient) {
       const submissionData = {
         ...formData,

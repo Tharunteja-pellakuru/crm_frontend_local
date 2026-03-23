@@ -29,6 +29,7 @@ import {
   REVERSE_CATEGORY_MAP,
 } from "../../constants/categoryConstants";
 import { BASE_URL } from "../../constants/config";
+import { validateForm } from "../../utils/validation";
 
 const ProjectOverview = ({
   project,
@@ -73,6 +74,14 @@ const ProjectOverview = ({
   const [activeDropdown, setActiveDropdown] = useState(null); // 'status', 'priority', 'category'
 
   const handleSave = async () => {
+    const isValid = validateForm(formData, {
+      name: { required: true, minLength: 2, label: "Project Name" },
+      description: { required: true, label: "Project Description" },
+      budget: { required: true, type: "number", label: "Budget" }
+    });
+
+    if (!isValid) return;
+
     if (onUpdateProject && project?.id) {
       try {
         await onUpdateProject({

@@ -41,6 +41,7 @@ import {
   countryToCurrency,
 } from "../../utils/locationData";
 import SearchableDropdown from "../../components/common/SearchableDropdown";
+import { validateForm } from "../../utils/validation";
 import {
   CATEGORY_MAP,
   REVERSE_CATEGORY_MAP,
@@ -301,6 +302,17 @@ const LeadList = ({
 
   const handleEditConvertedSubmit = async (e) => {
     e.preventDefault();
+    
+    const isValid = validateForm(editConvertedData, {
+      name: { required: true, minLength: 2, label: "Full Name" },
+      email: { required: true, pattern: /^\S+@\S+\.\S+$/, label: "Email" },
+      phone: { required: true, minLength: 10, label: "Phone Number" },
+      organisationName: { required: true, label: "Organization Name" },
+      projectName: { required: true, label: "Project Name" }
+    });
+
+    if (!isValid) return;
+
     if (onUpdateConvertedLead && editingConvertedLeadId) {
       try {
         const result = await onUpdateConvertedLead(
@@ -323,6 +335,17 @@ const LeadList = ({
 
   const handleOnboardSubmit = async (e) => {
     e.preventDefault();
+    
+    const isValid = validateForm(onboardingData, {
+      name: { required: true, minLength: 2, label: "Full Name" },
+      email: { required: true, pattern: /^\S+@\S+\.\S+$/, label: "Email" },
+      phone: { required: true, minLength: 10, label: "Phone Number" },
+      projectName: { required: true, label: "Project Name" },
+      projectBudget: { required: true, type: "number", label: "Project Budget" }
+    });
+
+    if (!isValid) return;
+
     if (onOnboardLead && onboardingLeadId) {
       try {
         await onOnboardLead(onboardingLeadId, onboardingData);
@@ -581,6 +604,15 @@ const LeadList = ({
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    const isValid = validateForm(formData, {
+      name: { required: true, minLength: 2, label: "Full Name" },
+      email: { required: true, pattern: /^\S+@\S+\.\S+$/, label: "Email" },
+      phone: { required: true, minLength: 10, label: "Phone Number" }
+    });
+
+    if (!isValid) return;
+
     if (onAddLead) {
       const submissionData = {
         ...formData,

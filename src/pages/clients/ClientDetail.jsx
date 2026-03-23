@@ -42,11 +42,9 @@ import {
   countryToCurrency,
 } from "../../utils/locationData";
 import SearchableDropdown from "../../components/common/SearchableDropdown";
-import {
-  CATEGORY_MAP,
-  REVERSE_CATEGORY_MAP,
-} from "../../constants/categoryConstants";
+import { REVERSE_CATEGORY_MAP } from "../../constants/categoryConstants";
 import { BASE_URL } from "../../constants/config";
+import { validateForm } from "../../utils/validation";
 
 const ClientDetail = ({
   client,
@@ -207,6 +205,15 @@ const ClientDetail = ({
 
   const handleLogInteraction = (e) => {
     e.preventDefault();
+
+    const isValid = validateForm(logData, {
+      description: { required: true, minLength: 5, label: "Interaction Details" },
+      date: { required: true, label: "Date" },
+      time: { required: true, label: "Time" }
+    });
+
+    if (!isValid) return;
+
     if (onAddActivity && logData.description) {
       const combinedDateTime = new Date(`${logData.date}T${logData.time}`);
       onAddActivity({
@@ -323,6 +330,15 @@ const ClientDetail = ({
                 <form
                   onSubmit={async (e) => {
                     e.preventDefault();
+
+                    const isValid = validateForm(editFormData, {
+                      name: { required: true, minLength: 2, label: "Full Name" },
+                      email: { required: true, pattern: /^\S+@\S+\.\S+$/, label: "Email" },
+                      phone: { required: true, minLength: 10, label: "Phone Number" }
+                    });
+
+                    if (!isValid) return;
+
                     if (onUpdateClient) {
                       try {
                         // Ensure we have the latest values

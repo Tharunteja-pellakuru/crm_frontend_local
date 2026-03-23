@@ -21,6 +21,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { CATEGORY_MAP, REVERSE_CATEGORY_MAP } from "../../constants/categoryConstants";
+import { validateForm } from "../../utils/validation";
 
 const FollowUpList = ({
   followUps,
@@ -189,6 +190,15 @@ const FollowUpList = ({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const isValid = validateForm(formData, {
+      title: { required: true, minLength: 2, label: "Title" },
+      description: { required: true, label: "Description" },
+      clientId: { required: true, label: "Client" },
+      followup_date: { required: true, label: "Follow-up Date" }
+    });
+
+    if (!isValid) return;
     
     // Convert 12h to 24h for backend
     let hour = parseInt(formData.timeHour);

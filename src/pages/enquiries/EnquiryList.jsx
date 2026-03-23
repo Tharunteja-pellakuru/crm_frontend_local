@@ -29,11 +29,13 @@ import {
   ChevronLeft,
   ChevronRight,
   UserCheck,
+  AlertTriangle,
 } from "lucide-react";
 import DatePicker from "../../components/ui/DatePicker";
 import { CATEGORY_MAP, REVERSE_CATEGORY_MAP } from "../../constants/categoryConstants";
 import { countries } from "../../utils/countries";
 import SearchableDropdown from "../../components/common/SearchableDropdown";
+import { validateForm } from "../../utils/validation";
 import {
   analyzeEnquiryRelevance,
   batchAnalyzeEnquiries,
@@ -131,6 +133,7 @@ const EnquiryList = ({
     website: "",
     message: "",
   });
+  const [showDeleteAllModal, setShowDeleteAllModal] = useState(false);
 
   // Auto-select default model for AI Analysis
   useEffect(() => {
@@ -376,6 +379,16 @@ const EnquiryList = ({
 
   const confirmLeadConversion = async () => {
     if (!selectedEnquiry) return;
+    
+    const isValid = validateForm(promoteFormData, {
+      name: { required: true, minLength: 2, label: "Full Name" },
+      email: { required: true, pattern: /^\S+@\S+\.\S+$/, label: "Email" },
+      phone: { required: true, minLength: 10, label: "Phone Number" },
+      country: { required: true, label: "Country" }
+    });
+
+    if (!isValid) return;
+
     try {
       // Pass the data to the parent handler
       onPromote({
@@ -409,6 +422,16 @@ const EnquiryList = ({
 
   const handleSimulateSubmit = (e) => {
     e.preventDefault();
+    
+    const isValid = validateForm(formData, {
+      name: { required: true, minLength: 2, label: "Full Name" },
+      email: { required: true, pattern: /^\S+@\S+\.\S+$/, label: "Email" },
+      phone: { required: true, minLength: 10, label: "Phone Number" },
+      message: { required: true, label: "Requirement Briefing" }
+    });
+
+    if (!isValid) return;
+
     onAdd({ ...formData });
     setShowSimulateForm(false);
     setFormData({ name: "", email: "", phone: "", website: "", message: "" });
@@ -428,15 +451,11 @@ const EnquiryList = ({
             </p>
           </div>
           <div className="w-full lg:w-auto flex flex-col sm:flex-row items-center gap-3">
-            {activeTab === "dismissed" && totalInTabCount > 0 && (
-              <button
-                onClick={() => {
-                  if (window.confirm("Are you sure you want to permanently delete all dismissed enquiries?")) {
-                    onDeleteAll();
-                  }
-                }}
-                className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-rose-50 text-rose-600 border border-rose-200 rounded-2xl hover:bg-rose-100 transition-all text-[13px] font-bold tracking-wider shadow-sm active:scale-95 group"
-              >
+             {activeTab === "dismissed" && totalInTabCount > 0 && (
+               <button
+                 onClick={() => setShowDeleteAllModal(true)}
+                 className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-rose-50 text-rose-600 border border-rose-200 rounded-2xl hover:bg-rose-100 transition-all text-[13px] font-bold tracking-wider shadow-sm active:scale-95 group"
+               >
                 <Trash2
                   size={16}
                   strokeWidth={2.5}
@@ -1383,6 +1402,57 @@ const EnquiryList = ({
                 >
                   <span>Add To Hold</span>
                   <PauseCircle size={16} strokeWidth={2.5} />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {showDeleteAllModal && createPortal(
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[99999] flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl border border-slate-200 overflow-hidden animate-fade-in relative flex flex-col">
+            <div className="bg-rose-600 p-6 text-white shrink-0">
+              <div className="flex justify-between items-center mb-1">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-white/20 rounded-2xl flex items-center justify-center">
+                    <AlertTriangle size={20} className="text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold tracking-tight">Confirm Clear All</h3>
+                </div>
+                <button
+                  onClick={() => setShowDeleteAllModal(false)}
+                  className="p-1 hover:bg-white/10 rounded-lg transition-colors border border-white/10"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+            </div>
+            <div className="p-7 space-y-6">
+              <div className="space-y-2">
+                <p className="text-slate-600 font-medium leading-relaxed">
+                  Are you sure you want to <span className="text-rose-600 font-bold underline underline-offset-4">permanently delete all</span> dismissed enquiries? This action cannot be undone.
+                </p>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowDeleteAllModal(false)}
+                  className="flex-1 h-12 bg-slate-100 text-slate-600 rounded-2xl text-[13px] font-bold tracking-widest hover:bg-slate-200 transition-all active:scale-[0.98]"
+                >
+                  CANCEL
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onDeleteAll();
+                    setShowDeleteAllModal(false);
+                  }}
+                  className="flex-1 h-12 bg-rose-600 text-white rounded-2xl text-[13px] font-bold tracking-widest shadow-lg shadow-rose-200 hover:bg-rose-700 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                >
+                  <span>DELETE ALL</span>
+                  <Trash2 size={16} />
                 </button>
               </div>
             </div>

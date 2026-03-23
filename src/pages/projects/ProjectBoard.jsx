@@ -33,6 +33,7 @@ import {
   countryToCurrency,
 } from "../../utils/locationData";
 import SearchableDropdown from "../../components/common/SearchableDropdown";
+import { validateForm } from "../../utils/validation";
 
 const TECH_COLUMNS = [
   {
@@ -494,6 +495,15 @@ const ProjectBoard = ({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const isValid = validateForm(formData, {
+      projectName: { required: true, minLength: 2, label: "Project Name" },
+      projectDescription: { required: true, label: "Project Description" },
+      budget: { required: true, type: "number", label: "Budget" },
+      onboardingDate: { required: true, label: "Onboarding Date" }
+    });
+
+    if (!isValid) return;
 
     if (!selectedClientId) {
       toast.error("Please select an existing client.");
