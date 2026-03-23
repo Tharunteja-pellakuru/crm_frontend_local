@@ -18,8 +18,6 @@ import {
   Trash2,
   Calendar,
   ChevronLeft,
-  Calendar,
-  ChevronLeft,
   ChevronRight,
   Loader2,
 } from "lucide-react";

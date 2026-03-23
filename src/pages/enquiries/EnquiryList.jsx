@@ -370,7 +370,7 @@ const EnquiryList = ({
       email: enquiry.email,
       phone: enquiry.phone,
       website: enquiry.website,
-      leadType: "Warm",
+      leadType: "Hot",
       leadCategory: 2,
       country: enquiry.country || "",
       notes: enquiry.message,
@@ -1146,8 +1146,6 @@ const EnquiryList = ({
                     label="Country Code"
                     options={countries.map(c => ({
                       name: `${c.name} (${c.code})`,
-                      code: c.code,
-                      id: c.name // Using country name as ID/Value
                     }))}
                     value={promoteFormData.country}
                     onChange={(val) => setPromoteFormData({ ...promoteFormData, country: val })}
