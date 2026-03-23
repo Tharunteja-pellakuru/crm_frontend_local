@@ -3,9 +3,12 @@ import { Area, Line, ComposedChart, XAxis, YAxis, CartesianGrid, Tooltip, Respon
 import { Users, UserPlus, Clock, CheckCircle2, ChevronRight, ChevronDown, Filter, Calendar, TrendingUp, X, Bell, Info, Inbox, Activity } from "lucide-react";
 
 // Simple stat card component
-function StatCard({ title, value, trend, trendUp, icon, description }) {
+function StatCard({ title, value, trend, trendUp, icon, description, delay = 0 }) {
   return (
-    <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:-translate-y-1 hover:shadow-md transition-all relative">
+    <div 
+      className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:-translate-y-1 hover:shadow-md transition-all duration-300 relative animate-fade-in-up"
+      style={{ animationDelay: `${delay}ms` }}
+    >
       <div className="flex justify-between items-start mb-4">
         <div className="p-2.5 bg-primary/5 text-primary rounded-xl">
           {icon}
@@ -201,8 +204,8 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
 
   return (
     <div className="w-full relative">
-      <div className="space-y-6 md:space-y-8 animate-fade-in relative z-0">
-        <div className="flex flex-row flex-wrap justify-between items-center gap-6">
+      <div className="space-y-6 md:space-y-8 relative z-0">
+        <div className="flex flex-row flex-wrap justify-between items-center gap-6 animate-fade-in" style={{ animationDelay: '100ms' }}>
           <div className="max-w-2xl shrink-0">
             <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-[#18254D] tracking-tight mb-1.5">
               Welcome back, {currentUser?.full_name?.split(' ')[0] || 'Admin'}
@@ -335,6 +338,7 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
             trendUp={true}
             icon={<Inbox />}
             description="Total number of new enquiry messages received from the landing page."
+            delay={150}
           />
           <StatCard
             title="Total Leads"
@@ -343,6 +347,7 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
             trendUp={true}
             icon={<UserPlus />}
             description="Total count of potential customers currently in the 'Lead' status."
+            delay={200}
           />
           <StatCard
             title="Lead → Client Conversion"
@@ -351,6 +356,7 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
             trendUp={true}
             icon={<CheckCircle2 />}
             description="Number of leads who have been successfully onboarded as active clients."
+            delay={250}
           />
           <StatCard
             title="Engagement Rate"
@@ -359,10 +365,11 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
             trendUp={true}
             icon={<Activity />}
             description="Percentage of total prospects that have been converted into active clients."
+            delay={300}
           />
         </div>
 
-        <div className="flex flex-col gap-4 md:gap-5">
+        <div className="flex flex-col gap-4 md:gap-5 animate-fade-in-up" style={{ animationDelay: '350ms' }}>
           <div className="flex flex-wrap gap-4 md:gap-5">
             <div className="flex-1 min-w-[340px] xl:max-w-[calc(30%-10px)] bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col h-[500px]">
             <div className="flex flex-row justify-between items-center gap-2 mb-6 flex-nowrap">
