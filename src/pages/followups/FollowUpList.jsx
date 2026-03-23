@@ -411,17 +411,17 @@ const FollowUpList = ({
           </div>
         </div>
 
-        <div className="flex justify-center my-4 overflow-x-auto">
-          <div className="flex w-full md:inline-flex md:w-auto bg-slate-100/50 p-1 rounded-2xl border border-slate-200 shadow-sm leading-none h-[42px] items-center gap-1 whitespace-nowrap">
+        <div className="flex justify-center my-4 w-full px-1 sm:px-0">
+          <div className="flex flex-nowrap bg-slate-100/50 p-1 rounded-2xl border border-slate-200 shadow-sm leading-none w-full sm:w-auto items-center gap-0.5 sm:gap-1 overflow-x-auto no-scrollbar">
             {["All", "Overdue", "Today", "Upcoming"].map((f) => (
               <button
                 key={f}
                 onClick={() => setActiveFilter(f)}
-                className={`flex-1 md:flex-none px-2 md:px-5 h-full rounded-xl text-[14px] md:text-[12px] font-bold  tracking-wider transition-all flex items-center justify-center gap-1 md:gap-1.5 md:min-w-[100px] border border-transparent whitespace-nowrap ${activeFilter === f ? "bg-white text-primary shadow-md border-slate-100" : "text-slate-400 hover:text-slate-600 hover:bg-white/50"}`}
+                className={`flex-1 sm:flex-none px-2 sm:px-5 py-2.5 sm:py-2 rounded-xl text-[10px] sm:text-[12px] font-bold tracking-wider transition-all flex items-center justify-center gap-1 sm:gap-1.5 min-w-[65px] sm:min-w-[100px] h-[34px] sm:h-auto border border-transparent whitespace-nowrap ${activeFilter === f ? "bg-white text-primary shadow-md border-slate-100" : "text-slate-400 hover:text-slate-600 hover:bg-white/50"}`}
               >
                 {f}
                 <span
-                  className={`text-[13px] md:text-[14px] font-bold min-w-[16px] md:min-w-[18px] h-[16px] md:h-[18px] flex items-center justify-center rounded-full ${activeFilter === f ? "bg-primary text-white" : "bg-slate-200 text-slate-500"}`}
+                  className={`text-[10px] sm:text-[14px] font-bold min-w-[16px] sm:min-w-[18px] h-[16px] sm:h-[18px] flex items-center justify-center rounded-full ${activeFilter === f ? "bg-primary text-white" : "bg-slate-200 text-slate-500"}`}
                 >
                   {tabCounts[f]}
                 </span>
