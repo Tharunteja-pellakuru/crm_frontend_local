@@ -575,10 +575,11 @@ const ProjectBoard = ({
           </div>
         </div>
 
-        {/* Category Dropdown & Search Bar */}
+        {/* Control Bar */}
         <div className="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm">
-          <div className="flex flex-nowrap justify-between w-full items-center gap-4 overflow-x-auto no-scrollbar">
-            <div className="relative min-w-[200px] max-w-md flex-1">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:flex gap-2 w-full items-center">
+            {/* 1. Search Bar */}
+            <div className="relative md:col-span-2 xl:flex-[1.5]">
               <Search
                 size={16}
                 className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
@@ -592,13 +593,14 @@ const ProjectBoard = ({
               />
             </div>
 
-            <div className="relative shrink-0">
+            {/* Category Dropdown */}
+            <div className="relative md:col-span-2 xl:flex-1">
               <button
                 ref={categoryButtonRef}
                 onClick={() =>
                   setIsCategoryDropdownOpen(!isCategoryDropdownOpen)
                 }
-                className="w-full lg:w-auto h-[38px] flex items-center justify-between gap-3 px-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-[12px] font-bold  tracking-widest text-primary hover:bg-white hover:border-slate-200 transition-all min-w-[200px] shadow-sm shadow-slate-200/50 group"
+                className="w-full h-[38px] flex items-center justify-between gap-3 px-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-[12px] font-bold  tracking-widest text-primary hover:bg-white hover:border-slate-200 transition-all shadow-sm shadow-slate-200/50 group"
               >
                 <span>{CATEGORY_MAP[selectedCategory]} Projects</span>
                 <ChevronDown
@@ -608,58 +610,59 @@ const ProjectBoard = ({
                 />
               </button>
 
-                {isCategoryDropdownOpen &&
-                  createPortal(
-                    <>
-                      <div
-                        className="fixed inset-0 z-[9998]"
-                        onClick={() => setIsCategoryDropdownOpen(false)}
-                      />
-                      <div
-                        className="category-dropdown bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[9999] animate-fade-in origin-top"
-                        style={categoryDropdownStyle}
-                      >
-                        <div className="bg-[#18254D] px-4 py-3 border-b border-white/10">
-                          <p className="text-[14px] font-black text-white/50  tracking-widest">
-                            Select Project Category
-                          </p>
-                        </div>
-                        {[1, 2, 3].map((catId) => (
-                          <button
-                            key={catId}
-                            onClick={() => handleCategoryChange(catId)}
-                            className={`w-full text-left px-5 py-3.5 text-[12px] font-bold  tracking-widest transition-colors ${
-                              selectedCategory === catId
-                                ? "bg-slate-100 text-secondary"
-                                : "text-[#18254D] hover:bg-slate-50"
-                            }`}
-                          >
-                            {CATEGORY_MAP[catId]} Projects
-                          </button>
-                        ))}
+              {isCategoryDropdownOpen &&
+                createPortal(
+                  <>
+                    <div
+                      className="fixed inset-0 z-[9998]"
+                      onClick={() => setIsCategoryDropdownOpen(false)}
+                    />
+                    <div
+                      className="category-dropdown bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[9999] animate-fade-in-up origin-top"
+                      style={categoryDropdownStyle}
+                    >
+                      <div className="bg-[#18254D] px-4 py-3 border-b border-white/10">
+                        <p className="text-[14px] font-black text-white/50  tracking-widest">
+                          Select Project Category
+                        </p>
                       </div>
-                    </>,
-                    document.body,
-                  )}
-              </div>
+                      {[1, 2, 3].map((catId) => (
+                        <button
+                          key={catId}
+                          onClick={() => handleCategoryChange(catId)}
+                          className={`w-full text-left px-5 py-3.5 text-[12px] font-bold  tracking-widest transition-colors ${
+                            selectedCategory === catId
+                              ? "bg-slate-100 text-secondary"
+                              : "text-[#18254D] hover:bg-slate-50"
+                          }`}
+                        >
+                          {CATEGORY_MAP[catId]} Projects
+                        </button>
+                      ))}
+                    </div>
+                  </>,
+                  document.body,
+                )}
+            </div>
           </div>
         </div>
 
         {/* Stage Toggle Tabs */}
-        <div className="flex lg:justify-center my-1 overflow-x-auto no-scrollbar -mx-4 px-4 lg:mx-0 lg:px-0">
-          <div className="inline-flex bg-slate-100/50 p-1 rounded-2xl border border-slate-200 shadow-sm leading-none h-[42px] items-center gap-1 whitespace-nowrap">
+        <div className="flex justify-center my-4 w-full px-1 sm:px-0">
+          <div className="flex flex-nowrap bg-slate-100/50 p-1 rounded-2xl border border-slate-200 shadow-sm leading-none w-full sm:w-auto items-center gap-0.5 sm:gap-1 overflow-x-auto no-scrollbar">
             {COLUMNS.map((column) => {
               const count = projects.filter(
                 (p) =>
                   p.status === column.id &&
-                  (selectedCategory === 3 || (p.category || 1) === selectedCategory),
+                  (selectedCategory === 3 ||
+                    (p.category || 1) === selectedCategory),
               ).length;
               const isActive = activeStage === column.id;
               return (
                 <button
                   key={column.id}
                   onClick={() => setActiveStage(column.id)}
-                  className={`px-3 md:px-5 h-full rounded-xl text-[12px] font-bold  tracking-wider transition-all flex items-center justify-center min-w-[90px] md:min-w-[100px] border border-transparent whitespace-nowrap gap-2 ${
+                  className={`flex-1 sm:flex-none px-2 sm:px-5 py-2.5 sm:py-2 rounded-xl text-[10px] sm:text-[12px] font-bold tracking-wider transition-all flex items-center justify-center min-w-[80px] sm:min-w-[120px] h-[34px] sm:h-auto border border-transparent whitespace-nowrap gap-2 ${
                     isActive
                       ? "text-primary bg-white shadow-md border-slate-100"
                       : "text-slate-400 hover:text-slate-500 hover:bg-white/50"
@@ -667,7 +670,7 @@ const ProjectBoard = ({
                 >
                   <span>{column.title}</span>
                   <span
-                    className={`min-w-[20px] h-5 px-1.5 rounded-full text-[14px] font-bold flex items-center justify-center ${
+                    className={`min-w-[18px] h-4.5 px-1.5 rounded-full text-[10px] sm:text-[12px] font-black flex items-center justify-center ${
                       isActive
                         ? "bg-primary text-white"
                         : "bg-slate-200 text-slate-500"
@@ -793,39 +796,38 @@ const ProjectBoard = ({
       </div>
 
       {/* Add Modal */}
-      {showAddModal && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[100] flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white w-full max-w-xl rounded-xl shadow-2xl border border-slate-200 overflow-hidden animate-fade-in my-auto flex flex-col">
-            <div className="bg-primary p-4 text-white relative">
-              <button
-                onClick={() => setShowAddModal(false)}
-                className="absolute top-4 right-4 p-1.5 hover:bg-white/10 rounded-xl transition-colors"
-              >
-                <X size={18} strokeWidth={3} />
-              </button>
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-secondary/10 rounded-xl flex items-center justify-center shadow-lg border border-secondary/20">
-                  <UserPlus
-                    size={18}
-                    className="text-secondary"
-                    strokeWidth={3}
-                  />
-                </div>
-                <div>
-                  <h3 className="text-base font-bold tracking-tighter leading-none">
-                    Add New Project
-                  </h3>
-                  <p className="text-secondary text-[14px] font-bold  tracking-widest mt-0.5">
-                    Project and Client Details
-                  </p>
+      {showAddModal &&
+        createPortal(
+          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[9999] flex justify-center p-4 overflow-y-auto no-scrollbar">
+            <div className="bg-white w-full max-w-xl rounded-xl shadow-2xl border border-slate-200 overflow-hidden animate-fade-in my-auto flex flex-col">
+              <div className="bg-primary p-4 text-white relative">
+                <button
+                  onClick={() => setShowAddModal(false)}
+                  className="absolute top-4 right-4 p-1.5 hover:bg-white/10 rounded-xl transition-colors"
+                >
+                  <X size={18} strokeWidth={3} />
+                </button>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-secondary/10 rounded-xl flex items-center justify-center shadow-lg border border-secondary/20">
+                    <UserPlus
+                      size={18}
+                      className="text-secondary"
+                      strokeWidth={3}
+                    />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold tracking-tighter leading-none">
+                      Add New Project
+                    </h3>
+                    <p className="text-secondary text-[14px] font-bold  tracking-widest mt-0.5">
+                      Project and Client Details
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <form
-              onSubmit={handleSubmit}
-              className="p-5 space-y-4"
-            >
+              <form onSubmit={handleSubmit} className="p-5 space-y-4">
+
               {/* CLIENT DETAILS HEADING */}
               <div className="flex items-center gap-3 pt-2">
                 <div className="h-[2px] w-8 bg-secondary rounded-full" />
@@ -1320,7 +1322,8 @@ const ProjectBoard = ({
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
       {/* Delete Confirmation Modal */}
       {projectToDelete &&
