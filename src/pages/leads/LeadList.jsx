@@ -650,9 +650,9 @@ const LeadList = ({
 
         {/* Control Bar */}
         <div className="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm">
-          <div className="flex flex-nowrap gap-2 w-full items-center overflow-x-auto no-scrollbar">
+          <div className="flex flex-row flex-wrap gap-2 w-full items-center">
             {/* 1. Search Bar */}
-            <div className="relative min-w-[200px] flex-[1.5] shrink-0">
+            <div className="relative w-full sm:w-auto sm:flex-[1.5] min-w-[100%] sm:min-w-[200px] order-1">
               <Search
                 size={16}
                 className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
@@ -667,7 +667,7 @@ const LeadList = ({
             </div>
 
             {leadView !== "Converted" && leadView !== "Dismissed" && (
-            <div className="min-w-[160px] flex-1 shrink-0 relative z-50">
+            <div className="flex-1 sm:flex-none w-[auto] min-w-[140px] relative z-50 order-2">
               <button
                 ref={tierButtonRef}
                 onClick={() => setIsTierDropdownOpen(!isTierDropdownOpen)}
@@ -722,7 +722,7 @@ const LeadList = ({
             )}
 
             {/* Category Dropdown */}
-            <div className="min-w-[160px] flex-1 shrink-0 relative z-50">
+            <div className="flex-1 sm:flex-none w-[auto] min-w-[140px] relative z-50 order-3">
               <button
                 ref={categoryButtonRef}
                 onClick={() =>
@@ -782,7 +782,7 @@ const LeadList = ({
             </div>
 
             {/* Date Filters */}
-            <div className="min-w-[140px] flex-1 shrink-0 relative z-50">
+            <div className="flex-1 sm:flex-none w-[auto] min-w-[140px] relative z-50 order-4">
               <DatePicker
                 label="From"
                 value={startDate}
@@ -790,15 +790,15 @@ const LeadList = ({
               />
             </div>
 
-            <div className="min-w-[140px] flex-1 shrink-0 relative z-50">
+            <div className="flex-1 sm:flex-none w-[auto] min-w-[140px] relative z-50 order-5">
               <DatePicker label="To" value={endDate} onChange={setEndDate} />
             </div>
           </div>
         </div>
 
         {/* Lead View Toggles */}
-        <div className="flex justify-center my-4 overflow-x-auto">
-          <div className="inline-flex bg-slate-100/50 p-1 rounded-2xl border border-slate-200 shadow-sm leading-none h-[42px] items-center gap-1 whitespace-nowrap">
+        <div className="flex justify-center my-4 w-full px-1 sm:px-0">
+          <div className="flex flex-nowrap bg-slate-100/50 p-1 rounded-2xl border border-slate-200 shadow-sm leading-none w-full sm:w-auto items-center gap-0.5 sm:gap-1 overflow-x-auto no-scrollbar">
             {["Pending", "Converted", "Dismissed"].map((view) => {
               const colors = {
                 Pending: {
@@ -821,7 +821,7 @@ const LeadList = ({
                 <button
                   key={view}
                   onClick={() => setLeadView(view)}
-                  className={`px-5 h-full rounded-xl text-[12px] font-bold  tracking-wider transition-all flex items-center justify-center min-w-[100px] border border-transparent whitespace-nowrap ${
+                  className={`flex-1 sm:flex-none px-2 sm:px-5 py-2.5 sm:py-2 rounded-xl text-[10px] sm:text-[12px] font-bold tracking-wider transition-all flex items-center justify-center min-w-[65px] sm:min-w-[100px] h-[34px] sm:h-auto border border-transparent whitespace-nowrap ${
                     leadView === view
                       ? `${activeColor} shadow-md`
                       : `text-slate-400 ${hoverColor}`
@@ -1224,10 +1224,10 @@ const LeadList = ({
       </div>
 
       {/* Add Modal */}
-      {showAddModal && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[100] flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white w-full max-w-xl rounded-xl shadow-2xl border border-slate-200 overflow-hidden animate-fade-in my-auto flex flex-col">
-            <div className="bg-primary p-4 text-white relative">
+      {showAddModal && createPortal(
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[99999] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+          <div className="bg-white w-full max-w-xl rounded-xl shadow-2xl border border-slate-200 overflow-hidden animate-fade-in relative flex flex-col max-h-[90vh]">
+            <div className="bg-primary p-4 text-white relative shrink-0">
               <button
                 onClick={() => setShowAddModal(false)}
                 className="absolute top-4 right-4 p-1.5 hover:bg-white/10 rounded-xl transition-colors"
@@ -1255,7 +1255,7 @@ const LeadList = ({
 
             <form
               onSubmit={handleSubmit}
-              className="p-4 md:p-5 space-y-4 max-h-[65vh] overflow-y-auto"
+              className="p-4 md:p-5 space-y-4 overflow-y-auto no-scrollbar"
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {/* ADD LEAD FIELDS */}
@@ -1501,7 +1501,8 @@ const LeadList = ({
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
       {/* Onboard Modal */}
       {showOnboardModal && (
