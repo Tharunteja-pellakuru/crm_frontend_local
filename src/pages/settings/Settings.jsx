@@ -623,7 +623,7 @@ const Settings = ({
               { id: "profile", label: "My Profile" },
               { id: "security", label: "Security" },
               { id: "ai", label: "AI Settings" },
-              { id: "team", label: "Team & Admins" },
+              { id: "team", label: "Admins" },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -647,36 +647,33 @@ const Settings = ({
             {activeTab === "profile" && (
               <div className="space-y-8 animate-fade-in w-full">
                 {/* Profile Header */}
-                <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 pb-8 border-b border-slate-100">
+                <div className="flex flex-col sm:flex-row items-center sm:items-start gap-8 pb-10 border-b border-slate-100">
                   <div className="relative group shrink-0">
                     <label
                       htmlFor="profile-photo-upload"
                       className={`block relative ${isProfileEditing ? "cursor-pointer" : "cursor-default"}`}
                     >
+                      <div className="absolute inset-0 bg-blue-500/10 rounded-[32px] blur-3xl opacity-50 group-hover:opacity-80 transition-opacity" />
                       {profile.image ? (
                         <img
                           key={profile.image}
                           src={profile.image}
                           alt="Profile"
-                          className="w-24 h-24 rounded-2xl border-4 border-slate-100 object-cover shadow-md group-hover:shadow-lg transition-shadow"
+                          className="w-32 h-32 rounded-[32px] border-4 border-white object-cover shadow-2xl relative z-10 group-hover:scale-[1.02] transition-transform duration-500"
                           onError={(e) => {
-                            console.error(
-                              "Image failed to load:",
-                              profile.image,
-                            );
                             e.target.style.display = "none";
+                            e.target.nextSibling.style.display = "flex";
                           }}
                         />
-                      ) : (
-                        <div className="w-24 h-24 rounded-2xl border-4 border-slate-100 bg-primary flex items-center justify-center shadow-md">
-                          <span className="text-3xl font-bold text-white">
-                            {profile.full_name?.charAt(0).toUpperCase() || "U"}
-                          </span>
-                        </div>
-                      )}
+                      ) : null}
+                      <div className={`w-32 h-32 rounded-[32px] bg-gradient-to-br from-[#18254D] to-[#2a3f7a] flex items-center justify-center border-4 border-white shadow-2xl relative z-10 ${profile.image ? "hidden" : "flex"}`}>
+                        <span className="text-4xl font-black text-white">
+                          {profile.full_name?.charAt(0).toUpperCase() || "U"}
+                        </span>
+                      </div>
                       {isProfileEditing && (
-                        <div className="absolute inset-0 bg-[#18254D]/50 rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Camera className="text-white" size={24} />
+                        <div className="absolute inset-0 bg-[#18254D]/40 backdrop-blur-[2px] rounded-[32px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 z-20">
+                          <Camera className="text-white" size={32} strokeWidth={2.5} />
                         </div>
                       )}
                     </label>
@@ -702,102 +699,105 @@ const Settings = ({
                       }}
                     />
                   </div>
-                  <div className="text-center sm:text-left pt-2 flex-1">
+                  <div className="text-center sm:text-left pt-4 flex-1">
                     <div className="flex items-start justify-between gap-4">
                       <div>
-                        <h3 className="text-2xl font-bold text-primary mb-1 tracking-tight">
+                        <h3 className="text-3xl font-black text-[#18254D] mb-2 tracking-tight">
                           {profile.full_name}
                         </h3>
-                        <span className="inline-block px-3 py-1 bg-secondary/10 text-secondary border border-secondary/20 rounded-md text-[12px]  font-bold tracking-widest">
-                          {profile.role}
-                        </span>
+                        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3">
+                          <span className="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-50 text-blue-700 border border-blue-100/50 rounded-full text-[12px] font-black tracking-widest uppercase">
+                            <Zap size={12} className="text-blue-500" />
+                            {profile.role}
+                          </span>
+                          <span className="inline-flex items-center gap-2 px-4 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-100/50 rounded-full text-[12px] font-black tracking-widest uppercase">
+                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                            Active Member
+                          </span>
+                        </div>
                       </div>
                       <button
                         onClick={() => setIsProfileEditing(!isProfileEditing)}
-                        className="p-2 rounded-lg border border-slate-200 text-slate-400 hover:text-primary hover:border-primary/40 hover:bg-slate-50 transition-all shrink-0"
-                        title="Edit profile"
-                        aria-label="Edit profile"
+                        className={`p-3 rounded-2xl border transition-all duration-300 group ${
+                          isProfileEditing 
+                          ? "bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-500/30" 
+                          : "bg-white border-slate-200 text-slate-400 hover:text-[#18254D] hover:border-[#18254D]/30 hover:shadow-lg"
+                        }`}
+                        title={isProfileEditing ? "Editing..." : "Edit profile"}
                       >
-                        <Edit2 size={16} />
+                        <Edit2 size={20} />
                       </button>
                     </div>
                   </div>
                 </div>
 
                 {/* Profile Form */}
-                <div className="space-y-6">
-                  <div>
-                    <div className="mb-4">
-                      <h4 className="text-[12px] font-bold text-slate-400  tracking-[0.2em] ml-1">
-                        Basic Information
-                      </h4>
+                <div className="space-y-8 pt-2">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8">
+                    <div className="space-y-2.5">
+                      <label className="text-[10px] font-black text-slate-400 tracking-[0.25em] uppercase ml-1 flex items-center gap-2">
+                        <User size={12} strokeWidth={3} className="text-blue-500" />
+                        Full Name
+                      </label>
+                      <input
+                        type="text"
+                        value={profile.full_name}
+                        onChange={(e) =>
+                          setProfile({
+                            ...profile,
+                            full_name: e.target.value,
+                          })
+                        }
+                        disabled={!isProfileEditing}
+                        className={`w-full h-12 px-5 border rounded-2xl transition-all duration-300 text-sm font-black ${
+                          isProfileEditing
+                            ? "bg-white border-slate-200 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 focus:outline-none text-[#18254D] shadow-sm"
+                            : "bg-slate-50 border-slate-100 text-slate-500 cursor-not-allowed"
+                        }`}
+                      />
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                      <div className="space-y-2">
-                        <label className="text-[12px] font-bold text-slate-400  tracking-widest ml-1 flex items-center gap-2">
-                          <User size={12} className="text-slate-400" />
-                          Full Name
-                        </label>
-                        <input
-                          type="text"
-                          value={profile.full_name}
-                          onChange={(e) =>
-                            setProfile({
-                              ...profile,
-                              full_name: e.target.value,
-                            })
-                          }
-                          disabled={!isProfileEditing}
-                          className={`w-full h-[46px] px-4 border rounded-xl transition-all text-sm font-bold ${
-                            isProfileEditing
-                              ? "bg-white border-slate-200 focus:ring-2 focus:ring-secondary/30 focus:border-secondary focus:outline-none text-[#18254D] shadow-sm"
-                              : "bg-slate-50 border-slate-100 text-[#18254D] cursor-not-allowed opacity-80"
-                          }`}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-[12px] font-bold text-slate-400  tracking-widest ml-1 flex items-center gap-2">
-                          <Building2 size={12} className="text-slate-400" />
-                          Designation
-                        </label>
-                        <input
-                          type="text"
-                          value={profile.role}
-                          disabled
-                          className="w-full h-[46px] px-4 bg-slate-50 border border-slate-100 rounded-xl text-[#18254D] cursor-not-allowed opacity-80 text-sm font-bold"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-[12px] font-bold text-slate-400  tracking-widest ml-1 flex items-center gap-2">
-                          <Mail size={12} className="text-slate-400" />
-                          Email Address
-                        </label>
-                        <input
-                          type="email"
-                          value={profile.email}
-                          readOnly
-                          className="w-full h-[46px] px-4 bg-slate-50 border border-slate-100 rounded-xl text-slate-500 cursor-not-allowed opacity-80 text-sm font-bold"
-                        />
-                      </div>
+                    <div className="space-y-2.5">
+                      <label className="text-[10px] font-black text-slate-400 tracking-[0.25em] uppercase ml-1 flex items-center gap-2">
+                        <Building2 size={12} strokeWidth={3} className="text-blue-500" />
+                        Designation
+                      </label>
+                      <input
+                        type="text"
+                        value={profile.role}
+                        disabled
+                        className="w-full h-12 px-5 bg-slate-50 border border-slate-100 rounded-2xl text-slate-500 cursor-not-allowed text-sm font-black"
+                      />
+                    </div>
+                    <div className="space-y-2.5 md:col-span-2">
+                      <label className="text-[10px] font-black text-slate-400 tracking-[0.25em] uppercase ml-1 flex items-center gap-2">
+                        <Mail size={12} strokeWidth={3} className="text-blue-500" />
+                        Email Address
+                      </label>
+                      <input
+                        type="email"
+                        value={profile.email}
+                        readOnly
+                        className="w-full h-12 px-5 bg-slate-50 border border-slate-100 rounded-2xl text-slate-400 cursor-not-allowed text-sm font-black"
+                      />
                     </div>
                   </div>
 
                   {isProfileEditing && (
-                    <div className="flex justify-end pt-5 border-t border-slate-100">
+                    <div className="flex justify-end pt-8 border-t border-slate-100">
                       <button
                         onClick={handleProfileSave}
                         disabled={isProfileSaved}
-                        className="flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white rounded-2xl hover:bg-slate-800 transition-all active:scale-95 text-[13px] font-bold disabled:opacity-70 shadow-lg shadow-primary/20"
+                        className="flex items-center justify-center gap-2 px-8 py-3.5 bg-[#18254D] text-white rounded-2xl hover:bg-[#1e2e5e] transition-all active:scale-95 text-sm font-black disabled:opacity-50 shadow-xl shadow-[#18254D]/20 animate-fade-in-up"
                       >
                         {isProfileSaved ? (
                           <>
-                            <Check size={16} strokeWidth={2.5} />
-                            Saved
+                            <Check size={18} strokeWidth={3} />
+                            CHANGES SAVED
                           </>
                         ) : (
                           <>
-                            <Save size={16} strokeWidth={2.5} />
-                            Save Changes
+                            <Save size={18} strokeWidth={3} />
+                            SAVE PROFILE
                           </>
                         )}
                       </button>
@@ -1128,19 +1128,19 @@ const Settings = ({
                                   />
                                 </div>
                               </div>
-                              <div className="flex gap-3 pt-2">
+                              <div className="flex gap-3 pt-4">
                                 <button
                                   onClick={() => {
                                     onUpdateAiModel(editModelData);
                                     setEditingModelId(null);
                                   }}
-                                  className="px-4 py-2.5 bg-primary text-white rounded-2xl hover:bg-slate-800 transition-all text-[13px] font-bold tracking-wider"
+                                  className="px-6 py-2.5 bg-[#18254D] text-white rounded-[20px] hover:bg-[#1e2e5e] transition-all text-[13px] font-black tracking-wider shadow-lg shadow-[#18254D]/10"
                                 >
                                   Save
                                 </button>
                                 <button
                                   onClick={() => setEditingModelId(null)}
-                                  className="px-4 py-2.5 bg-slate-200 text-slate-700 rounded-2xl hover:bg-slate-300 transition-all text-[13px] font-bold tracking-wider"
+                                  className="px-6 py-2.5 bg-slate-100 text-slate-600 rounded-[20px] hover:bg-slate-200 transition-all text-[13px] font-black tracking-wider"
                                 >
                                   Cancel
                                 </button>
@@ -1321,17 +1321,24 @@ const Settings = ({
                           />
                         </div>
                       </div>
-                      <div className="flex gap-3 pt-3 border-t border-slate-100">
+                      <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t border-slate-100">
                         <button
                           onClick={handleUpdatePassword}
-                          className="flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white rounded-2xl hover:bg-slate-800 transition-all active:scale-95 text-[13px] font-bold tracking-wider shadow-lg shadow-primary/20"
+                          className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-[#18254D] text-white rounded-xl hover:bg-[#1e2e5e] transition-all active:scale-95 text-sm font-bold shadow-lg shadow-[#18254D]/20"
                         >
-                          <Save size={16} strokeWidth={2.5} />
+                          <Save size={18} strokeWidth={2.5} />
                           Update Password
                         </button>
                         <button
-                          onClick={() => setShowPasswordForm(false)}
-                          className="px-4 py-2.5 border border-slate-200 text-slate-600 rounded-2xl hover:bg-slate-50 hover:border-slate-300 transition-all text-[13px] font-bold tracking-wider"
+                          onClick={() => {
+                            setShowPasswordForm(false);
+                            setPasswordData({
+                              currentPassword: "",
+                              newPassword: "",
+                              confirmPassword: "",
+                            });
+                          }}
+                          className="flex-1 px-6 py-3 bg-slate-100 text-slate-600 rounded-xl hover:bg-slate-200 transition-all text-sm font-bold active:scale-95"
                         >
                           Cancel
                         </button>
@@ -1347,21 +1354,25 @@ const Settings = ({
               <div className="space-y-8 animate-fade-in w-full">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div>
-                    <h3 className="text-2xl font-bold text-primary mb-2 tracking-tight">
-                      Manage Team Members
+                    <h3 className="text-3xl font-black text-[#18254D] mb-2 tracking-tight">
+                      Manage Admins
                     </h3>
-                    <p className="text-sm font-bold text-slate-500">
-                      View and manage administrators and team members.
+                    <p className="text-sm font-black text-slate-500">
+                      View and manage your network of administrators.
                     </p>
                   </div>
                   {/* Add Admin Button */}
                   {profile?.role !== "Admin" && (
                     <button
                       onClick={() => setShowAddAdminForm(!showAddAdminForm)}
-                      className="flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white rounded-2xl hover:bg-slate-800 transition-all active:scale-95 text-[13px] font-bold tracking-wider shadow-lg shrink-0"
+                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-[#18254D] text-white rounded-2xl hover:bg-[#1e2e5e] transition-all active:scale-95 text-[13px] font-black tracking-widest shadow-xl shadow-[#18254D]/20 group"
                     >
-                      <Plus size={16} strokeWidth={2.5} />
-                      Add Admin
+                      <Plus
+                        size={18}
+                        strokeWidth={3}
+                        className="group-hover:rotate-90 transition-transform"
+                      />
+                      <span>ADD ADMIN</span>
                     </button>
                   )}
                 </div>
@@ -1438,17 +1449,17 @@ const Settings = ({
                         />
                       </div>
                     </div>
-                    <div className="flex gap-3 pt-3">
+                    <div className="flex gap-3 pt-4 border-t border-slate-100">
                       <button
                         onClick={handleAddAdmin}
-                        className="flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white rounded-2xl hover:bg-slate-800 active:scale-95 transition-all text-[13px] font-bold tracking-wider shadow-lg shadow-primary/20"
+                        className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-8 py-3 bg-[#18254D] text-white rounded-2xl hover:bg-[#1e2e5e] active:scale-95 transition-all text-[13px] font-black tracking-widest shadow-xl shadow-[#18254D]/20"
                       >
-                        <Check size={16} strokeWidth={2.5} />
-                        Add Admin
+                        <Check size={18} strokeWidth={3} />
+                        CREATE ADMIN
                       </button>
                       <button
                         onClick={() => setShowAddAdminForm(false)}
-                        className="px-4 py-2.5 border border-slate-200 text-slate-600 rounded-2xl hover:bg-slate-50 hover:border-slate-300 transition-all text-[13px] font-bold tracking-wider"
+                        className="flex-1 sm:flex-none px-8 py-3 bg-slate-100 text-slate-600 rounded-2xl hover:bg-slate-200 transition-all text-[13px] font-black tracking-widest uppercase"
                       >
                         Cancel
                       </button>
@@ -1474,22 +1485,19 @@ const Settings = ({
                       </p>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 gap-4">
-                      {admins.map((admin) => (
-                        <div
-                          key={admin.id}
-                          className={`p-6 bg-white border border-slate-200/60 rounded-[20px] hover:border-secondary/30 hover:shadow-md transition-all ${
-                            editingAdminId === admin.id
-                              ? "space-y-5"
-                              : "flex items-center justify-between"
-                          }`}
-                        >
-                          <div className="flex-1">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
+                        {admins.map((admin) => (
+                          <div
+                            key={admin.id}
+                            className={`group bg-white border border-slate-200/60 rounded-[28px] hover:border-blue-200 hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-500 flex flex-col overflow-hidden ${
+                              editingAdminId === admin.id ? "ring-2 ring-blue-500" : ""
+                            }`}
+                          >
                             {editingAdminId === admin.id ? (
-                              <div className="space-y-5">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                  <div className="space-y-2">
-                                    <label className="text-[12px]  font-bold text-slate-500 tracking-widest">
+                              <div className="p-6 space-y-5">
+                                <div className="space-y-4">
+                                  <div className="space-y-1.5">
+                                    <label className="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase ml-1">
                                       Full Name
                                     </label>
                                     <input
@@ -1501,11 +1509,11 @@ const Settings = ({
                                           name: e.target.value,
                                         })
                                       }
-                                      className="w-full h-[46px] px-4 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-secondary/30 focus:border-secondary focus:outline-none transition-all text-sm font-bold shadow-sm"
+                                      className="w-full h-11 px-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:outline-none transition-all text-sm font-bold"
                                     />
                                   </div>
-                                  <div className="space-y-2">
-                                    <label className="text-[12px]  font-bold text-slate-500 tracking-widest">
+                                  <div className="space-y-1.5">
+                                    <label className="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase ml-1">
                                       Email
                                     </label>
                                     <input
@@ -1517,7 +1525,7 @@ const Settings = ({
                                           email: e.target.value,
                                         })
                                       }
-                                      className="w-full h-[46px] px-4 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-secondary/30 focus:border-secondary focus:outline-none transition-all text-sm font-bold shadow-sm"
+                                      className="w-full h-11 px-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:outline-none transition-all text-sm font-bold"
                                     />
                                   </div>
                                   <CustomDropdown
@@ -1526,130 +1534,131 @@ const Settings = ({
                                     field={`edit_admin_role_${admin.id}`}
                                     options={["Admin", "Manager"]}
                                     onChange={(val) =>
-                                      setEditAdminData({
-                                        ...editAdminData,
-                                        role: val,
-                                      })
+                                      setEditAdminData({ ...editAdminData, role: val })
                                     }
                                   />
-                                  <CustomDropdown
-                                    label="Status"
-                                    value={editAdminData.status}
-                                    field={`edit_admin_status_${admin.id}`}
-                                    options={["Active", "Inactive"]}
-                                    onChange={(val) =>
-                                      setEditAdminData({
-                                        ...editAdminData,
-                                        status: val,
-                                      })
-                                    }
-                                  />
-                                  <CustomDropdown
-                                    label="Privileges"
-                                    value={editAdminData.privileges}
-                                    field={`edit_admin_privileges_${admin.id}`}
-                                    options={[
-                                      { value: 1, label: "Tech" },
-                                      { value: 2, label: "Social Media" },
-                                      { value: 3, label: "Both" },
-                                    ]}
-                                    onChange={(val) =>
-                                      setEditAdminData({
-                                        ...editAdminData,
-                                        privileges: val,
-                                      })
-                                    }
-                                  />
+                                  <div className="grid grid-cols-2 gap-3">
+                                    <CustomDropdown
+                                      label="Status"
+                                      value={editAdminData.status}
+                                      field={`edit_admin_status_${admin.id}`}
+                                      options={["Active", "Inactive"]}
+                                      onChange={(val) =>
+                                        setEditAdminData({ ...editAdminData, status: val })
+                                      }
+                                    />
+                                    <CustomDropdown
+                                      label="Privileges"
+                                      value={editAdminData.privileges}
+                                      field={`edit_admin_privileges_${admin.id}`}
+                                      options={[
+                                        { value: 1, label: "Tech" },
+                                        { value: 2, label: "Social" },
+                                        { value: 3, label: "Both" },
+                                      ]}
+                                      onChange={(val) =>
+                                        setEditAdminData({ ...editAdminData, privileges: val })
+                                      }
+                                    />
+                                  </div>
                                 </div>
-                                <div className="flex gap-3 pt-2">
+                                <div className="flex gap-2.5 pt-4">
                                   <button
-                                    onClick={() =>
-                                      handleSaveEditAdmin(admin.id)
-                                    }
-                                    className="px-4 py-2.5 bg-primary text-white rounded-2xl hover:bg-slate-800 transition-all text-[13px] font-bold tracking-wider shadow-lg"
+                                    onClick={() => handleSaveEditAdmin(admin.id)}
+                                    className="flex-1 py-2.5 bg-[#18254D] text-white rounded-xl hover:bg-[#1e2e5e] transition-all text-xs font-bold shadow-lg shadow-[#18254D]/20"
                                   >
                                     Save
                                   </button>
                                   <button
                                     onClick={handleCancelEditAdmin}
-                                    className="px-4 py-2.5 border border-slate-200 text-slate-600 rounded-2xl hover:bg-slate-50 hover:border-slate-300 transition-all text-[13px] font-bold tracking-wider"
+                                    className="flex-1 py-2.5 bg-slate-100 text-slate-600 rounded-xl hover:bg-slate-200 transition-all text-xs font-bold"
                                   >
                                     Cancel
                                   </button>
                                 </div>
                               </div>
                             ) : (
-                              <div className="flex flex-col gap-4">
-                                <div className="flex items-center gap-4">
-                                  {admin.image ? (
-                                    <img
-                                      src={admin.image}
-                                      alt={admin.name}
-                                      className="w-12 h-12 rounded-xl object-cover border-2 border-slate-100 shadow-sm"
-                                      onError={(e) => {
-                                        e.target.style.display = "none";
-                                        e.target.nextSibling.style.display =
-                                          "flex";
-                                      }}
-                                    />
-                                  ) : null}
-                                  <div
-                                    className={`w-12 h-12 rounded-xl bg-primary flex items-center justify-center border-2 border-slate-100 shadow-sm ${admin.image ? "hidden" : "flex"}`}
-                                  >
-                                    <span className="text-base font-bold text-white">
-                                      {admin.name?.charAt(0).toUpperCase() ||
-                                        "U"}
-                                    </span>
+                              <>
+                                {/* Card Header / Avatar Area */}
+                                <div className="p-6 flex flex-col items-center text-center relative overflow-hidden">
+                                  <div className="absolute top-4 right-4 z-10">
+                                    <div className={`w-2.5 h-2.5 rounded-full border-2 border-white shadow-sm ${admin.status === "Active" ? "bg-emerald-500" : "bg-rose-500"}`} />
                                   </div>
-                                  <div>
-                                    <h5 className="font-bold text-[#18254D] tracking-tight text-base">
-                                      {admin.name}
-                                    </h5>
-                                    <p className="text-[13px] font-medium text-slate-500 mt-0.5">
+                                  
+                                  <div className="relative mb-4">
+                                    <div className="absolute inset-0 bg-blue-500/10 rounded-3xl blur-2xl group-hover:bg-blue-500/20 transition-all duration-500" />
+                                    {admin.image ? (
+                                      <img
+                                        src={admin.image}
+                                        alt={admin.name}
+                                        className="w-20 h-20 rounded-[28px] object-cover border-4 border-white shadow-xl relative z-0"
+                                      />
+                                    ) : (
+                                      <div className="w-20 h-20 rounded-[28px] bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center border-4 border-white shadow-xl relative z-0">
+                                        <span className="text-2xl font-black text-white">
+                                          {admin.name?.charAt(0).toUpperCase()}
+                                        </span>
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  <h5 className="text-lg font-black text-[#18254D] tracking-tight mb-1">
+                                    {admin.name}
+                                  </h5>
+                                  <div className="flex items-center gap-1.5 text-slate-500 mb-4 px-3 py-1 bg-slate-50 rounded-full border border-slate-100">
+                                    <Mail size={12} strokeWidth={2.5} />
+                                    <p className="text-[11px] font-bold truncate max-w-[150px]">
                                       {admin.email}
                                     </p>
                                   </div>
+
+                                  <div className="grid grid-cols-2 gap-2 w-full">
+                                    <div className="px-3 py-2 bg-blue-50 border border-blue-100/50 rounded-2xl flex flex-col items-center gap-1">
+                                      <span className="text-[9px] font-black text-blue-400 uppercase tracking-widest">Role</span>
+                                      <span className="text-[11px] font-bold text-blue-700 uppercase">{admin.role}</span>
+                                    </div>
+                                    <div className={`px-3 py-2 border rounded-2xl flex flex-col items-center gap-1 ${admin.status === "Active" ? "bg-emerald-50 border-emerald-100 text-emerald-700" : "bg-rose-50 border-rose-100 text-rose-700"}`}>
+                                      <span className={`text-[9px] font-black uppercase tracking-widest ${admin.status === "Active" ? "text-emerald-400" : "text-rose-400"}`}>Status</span>
+                                      <span className="text-[11px] font-bold uppercase">{admin.status}</span>
+                                    </div>
+                                  </div>
                                 </div>
-                                <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-50">
-                                  <span className="inline-flex items-center px-3 py-1 bg-primary/5 text-primary border border-primary/10 rounded-lg text-[11px] font-bold tracking-widest uppercase">
-                                    {admin.role}
-                                  </span>
-                                  <span className={`inline-flex items-center px-3 py-1 rounded-lg text-[11px] font-bold tracking-widest uppercase border ${admin.status === "Active" ? "bg-emerald-50 text-emerald-700 border-emerald-100" : "bg-rose-50 text-rose-700 border-rose-100"}`}>
-                                    {admin.status}
-                                  </span>
-                                  <span className="inline-flex items-center px-3 py-1 bg-blue-50 text-blue-700 border border-blue-100 rounded-lg text-[11px] font-bold tracking-widest uppercase">
-                                    {CATEGORY_MAP[admin.privileges] || "Both"} Access
-                                  </span>
+
+                                <div className="mt-auto px-6 pb-6 pt-2">
+                                  <div className="flex items-center justify-between gap-3 p-1.5 bg-slate-50/50 border border-slate-100 rounded-[20px]">
+                                    <div className="flex items-center gap-2 pl-2">
+                                      <Zap size={14} className="text-amber-500" />
+                                      <span className="text-[11px] font-bold text-slate-500 uppercase tracking-tighter">
+                                        {CATEGORY_MAP[admin.privileges] || "Full"} Access
+                                      </span>
+                                    </div>
+                                    <div className="flex gap-1">
+                                      {admin.role !== "Root Admin" && (
+                                        <>
+                                          <button
+                                            onClick={() => handleStartEditAdmin(admin)}
+                                            className="p-2 hover:bg-white hover:text-blue-600 hover:shadow-sm rounded-xl transition-all text-slate-400"
+                                            title="Edit Profile"
+                                          >
+                                            <Edit2 size={16} />
+                                          </button>
+                                          <button
+                                            onClick={() => handleDeleteAdmin(admin.id)}
+                                            className="p-2 hover:bg-white hover:text-rose-600 hover:shadow-sm rounded-xl transition-all text-slate-400"
+                                            title="Delete Admin"
+                                          >
+                                            <Trash2 size={16} />
+                                          </button>
+                                        </>
+                                      )}
+                                    </div>
+                                  </div>
                                 </div>
-                              </div>
+                              </>
                             )}
                           </div>
-                          <div className="flex gap-2">
-                            {editingAdminId !== admin.id &&
-                              admin.role !== "Root Admin" &&
-                              profile?.role !== "Admin" && (
-                                <>
-                                  <button
-                                    onClick={() => handleStartEditAdmin(admin)}
-                                    className="p-2 hover:bg-slate-100 rounded-xl transition-all text-slate-400 hover:text-primary"
-                                    title="Edit admin"
-                                    aria-label="Edit admin"
-                                  >
-                                    <Edit2 size={16} />
-                                  </button>
-                                  <button
-                                    onClick={() => handleDeleteAdmin(admin.id)}
-                                    className="p-2 hover:bg-red-50 rounded-xl transition-all text-slate-400 hover:text-red-500"
-                                    title="Delete admin"
-                                  >
-                                    <Trash2 size={16} />
-                                  </button>
-                                </>
-                              )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                        ))}
+                      </div>
                   )}
                 </div>
 
