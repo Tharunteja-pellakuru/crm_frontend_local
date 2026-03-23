@@ -146,6 +146,18 @@ const EnquiryList = ({
     hideIrrelevantRef.current = hideIrrelevant;
   }, [hideIrrelevant]);
 
+  // When Filter Spam is turned ON, dismiss all already analyzed irrelevant enquiries
+  useEffect(() => {
+    if (hideIrrelevant) {
+      const toDismiss = enquiries.filter(
+        (e) => (e.status === "new" || e.status === "read") && e.aiAnalysis && !e.aiAnalysis.isRelevant
+      );
+      toDismiss.forEach((e) => {
+        onDismiss(e.id);
+      });
+    }
+  }, [hideIrrelevant, enquiries, onDismiss]);
+
   const analysisLoopRef = React.useRef(false);
 
   // whenever the selected model changes, clear any existing analysis so
@@ -415,10 +427,27 @@ const EnquiryList = ({
               Manage and qualify all incoming business enquiries.
             </p>
           </div>
-          <div className="w-full lg:w-auto">
+          <div className="w-full lg:w-auto flex flex-col sm:flex-row items-center gap-3">
+            {activeTab === "dismissed" && totalInTabCount > 0 && (
+              <button
+                onClick={() => {
+                  if (window.confirm("Are you sure you want to permanently delete all dismissed enquiries?")) {
+                    onDeleteAll();
+                  }
+                }}
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-rose-50 text-rose-600 border border-rose-200 rounded-2xl hover:bg-rose-100 transition-all text-[13px] font-bold tracking-wider shadow-sm active:scale-95 group"
+              >
+                <Trash2
+                  size={16}
+                  strokeWidth={2.5}
+                  className="group-hover:scale-110 transition-transform"
+                />
+                Clear All
+              </button>
+            )}
             <button
               onClick={() => setShowSimulateForm(true)}
-              className="w-full lg:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white rounded-2xl hover:bg-slate-800 transition-all text-[13px] font-bold  tracking-wider shadow-lg active:scale-95 group"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white rounded-2xl hover:bg-slate-800 transition-all text-[13px] font-bold tracking-wider shadow-lg active:scale-95 group"
             >
               <Plus
                 size={16}
