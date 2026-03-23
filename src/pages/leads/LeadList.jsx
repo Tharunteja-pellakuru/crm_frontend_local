@@ -192,7 +192,7 @@ const LeadList = ({
     onboardingDate: "",
   });
   const [followUpData, setFollowUpData] = useState({
-    type: "call",
+    type: "Call",
     description: "",
     date: new Date().toISOString().split("T")[0],
     time: new Date().toTimeString().split(" ")[0].substring(0, 5),
@@ -2482,7 +2482,7 @@ const LeadList = ({
                   Interaction Type
                 </label>
                 <div className="grid grid-cols-3 gap-2">
-                  {["call", "email", "meeting"].map((type) => (
+                  {["Call", "Email", "Meeting"].map((type) => (
                     <button
                       key={type}
                       type="button"

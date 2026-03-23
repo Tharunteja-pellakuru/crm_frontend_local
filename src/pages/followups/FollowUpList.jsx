@@ -54,7 +54,7 @@ const FollowUpList = ({
     title: "",
     description: "",
     followup_date: new Date().toLocaleDateString('en-CA'),
-    followup_mode: "call",
+    followup_mode: "Call",
     followup_status: "pending",
     follow_brief: "",
     priority: "Medium",
@@ -237,7 +237,7 @@ const FollowUpList = ({
         title: "",
         description: "",
         followup_date: new Date().toLocaleDateString('en-CA'),
-        followup_mode: "call",
+        followup_mode: "Call",
         followup_status: "pending",
         follow_brief: "",
         priority: "Medium",
@@ -312,6 +312,7 @@ const FollowUpList = ({
                   timePeriod: "PM",
                   followup_status: "pending",
                   priority: "Medium",
+                  followup_mode: "Call",
                   completionBrief: "",
                   completionDate: new Date().toLocaleDateString("en-CA"),
                   completionHour: "12",
@@ -1267,11 +1268,11 @@ const FollowUpList = ({
                           />
                           <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top">
                             <div className="bg-[#18254D] px-4 py-3 border-b border-white/10">
-                              <p className="text-[14px] font-bold text-white/50  tracking-widest">
+                              <p className="text-[14px] font-bold text-white  tracking-widest">
                                 Select Mode
                               </p>
                             </div>
-                            {["call", "email", "meeting", "whatsapp"].map(
+                            {["Call", "Email", "Meeting", "Whatsapp"].map(
                               (mode) => (
                                 <button
                                   key={mode}
