@@ -18,7 +18,10 @@ import {
   Trash2,
   Calendar,
   ChevronLeft,
+  Calendar,
+  ChevronLeft,
   ChevronRight,
+  Loader2,
 } from "lucide-react";
 import { CATEGORY_MAP, REVERSE_CATEGORY_MAP } from "../../constants/categoryConstants";
 import { validateForm } from "../../utils/validation";
@@ -36,6 +39,7 @@ const FollowUpList = ({
   typeFilter = "All",
   loading = false,
 }) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeFilter, setActiveFilter] = useState("All");
   const [showAddModal, setShowAddModal] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState("All");
@@ -200,6 +204,8 @@ const FollowUpList = ({
 
     if (!isValid) return;
     
+    setIsSubmitting(true); // Start submitting
+
     // Convert 12h to 24h for backend
     let hour = parseInt(formData.timeHour);
     if (formData.timePeriod === "PM" && hour < 12) hour += 12;
@@ -263,6 +269,8 @@ const FollowUpList = ({
     } catch (error) {
       toast.error("Failed to save follow-up.");
       console.error(error);
+    } finally {
+      setIsSubmitting(false); // End submitting
     }
   };
 
@@ -738,7 +746,7 @@ const FollowUpList = ({
                           {isCompHourOpen && (
                             <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-100 rounded-lg shadow-xl z-[100] max-h-32 overflow-y-auto">
                               {Array.from({ length: 12 }, (_, i) => i + 1).map(h => (
-                                <button key={h} type="button" onClick={() => { setCompletionHour(h.toString()); setIsCompHourOpen(false); }} className="w-full text-left px-3 py-1.5 text-[12px] hover:bg-slate-50">{h.toString().padStart(2, '0')}</button>
+                                <button key={h} type="button" onClick={() => { setCompletionHour(h.toString().padStart(2, '0')); setIsCompHourOpen(false); }} className="w-full text-left px-3 py-1.5 text-[12px] hover:bg-slate-50">{h.toString().padStart(2, '0')}</button>
                               ))}
                             </div>
                           )}

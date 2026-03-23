@@ -21,6 +21,7 @@ import {
   Trash2,
   ChevronDown,
   UserCheck,
+  Loader2,
   Upload,
   Paperclip,
   UserX,
@@ -152,6 +153,7 @@ const LeadList = ({
   const [currentPage, setCurrentPage] = useState(1);
   const RECORDS_PER_PAGE = 10;
   const [endDate, setEndDate] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showOnboardModal, setShowOnboardModal] = useState(false);
   const [onboardingLeadId, setOnboardingLeadId] = useState(null);
@@ -302,7 +304,7 @@ const LeadList = ({
 
   const handleEditConvertedSubmit = async (e) => {
     e.preventDefault();
-    
+
     const isValid = validateForm(editConvertedData, {
       name: { required: true, minLength: 2, label: "Full Name" },
       email: { required: true, pattern: /^\S+@\S+\.\S+$/, label: "Email" },
@@ -313,8 +315,9 @@ const LeadList = ({
 
     if (!isValid) return;
 
-    if (onUpdateConvertedLead && editingConvertedLeadId) {
-      try {
+    setIsSubmitting(true);
+    try {
+      if (onUpdateConvertedLead && editingConvertedLeadId) {
         const result = await onUpdateConvertedLead(
           editingConvertedLeadId,
           editConvertedData,
@@ -326,16 +329,18 @@ const LeadList = ({
         } else {
           toast.error("Failed to update converted lead.");
         }
-      } catch (error) {
-        toast.error("Error updating converted lead.");
-        console.error("Failed to update converted lead:", error);
       }
+    } catch (error) {
+      toast.error("Error updating converted lead.");
+      console.error("Failed to update converted lead:", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleOnboardSubmit = async (e) => {
     e.preventDefault();
-    
+
     const isValid = validateForm(onboardingData, {
       name: { required: true, minLength: 2, label: "Full Name" },
       email: { required: true, pattern: /^\S+@\S+\.\S+$/, label: "Email" },
@@ -346,8 +351,9 @@ const LeadList = ({
 
     if (!isValid) return;
 
-    if (onOnboardLead && onboardingLeadId) {
-      try {
+    setIsSubmitting(true);
+    try {
+      if (onOnboardLead && onboardingLeadId) {
         await onOnboardLead(onboardingLeadId, onboardingData);
         setOnboardingLeadId(null);
         setShowOnboardModal(false);
@@ -369,14 +375,16 @@ const LeadList = ({
           country: "",
           state: "",
           currency: "",
-          organizationName: "",
+          organisationName: "",
           clientStatus: "Active",
         });
         toast.success("Lead onboarded successfully!");
-      } catch (error) {
-        toast.error("Failed to onboard lead.");
-        console.error("Failed to onboard lead:", error);
       }
+    } catch (error) {
+      toast.error("Failed to onboard lead.");
+      console.error("Failed to onboard lead:", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -602,9 +610,9 @@ const LeadList = ({
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     const isValid = validateForm(formData, {
       name: { required: true, minLength: 2, label: "Full Name" },
       email: { required: true, pattern: /^\S+@\S+\.\S+$/, label: "Email" },
@@ -613,30 +621,39 @@ const LeadList = ({
 
     if (!isValid) return;
 
-    if (onAddLead) {
-      const submissionData = {
-        ...formData,
-        company: formData.company || "",
-        industry: formData.industry || "Unknown",
-      };
-      onAddLead(submissionData);
-      setShowAddModal(false);
-      setFormData({
-        name: "",
-        company: "",
-        email: "",
-        phone: "",
-        status: "Lead",
-        leadType: "Warm",
-        industry: "",
-        notes: "",
-        projectName: "",
-        projectStatus: "Planning",
-        projectCategory: 1, // Changed to numeric ID
-        projectPriority: "Medium",
-        projectDescription: "",
-        country: "",
-      });
+    setIsSubmitting(true);
+    try {
+      if (onAddLead) {
+        const submissionData = {
+          ...formData,
+          company: formData.company || "",
+          industry: formData.industry || "Unknown",
+        };
+        await onAddLead(submissionData);
+        setShowAddModal(false);
+        setFormData({
+          name: "",
+          company: "",
+          email: "",
+          phone: "",
+          status: "Lead",
+          leadType: "Warm",
+          industry: "",
+          notes: "",
+          projectName: "",
+          projectStatus: "Planning",
+          projectCategory: 1, // Changed to numeric ID
+          projectPriority: "Medium",
+          projectDescription: "",
+          country: "",
+        });
+        toast.success("Lead added successfully!");
+      }
+    } catch (error) {
+      toast.error("Failed to add lead.");
+      console.error("Failed to add lead:", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -1522,13 +1539,23 @@ const LeadList = ({
               <div className="pt-2">
                 <button
                   type="submit"
-                  className="w-full py-2.5 bg-[#18254D] text-white rounded-2xl text-[13px] font-bold  tracking-[0.25em] shadow-xl active:scale-[0.97] transition-all hover:bg-[#1e2e5e] hover:shadow-2xl flex items-center justify-center gap-3 group/btn"
+                  disabled={isSubmitting}
+                  className="w-full py-2.5 bg-[#18254D] text-white rounded-2xl text-[13px] font-bold  tracking-[0.25em] shadow-xl active:scale-[0.97] transition-all hover:bg-[#1e2e5e] hover:shadow-2xl flex items-center justify-center gap-3 group/btn disabled:opacity-70 disabled:cursor-not-allowed"
                 >
-                  <UserPlus
-                    size={20}
-                    className="group-hover/btn:translate-x-1 transition-transform"
-                  />
-                  <span>ADD LEAD</span>
+                  {isSubmitting ? (
+                    <>
+                      <span>ADDING LEAD...</span>
+                      <Loader2 size={18} className="animate-spin" />
+                    </>
+                  ) : (
+                    <>
+                      <UserPlus
+                        size={20}
+                        className="group-hover/btn:translate-x-1 transition-transform"
+                      />
+                      <span>ADD LEAD</span>
+                    </>
+                  )}
                 </button>
               </div>
             </form>
@@ -2110,13 +2137,23 @@ const LeadList = ({
               <div className="pt-2">
                 <button
                   type="submit"
-                  className="w-full py-3 bg-[#18254D] text-white rounded-2xl text-[13px] font-bold  tracking-[0.25em] shadow-xl active:scale-[0.97] transition-all hover:bg-[#1e2e5e] hover:shadow-2xl flex items-center justify-center gap-3 group/btn"
+                  disabled={isSubmitting}
+                  className="w-full py-3 bg-[#18254D] text-white rounded-2xl text-[13px] font-bold  tracking-[0.25em] shadow-xl active:scale-[0.97] transition-all hover:bg-[#1e2e5e] hover:shadow-2xl flex items-center justify-center gap-3 group/btn disabled:opacity-70 disabled:cursor-not-allowed"
                 >
-                  <UserCheck
-                    size={20}
-                    className="group-hover/btn:translate-x-1 transition-transform"
-                  />
-                  <span>CONVERT TO CLIENT</span>
+                  {isSubmitting ? (
+                    <>
+                      <span>CONVERTING...</span>
+                      <Loader2 size={20} className="animate-spin" />
+                    </>
+                  ) : (
+                    <>
+                      <UserCheck
+                        size={20}
+                        className="group-hover/btn:translate-x-1 transition-transform"
+                      />
+                      <span>CONVERT TO CLIENT</span>
+                    </>
+                  )}
                 </button>
               </div>
             </form>
@@ -2409,10 +2446,23 @@ const LeadList = ({
               <div className="pt-2">
                 <button
                   type="submit"
-                  className="w-full py-2.5 bg-[#18254D] text-white rounded-2xl text-[13px] font-bold  tracking-[0.25em] shadow-xl active:scale-[0.97] transition-all hover:bg-[#1e2e5e] hover:shadow-2xl flex items-center justify-center gap-3 group/btn"
+                  disabled={isSubmitting}
+                  className="w-full py-2.5 bg-[#18254D] text-white rounded-2xl text-[13px] font-bold  tracking-[0.25em] shadow-xl active:scale-[0.97] transition-all hover:bg-[#1e2e5e] hover:shadow-2xl flex items-center justify-center gap-3 group/btn disabled:opacity-70 disabled:cursor-not-allowed"
                 >
-                  <Check size={20} />
-                  <span>SAVE CHANGES</span>
+                  {isSubmitting ? (
+                    <>
+                      <span>SAVING CHANGES...</span>
+                      <Loader2 size={20} className="animate-spin" />
+                    </>
+                  ) : (
+                    <>
+                      <Check
+                        size={20}
+                        className="group-hover/btn:scale-110 transition-transform"
+                      />
+                      <span>SAVE CHANGES</span>
+                    </>
+                  )}
                 </button>
               </div>
             </form>

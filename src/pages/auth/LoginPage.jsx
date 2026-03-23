@@ -8,6 +8,7 @@ import {
   Eye,
   EyeOff,
   Leaf,
+  Loader2,
 } from "lucide-react";
 import logoImg from "../../assets/Parivartan_Logo.png";
 import { BASE_URL } from "../../constants/config";
@@ -169,14 +170,14 @@ function LoginPage({ onLogin }) {
               className={`w-full py-3 md:py-3.5 lg:py-4 rounded-xl md:rounded-xl lg:rounded-xl font-bold text-[13px] lg:text-sm  tracking-[0.3em] flex items-center justify-center gap-3 transition-all duration-300 shadow-lg active:scale-[0.97] ${
                 isFormValid && !isLoading
                   ? "bg-[#18254D] text-white hover:bg-[#62a33a] hover:scale-[1.02] hover:shadow-xl hover:-translate-y-0.5"
-                  : "bg-slate-200 text-slate-400 cursor-not-allowed"
+                  : "bg-slate-200 text-slate-400 cursor-not-allowed opacity-70"
               }`}
             >
               {isLoading ? (
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <>
+                  <Loader2 size={18} className="animate-spin" />
                   <span>Verifying...</span>
-                </div>
+                </>
               ) : (
                 <>
                   <span>Login</span>

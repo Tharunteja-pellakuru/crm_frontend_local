@@ -20,6 +20,7 @@ import {
   Film,
   Search,
   AlertTriangle,
+  Loader2,
 } from "lucide-react";
 import DatePicker from "../../components/ui/DatePicker";
 import {
@@ -432,6 +433,8 @@ const ProjectBoard = ({
       setActiveStage(COLUMNS[0].id);
     }
   }, [selectedCategory, COLUMNS, activeStage]);
+
+  const [isSubmitting, setIsSubmitting] = useState(false); // Added isSubmitting state
   const [showAddModal, setShowAddModal] = useState(false);
   const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
   const [isPriorityDropdownOpen, setIsPriorityDropdownOpen] = useState(false);
@@ -510,9 +513,11 @@ const ProjectBoard = ({
       return;
     }
 
-    // Create project using the selected existing client ID
-    if (onAddProject) {
-      try {
+    setIsSubmitting(true); // Set submitting state to true
+
+    try {
+      // Create project using the selected existing client ID
+      if (onAddProject) {
         await onAddProject({
           clientId: selectedClientId,
           name: formData.projectName,
@@ -526,35 +531,37 @@ const ProjectBoard = ({
           scopeDocument: formData.scopeDocument,
         });
         toast.success("Project added successfully!");
-      } catch (error) {
-        toast.error("Failed to add project.");
-        console.error(error);
       }
-    }
 
-    setShowAddModal(false);
-    // Reset form
-    setSelectedClientId(null);
-    setClientSearch("");
-    setFormData({
-      name: "",
-      email: "",
-      phone: "",
-      projectName: "",
-      projectStatus: "In Progress",
-      projectCategory: 1,
-      projectPriority: "High",
-      projectDescription: "",
-      country: "",
-      state: "",
-      currency: "",
-      organisationName: "",
-      clientStatus: "Active",
-      onboardingDate: new Date().toISOString().split("T")[0],
-      deadline: "",
-      budget: "",
-      scopeDocument: "",
-    });
+      setShowAddModal(false);
+      // Reset form
+      setSelectedClientId(null);
+      setClientSearch("");
+      setFormData({
+        name: "",
+        email: "",
+        phone: "",
+        projectName: "",
+        projectStatus: "In Progress",
+        projectCategory: 1,
+        projectPriority: "High",
+        projectDescription: "",
+        country: "",
+        state: "",
+        currency: "",
+        organisationName: "",
+        clientStatus: "Active",
+        onboardingDate: new Date().toISOString().split("T")[0],
+        deadline: "",
+        budget: "",
+        scopeDocument: "",
+      });
+    } catch (error) {
+      toast.error("Failed to add project.");
+      console.error(error);
+    } finally {
+      setIsSubmitting(false); // Reset submitting state
+    }
   };
 
   return (
@@ -1300,9 +1307,6 @@ const ProjectBoard = ({
                       }}
                     />
                     <div className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl group-hover:border-secondary group-hover:bg-secondary/5 transition-all flex items-center gap-3 shadow-sm">
-                      <div className="p-2 bg-white border border-slate-200 rounded-lg shadow-sm">
-                        <Upload size={16} className="text-secondary" />
-                      </div>
                       <span
                         className={`text-sm font-bold ${formData.scopeDocument ? "text-[#18254D]" : "text-slate-400"}`}
                       >
@@ -1321,13 +1325,23 @@ const ProjectBoard = ({
               <div className="pt-2">
                 <button
                   type="submit"
-                  className="w-full py-3 bg-[#18254D] text-white rounded-2xl text-[13px] font-bold  tracking-[0.25em] shadow-xl active:scale-[0.97] transition-all hover:bg-[#1e2e5e] hover:shadow-2xl flex items-center justify-center gap-3 group/btn"
+                  disabled={isSubmitting} // Disabled when submitting
+                  className="w-full py-3 bg-[#18254D] text-white rounded-2xl text-[13px] font-bold  tracking-[0.25em] shadow-xl active:scale-[0.97] transition-all hover:bg-[#1e2e5e] hover:shadow-2xl flex items-center justify-center gap-3 group/btn disabled:opacity-70 disabled:cursor-not-allowed" // Added disabled styles
                 >
-                  <UserPlus
-                    size={20}
-                    className="group-hover/btn:translate-x-1 transition-transform"
-                  />
-                  <span>ADD PROJECT</span>
+                  {isSubmitting ? ( // Conditional rendering for loading state
+                    <>
+                      <span>ADDING PROJECT...</span>
+                      <Loader2 size={20} className="animate-spin" />
+                    </>
+                  ) : (
+                    <>
+                      <UserPlus
+                        size={20}
+                        className="group-hover/btn:translate-x-1 transition-transform"
+                      />
+                      <span>ADD PROJECT</span>
+                    </>
+                  )}
                 </button>
               </div>
             </form>

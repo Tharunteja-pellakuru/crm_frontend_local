@@ -29,6 +29,8 @@ import {
   Clock,
   Calendar,
   Zap,
+  AlertTriangle,
+  Loader2,
 } from "lucide-react";
 import DatePicker from "../../components/ui/DatePicker";
 import {
@@ -124,6 +126,7 @@ const ClientList = ({
   const [currentPage, setCurrentPage] = useState(1);
   const RECORDS_PER_PAGE = 10;
   const [endDate, setEndDate] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showOnboardModal, setShowOnboardModal] = useState(false);
   const [onboardingLeadId, setOnboardingLeadId] = useState(null);
@@ -183,46 +186,40 @@ const ClientList = ({
     clientStatus: "Active",
   });
 
-  const handleOnboardSubmit = (e) => {
+  const handleOnboardSubmit = async (e) => {
     e.preventDefault();
+    if (!validateForm(onboardingData)) return;
 
-    const isValid = validateForm(onboardingData, {
-      name: { required: true, minLength: 2, label: "Full Name" },
-      email: { required: true, pattern: /^\S+@\S+\.\S+$/, label: "Email" },
-      phone: { required: true, minLength: 10, label: "Phone Number" },
-      projectName: { required: true, label: "Project Name" },
-      projectBudget: { required: true, type: "number", label: "Project Budget" }
-    });
-
-    if (!isValid) return;
-
-    if (onOnboardClient && onboardingLeadId) {
-      onOnboardClient(onboardingLeadId, onboardingData);
+    setIsSubmitting(true);
+    try {
+      await onOnboardClient(onboardingData);
       setShowOnboardModal(false);
-      setOnboardingLeadId(null);
-
-      // Automatically switch to Converted view for Leads
-      if (title === "Leads") {
-        setLeadView("Converted");
-      }
-
       setOnboardingData({
         name: "",
         email: "",
         phone: "",
         clientType: "New",
-        status: "Active",
-        projectName: "",
-        projectStatus: "Planning",
-        projectCategory: 1,
-        projectPriority: "Medium",
-        projectDescription: "",
-        country: "",
-        state: "",
-        currency: "",
         organisationName: "",
+        country: "India",
+        state: "",
+        currency: "INR",
         clientStatus: "Active",
+        projectName: "",
+        projectStatus: "In Progress",
+        projectCategory: 1,
+        projectPriority: "High",
+        projectDescription: "",
+        projectBudget: "",
+        onboardingDate: new Date().toISOString().split("T")[0],
+        deadline: "",
+        scopeDocument: "",
       });
+      toast.success("Client onboarded successfully!");
+    } catch (err) {
+      console.error("Onboarding failed:", err);
+      toast.error("Failed to onboard client.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -355,43 +352,25 @@ const ClientList = ({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    const isValid = validateForm(formData, {
-      name: { required: true, minLength: 2, label: "Full Name" },
-      email: { required: true, pattern: /^\S+@\S+\.\S+$/, label: "Email" },
-      phone: { required: true, minLength: 10, label: "Phone Number" }
-    });
-
-    if (!isValid) return;
-
-    if (onAddClient) {
-      const submissionData = {
-        ...formData,
-        company: formData.company || "Independent",
-        industry: formData.industry || "Unknown",
-      };
-      try {
-        await onAddClient(submissionData);
-        setShowAddModal(false);
-        setFormData({
-          name: "",
-          company: "",
-          email: "",
-          phone: "",
-          status: "Active",
-          leadType: undefined,
-          industry: "",
-          notes: "",
-          projectName: "",
-          projectStatus: "Planning",
-          projectCategory: 1,
-          projectPriority: "Medium",
-          projectDescription: "",
-        });
-        toast.success("Client added successfully!");
-      } catch (error) {
-        toast.error("Failed to add client.");
-      }
+    if (!validateForm(formData)) return;
+    setIsSubmitting(true);
+    try {
+      await onAddClient(formData);
+      setShowAddModal(false);
+      setFormData({
+        name: "",
+        email: "",
+        phone: "",
+        organisationName: "",
+        status: "Active",
+        projectCategory: 1,
+      });
+      toast.success("Client added successfully!");
+    } catch (error) {
+      console.error("Error adding client:", error);
+      toast.error("Failed to add client.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -1717,13 +1696,23 @@ const ClientList = ({
               <div className="pt-2">
                 <button
                   type="submit"
-                  className="w-full py-2.5 bg-[#18254D] text-white rounded-2xl text-[13px] font-bold  tracking-[0.25em] shadow-xl active:scale-[0.97] transition-all hover:bg-[#1e2e5e] hover:shadow-2xl flex items-center justify-center gap-3 group/btn"
+                  disabled={isSubmitting}
+                  className="w-full py-2.5 bg-[#18254D] text-white rounded-2xl text-[13px] font-bold  tracking-[0.25em] shadow-xl active:scale-[0.97] transition-all hover:bg-[#1e2e5e] hover:shadow-2xl flex items-center justify-center gap-3 group/btn disabled:opacity-70 disabled:cursor-not-allowed"
                 >
-                  <UserPlus
-                    size={20}
-                    className="group-hover/btn:translate-x-1 transition-transform"
-                  />
-                  <span>ADD {title === "Leads" ? "LEAD" : "CLIENT"}</span>
+                  {isSubmitting ? (
+                    <>
+                      <span>ADDING CLIENT...</span>
+                      <Loader2 size={18} className="animate-spin" />
+                    </>
+                  ) : (
+                    <>
+                      <UserPlus
+                        size={20}
+                        className="group-hover/btn:translate-x-1 transition-transform"
+                      />
+                      <span>ADD CLIENT</span>
+                    </>
+                  )}
                 </button>
               </div>
             </form>
@@ -2406,13 +2395,23 @@ const ClientList = ({
               <div className="pt-2">
                 <button
                   type="submit"
-                  className="w-full py-3 bg-[#18254D] text-white rounded-2xl text-[13px] font-bold  tracking-[0.25em] shadow-xl active:scale-[0.97] transition-all hover:bg-[#1e2e5e] hover:shadow-2xl flex items-center justify-center gap-3 group/btn"
+                  disabled={isSubmitting}
+                  className="w-full py-3 bg-[#18254D] text-white rounded-2xl text-[13px] font-bold  tracking-[0.25em] shadow-xl active:scale-[0.97] transition-all hover:bg-[#1e2e5e] hover:shadow-2xl flex items-center justify-center gap-3 group/btn disabled:opacity-70 disabled:cursor-not-allowed"
                 >
-                  <UserCheck
-                    size={20}
-                    className="group-hover/btn:translate-x-1 transition-transform"
-                  />
-                  <span>CONVERT TO CLIENT</span>
+                  {isSubmitting ? (
+                    <>
+                      <span>CONVERTING...</span>
+                      <Loader2 size={20} className="animate-spin" />
+                    </>
+                  ) : (
+                    <>
+                      <UserCheck
+                        size={20}
+                        className="group-hover/btn:translate-x-1 transition-transform"
+                      />
+                      <span>CONVERT TO CLIENT</span>
+                    </>
+                  )}
                 </button>
               </div>
             </form>

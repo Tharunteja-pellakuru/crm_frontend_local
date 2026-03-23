@@ -22,6 +22,7 @@ import {
   Eye,
   Download,
   Upload,
+  Loader2,
 } from "lucide-react";
 import DatePicker from "../../components/ui/DatePicker";
 import {
@@ -38,6 +39,7 @@ const ProjectOverview = ({
   onUpdateProject,
   followUps,
 }) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     name: project?.name || "",
@@ -74,27 +76,27 @@ const ProjectOverview = ({
   const [activeDropdown, setActiveDropdown] = useState(null); // 'status', 'priority', 'category'
 
   const handleSave = async () => {
-    const isValid = validateForm(formData, {
+    if (!validateForm(formData, {
       name: { required: true, minLength: 2, label: "Project Name" },
       description: { required: true, label: "Project Description" },
       budget: { required: true, type: "number", label: "Budget" }
-    });
+    })) return;
 
-    if (!isValid) return;
-
-    if (onUpdateProject && project?.id) {
-      try {
+    setIsSubmitting(true);
+    try {
+      if (onUpdateProject && project?.id) {
         await onUpdateProject({
           ...project,
           ...formData,
         });
-        toast.success("Project updated successfully!");
         setIsEditing(false);
-      } catch (error) {
-        toast.error("Failed to update project.");
+        toast.success("Project updated successfully!");
       }
-    } else {
-      setIsEditing(false);
+    } catch (error) {
+      console.error("Failed to update project:", error);
+      toast.error("Failed to update project.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -283,12 +285,23 @@ const ProjectOverview = ({
               >
                 Cancel
               </button>
-              <button
-                onClick={handleSave}
-                className="px-5 py-2 bg-primary text-white rounded-xl text-[12px] font-bold  tracking-widest shadow-lg shadow-primary/20 hover:bg-[#1e2e5e] transition-all flex items-center justify-center gap-2"
-              >
-                <Save size={14} /> Save
-              </button>
+                <button
+                  onClick={handleSave}
+                  disabled={isSubmitting}
+                  className="px-6 py-2.5 bg-secondary text-white rounded-xl text-sm font-bold flex items-center gap-2 shadow-lg shadow-secondary/20 hover:bg-secondary/90 transition-all active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" />
+                      <span>Saving...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Save size={16} />
+                      <span>Save Changes</span>
+                    </>
+                  )}
+                </button>
             </>
           ) : (
             <button

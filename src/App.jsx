@@ -1700,7 +1700,12 @@ function AppRoutes() {
 export default function App() {
   return (
     <BrowserRouter>
-      <Toaster position="top-right" />
+      <Toaster 
+        position="top-right" 
+        containerStyle={{
+          zIndex: 9999999,
+        }}
+      />
       <AppRoutes />
     </BrowserRouter>
   );

@@ -134,6 +134,7 @@ const EnquiryList = ({
     message: "",
   });
   const [showDeleteAllModal, setShowDeleteAllModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Auto-select default model for AI Analysis
   useEffect(() => {
@@ -388,7 +389,7 @@ const EnquiryList = ({
     });
 
     if (!isValid) return;
-
+    setIsSubmitting(true);
     try {
       // Pass the data to the parent handler
       onPromote({
@@ -402,6 +403,8 @@ const EnquiryList = ({
     } catch (err) {
       console.log("Lead Creation Failed", err);
       toast.error("Lead Creation Failed. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -411,16 +414,24 @@ const EnquiryList = ({
     setHoldReason("");
   };
 
-  const confirmHold = () => {
-    if (selectedEnquiry) {
-      onUpdate({ ...selectedEnquiry, status: "hold", holdReason: holdReason });
+  const confirmHold = async () => {
+    if (!selectedEnquiry) return;
+    if (!holdReason.trim()) return;
+    setIsSubmitting(true);
+    try {
+      await onUpdate({ ...selectedEnquiry, status: "hold", holdReason: holdReason });
       setHoldModalOpen(false);
       setSelectedEnquiry(null);
       setHoldReason("");
+    } catch (err) {
+      console.error("Hold failed:", err);
+      toast.error("Failed to put on hold.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handleSimulateSubmit = (e) => {
+  const handleSimulateSubmit = async (e) => {
     e.preventDefault();
     
     const isValid = validateForm(formData, {
@@ -432,10 +443,18 @@ const EnquiryList = ({
 
     if (!isValid) return;
 
-    onAdd({ ...formData });
-    setShowSimulateForm(false);
-    setFormData({ name: "", email: "", phone: "", website: "", message: "" });
-    setActiveTab("new");
+    setIsSubmitting(true);
+    try {
+      await onAdd({ ...formData });
+      setShowSimulateForm(false);
+      setFormData({ name: "", email: "", phone: "", website: "", message: "" });
+      setActiveTab("new");
+    } catch (err) {
+      console.error("Add Enquiry Failed:", err);
+      toast.error("Failed to add enquiry.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -1001,6 +1020,7 @@ const EnquiryList = ({
                     </label>
                     <input
                       type="tel"
+                      required
                       className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary/5 outline-none transition-all"
                       placeholder="Phone number..."
                       value={formData.phone}
@@ -1043,14 +1063,24 @@ const EnquiryList = ({
               <div className="pt-2">
                 <button
                   type="submit"
-                  className="w-full h-14 bg-[#18254D] text-white rounded-2xl text-[13px] font-bold  tracking-widest shadow-xl active:scale-[0.97] transition-all hover:bg-[#1e2e5e] hover:shadow-2xl flex items-center justify-center gap-3 group/btn"
+                  disabled={isSubmitting}
+                  className="w-full h-14 bg-[#18254D] text-white rounded-2xl text-[13px] font-bold  tracking-widest shadow-xl active:scale-[0.97] transition-all hover:bg-[#1e2e5e] hover:shadow-2xl flex items-center justify-center gap-3 group/btn disabled:opacity-70 disabled:cursor-not-allowed"
                 >
-                  <span>Add Enquiry</span>
-                  <Send
-                    size={16}
-                    strokeWidth={2.5}
-                    className="group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1 transition-transform"
-                  />
+                  {isSubmitting ? (
+                    <>
+                      <span>Adding Enquiry...</span>
+                      <Loader2 size={16} className="animate-spin" />
+                    </>
+                  ) : (
+                    <>
+                      <span>Add Enquiry</span>
+                      <Send
+                        size={16}
+                        strokeWidth={2.5}
+                        className="group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1 transition-transform"
+                      />
+                    </>
+                  )}
                 </button>
               </div>
             </form>
@@ -1130,6 +1160,7 @@ const EnquiryList = ({
                   </label>
                   <input
                     type="tel"
+                    required
                     className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary/5 outline-none transition-all"
                     value={promoteFormData.phone}
                     onChange={(e) =>
@@ -1300,9 +1331,17 @@ const EnquiryList = ({
               <button
                 type="button"
                 onClick={confirmLeadConversion}
-                className="w-full py-3.5 bg-[#18254D] text-white rounded-2xl text-[13px] font-bold  tracking-widest shadow-lg active:scale-[0.98] transition-all hover:bg-slate-800"
+                disabled={isSubmitting}
+                className="w-full py-3.5 bg-[#18254D] text-white rounded-2xl text-[13px] font-bold  tracking-widest shadow-lg active:scale-[0.98] transition-all hover:bg-slate-800 flex items-center justify-center gap-3 disabled:opacity-70 disabled:cursor-not-allowed"
               >
-                Add Lead
+                {isSubmitting ? (
+                  <>
+                    <span>Adding Lead...</span>
+                    <Loader2 size={16} className="animate-spin" />
+                  </>
+                ) : (
+                  <span>Add Lead</span>
+                )}
               </button>
             </div>
           </div>
@@ -1397,11 +1436,20 @@ const EnquiryList = ({
                 <button
                   type="button"
                   onClick={confirmHold}
-                  disabled={!holdReason.trim()}
-                  className="w-full h-14 bg-[#18254D] text-white rounded-2xl text-xs font-bold  tracking-widest shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:grayscale hover:bg-slate-800"
+                  disabled={!holdReason.trim() || isSubmitting}
+                  className="w-full h-14 bg-[#18254D] text-white rounded-2xl text-xs font-bold  tracking-widest shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:grayscale hover:bg-slate-800 disabled:cursor-not-allowed"
                 >
-                  <span>Add To Hold</span>
-                  <PauseCircle size={16} strokeWidth={2.5} />
+                  {isSubmitting ? (
+                    <>
+                      <span>Processing...</span>
+                      <Loader2 size={16} className="animate-spin" />
+                    </>
+                  ) : (
+                    <>
+                      <span>Add To Hold</span>
+                      <PauseCircle size={16} strokeWidth={2.5} />
+                    </>
+                  )}
                 </button>
               </div>
             </div>

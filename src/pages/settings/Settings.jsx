@@ -19,6 +19,7 @@ import {
   Key,
   Zap,
   X,
+  Loader2,
 } from "lucide-react";
 import { BASE_URL } from "../../constants/config";
 import { getAuthHeaders } from "../../utils/auth";
@@ -40,6 +41,7 @@ const Settings = ({
   onDeleteAiModel,
 }) => {
   const [activeTab, setActiveTab] = useState("profile");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [profile, setProfile] = useState(
     JSON.parse(localStorage.getItem("user")) || null,
@@ -251,6 +253,7 @@ const Settings = ({
   };
 
   const handleProfileSave = async () => {
+    setIsSubmitting(true);
     try {
       const formData = new FormData();
       formData.append("full_name", profile.full_name || "");
@@ -314,6 +317,8 @@ const Settings = ({
         "Server error while updating profile. Check console for details.",
         "error",
       );
+    } finally {
+      setIsSubmitting(false);
     }
   };
   const handleAiSettingsSave = () => {
@@ -324,6 +329,7 @@ const Settings = ({
 
   const handleAddAdmin = async () => {
     if (newAdmin.name && newAdmin.email) {
+      setIsSubmitting(true);
       try {
         // Generate a default password (you might want to change this logic)
         const defaultPassword = "Password@123"; // Or generate random
@@ -392,6 +398,8 @@ const Settings = ({
           "Server error while creating admin. Check console for details.",
           "error",
         );
+      } finally {
+        setIsSubmitting(false);
       }
     }
   };
@@ -466,6 +474,7 @@ const Settings = ({
   const handleSaveEditAdmin = async (id) => {
     if (!editAdminData.name || !editAdminData.email) return;
 
+    setIsSubmitting(true);
     try {
       const response = await fetch(`${BASE_URL}/api/admin-users/update/${id}`, {
         method: "POST",
@@ -505,6 +514,8 @@ const Settings = ({
     } catch (error) {
       console.error(error);
       showToastMessage("Server error while updating admin", "error");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -548,6 +559,7 @@ const Settings = ({
         return;
       }
 
+      setIsSubmitting(true);
       try {
         const userId = profile?.uuid || profile?.id;
         const response = await fetch(
@@ -597,6 +609,8 @@ const Settings = ({
           "Server error while updating password. Check console for details.",
           "error",
         );
+      } finally {
+        setIsSubmitting(false);
       }
     }
   };
@@ -786,10 +800,15 @@ const Settings = ({
                     <div className="flex justify-end pt-8 border-t border-slate-100">
                       <button
                         onClick={handleProfileSave}
-                        disabled={isProfileSaved}
+                        disabled={isSubmitting || isProfileSaved}
                         className="flex items-center justify-center gap-2 px-8 py-3.5 bg-[#18254D] text-white rounded-2xl hover:bg-[#1e2e5e] transition-all active:scale-95 text-sm font-black disabled:opacity-50 shadow-xl shadow-[#18254D]/20 animate-fade-in-up"
                       >
-                        {isProfileSaved ? (
+                        {isSubmitting ? (
+                          <>
+                            <Loader2 size={18} className="animate-spin" />
+                            <span>SAVING...</span>
+                          </>
+                        ) : isProfileSaved ? (
                           <>
                             <Check size={18} strokeWidth={3} />
                             CHANGES SAVED
@@ -1324,10 +1343,20 @@ const Settings = ({
                       <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t border-slate-100">
                         <button
                           onClick={handleUpdatePassword}
-                          className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-[#18254D] text-white rounded-xl hover:bg-[#1e2e5e] transition-all active:scale-95 text-sm font-bold shadow-lg shadow-[#18254D]/20"
+                          disabled={isSubmitting}
+                          className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-[#18254D] text-white rounded-xl hover:bg-[#1e2e5e] transition-all active:scale-95 text-sm font-bold shadow-lg shadow-[#18254D]/20 disabled:opacity-70 disabled:cursor-not-allowed"
                         >
-                          <Save size={18} strokeWidth={2.5} />
-                          Update Password
+                          {isSubmitting ? (
+                            <>
+                              <Loader2 size={16} className="animate-spin" />
+                              <span>Updating...</span>
+                            </>
+                          ) : (
+                            <>
+                              <Save size={18} strokeWidth={2.5} />
+                              Update Password
+                            </>
+                          )}
                         </button>
                         <button
                           onClick={() => {
@@ -1452,10 +1481,20 @@ const Settings = ({
                     <div className="flex gap-3 pt-4 border-t border-slate-100">
                       <button
                         onClick={handleAddAdmin}
-                        className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-8 py-3 bg-[#18254D] text-white rounded-2xl hover:bg-[#1e2e5e] active:scale-95 transition-all text-[13px] font-black tracking-widest shadow-xl shadow-[#18254D]/20"
+                        disabled={isSubmitting}
+                        className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-8 py-3 bg-[#18254D] text-white rounded-2xl hover:bg-[#1e2e5e] active:scale-95 transition-all text-[13px] font-black tracking-widest shadow-xl shadow-[#18254D]/20 disabled:opacity-70 disabled:cursor-not-allowed"
                       >
-                        <Check size={18} strokeWidth={3} />
-                        CREATE ADMIN
+                        {isSubmitting ? (
+                          <>
+                            <Loader2 size={18} className="animate-spin" />
+                            <span>CREATING...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Check size={18} strokeWidth={3} />
+                            CREATE ADMIN
+                          </>
+                        )}
                       </button>
                       <button
                         onClick={() => setShowAddAdminForm(false)}
@@ -1565,9 +1604,14 @@ const Settings = ({
                                 <div className="flex gap-2.5 pt-4">
                                   <button
                                     onClick={() => handleSaveEditAdmin(admin.id)}
-                                    className="flex-1 py-2.5 bg-[#18254D] text-white rounded-xl hover:bg-[#1e2e5e] transition-all text-xs font-bold shadow-lg shadow-[#18254D]/20"
+                                    disabled={isSubmitting}
+                                    className="flex-1 py-2.5 bg-[#18254D] text-white rounded-xl hover:bg-[#1e2e5e] transition-all text-xs font-bold shadow-lg shadow-[#18254D]/20 disabled:opacity-70 disabled:cursor-not-allowed"
                                   >
-                                    Save
+                                    {isSubmitting ? (
+                                      <Loader2 size={14} className="animate-spin mx-auto" />
+                                    ) : (
+                                      "Save"
+                                    )}
                                   </button>
                                   <button
                                     onClick={handleCancelEditAdmin}
