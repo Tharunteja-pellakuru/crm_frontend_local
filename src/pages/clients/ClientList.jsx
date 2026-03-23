@@ -1127,7 +1127,7 @@ const ClientList = ({
                       className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
                       value={formData.phone}
                       onChange={(e) =>
-                        setFormData({ ...formData, phone: e.target.value })
+                        setFormData({ ...formData, phone: e.target.value.replace(/\D/g, "") })
                       }
                     />
                   </div>
@@ -2007,7 +2007,7 @@ const ClientList = ({
                     onChange={(e) =>
                       setOnboardingData({
                         ...onboardingData,
-                        phone: e.target.value,
+                        phone: e.target.value.replace(/\D/g, ""),
                       })
                     }
                   />

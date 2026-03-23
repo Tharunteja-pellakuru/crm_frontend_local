@@ -1005,7 +1005,7 @@ const EnquiryList = ({
                       placeholder="Phone number..."
                       value={formData.phone}
                       onChange={(e) =>
-                        setFormData({ ...formData, phone: e.target.value })
+                        setFormData({ ...formData, phone: e.target.value.replace(/\D/g, "") })
                       }
                     />
                   </div>
@@ -1135,7 +1135,7 @@ const EnquiryList = ({
                     onChange={(e) =>
                       setPromoteFormData({
                         ...promoteFormData,
-                        phone: e.target.value,
+                        phone: e.target.value.replace(/\D/g, ""),
                       })
                     }
                   />
