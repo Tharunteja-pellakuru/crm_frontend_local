@@ -650,9 +650,9 @@ const LeadList = ({
 
         {/* Control Bar */}
         <div className="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm">
-          <div className="flex flex-row flex-wrap gap-2 w-full items-center">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:flex gap-2 w-full items-center">
             {/* 1. Search Bar */}
-            <div className="relative w-full sm:w-auto sm:flex-[1.5] min-w-[100%] sm:min-w-[200px] order-1">
+            <div className="relative md:col-span-2 xl:flex-[1.5]">
               <Search
                 size={16}
                 className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
@@ -667,7 +667,7 @@ const LeadList = ({
             </div>
 
             {leadView !== "Converted" && leadView !== "Dismissed" && (
-            <div className="flex-1 sm:flex-none w-[auto] min-w-[140px] relative z-50 order-2">
+            <div className="col-span-1 xl:flex-1 relative z-50">
               <button
                 ref={tierButtonRef}
                 onClick={() => setIsTierDropdownOpen(!isTierDropdownOpen)}
@@ -722,7 +722,7 @@ const LeadList = ({
             )}
 
             {/* Category Dropdown */}
-            <div className="flex-1 sm:flex-none w-[auto] min-w-[140px] relative z-50 order-3">
+            <div className="col-span-1 xl:flex-1 relative z-50">
               <button
                 ref={categoryButtonRef}
                 onClick={() =>
@@ -782,7 +782,7 @@ const LeadList = ({
             </div>
 
             {/* Date Filters */}
-            <div className="flex-1 sm:flex-none w-[auto] min-w-[140px] relative z-50 order-4">
+            <div className="col-span-1 xl:flex-1 relative z-50">
               <DatePicker
                 label="From"
                 value={startDate}
@@ -790,7 +790,7 @@ const LeadList = ({
               />
             </div>
 
-            <div className="flex-1 sm:flex-none w-[auto] min-w-[140px] relative z-50 order-5">
+            <div className="col-span-1 lg:flex-1 lg:min-w-[130px] relative z-50">
               <DatePicker label="To" value={endDate} onChange={setEndDate} />
             </div>
           </div>

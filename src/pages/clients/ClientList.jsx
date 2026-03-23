@@ -416,9 +416,9 @@ const ClientList = ({
 
         {/* Control Bar */}
         <div className="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm">
-          <div className="flex flex-nowrap gap-2 w-full items-center overflow-x-auto no-scrollbar">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:flex gap-2 w-full items-center">
             {/* 1. Search Bar */}
-            <div className="relative min-w-[200px] flex-[1.5] shrink-0">
+            <div className="relative md:col-span-2 xl:flex-[1.5]">
               <Search
                 size={16}
                 className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
@@ -433,7 +433,7 @@ const ClientList = ({
             </div>
 
             {title === "Leads" && (
-              <div className="min-w-[160px] flex-1 shrink-0 relative z-50">
+              <div className="col-span-1 md:col-span-2 xl:flex-1 relative z-50">
                 <button
                   ref={tierButtonRef}
                   onClick={() => setIsTierDropdownOpen(!isTierDropdownOpen)}
@@ -488,7 +488,7 @@ const ClientList = ({
             )}
 
             {/* Category Dropdown */}
-            <div className="min-w-[160px] flex-1 shrink-0 relative z-50">
+            <div className="col-span-1 md:col-span-2 xl:flex-1 relative z-50">
               <button
                 ref={categoryButtonRef}
                 onClick={() =>
@@ -548,7 +548,7 @@ const ClientList = ({
             </div>
 
             {/* Date Filters */}
-            <div className="min-w-[140px] flex-1 shrink-0 relative z-50">
+            <div className="col-span-1 md:col-span-1 xl:flex-1 relative z-50">
               <DatePicker
                 label="From"
                 value={startDate}
@@ -556,7 +556,7 @@ const ClientList = ({
               />
             </div>
 
-            <div className="min-w-[140px] flex-1 shrink-0 relative z-50">
+            <div className="col-span-1 md:col-span-1 xl:flex-1 relative z-50">
               <DatePicker label="To" value={endDate} onChange={setEndDate} />
             </div>
           </div>
@@ -564,8 +564,8 @@ const ClientList = ({
 
         {/* Lead View Toggles (Leads Only) */}
         {title === "Leads" && (
-          <div className="flex justify-center my-4 overflow-x-auto">
-            <div className="inline-flex bg-slate-100/50 p-1 rounded-2xl border border-slate-200 shadow-sm leading-none h-[42px] items-center gap-1 whitespace-nowrap">
+          <div className="flex justify-center my-4 w-full px-1 sm:px-0">
+            <div className="flex flex-nowrap bg-slate-100/50 p-1 rounded-2xl border border-slate-200 shadow-sm leading-none w-full sm:w-auto items-center gap-0.5 sm:gap-1 overflow-x-auto no-scrollbar">
               {["Pending", "Converted", "Dismissed"].map((view) => {
                 const colors = {
                   Pending: {
@@ -588,7 +588,7 @@ const ClientList = ({
                   <button
                     key={view}
                     onClick={() => setLeadView(view)}
-                    className={`px-5 h-full rounded-xl text-[12px] font-bold  tracking-wider transition-all flex items-center justify-center min-w-[100px] border border-transparent whitespace-nowrap ${
+                    className={`flex-1 sm:flex-none px-2 sm:px-5 py-2.5 sm:py-2 rounded-xl text-[10px] sm:text-[12px] font-bold tracking-wider transition-all flex items-center justify-center min-w-[65px] sm:min-w-[100px] h-[34px] sm:h-auto border border-transparent whitespace-nowrap ${
                       leadView === view
                         ? `${activeColor} shadow-md`
                         : `text-slate-400 ${hoverColor}`

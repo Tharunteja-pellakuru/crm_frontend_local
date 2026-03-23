@@ -45,7 +45,7 @@ const Layout = ({
       </div>
 
       {/* Main Container */}
-      <div className="flex-1 flex flex-col min-[1201px]:ml-72 w-full transition-all duration-300 min-[1201px]:animate-slide-left">
+      <div className="flex-1 flex flex-col min-[1201px]:ml-72 w-full min-[1201px]:w-[calc(100%-18rem)] transition-all duration-300 min-[1201px]:animate-slide-left">
         <header className="min-[1201px]:hidden flex items-center justify-between bg-[#18254D] text-white p-5 fixed top-0 left-0 right-0 z-[100] shadow-lg h-24">
           <Logo size={200} showText={false} className="!gap-2.5" />
           <button
@@ -57,7 +57,7 @@ const Layout = ({
         </header>
 
         {/* Scalable Content Injection */}
-        <main className="flex-1 p-4 min-[1201px]:p-8 w-full overflow-x-hidden mt-28 min-[1201px]:mt-4 flex flex-col">
+        <main className="flex-1 p-4 min-[1201px]:p-8 overflow-x-hidden mt-28 min-[1201px]:mt-4 flex flex-col">
           <div key={location.pathname} className="max-w-7xl mx-auto pb-20 flex-1 w-full animate-fade-in">
             <Outlet />
           </div>
