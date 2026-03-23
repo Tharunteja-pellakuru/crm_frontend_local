@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { Area, Line, ComposedChart, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { Users, UserPlus, Clock, CheckCircle2, ChevronRight, ChevronDown, Filter, Calendar, TrendingUp, X, Bell, Info, Inbox, Activity } from "lucide-react";
 
@@ -237,70 +238,97 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
                   )}
                 </div>
               </button>
-              {showNotifications && (
+              {showNotifications && createPortal(
                 <>
                   <div
-                    className="fixed inset-0 z-[90] bg-black/10 backdrop-blur-sm"
+                    className="fixed inset-0 z-[1000] bg-[#18254D]/10 backdrop-blur-sm"
                     onClick={() => setShowNotifications(false)}
                   />
-                  <div className="fixed lg:absolute left-1/2 md:left-auto lg:right-0 -translate-x-1/2 lg:translate-x-0 mt-3 w-[280px] bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden animate-pop z-[100] top-24 lg:top-auto">
-                    <div className="p-4 pb-2 border-b border-black/5 bg-black/5">
+                  <div className="fixed top-24 right-4 md:right-10 w-[320px] bg-white rounded-3xl shadow-[0_20px_60px_-15px_rgba(24,37,77,0.3)] border border-slate-100 overflow-hidden animate-pop z-[1001]">
+                    <div className="p-5 pb-3 border-b border-slate-50 bg-slate-50/50">
                       <div className="flex justify-between items-center mb-1">
-                        <h3 className="text-[12px] font-bold text-primary  tracking-widest capitalize">
-                          New Enquiries
-                        </h3>
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                          <h3 className="text-[11px] font-black text-[#18254D] tracking-[0.2em] uppercase">
+                            Notifications
+                          </h3>
+                        </div>
                         <div className="flex items-center gap-2">
                           {newEnquiries.length > 0 && (
                             <button
                               onClick={onClearNotifications}
-                              className="text-[14px] font-bold text-primary hover:text-white hover:bg-primary px-2.5 py-1.5 rounded-lg border border-primary/10 hover:border-primary tracking-widest transition-all active:scale-95 whitespace-nowrap shadow-sm"
+                              className="text-[10px] font-black text-blue-600 hover:text-white hover:bg-blue-600 px-3 py-1.5 rounded-xl border border-blue-100 transition-all active:scale-95 uppercase tracking-wider"
                             >
-                              Clear All
+                              Clear
                             </button>
                           )}
                           <button
                             onClick={() => setShowNotifications(false)}
-                            className="p-1 hover:bg-slate-200 rounded-lg text-slate-400"
+                            className="p-1.5 hover:bg-slate-200 rounded-xl text-slate-400 transition-all"
                           >
-                            <X size={16} />
+                            <X size={16} strokeWidth={2.5} />
                           </button>
                         </div>
                       </div>
                     </div>
-                    <div className="max-h-[300px] overflow-y-auto p-2.5 no-scrollbar space-y-1.5">
+                    <div className="max-h-[380px] overflow-y-auto p-3 no-scrollbar space-y-2">
                       {newEnquiries.length === 0 ? (
-                        <div className="text-center py-8">
-                          <p className="text-[12px] text-slate-400 font-bold  tracking-widest">
-                            No new enquiries
+                        <div className="py-12 flex flex-col items-center justify-center text-center opacity-40">
+                          <Inbox size={40} strokeWidth={1} className="mb-3 text-slate-300" />
+                          <p className="text-[12px] font-bold tracking-widest uppercase text-slate-400">
+                            No New Enquiries
                           </p>
                         </div>
                       ) : (
                         newEnquiries.map((e) => (
                           <div
                             key={e.id}
-                            onClick={() => onNavigate("enquiries")}
-                            className="p-2.5 bg-white border border-slate-100 rounded-xl cursor-pointer hover:border-secondary transition-all"
+                            className="p-4 bg-white border border-slate-100 rounded-2xl hover:bg-slate-50 hover:border-blue-100 transition-all cursor-pointer group shadow-sm"
+                            onClick={() => {
+                              onNavigate("enquiries");
+                              setShowNotifications(false);
+                            }}
                           >
-                            <div className="flex justify-between items-center mb-0.5">
-                              <span className="text-[7.5px] font-bold text-secondary  tracking-widest">
-                                New Enquiry
-                              </span>
-                              <span className="text-[7.5px] text-slate-400 font-bold">
-                                {new Date(e.date).toLocaleDateString()}
-                              </span>
+                            <div className="flex items-start gap-4">
+                              <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 font-black text-sm shrink-0 group-hover:bg-blue-600 group-hover:text-white transition-colors uppercase">
+                                {e.name?.charAt(0) || "E"}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex justify-between items-start mb-1">
+                                  <p className="text-sm font-black text-[#18254D] truncate pr-2">
+                                    {e.name}
+                                  </p>
+                                  <span className="text-[10px] font-black text-blue-500 uppercase tracking-wider shrink-0">
+                                    New
+                                  </span>
+                                </div>
+                                <p className="text-[13px] text-slate-500 font-medium line-clamp-1 mb-2">
+                                  {e.interest || e.message || "Interested in Services"}
+                                </p>
+                                <div className="flex items-center gap-2 text-[11px] font-black text-slate-400 tracking-wider uppercase">
+                                  <Clock size={10} strokeWidth={3} />
+                                  <span>{e.date ? new Date(e.date).toLocaleDateString() : "Just now"}</span>
+                                </div>
+                              </div>
                             </div>
-                            <p className="text-[13px] font-bold text-primary truncate">
-                              {e.name}
-                            </p>
-                            <p className="text-[14px] text-slate-400 truncate mt-0.5">
-                              {e.message}
-                            </p>
                           </div>
                         ))
                       )}
                     </div>
+                    <div className="p-4 bg-slate-50/80 border-t border-slate-100 text-center">
+                      <button 
+                         onClick={() => {
+                           onNavigate("enquiries");
+                           setShowNotifications(false);
+                         }}
+                         className="text-[11px] font-black text-blue-600 hover:text-blue-800 tracking-[0.15em] uppercase transition-colors"
+                      >
+                        View All Activity
+                      </button>
+                    </div>
                   </div>
-                </>
+                </>,
+                document.body
               )}
             </div>
             <div className="w-[1px] h-6 bg-slate-100 mx-1" />
