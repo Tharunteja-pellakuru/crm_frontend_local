@@ -229,8 +229,8 @@ const DatePicker = ({ label, value, onChange, placeholder }) => {
         className={`datepicker-trigger w-full h-[38px] grid ${label ? "grid-cols-[auto_1fr_auto]" : "grid-cols-[1fr_auto]"} items-center gap-2 px-3 bg-slate-50 border border-slate-100 rounded-xl text-[12px] font-bold text-[#18254D] focus:outline-none focus:ring-4 focus:ring-[#18254D]/10 hover:bg-white hover:border-slate-200 transition-all shadow-sm shadow-slate-200/50`}
       >
         {label && (
-          <div className="flex items-center justify-start min-w-[35px]">
-            <span className="uppercase tracking-tighter text-[#18254D]/80 truncate">
+          <div className="flex items-center justify-start shrink-0 pr-1">
+            <span className="uppercase tracking-tighter text-[#18254D]/80 whitespace-nowrap overflow-visible">
               {label}:
             </span>
           </div>
@@ -238,7 +238,7 @@ const DatePicker = ({ label, value, onChange, placeholder }) => {
         <div
           className={`flex items-center ${label ? "justify-center" : "justify-start"} min-w-0`}
         >
-          <span className="truncate">
+          <span className="whitespace-nowrap overflow-visible">
             {value ? formatDate(value) : placeholder || "dd-mm-yyyy"}
           </span>
         </div>

@@ -32,7 +32,10 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import DatePicker from "../../components/ui/DatePicker";
-import { CATEGORY_MAP, REVERSE_CATEGORY_MAP } from "../../constants/categoryConstants";
+import {
+  CATEGORY_MAP,
+  REVERSE_CATEGORY_MAP,
+} from "../../constants/categoryConstants";
 import { countries } from "../../utils/countries";
 import SearchableDropdown from "../../components/common/SearchableDropdown";
 import { validateForm } from "../../utils/validation";
@@ -122,8 +125,10 @@ const EnquiryList = ({
     notes: "",
   });
   const [showSimulateForm, setShowSimulateForm] = useState(false);
-  const [isEnquiryStatusDropdownOpen, setIsEnquiryStatusDropdownOpen] = useState(false);
-  const [isEnquiryCategoryDropdownOpen, setIsEnquiryCategoryDropdownOpen] = useState(false);
+  const [isEnquiryStatusDropdownOpen, setIsEnquiryStatusDropdownOpen] =
+    useState(false);
+  const [isEnquiryCategoryDropdownOpen, setIsEnquiryCategoryDropdownOpen] =
+    useState(false);
   const [holdModalOpen, setHoldModalOpen] = useState(false);
   const [holdReason, setHoldReason] = useState("");
   const [formData, setFormData] = useState({
@@ -154,7 +159,10 @@ const EnquiryList = ({
   useEffect(() => {
     if (hideIrrelevant) {
       const toDismiss = enquiries.filter(
-        (e) => (e.status === "new" || e.status === "read") && e.aiAnalysis && !e.aiAnalysis.isRelevant
+        (e) =>
+          (e.status === "new" || e.status === "read") &&
+          e.aiAnalysis &&
+          !e.aiAnalysis.isRelevant,
       );
       toDismiss.forEach((e) => {
         onDismiss(e.id);
@@ -182,7 +190,14 @@ const EnquiryList = ({
   // Reset to first page when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, startDate, endDate, activeTab, hideIrrelevant, selectedAiModel]);
+  }, [
+    searchTerm,
+    startDate,
+    endDate,
+    activeTab,
+    hideIrrelevant,
+    selectedAiModel,
+  ]);
 
   useEffect(() => {
     if (aiAnalysisEnabled && activeTab === "new" && !analysisLoopRef.current) {
@@ -380,22 +395,25 @@ const EnquiryList = ({
 
   const confirmLeadConversion = async () => {
     if (!selectedEnquiry) return;
-    
+
     const isValid = validateForm(promoteFormData, {
       name: { required: true, minLength: 2, label: "Full Name" },
       email: { required: true, pattern: /^\S+@\S+\.\S+$/, label: "Email" },
       phone: { required: true, minLength: 10, label: "Phone Number" },
-      country: { required: true, label: "Country" }
+      country: { required: true, label: "Country" },
     });
 
     if (!isValid) return;
     setIsSubmitting(true);
     try {
       // Pass the data to the parent handler
-      onPromote({
-        ...promoteFormData,
-        status: "Lead" // Ensure handleAddClient knows it's a lead
-      }, selectedEnquiry.id || selectedEnquiry.uuid);
+      onPromote(
+        {
+          ...promoteFormData,
+          status: "Lead", // Ensure handleAddClient knows it's a lead
+        },
+        selectedEnquiry.id || selectedEnquiry.uuid,
+      );
 
       setLeadModalOpen(false);
       setSelectedEnquiry(null);
@@ -419,7 +437,11 @@ const EnquiryList = ({
     if (!holdReason.trim()) return;
     setIsSubmitting(true);
     try {
-      await onUpdate({ ...selectedEnquiry, status: "hold", holdReason: holdReason });
+      await onUpdate({
+        ...selectedEnquiry,
+        status: "hold",
+        holdReason: holdReason,
+      });
       setHoldModalOpen(false);
       setSelectedEnquiry(null);
       setHoldReason("");
@@ -433,12 +455,12 @@ const EnquiryList = ({
 
   const handleSimulateSubmit = async (e) => {
     e.preventDefault();
-    
+
     const isValid = validateForm(formData, {
       name: { required: true, minLength: 2, label: "Full Name" },
       email: { required: true, pattern: /^\S+@\S+\.\S+$/, label: "Email" },
       phone: { required: true, minLength: 10, label: "Phone Number" },
-      message: { required: true, label: "Requirement Briefing" }
+      message: { required: true, label: "Requirement Briefing" },
     });
 
     if (!isValid) return;
@@ -470,11 +492,11 @@ const EnquiryList = ({
             </p>
           </div>
           <div className="w-full lg:w-auto flex flex-col sm:flex-row items-center gap-3">
-             {activeTab === "dismissed" && totalInTabCount > 0 && (
-               <button
-                 onClick={() => setShowDeleteAllModal(true)}
-                 className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-rose-50 text-rose-600 border border-rose-200 rounded-2xl hover:bg-rose-100 transition-all text-[13px] font-bold tracking-wider shadow-sm active:scale-95 group"
-               >
+            {activeTab === "dismissed" && totalInTabCount > 0 && (
+              <button
+                onClick={() => setShowDeleteAllModal(true)}
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-rose-50 text-rose-600 border border-rose-200 rounded-2xl hover:bg-rose-100 transition-all text-[13px] font-bold tracking-wider shadow-sm active:scale-95 group"
+              >
                 <Trash2
                   size={16}
                   strokeWidth={2.5}
@@ -500,7 +522,7 @@ const EnquiryList = ({
         <div className="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm relative z-[60]">
           <div className="flex flex-row flex-wrap gap-2 md:gap-3 w-full items-center">
             {/* 1. Search Bar */}
-            <div className="relative w-full sm:w-auto sm:flex-[1.5] min-w-[100%] sm:min-w-[200px] order-1">
+            <div className="relative w-full sm:w-auto sm:flex-[1.5] min-w-[100%] border border-slate-200 rounded-xl sm:min-w-[200px] order-1">
               <Search
                 size={16}
                 className="absolute left-4 top-1/2 -translate-y-1/2 text-[#18254D]/40"
@@ -515,7 +537,7 @@ const EnquiryList = ({
             </div>
 
             {/* 2. From Date Picker */}
-            <div className="flex-1 sm:flex-none w-[auto] md:flex-1 min-w-[140px] relative z-50 order-2">
+            <div className="flex-1 sm:flex-none border border-slate-200 rounded-xl w-[auto] md:flex-1 min-w-[175px] relative z-50 order-2">
               <DatePicker
                 label="From"
                 value={startDate}
@@ -524,7 +546,7 @@ const EnquiryList = ({
             </div>
 
             {/* 3. To Date Picker */}
-            <div className="flex-1 sm:flex-none w-[auto] md:flex-1 min-w-[140px] relative z-50 order-3">
+            <div className="flex-1 sm:flex-none border border-slate-200 rounded-xl w-[auto] md:flex-1 min-w-[160px] relative z-50 order-3">
               <DatePicker label="To" value={endDate} onChange={setEndDate} />
             </div>
 
@@ -533,9 +555,7 @@ const EnquiryList = ({
               <React.Fragment>
                 {/* AI Analysis Toggle */}
                 <div className="flex-1 sm:flex-none w-[auto] md:flex-1 min-w-[140px] flex items-center justify-between px-3 h-[38px] bg-slate-50 border border-slate-200 rounded-xl order-4">
-                  <span
-                    className={`text-[12px] font-bold uppercase ${aiAnalysisEnabled ? "text-primary" : "text-slate-400"}`}
-                  >
+                  <span className={`text-[12px] font-bold  text-primary`}>
                     AI Analysis
                   </span>
 
@@ -547,37 +567,41 @@ const EnquiryList = ({
                         setHideIrrelevant(false);
                       }
                     }}
-                    className={`relative inline-flex h-5 w-9 rounded-full transition ${
-                      aiAnalysisEnabled ? "bg-secondary" : "bg-slate-300"
+                    className={`relative inline-flex h-5 w-9 shrink-0 rounded-full transition-colors duration-300 ease-in-out ${
+                      aiAnalysisEnabled ? "bg-[#18254D]" : "bg-slate-300"
                     }`}
                   >
                     <span
-                      className={`inline-block h-4 w-4 bg-white rounded-full transform transition ${
-                        aiAnalysisEnabled ? "translate-x-4" : "translate-x-1"
-                      } mt-[2px]`}
+                      className={`inline-block h-3.5 w-3.5 bg-white rounded-full transform transition-transform duration-300 ease-in-out ${
+                        aiAnalysisEnabled ? "translate-x-[18px]" : "translate-x-0.5"
+                      } mt-[3px] ml-0.5`}
                     />
                   </button>
                 </div>
 
                 {/* Filter Spam Toggle */}
-                <div className={`flex-1 sm:flex-none w-[auto] md:flex-1 min-w-[140px] flex items-center justify-between px-3 h-[38px] bg-slate-50 border border-slate-200 rounded-xl transition-all order-5 ${!aiAnalysisEnabled ? "opacity-50 pointer-events-none" : ""}`}>
+                <div
+                  className={`flex-1 sm:flex-none w-[auto] md:flex-1 min-w-[140px] flex items-center justify-between px-3 h-[38px] bg-slate-50 border border-slate-200 rounded-xl transition-all order-5 ${!aiAnalysisEnabled ? "opacity-50 pointer-events-none" : ""}`}
+                >
                   <span
-                    className={`text-[12px] font-bold uppercase ${hideIrrelevant ? "text-primary" : "text-slate-400"}`}
+                    className={`text-[12px] font-bold ${hideIrrelevant ? "text-primary" : "text-slate-400"}`}
                   >
                     Filter Spam
                   </span>
 
                   <button
-                    onClick={() => aiAnalysisEnabled && setHideIrrelevant(!hideIrrelevant)}
+                    onClick={() =>
+                      aiAnalysisEnabled && setHideIrrelevant(!hideIrrelevant)
+                    }
                     disabled={!aiAnalysisEnabled}
-                    className={`relative inline-flex h-5 w-9 rounded-full transition ${
-                      hideIrrelevant ? "bg-primary" : "bg-slate-300"
+                    className={`relative inline-flex h-5 w-9 shrink-0 rounded-full transition-colors duration-300 ease-in-out ${
+                      hideIrrelevant ? "bg-emerald-600" : "bg-slate-300"
                     }`}
                   >
                     <span
-                      className={`inline-block h-4 w-4 bg-white rounded-full transform transition ${
-                        hideIrrelevant ? "translate-x-4" : "translate-x-1"
-                      } mt-[2px]`}
+                      className={`inline-block h-3.5 w-3.5 bg-white rounded-full transform transition-transform duration-300 ease-in-out ${
+                        hideIrrelevant ? "translate-x-[18px]" : "translate-x-0.5"
+                      } mt-[3px] ml-0.5`}
                     />
                   </button>
                 </div>
@@ -778,12 +802,15 @@ const EnquiryList = ({
                     <h3 className="text-base font-bold text-[#18254D] tracking-tight truncate">
                       {enquiry.name}
                     </h3>
-                    <div className="flex items-center gap-1.5 text-[14px] text-slate-400 font-bold uppercase tracking-widest truncate">
-                      <Clock size={10} className="opacity-70 shrink-0" />
-                      {new Date(enquiry.date).toLocaleDateString([], {
-                        month: "short",
-                        day: "numeric",
-                      })}
+                    <div className="mt-1 px-2.5 py-1 bg-slate-50 border border-slate-200 rounded-full flex items-center gap-1.5 text-[12px] text-slate-500 font-bold uppercase tracking-wider whitespace-nowrap overflow-visible w-fit">
+                      <Clock size={11} className="text-slate-400 shrink-0" />
+                      {new Date(enquiry.date)
+                        .toLocaleDateString("en-GB", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        })
+                        .replace(/\//g, "-")}
                     </div>
                   </div>
                 </div>
@@ -832,12 +859,12 @@ const EnquiryList = ({
               {/* Card Content: Contact Info and Message */}
               <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
                 {/* 1. Contact Info Column */}
-                <div className="flex flex-col sm:flex-row lg:flex-col gap-2 w-full lg:w-48 shrink-0">
+                <div className="flex flex-col sm:flex-row lg:flex-col gap-2 w-full lg:w-64 shrink-0">
                   <div className="flex-1 flex items-center gap-2.5 p-2 bg-slate-50/80 border border-white/50 rounded-xl hover:bg-white hover:shadow-md hover:shadow-slate-100 transition-all group/info overflow-hidden">
                     <div className="w-7 h-7 shrink-0 rounded-lg bg-white flex items-center justify-center shadow-sm border border-slate-100 group-hover/info:scale-110 transition-transform">
                       <Mail size={12} className="text-slate-400" />
                     </div>
-                    <span className="text-[13px] font-semibold text-slate-500 truncate min-w-0">
+                    <span className="text-[13px] font-semibold text-slate-500 break-all">
                       {enquiry.email}
                     </span>
                   </div>
@@ -845,18 +872,20 @@ const EnquiryList = ({
                     <div className="w-7 h-7 shrink-0 rounded-lg bg-white flex items-center justify-center shadow-sm border border-slate-100 group-hover/info:scale-110 transition-transform">
                       <Phone size={12} className="text-slate-400" />
                     </div>
-                    <span className="text-[13px] font-semibold text-slate-500 truncate min-w-0">
+                    <span className="text-[13px] font-semibold text-slate-500 break-all">
                       {enquiry.phone || "Not Provided"}
                     </span>
                   </div>
-                  <div className="flex-1 flex items-center gap-2.5 p-2 bg-slate-50/80 border border-white/50 rounded-xl hover:bg-white hover:shadow-md hover:shadow-slate-100 transition-all group/info overflow-hidden">
-                    <div className="w-7 h-7 shrink-0 rounded-lg bg-white flex items-center justify-center shadow-sm border border-slate-100 group-hover/info:scale-110 transition-transform">
-                      <Globe size={12} className="text-slate-400" />
+                  {enquiry.website && (
+                    <div className="flex-1 flex items-center gap-2.5 p-2 bg-slate-50/80 border border-white/50 rounded-xl hover:bg-white hover:shadow-md hover:shadow-slate-100 transition-all group/info overflow-hidden">
+                      <div className="w-7 h-7 shrink-0 rounded-lg bg-white flex items-center justify-center shadow-sm border border-slate-100 group-hover/info:scale-110 transition-transform">
+                        <Globe size={12} className="text-slate-400" />
+                      </div>
+                      <span className="text-[13px] font-semibold text-slate-500 break-all">
+                        {enquiry.website}
+                      </span>
                     </div>
-                    <span className="text-[13px] font-semibold text-slate-500 truncate min-w-0">
-                      {enquiry.website || "Direct"}
-                    </span>
-                  </div>
+                  )}
                 </div>
 
                 {/* 2. Message Column */}
@@ -865,20 +894,27 @@ const EnquiryList = ({
                     "{enquiry.message}"
                   </p>
 
-                  {(activeTab === "hold" || activeTab === "dismissed") && enquiry.holdReason && (
-                    <div className="mt-1 space-y-1.5 border-t border-slate-100 pt-3">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[13px] font-black text-slate-300 uppercase tracking-widest">
-                          {activeTab === "dismissed" ? "Remark" : "Hold Reason"}
-                        </span>
+                  {(activeTab === "hold" || activeTab === "dismissed") &&
+                    enquiry.holdReason && (
+                      <div className="mt-1 space-y-1.5 border-t border-slate-100 pt-3">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[13px] font-black text-slate-300 uppercase tracking-widest">
+                            {activeTab === "dismissed"
+                              ? "Remark"
+                              : "Hold Reason"}
+                          </span>
+                        </div>
+                        <div
+                          className={`p-3 border rounded-xl ${activeTab === "dismissed" ? "bg-slate-50/50 border-slate-200/50" : "bg-amber-50/50 border-amber-100/50"}`}
+                        >
+                          <p
+                            className={`text-[13px] font-bold leading-relaxed italic ${activeTab === "dismissed" ? "text-slate-500" : "text-amber-600"}`}
+                          >
+                            {enquiry.holdReason}
+                          </p>
+                        </div>
                       </div>
-                      <div className={`p-3 border rounded-xl ${activeTab === "dismissed" ? "bg-slate-50/50 border-slate-200/50" : "bg-amber-50/50 border-amber-100/50"}`}>
-                        <p className={`text-[13px] font-bold leading-relaxed italic ${activeTab === "dismissed" ? "text-slate-500" : "text-amber-600"}`}>
-                          {enquiry.holdReason}
-                        </p>
-                      </div>
-                    </div>
-                  )}
+                    )}
                 </div>
               </div>
 
@@ -889,29 +925,28 @@ const EnquiryList = ({
                     <button
                       type="button"
                       onClick={() => openLeadModal(enquiry)}
-                      className="w-full sm:w-auto flex-1 sm:flex-none flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-2.5 bg-[#18254D] text-white rounded-full text-[11px] sm:text-[14px] font-black uppercase tracking-wider sm:tracking-widest shadow-lg shadow-primary/10 hover:shadow-primary/30 hover:-translate-y-0.5 transition-all active:scale-95 whitespace-nowrap"
+                      className="w-full sm:w-auto flex-1 sm:flex-none flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-5 lg:px-4 py-2 sm:py-2.5 lg:py-2 bg-[#18254D] text-white rounded-full text-[11px] sm:text-[14px] lg:text-[13px] font-black uppercase tracking-wider sm:tracking-widest shadow-lg shadow-primary/10 hover:shadow-primary/30 hover:-translate-y-0.5 transition-all active:scale-95 whitespace-nowrap"
                     >
-                      <CheckCircle strokeWidth={2.5} className="shrink-0 w-3.5 h-3.5 sm:w-3.5 sm:h-3.5" />
+                      <CheckCircle
+                        strokeWidth={2.5}
+                        className="shrink-0 w-3.5 h-3.5 sm:w-3.5 sm:h-3.5"
+                      />
                       Add to Lead
                     </button>
                     <button
                       type="button"
                       onClick={() => openHoldModal(enquiry)}
-                      className="w-full sm:w-auto flex-1 sm:flex-none py-2 sm:py-2.5 px-3 sm:px-4 flex items-center justify-center gap-1.5 sm:gap-2 text-slate-400 border border-slate-200 rounded-full hover:bg-amber-50 hover:text-amber-500 hover:border-amber-200 transition-all font-bold tracking-wider text-[11px] sm:text-[14px] uppercase group/hold whitespace-nowrap"
+                      className="w-full sm:w-auto flex-1 sm:flex-none py-2 sm:py-2.5 lg:py-2 px-3 sm:px-4 lg:px-3 flex items-center justify-center gap-1.5 sm:gap-2 text-slate-400 border border-slate-200 rounded-full hover:bg-amber-50 hover:text-amber-500 hover:border-amber-200 transition-all font-bold tracking-wider text-[11px] sm:text-[14px] lg:text-[13px] uppercase group/hold whitespace-nowrap"
                     >
-                      <PauseCircle
-                        className="group-hover/hold:scale-110 transition-transform shrink-0 w-3.5 h-3.5 sm:w-4 sm:h-4"
-                      />
+                      <PauseCircle className="group-hover/hold:scale-110 transition-transform shrink-0 w-3.5 h-3.5 sm:w-4 sm:h-4" />
                       Hold
                     </button>
                     <button
                       type="button"
                       onClick={() => onDismiss(enquiry.id)}
-                      className="w-full sm:w-auto flex-1 sm:flex-none py-2 sm:py-2.5 px-3 sm:px-4 flex items-center justify-center gap-1.5 sm:gap-2 text-slate-400 border border-slate-200 rounded-full hover:bg-rose-50 hover:text-rose-500 hover:border-rose-200 transition-all font-bold tracking-wider text-[11px] sm:text-[14px] uppercase group/dismiss whitespace-nowrap"
+                      className="w-full sm:w-auto flex-1 sm:flex-none py-2 sm:py-2.5 lg:py-2 px-3 sm:px-4 lg:px-3 flex items-center justify-center gap-1.5 sm:gap-2 text-slate-400 border border-slate-200 rounded-full hover:bg-rose-50 hover:text-rose-500 hover:border-rose-200 transition-all font-bold tracking-wider text-[11px] sm:text-[14px] lg:text-[13px] uppercase group/dismiss whitespace-nowrap"
                     >
-                      <X
-                        className="group-hover/dismiss:rotate-90 transition-transform shrink-0 w-3.5 h-3.5 sm:w-4 sm:h-4"
-                      />
+                      <X className="group-hover/dismiss:rotate-90 transition-transform shrink-0 w-3.5 h-3.5 sm:w-4 sm:h-4" />
                       Dismiss
                     </button>
                   </>
@@ -920,19 +955,20 @@ const EnquiryList = ({
                     <button
                       type="button"
                       onClick={() => onRestore(enquiry.id)}
-                      className="w-full sm:w-auto flex-1 sm:flex-none flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-2.5 bg-[#18254D] text-white rounded-full text-[11px] sm:text-[14px] font-black uppercase tracking-wider sm:tracking-widest shadow-lg hover:-translate-y-0.5 transition-all active:scale-95 whitespace-nowrap"
+                      className="w-full sm:w-auto flex-1 sm:flex-none flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-5 lg:px-4 py-2 sm:py-2.5 lg:py-2 bg-[#18254D] text-white rounded-full text-[11px] sm:text-[14px] lg:text-[13px] font-black uppercase tracking-wider sm:tracking-widest shadow-lg hover:-translate-y-0.5 transition-all active:scale-95 whitespace-nowrap"
                     >
-                      <RefreshCcw strokeWidth={2.5} className="shrink-0 w-3.5 h-3.5 sm:w-3.5 sm:h-3.5" />
+                      <RefreshCcw
+                        strokeWidth={2.5}
+                        className="shrink-0 w-3.5 h-3.5 sm:w-3.5 sm:h-3.5"
+                      />
                       Restore Enquiry
                     </button>
                     <button
                       type="button"
                       onClick={() => onDismiss(enquiry.id)}
-                      className="w-full sm:w-auto flex-1 sm:flex-none py-2 sm:py-2.5 px-3 sm:px-4 flex items-center justify-center gap-1.5 sm:gap-2 text-slate-400 border border-slate-200 rounded-full hover:bg-rose-50 hover:text-rose-500 hover:border-rose-200 transition-all font-bold tracking-wider text-[11px] sm:text-[14px] uppercase group/dismiss whitespace-nowrap"
+                      className="w-full sm:w-auto flex-1 sm:flex-none py-2 sm:py-2.5 lg:py-2 px-3 sm:px-4 lg:px-3 flex items-center justify-center gap-1.5 sm:gap-2 text-slate-400 border border-slate-200 rounded-full hover:bg-rose-50 hover:text-rose-500 hover:border-rose-200 transition-all font-bold tracking-wider text-[11px] sm:text-[14px] lg:text-[13px] uppercase group/dismiss whitespace-nowrap"
                     >
-                      <X
-                        className="group-hover/dismiss:rotate-90 transition-transform shrink-0 w-3.5 h-3.5 sm:w-4 sm:h-4"
-                      />
+                      <X className="group-hover/dismiss:rotate-90 transition-transform shrink-0 w-3.5 h-3.5 sm:w-4 sm:h-4" />
                       Dismiss
                     </button>
                   </>
@@ -941,19 +977,22 @@ const EnquiryList = ({
                     <button
                       type="button"
                       onClick={() => onRestore(enquiry.id)}
-                      className="w-full sm:w-auto flex-1 sm:flex-none flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-2.5 bg-[#18254D] text-white rounded-full text-[11px] sm:text-[14px] font-black uppercase tracking-wider sm:tracking-widest shadow-lg hover:-translate-y-0.5 transition-all active:scale-95 whitespace-nowrap"
+                      className="w-full sm:w-auto flex-1 sm:flex-none flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-5 lg:px-4 py-2 sm:py-2.5 lg:py-2 bg-[#18254D] text-white rounded-full text-[11px] sm:text-[14px] lg:text-[13px] font-black uppercase tracking-wider sm:tracking-widest shadow-lg hover:-translate-y-0.5 transition-all active:scale-95 whitespace-nowrap"
                     >
-                      <RefreshCcw strokeWidth={2.5} className="shrink-0 w-3.5 h-3.5 sm:w-3.5 sm:h-3.5" />
+                      <RefreshCcw
+                        strokeWidth={2.5}
+                        className="shrink-0 w-3.5 h-3.5 sm:w-3.5 sm:h-3.5"
+                      />
                       Restore Enquiry
                     </button>
                     <button
                       type="button"
                       onClick={() => onDelete(enquiry.id)}
-                      className="w-full sm:w-auto flex-none py-2 sm:py-2.5 px-3 sm:px-4 flex items-center justify-center gap-1.5 sm:gap-2 text-slate-300 border border-slate-100 rounded-full hover:bg-rose-50 hover:text-rose-500 hover:border-rose-200 transition-all font-bold tracking-wider text-[11px] sm:text-[14px] uppercase whitespace-nowrap"
+                      className="w-full sm:w-auto flex-none py-2 sm:py-2.5 lg:py-2 px-3 sm:px-4 lg:px-3 flex items-center justify-center gap-1.5 sm:gap-2 text-slate-300 border border-slate-100 rounded-full hover:bg-rose-50 hover:text-rose-500 hover:border-rose-200 transition-all font-bold tracking-wider text-[11px] sm:text-[14px] lg:text-[13px] uppercase whitespace-nowrap"
                       title="Delete Permanently"
                     >
                       <Trash2 className="shrink-0 w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                      <span className="sm:hidden">Delete</span>
+                      <span className="sm:hidden lg:inline-block">Delete</span>
                     </button>
                   </>
                 )}
@@ -963,229 +1002,241 @@ const EnquiryList = ({
         )}
       </div>
 
-      {showSimulateForm && createPortal(
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[99999] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
-          <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-slate-200 overflow-hidden animate-fade-in relative flex flex-col max-h-[90vh]">
-            <button
-              onClick={() => setShowSimulateForm(false)}
-              className="absolute top-6 right-6 p-2.5 bg-white/10 hover:bg-white/20 text-white rounded-2xl transition-all z-20"
-              title="Close"
-            >
-              <X size={20} strokeWidth={3} />
-            </button>
-            <div className="bg-primary p-6 text-white shrink-0">
-              <h3 className="text-2xl font-bold tracking-tight mb-1">
-                New Enquiry
-              </h3>
-              <p className="text-slate-400 text-[13px] font-bold  tracking-widest">
-                Manual Entry
-              </p>
-            </div>
-            <form onSubmit={handleSimulateSubmit} className="p-5 sm:p-7 space-y-5 overflow-y-auto no-scrollbar">
-              <div className="space-y-4">
-                <div className="space-y-1.5">
-                  <label className="text-[12px] font-bold text-primary  tracking-widest ml-1">
-                    Full Name
-                  </label>
-                  <input
-                    required
-                    type="text"
-                    className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary/5 outline-none transition-all"
-                    placeholder="Enter full name..."
-                    value={formData.name}
-                    onChange={(e) =>
-                      setFormData({ ...formData, name: e.target.value })
-                    }
-                  />
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      {showSimulateForm &&
+        createPortal(
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[99999] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+            <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-slate-200 overflow-hidden animate-fade-in relative flex flex-col max-h-[90vh]">
+              <button
+                onClick={() => setShowSimulateForm(false)}
+                className="absolute top-6 right-6 p-2.5 bg-white/10 hover:bg-white/20 text-white rounded-2xl transition-all z-20"
+                title="Close"
+              >
+                <X size={20} strokeWidth={3} />
+              </button>
+              <div className="bg-primary p-6 text-white shrink-0">
+                <h3 className="text-2xl font-bold tracking-tight mb-1">
+                  New Enquiry
+                </h3>
+                <p className="text-slate-400 text-[13px] font-bold  tracking-widest">
+                  Manual Entry
+                </p>
+              </div>
+              <form
+                onSubmit={handleSimulateSubmit}
+                className="p-5 sm:p-7 space-y-5 overflow-y-auto no-scrollbar"
+              >
+                <div className="space-y-4">
                   <div className="space-y-1.5">
                     <label className="text-[12px] font-bold text-primary  tracking-widest ml-1">
-                      Email
+                      Full Name
                     </label>
                     <input
                       required
-                      type="email"
+                      type="text"
                       className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary/5 outline-none transition-all"
-                      placeholder="Email address..."
-                      value={formData.email}
+                      placeholder="Enter full name..."
+                      value={formData.name}
                       onChange={(e) =>
-                        setFormData({ ...formData, email: e.target.value })
+                        setFormData({ ...formData, name: e.target.value })
+                      }
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-[12px] font-bold text-primary  tracking-widest ml-1">
+                        Email
+                      </label>
+                      <input
+                        required
+                        type="email"
+                        className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary/5 outline-none transition-all"
+                        placeholder="Email address..."
+                        value={formData.email}
+                        onChange={(e) =>
+                          setFormData({ ...formData, email: e.target.value })
+                        }
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[12px] font-bold text-primary  tracking-widest ml-1">
+                        Phone
+                      </label>
+                      <input
+                        type="tel"
+                        required
+                        className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary/5 outline-none transition-all"
+                        placeholder="Phone number..."
+                        value={formData.phone}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            phone: e.target.value.replace(/\D/g, ""),
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[12px] font-bold text-primary  tracking-widest ml-1">
+                      Website URL (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary/5 outline-none transition-all"
+                      placeholder="https://example.com"
+                      value={formData.website}
+                      onChange={(e) =>
+                        setFormData({ ...formData, website: e.target.value })
                       }
                     />
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-[12px] font-bold text-primary  tracking-widest ml-1">
-                      Phone
+                      Requirement Briefing
+                    </label>
+                    <textarea
+                      required
+                      rows={4}
+                      className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium resize-none focus:ring-2 focus:ring-primary/5 outline-none transition-all"
+                      placeholder="Type message here..."
+                      value={formData.message}
+                      onChange={(e) =>
+                        setFormData({ ...formData, message: e.target.value })
+                      }
+                    />
+                  </div>
+                </div>
+                <div className="pt-2">
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full h-14 bg-[#18254D] text-white rounded-2xl text-[13px] font-bold  tracking-widest shadow-xl active:scale-[0.97] transition-all hover:bg-[#1e2e5e] hover:shadow-2xl flex items-center justify-center gap-3 group/btn disabled:opacity-70 disabled:cursor-not-allowed"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <span>Adding Enquiry...</span>
+                        <Loader2 size={16} className="animate-spin" />
+                      </>
+                    ) : (
+                      <>
+                        <span>Add Enquiry</span>
+                        <Send
+                          size={16}
+                          strokeWidth={2.5}
+                          className="group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1 transition-transform"
+                        />
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>,
+          document.body,
+        )}
+
+      {leadModalOpen &&
+        createPortal(
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[99999] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+            <div className="bg-white w-full max-w-xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden animate-zoom-in relative flex flex-col max-h-[90vh]">
+              <div className="bg-[#18254D] px-5 py-4 flex justify-between items-center text-white shrink-0">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 bg-white/10 rounded-2xl flex items-center justify-center">
+                    <Plus size={18} className="text-white" />
+                  </div>
+                  <h3 className="text-lg font-bold tracking-tight ">
+                    New Lead
+                  </h3>
+                </div>
+                <button
+                  onClick={() => setLeadModalOpen(false)}
+                  className="p-1.5 hover:bg-white rounded-lg transition-colors"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="p-5 space-y-4 overflow-y-auto no-scrollbar">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[14px] font-bold text-primary  tracking-widest ml-1">
+                      Full Name
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary/5 outline-none transition-all"
+                      value={promoteFormData.name}
+                      onChange={(e) =>
+                        setPromoteFormData({
+                          ...promoteFormData,
+                          name: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[14px] font-bold text-primary  tracking-widest ml-1">
+                      Email ID
+                    </label>
+                    <input
+                      type="email"
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary/5 outline-none transition-all"
+                      value={promoteFormData.email}
+                      onChange={(e) =>
+                        setPromoteFormData({
+                          ...promoteFormData,
+                          email: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <SearchableDropdown
+                      label="Country Code"
+                      options={countries.map((c) => ({
+                        name: `${c.name} (${c.code})`,
+                      }))}
+                      value={promoteFormData.country}
+                      onChange={(val) =>
+                        setPromoteFormData({ ...promoteFormData, country: val })
+                      }
+                      placeholder="Search country..."
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[14px] font-bold text-primary  tracking-widest ml-1 uppercase">
+                      Phone Number
                     </label>
                     <input
                       type="tel"
                       required
-                      className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary/5 outline-none transition-all"
-                      placeholder="Phone number..."
-                      value={formData.phone}
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary/5 outline-none transition-all"
+                      value={promoteFormData.phone}
                       onChange={(e) =>
-                        setFormData({ ...formData, phone: e.target.value.replace(/\D/g, "") })
+                        setPromoteFormData({
+                          ...promoteFormData,
+                          phone: e.target.value.replace(/\D/g, ""),
+                        })
+                      }
+                    />
+                  </div>
+                  <div className="space-y-1.5 md:col-span-2">
+                    <label className="text-[14px] font-bold text-primary  tracking-widest ml-1 uppercase">
+                      Website URL (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary/5 outline-none transition-all"
+                      value={promoteFormData.website}
+                      onChange={(e) =>
+                        setPromoteFormData({
+                          ...promoteFormData,
+                          website: e.target.value,
+                        })
                       }
                     />
                   </div>
                 </div>
-                <div className="space-y-1.5">
-                  <label className="text-[12px] font-bold text-primary  tracking-widest ml-1">
-                    Website URL (Optional)
-                  </label>
-                  <input
-                    type="text"
-                    className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary/5 outline-none transition-all"
-                    placeholder="https://example.com"
-                    value={formData.website}
-                    onChange={(e) =>
-                      setFormData({ ...formData, website: e.target.value })
-                    }
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-[12px] font-bold text-primary  tracking-widest ml-1">
-                    Requirement Briefing
-                  </label>
-                  <textarea
-                    required
-                    rows={4}
-                    className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium resize-none focus:ring-2 focus:ring-primary/5 outline-none transition-all"
-                    placeholder="Type message here..."
-                    value={formData.message}
-                    onChange={(e) =>
-                      setFormData({ ...formData, message: e.target.value })
-                    }
-                  />
-                </div>
-              </div>
-              <div className="pt-2">
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full h-14 bg-[#18254D] text-white rounded-2xl text-[13px] font-bold  tracking-widest shadow-xl active:scale-[0.97] transition-all hover:bg-[#1e2e5e] hover:shadow-2xl flex items-center justify-center gap-3 group/btn disabled:opacity-70 disabled:cursor-not-allowed"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <span>Adding Enquiry...</span>
-                      <Loader2 size={16} className="animate-spin" />
-                    </>
-                  ) : (
-                    <>
-                      <span>Add Enquiry</span>
-                      <Send
-                        size={16}
-                        strokeWidth={2.5}
-                        className="group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1 transition-transform"
-                      />
-                    </>
-                  )}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>,
-        document.body
-      )}
-
-      {leadModalOpen && createPortal(
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[99999] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
-          <div className="bg-white w-full max-w-xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden animate-zoom-in relative flex flex-col max-h-[90vh]">
-            <div className="bg-[#18254D] px-5 py-4 flex justify-between items-center text-white shrink-0">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 bg-white/10 rounded-2xl flex items-center justify-center">
-                  <Plus size={18} className="text-white" />
-                </div>
-                <h3 className="text-lg font-bold tracking-tight ">New Lead</h3>
-              </div>
-              <button
-                onClick={() => setLeadModalOpen(false)}
-                className="p-1.5 hover:bg-white rounded-lg transition-colors"
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            <div className="p-5 space-y-4 overflow-y-auto no-scrollbar">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-[14px] font-bold text-primary  tracking-widest ml-1">
-                    Full Name
-                  </label>
-                  <input
-                    type="text"
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary/5 outline-none transition-all"
-                    value={promoteFormData.name}
-                    onChange={(e) =>
-                      setPromoteFormData({
-                        ...promoteFormData,
-                        name: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-[14px] font-bold text-primary  tracking-widest ml-1">
-                    Email ID
-                  </label>
-                  <input
-                    type="email"
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary/5 outline-none transition-all"
-                    value={promoteFormData.email}
-                    onChange={(e) =>
-                      setPromoteFormData({
-                        ...promoteFormData,
-                        email: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <SearchableDropdown
-                    label="Country Code"
-                    options={countries.map(c => ({
-                      name: `${c.name} (${c.code})`,
-                    }))}
-                    value={promoteFormData.country}
-                    onChange={(val) => setPromoteFormData({ ...promoteFormData, country: val })}
-                    placeholder="Search country..."
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-[14px] font-bold text-primary  tracking-widest ml-1 uppercase">
-                    Phone Number
-                  </label>
-                  <input
-                    type="tel"
-                    required
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary/5 outline-none transition-all"
-                    value={promoteFormData.phone}
-                    onChange={(e) =>
-                      setPromoteFormData({
-                        ...promoteFormData,
-                        phone: e.target.value.replace(/\D/g, ""),
-                      })
-                    }
-                  />
-                </div>
-                <div className="space-y-1.5 md:col-span-2">
-                  <label className="text-[14px] font-bold text-primary  tracking-widest ml-1 uppercase">
-                    Website URL (Optional)
-                  </label>
-                  <input
-                    type="text"
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary/5 outline-none transition-all"
-                    value={promoteFormData.website}
-                    onChange={(e) =>
-                      setPromoteFormData({
-                        ...promoteFormData,
-                        website: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-              </div>
 
                 <div className="space-y-1.5">
                   <label className="text-[14px] font-bold text-primary  tracking-widest ml-1 uppercase">
@@ -1195,12 +1246,15 @@ const EnquiryList = ({
                     <button
                       type="button"
                       onClick={() =>
-                        setIsEnquiryCategoryDropdownOpen(!isEnquiryCategoryDropdownOpen)
+                        setIsEnquiryCategoryDropdownOpen(
+                          !isEnquiryCategoryDropdownOpen,
+                        )
                       }
                       className="w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold shadow-sm hover:border-secondary transition-all"
                     >
                       <span className="text-primary truncate">
-                        {CATEGORY_MAP[promoteFormData.leadCategory] || "Select Category"}
+                        {CATEGORY_MAP[promoteFormData.leadCategory] ||
+                          "Select Category"}
                       </span>
                       <ChevronDown
                         size={16}
@@ -1214,7 +1268,9 @@ const EnquiryList = ({
                       <>
                         <div
                           className="fixed inset-0 z-[80]"
-                          onClick={() => setIsEnquiryCategoryDropdownOpen(false)}
+                          onClick={() =>
+                            setIsEnquiryCategoryDropdownOpen(false)
+                          }
                         />
                         <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top">
                           <div className="bg-[#18254D] px-4 py-3 border-b border-white/10">
@@ -1227,7 +1283,10 @@ const EnquiryList = ({
                               key={catId}
                               type="button"
                               onClick={() => {
-                                setPromoteFormData({ ...promoteFormData, leadCategory: catId });
+                                setPromoteFormData({
+                                  ...promoteFormData,
+                                  leadCategory: catId,
+                                });
                                 setIsEnquiryCategoryDropdownOpen(false);
                               }}
                               className={`w-full text-left px-4 py-2.5 text-[12px] font-bold  tracking-widest transition-colors ${
@@ -1253,7 +1312,9 @@ const EnquiryList = ({
                     <button
                       type="button"
                       onClick={() =>
-                        setIsEnquiryStatusDropdownOpen(!isEnquiryStatusDropdownOpen)
+                        setIsEnquiryStatusDropdownOpen(
+                          !isEnquiryStatusDropdownOpen,
+                        )
                       }
                       className="w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold shadow-sm hover:border-secondary transition-all"
                     >
@@ -1285,7 +1346,10 @@ const EnquiryList = ({
                               key={status}
                               type="button"
                               onClick={() => {
-                                setPromoteFormData({ ...promoteFormData, leadType: status });
+                                setPromoteFormData({
+                                  ...promoteFormData,
+                                  leadType: status,
+                                });
                                 setIsEnquiryStatusDropdownOpen(false);
                               }}
                               className={`w-full text-left px-4 py-2.5 text-[12px] font-bold  tracking-widest transition-colors ${
@@ -1295,10 +1359,21 @@ const EnquiryList = ({
                               }`}
                             >
                               <div className="flex items-center gap-2">
-                                {status === "Hot" && <Flame size={12} className="text-error" />}
-                                {status === "Warm" && <Sun size={12} className="text-warning" />}
-                                {status === "Cold" && <Snowflake size={12} className="text-info" />}
-                                {status === "Converted" && <UserCheck size={12} className="text-success" />}
+                                {status === "Hot" && (
+                                  <Flame size={12} className="text-error" />
+                                )}
+                                {status === "Warm" && (
+                                  <Sun size={12} className="text-warning" />
+                                )}
+                                {status === "Cold" && (
+                                  <Snowflake size={12} className="text-info" />
+                                )}
+                                {status === "Converted" && (
+                                  <UserCheck
+                                    size={12}
+                                    className="text-success"
+                                  />
+                                )}
                                 <span>{status}</span>
                               </div>
                             </button>
@@ -1309,43 +1384,43 @@ const EnquiryList = ({
                   </div>
                 </div>
 
-              <div className="space-y-1.5">
-                <label className="text-[14px] font-bold text-primary  tracking-widest ml-1">
-                  Note
-                </label>
-                <textarea
-                  rows={3}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium resize-none focus:ring-2 focus:ring-primary/5 outline-none transition-all"
-                  value={promoteFormData.notes}
-                  onChange={(e) =>
-                    setPromoteFormData({
-                      ...promoteFormData,
-                      notes: e.target.value,
-                    })
-                  }
-                />
-              </div>
+                <div className="space-y-1.5">
+                  <label className="text-[14px] font-bold text-primary  tracking-widest ml-1">
+                    Note
+                  </label>
+                  <textarea
+                    rows={3}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium resize-none focus:ring-2 focus:ring-primary/5 outline-none transition-all"
+                    value={promoteFormData.notes}
+                    onChange={(e) =>
+                      setPromoteFormData({
+                        ...promoteFormData,
+                        notes: e.target.value,
+                      })
+                    }
+                  />
+                </div>
 
-              <button
-                type="button"
-                onClick={confirmLeadConversion}
-                disabled={isSubmitting}
-                className="w-full py-3.5 bg-[#18254D] text-white rounded-2xl text-[13px] font-bold  tracking-widest shadow-lg active:scale-[0.98] transition-all hover:bg-slate-800 flex items-center justify-center gap-3 disabled:opacity-70 disabled:cursor-not-allowed"
-              >
-                {isSubmitting ? (
-                  <>
-                    <span>Adding Lead...</span>
-                    <Loader2 size={16} className="animate-spin" />
-                  </>
-                ) : (
-                  <span>Add Lead</span>
-                )}
-              </button>
+                <button
+                  type="button"
+                  onClick={confirmLeadConversion}
+                  disabled={isSubmitting}
+                  className="w-full py-3.5 bg-[#18254D] text-white rounded-2xl text-[13px] font-bold  tracking-widest shadow-lg active:scale-[0.98] transition-all hover:bg-slate-800 flex items-center justify-center gap-3 disabled:opacity-70 disabled:cursor-not-allowed"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <span>Adding Lead...</span>
+                      <Loader2 size={16} className="animate-spin" />
+                    </>
+                  ) : (
+                    <span>Add Lead</span>
+                  )}
+                </button>
+              </div>
             </div>
-          </div>
-        </div>,
-        document.body
-      )}
+          </div>,
+          document.body,
+        )}
 
       {/* Pagination Controls */}
       {totalPages > 1 && (
@@ -1369,7 +1444,14 @@ const EnquiryList = ({
                 Math.abs(pageNum - currentPage) > 1
               ) {
                 if (pageNum === 2 || pageNum === totalPages - 1) {
-                  return <span key={pageNum} className="text-slate-300 px-1 font-bold">.</span>;
+                  return (
+                    <span
+                      key={pageNum}
+                      className="text-slate-300 px-1 font-bold"
+                    >
+                      .
+                    </span>
+                  );
                 }
                 return null;
               }
@@ -1400,112 +1482,120 @@ const EnquiryList = ({
         </div>
       )}
 
-      {holdModalOpen && createPortal(
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[99999] flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl border border-slate-200 overflow-hidden animate-fade-in relative flex flex-col max-h-[90vh]">
-            <div className="bg-primary p-6 text-white shrink-0">
-              <div className="flex justify-between items-center mb-1">
-                <h3 className="text-2xl font-bold tracking-tight">On Hold</h3>
-                <button
-                  onClick={() => setHoldModalOpen(false)}
-                  className="p-1 hover:bg-white/10 rounded-lg transition-colors border border-white/10"
-                >
-                  <X size={20} />
-                </button>
-              </div>
-            </div>
-            <div className="p-5 sm:p-7 space-y-6 overflow-y-auto no-scrollbar">
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-[12px] font-bold text-primary  tracking-widest ml-1">
-                    Hold Reason
-                  </label>
-                  <textarea
-                    required
-                    rows={4}
-                    className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium resize-none focus:ring-2 focus:ring-primary/5 outline-none transition-all placeholder:text-slate-300"
-                    placeholder="Enter reason for suspending this enquiry..."
-                    value={holdReason}
-                    onChange={(e) => setHoldReason(e.target.value)}
-                  />
+      {holdModalOpen &&
+        createPortal(
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[99999] flex items-center justify-center p-4 overflow-y-auto">
+            <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl border border-slate-200 overflow-hidden animate-fade-in relative flex flex-col max-h-[90vh]">
+              <div className="bg-primary p-6 text-white shrink-0">
+                <div className="flex justify-between items-center mb-1">
+                  <h3 className="text-2xl font-bold tracking-tight">On Hold</h3>
+                  <button
+                    onClick={() => setHoldModalOpen(false)}
+                    className="p-1 hover:bg-white/10 rounded-lg transition-colors border border-white/10"
+                  >
+                    <X size={20} />
+                  </button>
                 </div>
               </div>
-              <div className="space-y-4 pt-2">
-                <button
-                  type="button"
-                  onClick={confirmHold}
-                  disabled={!holdReason.trim() || isSubmitting}
-                  className="w-full h-14 bg-[#18254D] text-white rounded-2xl text-xs font-bold  tracking-widest shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:grayscale hover:bg-slate-800 disabled:cursor-not-allowed"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <span>Processing...</span>
-                      <Loader2 size={16} className="animate-spin" />
-                    </>
-                  ) : (
-                    <>
-                      <span>Add To Hold</span>
-                      <PauseCircle size={16} strokeWidth={2.5} />
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>,
-        document.body
-      )}
-
-      {showDeleteAllModal && createPortal(
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[99999] flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl border border-slate-200 overflow-hidden animate-fade-in relative flex flex-col">
-            <div className="bg-rose-600 p-6 text-white shrink-0">
-              <div className="flex justify-between items-center mb-1">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-white/20 rounded-2xl flex items-center justify-center">
-                    <AlertTriangle size={20} className="text-white" />
+              <div className="p-5 sm:p-7 space-y-6 overflow-y-auto no-scrollbar">
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-[12px] font-bold text-primary  tracking-widest ml-1">
+                      Hold Reason
+                    </label>
+                    <textarea
+                      required
+                      rows={4}
+                      className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium resize-none focus:ring-2 focus:ring-primary/5 outline-none transition-all placeholder:text-slate-300"
+                      placeholder="Enter reason for suspending this enquiry..."
+                      value={holdReason}
+                      onChange={(e) => setHoldReason(e.target.value)}
+                    />
                   </div>
-                  <h3 className="text-2xl font-bold tracking-tight">Confirm Clear All</h3>
                 </div>
-                <button
-                  onClick={() => setShowDeleteAllModal(false)}
-                  className="p-1 hover:bg-white/10 rounded-lg transition-colors border border-white/10"
-                >
-                  <X size={20} />
-                </button>
+                <div className="space-y-4 pt-2">
+                  <button
+                    type="button"
+                    onClick={confirmHold}
+                    disabled={!holdReason.trim() || isSubmitting}
+                    className="w-full h-14 lg:h-12 bg-[#18254D] text-white rounded-2xl text-xs lg:text-[11px] font-bold tracking-widest shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:grayscale hover:bg-slate-800 disabled:cursor-not-allowed"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <span>Processing...</span>
+                        <Loader2 size={16} className="animate-spin" />
+                      </>
+                    ) : (
+                      <>
+                        <span>Add To Hold</span>
+                        <PauseCircle size={16} strokeWidth={2.5} />
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
-            <div className="p-7 space-y-6">
-              <div className="space-y-2">
-                <p className="text-slate-600 font-medium leading-relaxed">
-                  Are you sure you want to <span className="text-rose-600 font-bold underline underline-offset-4">permanently delete all</span> dismissed enquiries? This action cannot be undone.
-                </p>
+          </div>,
+          document.body,
+        )}
+
+      {showDeleteAllModal &&
+        createPortal(
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[99999] flex items-center justify-center p-4 overflow-y-auto">
+            <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl border border-slate-200 overflow-hidden animate-fade-in relative flex flex-col">
+              <div className="bg-rose-600 p-6 text-white shrink-0">
+                <div className="flex justify-between items-center mb-1">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-white/20 rounded-2xl flex items-center justify-center">
+                      <AlertTriangle size={20} className="text-white" />
+                    </div>
+                    <h3 className="text-2xl font-bold tracking-tight">
+                      Confirm Clear All
+                    </h3>
+                  </div>
+                  <button
+                    onClick={() => setShowDeleteAllModal(false)}
+                    className="p-1 hover:bg-white/10 rounded-lg transition-colors border border-white/10"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
               </div>
-              <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowDeleteAllModal(false)}
-                  className="flex-1 h-12 bg-slate-100 text-slate-600 rounded-2xl text-[13px] font-bold tracking-widest hover:bg-slate-200 transition-all active:scale-[0.98]"
-                >
-                  CANCEL
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    onDeleteAll();
-                    setShowDeleteAllModal(false);
-                  }}
-                  className="flex-1 h-12 bg-rose-600 text-white rounded-2xl text-[13px] font-bold tracking-widest shadow-lg shadow-rose-200 hover:bg-rose-700 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
-                >
-                  <span>DELETE ALL</span>
-                  <Trash2 size={16} />
-                </button>
+              <div className="p-7 space-y-6">
+                <div className="space-y-2">
+                  <p className="text-slate-600 font-medium leading-relaxed">
+                    Are you sure you want to{" "}
+                    <span className="text-rose-600 font-bold underline underline-offset-4">
+                      permanently delete all
+                    </span>{" "}
+                    dismissed enquiries? This action cannot be undone.
+                  </p>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowDeleteAllModal(false)}
+                    className="flex-1 h-12 bg-slate-100 text-slate-600 rounded-2xl text-[13px] font-bold tracking-widest hover:bg-slate-200 transition-all active:scale-[0.98]"
+                  >
+                    CANCEL
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onDeleteAll();
+                      setShowDeleteAllModal(false);
+                    }}
+                    className="flex-1 h-12 bg-rose-600 text-white rounded-2xl text-[13px] font-bold tracking-widest shadow-lg shadow-rose-200 hover:bg-rose-700 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                  >
+                    <span>DELETE ALL</span>
+                    <Trash2 size={16} />
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        </div>,
-        document.body
-      )}
+          </div>,
+          document.body,
+        )}
     </div>
   );
 };

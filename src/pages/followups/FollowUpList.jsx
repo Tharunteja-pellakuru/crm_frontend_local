@@ -21,7 +21,10 @@ import {
   ChevronRight,
   Loader2,
 } from "lucide-react";
-import { CATEGORY_MAP, REVERSE_CATEGORY_MAP } from "../../constants/categoryConstants";
+import {
+  CATEGORY_MAP,
+  REVERSE_CATEGORY_MAP,
+} from "../../constants/categoryConstants";
 import { validateForm } from "../../utils/validation";
 
 const FollowUpList = ({
@@ -56,7 +59,7 @@ const FollowUpList = ({
     projectId: "",
     title: "",
     description: "",
-    followup_date: new Date().toLocaleDateString('en-CA'),
+    followup_date: new Date().toLocaleDateString("en-CA"),
     followup_mode: "Call",
     followup_status: "pending",
     follow_brief: "",
@@ -65,7 +68,7 @@ const FollowUpList = ({
     timeMinute: "00",
     timePeriod: "PM",
     completed_by: "",
-    completionDate: new Date().toLocaleDateString('en-CA'),
+    completionDate: new Date().toLocaleDateString("en-CA"),
     completionHour: "12",
     completionMinute: "00",
     completionPeriod: "PM",
@@ -79,10 +82,18 @@ const FollowUpList = ({
   const [showCompletionModal, setShowCompletionModal] = useState(false);
   const [completionBrief, setCompletionBrief] = useState("");
   const [completingFollowUpId, setCompletingFollowUpId] = useState(null);
-  const [completionDate, setCompletionDate] = useState(new Date().toLocaleDateString('en-CA'));
-  const [completionHour, setCompletionHour] = useState((new Date().getHours() % 12 || 12).toString());
-  const [completionMinute, setCompletionMinute] = useState(new Date().getMinutes().toString().padStart(2, "0"));
-  const [completionPeriod, setCompletionPeriod] = useState(new Date().getHours() >= 12 ? "PM" : "AM");
+  const [completionDate, setCompletionDate] = useState(
+    new Date().toLocaleDateString("en-CA"),
+  );
+  const [completionHour, setCompletionHour] = useState(
+    (new Date().getHours() % 12 || 12).toString(),
+  );
+  const [completionMinute, setCompletionMinute] = useState(
+    new Date().getMinutes().toString().padStart(2, "0"),
+  );
+  const [completionPeriod, setCompletionPeriod] = useState(
+    new Date().getHours() >= 12 ? "PM" : "AM",
+  );
   const [completedBy, setCompletedBy] = useState(() => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     return user.full_name || "";
@@ -120,7 +131,10 @@ const FollowUpList = ({
     if (categoryFilter !== "All") {
       if (!client) return false;
       const targetCatId = REVERSE_CATEGORY_MAP[categoryFilter];
-      if (client.projectCategory !== targetCatId && client.industry !== categoryFilter)
+      if (
+        client.projectCategory !== targetCatId &&
+        client.industry !== categoryFilter
+      )
         return false;
     }
 
@@ -174,20 +188,20 @@ const FollowUpList = ({
     .sort((a, b) => {
       const sA = (a.status || a.followup_status || "").toLowerCase();
       const sB = (b.status || b.followup_status || "").toLowerCase();
-      
+
       const isCompletedA = sA === "completed";
       const isCompletedB = sB === "completed";
-      
+
       if (isCompletedA && !isCompletedB) return 1;
       if (!isCompletedA && isCompletedB) return -1;
-      
+
       return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
     });
 
   const totalPages = Math.ceil(filteredFollowUps.length / RECORDS_PER_PAGE);
   const currentFollowUps = filteredFollowUps.slice(
     (currentPage - 1) * RECORDS_PER_PAGE,
-    currentPage * RECORDS_PER_PAGE
+    currentPage * RECORDS_PER_PAGE,
   );
 
   const handleSubmit = async (e) => {
@@ -197,11 +211,11 @@ const FollowUpList = ({
       title: { required: true, minLength: 2, label: "Title" },
       description: { required: true, label: "Description" },
       clientId: { required: true, label: "Client" },
-      followup_date: { required: true, label: "Follow-up Date" }
+      followup_date: { required: true, label: "Follow-up Date" },
     });
 
     if (!isValid) return;
-    
+
     setIsSubmitting(true); // Start submitting
 
     // Convert 12h to 24h for backend
@@ -212,15 +226,18 @@ const FollowUpList = ({
 
     // Combine date and time into MySQL-friendly local format
     const combinedDateTime = `${formData.followup_date} ${time24}:00`;
-    
+
     let compHour = parseInt(formData.completionHour || "12");
     if (formData.completionPeriod === "PM" && compHour < 12) compHour += 12;
     if (formData.completionPeriod === "AM" && compHour === 12) compHour = 0;
     const compTime24 = `${compHour.toString().padStart(2, "0")}:${formData.completionMinute || "00"}`;
-    const combinedCompletionStr = `${formData.completionDate || new Date().toLocaleDateString('en-CA')} ${compTime24}:00`;
+    const combinedCompletionStr = `${formData.completionDate || new Date().toLocaleDateString("en-CA")} ${compTime24}:00`;
 
     const selectedClient = clients.find((c) => c.id == formData.clientId);
-    const finalClientId = selectedClient?.status === "Active" ? selectedClient.lead_id : formData.clientId;
+    const finalClientId =
+      selectedClient?.status === "Active"
+        ? selectedClient.lead_id
+        : formData.clientId;
 
     try {
       if (formData.id) {
@@ -250,7 +267,7 @@ const FollowUpList = ({
         clientId: "",
         title: "",
         description: "",
-        followup_date: new Date().toLocaleDateString('en-CA'),
+        followup_date: new Date().toLocaleDateString("en-CA"),
         followup_mode: "Call",
         followup_status: "pending",
         follow_brief: "",
@@ -259,7 +276,7 @@ const FollowUpList = ({
         timeMinute: "00",
         timePeriod: "PM",
         completed_by: "",
-        completionDate: new Date().toLocaleDateString('en-CA'),
+        completionDate: new Date().toLocaleDateString("en-CA"),
         completionHour: "12",
         completionMinute: "00",
         completionPeriod: "PM",
@@ -354,7 +371,7 @@ const FollowUpList = ({
         <div className="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 w-full">
             {/* 1. Search Bar */}
-            <div className="relative w-full">
+            <div className="relative w-full border border-slate-200 rounded-xl">
               <Search
                 size={16}
                 className="absolute left-4 top-1/2 -translate-y-1/2 text-[#18254D]/40"
@@ -369,7 +386,7 @@ const FollowUpList = ({
             </div>
 
             {/* 2. Category Dropdown */}
-            <div className="relative w-full">
+            <div className="relative w-full border border-slate-200 rounded-xl">
               <button
                 onClick={() =>
                   setIsCategoryDropdownOpen(!isCategoryDropdownOpen)
@@ -393,7 +410,7 @@ const FollowUpList = ({
                     onClick={() => setIsCategoryDropdownOpen(false)}
                   />
                   <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top">
-                    {["All", "Tech", "Social Media", "Both"].map((cat) => (
+                    {["All", "Tech", "Social Media"].map((cat) => (
                       <button
                         key={cat}
                         onClick={() => {
@@ -475,7 +492,11 @@ const FollowUpList = ({
                       }
                     }}
                     className={`w-8 h-8 rounded-lg border-2 transition-all flex items-center justify-center shrink-0 mt-1 ${f.status === "completed" ? "bg-success border-success text-white" : "bg-white border-slate-200 text-slate-300 hover:border-success hover:text-success hover:bg-success/5"}`}
-                    title={f.status === "completed" ? "Mark as Pending" : "Mark as Completed"}
+                    title={
+                      f.status === "completed"
+                        ? "Mark as Pending"
+                        : "Mark as Completed"
+                    }
                   >
                     {f.status === "completed" ? (
                       <Check size={16} strokeWidth={4} />
@@ -517,7 +538,8 @@ const FollowUpList = ({
                         {new Date(f.dueDate).toLocaleDateString([], {
                           month: "short",
                           day: "numeric",
-                        })}{" · "}
+                        })}
+                        {" · "}
                         {new Date(f.dueDate).toLocaleTimeString([], {
                           hour: "2-digit",
                           minute: "2-digit",
@@ -530,8 +552,10 @@ const FollowUpList = ({
                           {f.projectName}
                         </div>
                       )}
-                      <button 
-                        onClick={() => client && onSelectClient && onSelectClient(client)}
+                      <button
+                        onClick={() =>
+                          client && onSelectClient && onSelectClient(client)
+                        }
                         className="flex items-center gap-1.5 text-[12px] text-textMuted font-bold  tracking-widest hover:text-secondary hover:underline transition-all"
                       >
                         <span className="text-secondary">•</span>
@@ -562,23 +586,30 @@ const FollowUpList = ({
                         if (f.status === "completed" && f.completed_at) {
                           const cd = new Date(f.completed_at);
                           if (!isNaN(cd.getTime())) {
-                            compDate = `${cd.getFullYear()}-${(cd.getMonth() + 1).toString().padStart(2, '0')}-${cd.getDate().toString().padStart(2, '0')}`;
+                            compDate = `${cd.getFullYear()}-${(cd.getMonth() + 1).toString().padStart(2, "0")}-${cd.getDate().toString().padStart(2, "0")}`;
                             compHr = (cd.getHours() % 12 || 12).toString();
-                            compMin = cd.getMinutes().toString().padStart(2, "0");
+                            compMin = cd
+                              .getMinutes()
+                              .toString()
+                              .padStart(2, "0");
                             compPrd = cd.getHours() >= 12 ? "PM" : "AM";
                           }
                         }
 
                         const d = f.dueDate ? new Date(f.dueDate) : new Date();
-                        const localDate = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
+                        const localDate = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")}`;
                         const localHour24 = d.getHours();
                         const localHour12 = (localHour24 % 12 || 12).toString();
-                        const localMinute = d.getMinutes().toString().padStart(2, "0");
+                        const localMinute = d
+                          .getMinutes()
+                          .toString()
+                          .padStart(2, "0");
                         const localPeriod = localHour24 >= 12 ? "PM" : "AM";
 
                         setFormData({
                           ...f,
-                          followup_status: f.status || f.followup_status || "pending",
+                          followup_status:
+                            f.status || f.followup_status || "pending",
                           followup_date: localDate,
                           timeHour: localHour12,
                           timeMinute: localMinute,
@@ -634,7 +665,14 @@ const FollowUpList = ({
                   Math.abs(pageNum - currentPage) > 1
                 ) {
                   if (pageNum === 2 || pageNum === totalPages - 1) {
-                    return <span key={pageNum} className="text-slate-300 px-1 font-bold">.</span>;
+                    return (
+                      <span
+                        key={pageNum}
+                        className="text-slate-300 px-1 font-bold"
+                      >
+                        .
+                      </span>
+                    );
                   }
                   return null;
                 }
@@ -738,14 +776,28 @@ const FollowUpList = ({
                             onClick={() => setIsCompHourOpen(!isCompHourOpen)}
                             className="w-full flex items-center justify-between px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold shadow-sm"
                           >
-                            <span>{completionHour.padStart(2, '0')}</span>
+                            <span>{completionHour.padStart(2, "0")}</span>
                             <ChevronDown size={12} />
                           </button>
                           {isCompHourOpen && (
                             <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-100 rounded-lg shadow-xl z-[100] max-h-32 overflow-y-auto">
-                              {Array.from({ length: 12 }, (_, i) => i + 1).map(h => (
-                                <button key={h} type="button" onClick={() => { setCompletionHour(h.toString().padStart(2, '0')); setIsCompHourOpen(false); }} className="w-full text-left px-3 py-1.5 text-[12px] hover:bg-slate-50">{h.toString().padStart(2, '0')}</button>
-                              ))}
+                              {Array.from({ length: 12 }, (_, i) => i + 1).map(
+                                (h) => (
+                                  <button
+                                    key={h}
+                                    type="button"
+                                    onClick={() => {
+                                      setCompletionHour(
+                                        h.toString().padStart(2, "0"),
+                                      );
+                                      setIsCompHourOpen(false);
+                                    }}
+                                    className="w-full text-left px-3 py-1.5 text-[12px] hover:bg-slate-50"
+                                  >
+                                    {h.toString().padStart(2, "0")}
+                                  </button>
+                                ),
+                              )}
                             </div>
                           )}
                         </div>
@@ -761,9 +813,23 @@ const FollowUpList = ({
                           </button>
                           {isCompMinOpen && (
                             <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-100 rounded-lg shadow-xl z-[100] max-h-32 overflow-y-auto">
-                              {Array.from({ length: 12 }, (_, i) => i * 5).map(m => (
-                                <button key={m} type="button" onClick={() => { setCompletionMinute(m.toString().padStart(2, '0')); setIsCompMinOpen(false); }} className="w-full text-left px-3 py-1.5 text-[12px] hover:bg-slate-50">{m.toString().padStart(2, '0')}</button>
-                              ))}
+                              {Array.from({ length: 12 }, (_, i) => i * 5).map(
+                                (m) => (
+                                  <button
+                                    key={m}
+                                    type="button"
+                                    onClick={() => {
+                                      setCompletionMinute(
+                                        m.toString().padStart(2, "0"),
+                                      );
+                                      setIsCompMinOpen(false);
+                                    }}
+                                    className="w-full text-left px-3 py-1.5 text-[12px] hover:bg-slate-50"
+                                  >
+                                    {m.toString().padStart(2, "0")}
+                                  </button>
+                                ),
+                              )}
                             </div>
                           )}
                         </div>
@@ -771,7 +837,9 @@ const FollowUpList = ({
                         <div className="w-14 relative">
                           <button
                             type="button"
-                            onClick={() => setIsCompPeriodOpen(!isCompPeriodOpen)}
+                            onClick={() =>
+                              setIsCompPeriodOpen(!isCompPeriodOpen)
+                            }
                             className="w-full flex items-center justify-between px-2 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold shadow-sm"
                           >
                             <span>{completionPeriod}</span>
@@ -779,8 +847,18 @@ const FollowUpList = ({
                           </button>
                           {isCompPeriodOpen && (
                             <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-100 rounded-lg shadow-xl z-[100]">
-                              {["AM", "PM"].map(p => (
-                                <button key={p} type="button" onClick={() => { setCompletionPeriod(p); setIsCompPeriodOpen(false); }} className="w-full text-left px-3 py-1.5 text-[12px] hover:bg-slate-50">{p}</button>
+                              {["AM", "PM"].map((p) => (
+                                <button
+                                  key={p}
+                                  type="button"
+                                  onClick={() => {
+                                    setCompletionPeriod(p);
+                                    setIsCompPeriodOpen(false);
+                                  }}
+                                  className="w-full text-left px-3 py-1.5 text-[12px] hover:bg-slate-50"
+                                >
+                                  {p}
+                                </button>
                               ))}
                             </div>
                           )}
@@ -807,12 +885,19 @@ const FollowUpList = ({
                       onClick={() => {
                         if (completingFollowUpId) {
                           let hour = parseInt(completionHour);
-                          if (completionPeriod === "PM" && hour < 12) hour += 12;
-                          if (completionPeriod === "AM" && hour === 12) hour = 0;
+                          if (completionPeriod === "PM" && hour < 12)
+                            hour += 12;
+                          if (completionPeriod === "AM" && hour === 12)
+                            hour = 0;
                           const time24 = `${hour.toString().padStart(2, "0")}:${completionMinute}:00`;
                           const completedAt = `${completionDate} ${time24}`;
 
-                          onToggleStatus(completingFollowUpId, completionBrief, completedAt, completedBy);
+                          onToggleStatus(
+                            completingFollowUpId,
+                            completionBrief,
+                            completedAt,
+                            completedBy,
+                          );
                         }
                         setShowCompletionModal(false);
                         setCompletingFollowUpId(null);
@@ -842,7 +927,7 @@ const FollowUpList = ({
                       clientId: "",
                       title: "",
                       description: "",
-                      followup_date: new Date().toLocaleDateString('en-CA'),
+                      followup_date: new Date().toLocaleDateString("en-CA"),
                       followup_mode: "call",
                       followup_status: "pending",
                       follow_brief: "",
@@ -875,12 +960,15 @@ const FollowUpList = ({
                       <div className="relative">
                         <button
                           type="button"
-                          onClick={() => setIsProjectDropdownOpen(!isProjectDropdownOpen)}
+                          onClick={() =>
+                            setIsProjectDropdownOpen(!isProjectDropdownOpen)
+                          }
                           className="w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium shadow-sm hover:border-secondary transition-all"
                         >
                           <span className="text-primary truncate max-w-[90%]">
                             {formData.projectId
-                              ? projects.find((p) => p.id == formData.projectId)?.name
+                              ? projects.find((p) => p.id == formData.projectId)
+                                  ?.name
                               : "Select a project..."}
                           </span>
                           <ChevronDown
@@ -904,13 +992,18 @@ const FollowUpList = ({
                                 </div>
                                 <div className="p-2 border-b border-slate-100 bg-slate-50">
                                   <div className="relative">
-                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+                                    <Search
+                                      className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                                      size={14}
+                                    />
                                     <input
                                       type="text"
                                       placeholder="Search projects..."
                                       className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-xs font-medium focus:outline-none focus:border-secondary transition-colors"
                                       value={projectSearchTerm}
-                                      onChange={(e) => setProjectSearchTerm(e.target.value)}
+                                      onChange={(e) =>
+                                        setProjectSearchTerm(e.target.value)
+                                      }
                                       autoFocus
                                     />
                                   </div>
@@ -918,25 +1011,28 @@ const FollowUpList = ({
                               </div>
                               <div className="overflow-y-auto max-h-60">
                                 {projects
-                                  .filter(p => {
+                                  .filter((p) => {
                                     // Only show active/in-progress/hold projects (exclude completed)
                                     if (p.status === "Completed") return false;
-                                    
+
                                     // Search filtering
                                     if (!projectSearchTerm.trim()) return true;
                                     const q = projectSearchTerm.toLowerCase();
-                                    return p.name?.toLowerCase().includes(q) || p.clientName?.toLowerCase().includes(q);
+                                    return (
+                                      p.name?.toLowerCase().includes(q) ||
+                                      p.clientName?.toLowerCase().includes(q)
+                                    );
                                   })
                                   .map((p) => (
                                     <button
                                       key={p.id}
                                       type="button"
                                       onClick={() => {
-                                        setFormData({ 
-                                          ...formData, 
+                                        setFormData({
+                                          ...formData,
                                           projectId: p.id,
                                           clientId: p.clientId,
-                                          projectName: p.name
+                                          projectName: p.name,
                                         });
                                         setIsProjectDropdownOpen(false);
                                         setProjectSearchTerm("");
@@ -949,18 +1045,25 @@ const FollowUpList = ({
                                     >
                                       <div className="flex flex-col">
                                         <span>{p.name}</span>
-                                        <span className="text-[13px] opacity-50">{p.clientName}</span>
+                                        <span className="text-[13px] opacity-50">
+                                          {p.clientName}
+                                        </span>
                                       </div>
                                     </button>
                                   ))}
-                                {projects.filter(p => {
+                                {projects.filter((p) => {
                                   if (p.status === "Completed") return false;
                                   if (!projectSearchTerm.trim()) return true;
                                   const q = projectSearchTerm.toLowerCase();
-                                  return p.name?.toLowerCase().includes(q) || p.clientName?.toLowerCase().includes(q);
+                                  return (
+                                    p.name?.toLowerCase().includes(q) ||
+                                    p.clientName?.toLowerCase().includes(q)
+                                  );
                                 }).length === 0 && (
                                   <div className="px-4 py-6 text-center">
-                                    <p className="text-[12px] font-bold text-slate-400 italic">No active projects found</p>
+                                    <p className="text-[12px] font-bold text-slate-400 italic">
+                                      No active projects found
+                                    </p>
                                   </div>
                                 )}
                               </div>
@@ -972,18 +1075,25 @@ const FollowUpList = ({
                   ) : (
                     <div className="space-y-1.5">
                       <label className="text-[14px] font-bold text-primary tracking-widest ml-1">
-                        {typeFilter === "Lead" ? "Lead Name" : "Target Identity"}
+                        {typeFilter === "Lead"
+                          ? "Lead Name"
+                          : "Target Identity"}
                       </label>
                       <div className="relative">
                         <button
                           type="button"
-                          onClick={() => setIsClientDropdownOpen(!isClientDropdownOpen)}
+                          onClick={() =>
+                            setIsClientDropdownOpen(!isClientDropdownOpen)
+                          }
                           className="w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium shadow-sm hover:border-secondary transition-all"
                         >
                           <span className="text-primary truncate max-w-[90%]">
                             {formData.clientId
-                              ? clients.find((c) => c.id == formData.clientId)?.name
-                              : typeFilter === "Lead" ? "Select a lead..." : "Select a client or lead..."}
+                              ? clients.find((c) => c.id == formData.clientId)
+                                  ?.name
+                              : typeFilter === "Lead"
+                                ? "Select a lead..."
+                                : "Select a client or lead..."}
                           </span>
                           <ChevronDown
                             size={16}
@@ -1001,18 +1111,26 @@ const FollowUpList = ({
                               <div className="sticky top-0 bg-[#18254D] z-10">
                                 <div className="px-4 py-3 border-b border-white/10">
                                   <p className="text-[14px] font-bold text-white/50 tracking-widest">
-                                    Select {typeFilter === "Lead" ? "Lead" : "Client/Lead"}
+                                    Select{" "}
+                                    {typeFilter === "Lead"
+                                      ? "Lead"
+                                      : "Client/Lead"}
                                   </p>
                                 </div>
                                 <div className="p-2 border-b border-slate-100 bg-slate-50">
                                   <div className="relative">
-                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+                                    <Search
+                                      className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                                      size={14}
+                                    />
                                     <input
                                       type="text"
                                       placeholder="Search..."
                                       className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-xs font-medium focus:outline-none focus:border-secondary transition-colors"
                                       value={clientSearchTerm}
-                                      onChange={(e) => setClientSearchTerm(e.target.value)}
+                                      onChange={(e) =>
+                                        setClientSearchTerm(e.target.value)
+                                      }
                                       autoFocus
                                     />
                                   </div>
@@ -1020,18 +1138,28 @@ const FollowUpList = ({
                               </div>
                               <div className="overflow-y-auto max-h-60">
                                 {clients
-                                  .filter(c => {
-                                    if (typeFilter === "Lead" && (c.status !== "Lead" || c.isConverted)) return false;
+                                  .filter((c) => {
+                                    if (
+                                      typeFilter === "Lead" &&
+                                      (c.status !== "Lead" || c.isConverted)
+                                    )
+                                      return false;
                                     if (!clientSearchTerm.trim()) return true;
                                     const q = clientSearchTerm.toLowerCase();
-                                    return c.name?.toLowerCase().includes(q) || c.company?.toLowerCase().includes(q);
+                                    return (
+                                      c.name?.toLowerCase().includes(q) ||
+                                      c.company?.toLowerCase().includes(q)
+                                    );
                                   })
                                   .map((c) => (
                                     <button
                                       key={c.id}
                                       type="button"
                                       onClick={() => {
-                                        setFormData({ ...formData, clientId: c.id });
+                                        setFormData({
+                                          ...formData,
+                                          clientId: c.id,
+                                        });
                                         setIsClientDropdownOpen(false);
                                         setClientSearchTerm("");
                                       }}
@@ -1044,19 +1172,30 @@ const FollowUpList = ({
                                       <div className="flex flex-col">
                                         <span>{c.name}</span>
                                         {c.company && (
-                                          <span className="text-[13px] opacity-50">{c.company}</span>
+                                          <span className="text-[13px] opacity-50">
+                                            {c.company}
+                                          </span>
                                         )}
                                       </div>
                                     </button>
                                   ))}
-                                {clients.filter(c => {
-                                  if (typeFilter === "Lead" && (c.status !== "Lead" || c.isConverted)) return false;
+                                {clients.filter((c) => {
+                                  if (
+                                    typeFilter === "Lead" &&
+                                    (c.status !== "Lead" || c.isConverted)
+                                  )
+                                    return false;
                                   if (!clientSearchTerm.trim()) return true;
                                   const q = clientSearchTerm.toLowerCase();
-                                  return c.name?.toLowerCase().includes(q) || c.company?.toLowerCase().includes(q);
+                                  return (
+                                    c.name?.toLowerCase().includes(q) ||
+                                    c.company?.toLowerCase().includes(q)
+                                  );
                                 }).length === 0 && (
                                   <div className="px-4 py-6 text-center">
-                                    <p className="text-[12px] font-bold text-slate-400 italic">No results found</p>
+                                    <p className="text-[12px] font-bold text-slate-400 italic">
+                                      No results found
+                                    </p>
                                   </div>
                                 )}
                               </div>
@@ -1123,27 +1262,41 @@ const FollowUpList = ({
                         <div className="flex-1 relative">
                           <button
                             type="button"
-                            onClick={() => setIsHourDropdownOpen(!isHourDropdownOpen)}
+                            onClick={() =>
+                              setIsHourDropdownOpen(!isHourDropdownOpen)
+                            }
                             className="w-full flex items-center justify-between px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold shadow-sm hover:border-secondary transition-all"
                           >
-                            <span>{formData.timeHour.padStart(2, '0')}</span>
-                            <ChevronDown size={14} className={`text-slate-400 transition-transform ${isHourDropdownOpen ? "rotate-180" : ""}`} />
+                            <span>{formData.timeHour.padStart(2, "0")}</span>
+                            <ChevronDown
+                              size={14}
+                              className={`text-slate-400 transition-transform ${isHourDropdownOpen ? "rotate-180" : ""}`}
+                            />
                           </button>
                           {isHourDropdownOpen && (
                             <>
-                              <div className="fixed inset-0 z-[80]" onClick={() => setIsHourDropdownOpen(false)} />
+                              <div
+                                className="fixed inset-0 z-[80]"
+                                onClick={() => setIsHourDropdownOpen(false)}
+                              />
                               <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-y-auto max-h-48 z-[90] animate-fade-in-up origin-top">
-                                {Array.from({ length: 12 }, (_, i) => i + 1).map(h => (
+                                {Array.from(
+                                  { length: 12 },
+                                  (_, i) => i + 1,
+                                ).map((h) => (
                                   <button
                                     key={h}
                                     type="button"
                                     onClick={() => {
-                                      setFormData({ ...formData, timeHour: h.toString() });
+                                      setFormData({
+                                        ...formData,
+                                        timeHour: h.toString(),
+                                      });
                                       setIsHourDropdownOpen(false);
                                     }}
                                     className={`w-full text-left px-4 py-2 text-[12px] font-bold tracking-widest transition-colors ${formData.timeHour === h.toString() ? "bg-slate-100 text-secondary" : "text-[#18254D] hover:bg-slate-50"}`}
                                   >
-                                    {h.toString().padStart(2, '0')}
+                                    {h.toString().padStart(2, "0")}
                                   </button>
                                 ))}
                               </div>
@@ -1155,29 +1308,44 @@ const FollowUpList = ({
                         <div className="flex-1 relative">
                           <button
                             type="button"
-                            onClick={() => setIsMinuteDropdownOpen(!isMinuteDropdownOpen)}
+                            onClick={() =>
+                              setIsMinuteDropdownOpen(!isMinuteDropdownOpen)
+                            }
                             className="w-full flex items-center justify-between px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold shadow-sm hover:border-secondary transition-all"
                           >
                             <span>{formData.timeMinute}</span>
-                            <ChevronDown size={14} className={`text-slate-400 transition-transform ${isMinuteDropdownOpen ? "rotate-180" : ""}`} />
+                            <ChevronDown
+                              size={14}
+                              className={`text-slate-400 transition-transform ${isMinuteDropdownOpen ? "rotate-180" : ""}`}
+                            />
                           </button>
                           {isMinuteDropdownOpen && (
                             <>
-                              <div className="fixed inset-0 z-[80]" onClick={() => setIsMinuteDropdownOpen(false)} />
+                              <div
+                                className="fixed inset-0 z-[80]"
+                                onClick={() => setIsMinuteDropdownOpen(false)}
+                              />
                               <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-y-auto max-h-48 z-[90] animate-fade-in-up origin-top">
-                                {Array.from({ length: 60 }, (_, i) => i).map(m => (
-                                  <button
-                                    key={m}
-                                    type="button"
-                                    onClick={() => {
-                                      setFormData({ ...formData, timeMinute: m.toString().padStart(2, '0') });
-                                      setIsMinuteDropdownOpen(false);
-                                    }}
-                                    className={`w-full text-left px-4 py-2 text-[12px] font-bold tracking-widest transition-colors ${formData.timeMinute === m.toString().padStart(2, '0') ? "bg-slate-100 text-secondary" : "text-[#18254D] hover:bg-slate-50"}`}
-                                  >
-                                    {m.toString().padStart(2, '0')}
-                                  </button>
-                                ))}
+                                {Array.from({ length: 60 }, (_, i) => i).map(
+                                  (m) => (
+                                    <button
+                                      key={m}
+                                      type="button"
+                                      onClick={() => {
+                                        setFormData({
+                                          ...formData,
+                                          timeMinute: m
+                                            .toString()
+                                            .padStart(2, "0"),
+                                        });
+                                        setIsMinuteDropdownOpen(false);
+                                      }}
+                                      className={`w-full text-left px-4 py-2 text-[12px] font-bold tracking-widest transition-colors ${formData.timeMinute === m.toString().padStart(2, "0") ? "bg-slate-100 text-secondary" : "text-[#18254D] hover:bg-slate-50"}`}
+                                    >
+                                      {m.toString().padStart(2, "0")}
+                                    </button>
+                                  ),
+                                )}
                               </div>
                             </>
                           )}
@@ -1187,22 +1355,33 @@ const FollowUpList = ({
                         <div className="w-20 relative">
                           <button
                             type="button"
-                            onClick={() => setIsPeriodDropdownOpen(!isPeriodDropdownOpen)}
+                            onClick={() =>
+                              setIsPeriodDropdownOpen(!isPeriodDropdownOpen)
+                            }
                             className="w-full flex items-center justify-between px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold shadow-sm hover:border-secondary transition-all"
                           >
                             <span>{formData.timePeriod}</span>
-                            <ChevronDown size={14} className={`text-slate-400 transition-transform ${isPeriodDropdownOpen ? "rotate-180" : ""}`} />
+                            <ChevronDown
+                              size={14}
+                              className={`text-slate-400 transition-transform ${isPeriodDropdownOpen ? "rotate-180" : ""}`}
+                            />
                           </button>
                           {isPeriodDropdownOpen && (
                             <>
-                              <div className="fixed inset-0 z-[80]" onClick={() => setIsPeriodDropdownOpen(false)} />
+                              <div
+                                className="fixed inset-0 z-[80]"
+                                onClick={() => setIsPeriodDropdownOpen(false)}
+                              />
                               <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top">
-                                {["AM", "PM"].map(p => (
+                                {["AM", "PM"].map((p) => (
                                   <button
                                     key={p}
                                     type="button"
                                     onClick={() => {
-                                      setFormData({ ...formData, timePeriod: p });
+                                      setFormData({
+                                        ...formData,
+                                        timePeriod: p,
+                                      });
                                       setIsPeriodDropdownOpen(false);
                                     }}
                                     className={`w-full text-left px-4 py-2.5 text-[12px] font-bold tracking-widest transition-colors ${formData.timePeriod === p ? "bg-slate-100 text-secondary" : "text-[#18254D] hover:bg-slate-50"}`}
@@ -1225,17 +1404,27 @@ const FollowUpList = ({
                     <div className="relative">
                       <button
                         type="button"
-                        onClick={() => setIsPriorityDropdownOpen(!isPriorityDropdownOpen)}
+                        onClick={() =>
+                          setIsPriorityDropdownOpen(!isPriorityDropdownOpen)
+                        }
                         className="w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold shadow-sm hover:border-secondary transition-all"
                       >
-                        <span className={`capitalize ${getPriorityBadge(formData.priority)} px-2 py-0.5 rounded text-[12px]`}>
+                        <span
+                          className={`capitalize ${getPriorityBadge(formData.priority)} px-2 py-0.5 rounded text-[12px]`}
+                        >
                           {formData.priority}
                         </span>
-                        <ChevronDown size={16} className={`text-slate-400 transition-transform ${isPriorityDropdownOpen ? "rotate-180" : ""}`} />
+                        <ChevronDown
+                          size={16}
+                          className={`text-slate-400 transition-transform ${isPriorityDropdownOpen ? "rotate-180" : ""}`}
+                        />
                       </button>
                       {isPriorityDropdownOpen && (
                         <>
-                          <div className="fixed inset-0 z-[80]" onClick={() => setIsPriorityDropdownOpen(false)} />
+                          <div
+                            className="fixed inset-0 z-[80]"
+                            onClick={() => setIsPriorityDropdownOpen(false)}
+                          />
                           <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top">
                             {["Low", "Medium", "High"].map((p) => (
                               <button
@@ -1376,27 +1565,43 @@ const FollowUpList = ({
                             <div className="flex-1 relative">
                               <button
                                 type="button"
-                                onClick={() => setIsCompHourOpen(!isCompHourOpen)}
+                                onClick={() =>
+                                  setIsCompHourOpen(!isCompHourOpen)
+                                }
                                 className="w-full flex items-center justify-between px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold shadow-sm hover:border-secondary transition-all"
                               >
-                                <span>{formData.completionHour.padStart(2, '0')}</span>
-                                <ChevronDown size={14} className={`text-slate-400 transition-transform ${isCompHourOpen ? "rotate-180" : ""}`} />
+                                <span>
+                                  {formData.completionHour.padStart(2, "0")}
+                                </span>
+                                <ChevronDown
+                                  size={14}
+                                  className={`text-slate-400 transition-transform ${isCompHourOpen ? "rotate-180" : ""}`}
+                                />
                               </button>
                               {isCompHourOpen && (
                                 <>
-                                  <div className="fixed inset-0 z-[80]" onClick={() => setIsCompHourOpen(false)} />
+                                  <div
+                                    className="fixed inset-0 z-[80]"
+                                    onClick={() => setIsCompHourOpen(false)}
+                                  />
                                   <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-y-auto max-h-48 z-[90] animate-fade-in-up origin-top">
-                                    {Array.from({ length: 12 }, (_, i) => i + 1).map(h => (
+                                    {Array.from(
+                                      { length: 12 },
+                                      (_, i) => i + 1,
+                                    ).map((h) => (
                                       <button
                                         key={h}
                                         type="button"
                                         onClick={() => {
-                                          setFormData({ ...formData, completionHour: h.toString() });
+                                          setFormData({
+                                            ...formData,
+                                            completionHour: h.toString(),
+                                          });
                                           setIsCompHourOpen(false);
                                         }}
                                         className={`w-full text-left px-4 py-2 text-[12px] font-bold tracking-widest transition-colors ${formData.completionHour === h.toString() ? "bg-slate-100 text-secondary" : "text-[#18254D] hover:bg-slate-50"}`}
                                       >
-                                        {h.toString().padStart(2, '0')}
+                                        {h.toString().padStart(2, "0")}
                                       </button>
                                     ))}
                                   </div>
@@ -1412,23 +1617,37 @@ const FollowUpList = ({
                                 className="w-full flex items-center justify-between px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold shadow-sm hover:border-secondary transition-all"
                               >
                                 <span>{formData.completionMinute}</span>
-                                <ChevronDown size={14} className={`text-slate-400 transition-transform ${isCompMinOpen ? "rotate-180" : ""}`} />
+                                <ChevronDown
+                                  size={14}
+                                  className={`text-slate-400 transition-transform ${isCompMinOpen ? "rotate-180" : ""}`}
+                                />
                               </button>
                               {isCompMinOpen && (
                                 <>
-                                  <div className="fixed inset-0 z-[80]" onClick={() => setIsCompMinOpen(false)} />
+                                  <div
+                                    className="fixed inset-0 z-[80]"
+                                    onClick={() => setIsCompMinOpen(false)}
+                                  />
                                   <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-y-auto max-h-48 z-[90] animate-fade-in-up origin-top">
-                                    {Array.from({ length: 60 }, (_, i) => i).map(m => (
+                                    {Array.from(
+                                      { length: 60 },
+                                      (_, i) => i,
+                                    ).map((m) => (
                                       <button
                                         key={m}
                                         type="button"
                                         onClick={() => {
-                                          setFormData({ ...formData, completionMinute: m.toString().padStart(2, '0') });
+                                          setFormData({
+                                            ...formData,
+                                            completionMinute: m
+                                              .toString()
+                                              .padStart(2, "0"),
+                                          });
                                           setIsCompMinOpen(false);
                                         }}
-                                        className={`w-full text-left px-4 py-2 text-[12px] font-bold tracking-widest transition-colors ${formData.completionMinute === m.toString().padStart(2, '0') ? "bg-slate-100 text-secondary" : "text-[#18254D] hover:bg-slate-50"}`}
+                                        className={`w-full text-left px-4 py-2 text-[12px] font-bold tracking-widest transition-colors ${formData.completionMinute === m.toString().padStart(2, "0") ? "bg-slate-100 text-secondary" : "text-[#18254D] hover:bg-slate-50"}`}
                                       >
-                                        {m.toString().padStart(2, '0')}
+                                        {m.toString().padStart(2, "0")}
                                       </button>
                                     ))}
                                   </div>
@@ -1440,22 +1659,33 @@ const FollowUpList = ({
                             <div className="w-20 relative">
                               <button
                                 type="button"
-                                onClick={() => setIsCompPeriodOpen(!isCompPeriodOpen)}
+                                onClick={() =>
+                                  setIsCompPeriodOpen(!isCompPeriodOpen)
+                                }
                                 className="w-full flex items-center justify-between px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold shadow-sm hover:border-secondary transition-all"
                               >
                                 <span>{formData.completionPeriod}</span>
-                                <ChevronDown size={14} className={`text-slate-400 transition-transform ${isCompPeriodOpen ? "rotate-180" : ""}`} />
+                                <ChevronDown
+                                  size={14}
+                                  className={`text-slate-400 transition-transform ${isCompPeriodOpen ? "rotate-180" : ""}`}
+                                />
                               </button>
                               {isCompPeriodOpen && (
                                 <>
-                                  <div className="fixed inset-0 z-[80]" onClick={() => setIsCompPeriodOpen(false)} />
+                                  <div
+                                    className="fixed inset-0 z-[80]"
+                                    onClick={() => setIsCompPeriodOpen(false)}
+                                  />
                                   <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top">
-                                    {["AM", "PM"].map(p => (
+                                    {["AM", "PM"].map((p) => (
                                       <button
                                         key={p}
                                         type="button"
                                         onClick={() => {
-                                          setFormData({ ...formData, completionPeriod: p });
+                                          setFormData({
+                                            ...formData,
+                                            completionPeriod: p,
+                                          });
                                           setIsCompPeriodOpen(false);
                                         }}
                                         className={`w-full text-left px-4 py-2.5 text-[12px] font-bold tracking-widest transition-colors ${formData.completionPeriod === p ? "bg-slate-100 text-secondary" : "text-[#18254D] hover:bg-slate-50"}`}
@@ -1506,66 +1736,77 @@ const FollowUpList = ({
                                 Select Status
                               </p>
                             </div>
-                            {[
-                              "pending",
-                              "completed",
-                              "reschedule",
-                              "cancelled",
-                            ]
+                            {["pending", "completed", "reschedule", "cancelled"]
                               .filter((status) => {
                                 if (formData.id) {
-                                  const originalFollowup = followUps.find(f => f.id == formData.id);
-                                  if (originalFollowup?.status === "completed") {
+                                  const originalFollowup = followUps.find(
+                                    (f) => f.id == formData.id,
+                                  );
+                                  if (
+                                    originalFollowup?.status === "completed"
+                                  ) {
                                     return status === "completed";
                                   }
                                 }
                                 return true;
                               })
                               .map((status) => (
-                              <button
-                                key={status}
-                                type="button"
-                                onClick={() => {
-                                  const updates = { followup_status: status };
-                                  
-                                  // If switching TO completed, and it's currently empty, pre-fill with defaults
-                                  if (status === "completed") {
-                                    if (!formData.completed_by) {
-                                      const user = JSON.parse(localStorage.getItem("user") || "{}");
-                                      updates.completed_by = user.full_name || "";
-                                    }
-                                    if (!formData.completionDate) {
-                                      updates.completionDate = new Date().toISOString().split("T")[0];
-                                    }
-                                    if (!formData.completionHour) {
-                                      const now = new Date();
-                                      updates.completionHour = (now.getHours() % 12 || 12).toString();
-                                      updates.completionMinute = now.getMinutes().toString().padStart(2, "0");
-                                      updates.completionPeriod = now.getHours() >= 12 ? "PM" : "AM";
-                                    }
-                                  }
+                                <button
+                                  key={status}
+                                  type="button"
+                                  onClick={() => {
+                                    const updates = { followup_status: status };
 
-                                  setFormData({
-                                    ...formData,
-                                    ...updates
-                                  });
-                                  setIsStatusDropdownOpen(false);
-                                }}
-                                className={`w-full text-left px-4 py-2.5 text-[12px] font-bold  tracking-widest transition-colors capitalize ${
-                                  formData.followup_status === status
-                                    ? "bg-slate-100 text-secondary"
-                                    : "text-[#18254D] hover:bg-slate-50"
-                                }`}
-                              >
-                                {status === "reschedule" ? "Rescheduled" : status}
-                              </button>
-                            ))}
+                                    // If switching TO completed, and it's currently empty, pre-fill with defaults
+                                    if (status === "completed") {
+                                      if (!formData.completed_by) {
+                                        const user = JSON.parse(
+                                          localStorage.getItem("user") || "{}",
+                                        );
+                                        updates.completed_by =
+                                          user.full_name || "";
+                                      }
+                                      if (!formData.completionDate) {
+                                        updates.completionDate = new Date()
+                                          .toISOString()
+                                          .split("T")[0];
+                                      }
+                                      if (!formData.completionHour) {
+                                        const now = new Date();
+                                        updates.completionHour = (
+                                          now.getHours() % 12 || 12
+                                        ).toString();
+                                        updates.completionMinute = now
+                                          .getMinutes()
+                                          .toString()
+                                          .padStart(2, "0");
+                                        updates.completionPeriod =
+                                          now.getHours() >= 12 ? "PM" : "AM";
+                                      }
+                                    }
+
+                                    setFormData({
+                                      ...formData,
+                                      ...updates,
+                                    });
+                                    setIsStatusDropdownOpen(false);
+                                  }}
+                                  className={`w-full text-left px-4 py-2.5 text-[12px] font-bold  tracking-widest transition-colors capitalize ${
+                                    formData.followup_status === status
+                                      ? "bg-slate-100 text-secondary"
+                                      : "text-[#18254D] hover:bg-slate-50"
+                                  }`}
+                                >
+                                  {status === "reschedule"
+                                    ? "Rescheduled"
+                                    : status}
+                                </button>
+                              ))}
                           </div>
                         </>
                       )}
                     </div>
                   </div>
-
                 </div>
                 <div className="pt-2">
                   <button

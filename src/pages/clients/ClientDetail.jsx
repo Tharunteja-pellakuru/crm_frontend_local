@@ -42,7 +42,10 @@ import {
   countryToCurrency,
 } from "../../utils/locationData";
 import SearchableDropdown from "../../components/common/SearchableDropdown";
-import { REVERSE_CATEGORY_MAP } from "../../constants/categoryConstants";
+import {
+  CATEGORY_MAP,
+  REVERSE_CATEGORY_MAP,
+} from "../../constants/categoryConstants";
 import { BASE_URL } from "../../constants/config";
 import { validateForm } from "../../utils/validation";
 
