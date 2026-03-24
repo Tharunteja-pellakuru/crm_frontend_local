@@ -503,7 +503,8 @@ const ProjectBoard = ({
       projectName: { required: true, minLength: 2, label: "Project Name" },
       projectDescription: { required: true, label: "Project Description" },
       budget: { required: true, type: "number", label: "Budget" },
-      onboardingDate: { required: true, label: "Onboarding Date" }
+      onboardingDate: { required: true, label: "Onboarding Date" },
+      phone: { minLength: 10, label: "Phone Number" }
     });
 
     if (!isValid) return;

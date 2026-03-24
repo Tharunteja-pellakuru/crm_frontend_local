@@ -188,7 +188,17 @@ const ClientList = ({
 
   const handleOnboardSubmit = async (e) => {
     e.preventDefault();
-    if (!validateForm(onboardingData)) return;
+    if (
+      !validateForm(onboardingData, {
+        name: { required: true, minLength: 2, label: "Full Name" },
+        email: { required: true, pattern: /^\S+@\S+\.\S+$/, label: "Email" },
+        phone: { required: true, minLength: 10, label: "Phone Number" },
+        organisationName: { required: true, label: "Organization Name" },
+        projectName: { required: true, label: "Project Name" },
+        projectBudget: { required: true, type: "number", label: "Project Budget" },
+      })
+    )
+      return;
 
     setIsSubmitting(true);
     try {
@@ -352,7 +362,15 @@ const ClientList = ({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validateForm(formData)) return;
+    if (
+      !validateForm(formData, {
+        name: { required: true, minLength: 2, label: "Full Name" },
+        email: { required: true, pattern: /^\S+@\S+\.\S+$/, label: "Email" },
+        phone: { required: true, minLength: 10, label: "Phone Number" },
+        organisationName: { required: true, label: "Organization Name" },
+      })
+    )
+      return;
     setIsSubmitting(true);
     try {
       await onAddClient(formData);
