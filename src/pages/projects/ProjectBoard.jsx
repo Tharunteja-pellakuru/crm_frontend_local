@@ -830,9 +830,9 @@ const ProjectBoard = ({
       {/* Add Modal */}
       {showAddModal &&
         createPortal(
-          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[9999] flex justify-center p-4 overflow-y-auto no-scrollbar">
-            <div className="bg-white w-full max-w-xl rounded-xl shadow-2xl border border-slate-200 overflow-hidden animate-fade-in my-auto flex flex-col">
-              <div className="bg-primary p-4 text-white relative">
+          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[99999] flex items-start justify-center p-4 overflow-y-auto no-scrollbar">
+            <div className="bg-white w-full max-w-xl rounded-xl shadow-2xl border border-slate-200 overflow-hidden animate-fade-in my-auto flex flex-col max-h-[90vh]">
+              <div className="bg-primary p-4 text-white relative shrink-0">
                 <button
                   onClick={() => setShowAddModal(false)}
                   className="absolute top-4 right-4 p-1.5 hover:bg-white/10 rounded-xl transition-colors"
@@ -858,7 +858,7 @@ const ProjectBoard = ({
                 </div>
               </div>
 
-              <form onSubmit={handleSubmit} className="p-5 space-y-4">
+              <form onSubmit={handleSubmit} className="p-5 space-y-4 overflow-y-auto no-scrollbar">
 
               {/* CLIENT DETAILS HEADING */}
               <div className="flex items-center gap-3 pt-2">
@@ -1337,38 +1337,38 @@ const ProjectBoard = ({
                 </div>
               </div>
 
-              <div className="pt-2">
-                <button
-                  type="submit"
-                  disabled={isSubmitting} // Disabled when submitting
-                  className="w-full py-3 bg-[#18254D] text-white rounded-2xl text-[13px] font-bold  tracking-[0.25em] shadow-xl active:scale-[0.97] transition-all hover:bg-[#1e2e5e] hover:shadow-2xl flex items-center justify-center gap-3 group/btn disabled:opacity-70 disabled:cursor-not-allowed" // Added disabled styles
-                >
-                  {isSubmitting ? ( // Conditional rendering for loading state
-                    <>
-                      <span>ADDING PROJECT...</span>
-                      <Loader2 size={20} className="animate-spin" />
-                    </>
-                  ) : (
-                    <>
-                      <UserPlus
-                        size={20}
-                        className="group-hover/btn:translate-x-1 transition-transform"
-                      />
-                      <span>ADD PROJECT</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>,
-        document.body
-      )}
+                <div className="pt-2 shrink-0">
+                  <button
+                    type="submit"
+                    disabled={isSubmitting} // Disabled when submitting
+                    className="w-full py-3 bg-[#18254D] text-white rounded-2xl text-[13px] font-bold  tracking-[0.25em] shadow-xl active:scale-[0.97] transition-all hover:bg-[#1e2e5e] hover:shadow-2xl flex items-center justify-center gap-3 group/btn disabled:opacity-70 disabled:cursor-not-allowed" // Added disabled styles
+                  >
+                    {isSubmitting ? ( // Conditional rendering for loading state
+                      <>
+                        <span>ADDING PROJECT...</span>
+                        <Loader2 size={20} className="animate-spin" />
+                      </>
+                    ) : (
+                      <>
+                        <UserPlus
+                          size={20}
+                          className="group-hover/btn:translate-x-1 transition-transform"
+                        />
+                        <span>ADD PROJECT</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>,
+          document.body
+        )}
       {/* Delete Confirmation Modal */}
       {projectToDelete &&
         createPortal(
-          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-fade-in">
-            <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 overflow-hidden animate-scale-in">
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[99999] flex items-start justify-center p-4 animate-fade-in overflow-y-auto no-scrollbar py-20">
+            <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 overflow-hidden animate-scale-in my-auto">
               <div className="p-6 text-center">
                 <div className="w-16 h-16 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-rose-100 shadow-sm">
                   <AlertTriangle size={32} className="text-rose-500" />

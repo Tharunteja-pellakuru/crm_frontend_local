@@ -1286,8 +1286,8 @@ const LeadList = ({
       {/* Add Modal */}
       {showAddModal &&
         createPortal(
-          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[99999] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
-            <div className="bg-white w-full max-w-xl rounded-xl shadow-2xl border border-slate-200 overflow-hidden animate-fade-in relative flex flex-col max-h-[90vh]">
+          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[99999] flex items-start justify-center p-4 sm:p-6 overflow-y-auto no-scrollbar">
+            <div className="bg-white w-full max-w-xl rounded-xl shadow-2xl border border-slate-200 overflow-hidden animate-fade-in my-auto flex flex-col max-h-[90vh]">
               <div className="bg-primary p-4 text-white relative shrink-0">
                 <button
                   onClick={() => setShowAddModal(false)}
@@ -1583,36 +1583,40 @@ const LeadList = ({
           document.body,
         )}
       {/* Onboard Modal */}
-      {showOnboardModal && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[100] flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white w-full max-w-xl rounded-xl shadow-2xl border border-slate-200 overflow-hidden animate-fade-in my-auto flex flex-col">
-            <div className="bg-primary p-4 text-white relative">
-              <button
-                onClick={() => setShowOnboardModal(false)}
-                className="absolute top-4 right-4 p-1.5 hover:bg-white/10 rounded-xl transition-colors"
-              >
-                <X size={18} strokeWidth={3} />
-              </button>
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-secondary/10 rounded-xl flex items-center justify-center shadow-lg border border-secondary/20">
-                  <UserCheck
-                    size={18}
-                    className="text-secondary"
-                    strokeWidth={3}
-                  />
-                </div>
-                <div>
-                  <h3 className="text-base font-bold tracking-tighter leading-none">
-                    Convert to Client
-                  </h3>
-                  <p className="text-secondary text-[14px] font-bold  tracking-widest mt-0.5">
-                    Onboard Lead to Active Status
-                  </p>
+      {showOnboardModal &&
+        createPortal(
+          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[99999] flex items-start justify-center p-4 sm:p-6 overflow-y-auto no-scrollbar">
+            <div className="bg-white w-full max-w-xl rounded-xl shadow-2xl border border-slate-200 overflow-hidden animate-fade-in my-auto flex flex-col max-h-[90vh]">
+              <div className="bg-primary p-4 text-white relative shrink-0">
+                <button
+                  onClick={() => setShowOnboardModal(false)}
+                  className="absolute top-4 right-4 p-1.5 hover:bg-white/10 rounded-xl transition-colors"
+                >
+                  <X size={18} strokeWidth={3} />
+                </button>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-secondary/10 rounded-xl flex items-center justify-center shadow-lg border border-secondary/20">
+                    <UserCheck
+                      size={18}
+                      className="text-secondary"
+                      strokeWidth={3}
+                    />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold tracking-tighter leading-none">
+                      Convert to Client
+                    </h3>
+                    <p className="text-secondary text-[14px] font-bold  tracking-widest mt-0.5">
+                      Onboard Lead to Active Status
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <form onSubmit={handleOnboardSubmit} className="p-5 space-y-4">
+              <form
+                onSubmit={handleOnboardSubmit}
+                className="p-5 space-y-4 overflow-y-auto no-scrollbar"
+              >
               {/* CLIENT DETAILS HEADING */}
               <div className="flex items-center gap-3 pt-2">
                 <div className="h-[2px] w-8 bg-secondary rounded-full" />
@@ -2153,7 +2157,7 @@ const LeadList = ({
                 </div>
               </div>
 
-              <div className="pt-2">
+              <div className="pt-2 shrink-0">
                 <button
                   type="submit"
                   disabled={isSubmitting}
@@ -2177,43 +2181,41 @@ const LeadList = ({
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
 
       {/* Edit Converted Lead Modal */}
-      {showEditConvertedModal && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[100] flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white w-full max-w-xl rounded-xl shadow-2xl border border-slate-200 overflow-hidden animate-fade-in my-auto flex flex-col">
-            <div className="bg-primary p-4 text-white relative">
-              <button
-                onClick={() => setShowEditConvertedModal(false)}
-                className="absolute top-4 right-4 p-1.5 hover:bg-white/10 rounded-xl transition-colors"
-              >
-                <X size={18} strokeWidth={3} />
-              </button>
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-secondary/10 rounded-xl flex items-center justify-center shadow-lg border border-secondary/20">
-                  <Pencil
-                    size={18}
-                    className="text-secondary"
-                    strokeWidth={3}
-                  />
-                </div>
-                <div>
-                  <h3 className="text-base font-bold tracking-tighter leading-none">
-                    Edit Lead
-                  </h3>
-                  <p className="text-slate-400 text-[14px] font-bold  tracking-widest mt-0.5">
-                    Lead Details
-                  </p>
+      {showEditConvertedModal &&
+        createPortal(
+          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[99999] flex items-start justify-center p-4 sm:p-6 overflow-y-auto no-scrollbar">
+            <div className="bg-white w-full max-w-xl rounded-xl shadow-2xl border border-slate-200 overflow-hidden animate-fade-in my-auto flex flex-col max-h-[90vh]">
+              <div className="bg-primary p-4 text-white relative shrink-0">
+                <button
+                  onClick={() => setShowEditConvertedModal(false)}
+                  className="absolute top-4 right-4 p-1.5 hover:bg-white/10 rounded-xl transition-colors"
+                >
+                  <X size={18} strokeWidth={3} />
+                </button>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-secondary/10 rounded-xl flex items-center justify-center shadow-lg border border-secondary/20">
+                    <Pencil size={18} className="text-secondary" strokeWidth={3} />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold tracking-tighter leading-none">
+                      Edit Lead
+                    </h3>
+                    <p className="text-slate-400 text-[14px] font-bold  tracking-widest mt-0.5">
+                      Lead Details
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <form
-              onSubmit={handleEditConvertedSubmit}
-              className="p-4 md:p-5 space-y-4 max-h-[65vh] overflow-y-auto"
-            >
+              <form
+                onSubmit={handleEditConvertedSubmit}
+                className="p-4 md:p-5 space-y-4 overflow-y-auto no-scrollbar"
+              >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {/* EDIT LEAD FIELDS (MATCHING NEW LEAD MODAL) */}
                 <div className="space-y-1.5">
@@ -2462,7 +2464,7 @@ const LeadList = ({
                 </div>
               </div>
 
-              <div className="pt-2">
+              <div className="pt-2 shrink-0">
                 <button
                   type="submit"
                   disabled={isSubmitting}
@@ -2486,12 +2488,14 @@ const LeadList = ({
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
 
-      {showFollowUpModal && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[100] flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white w-full max-w-xl rounded-xl shadow-2xl border border-slate-200 overflow-hidden animate-fade-in my-auto flex flex-col">
+      {showFollowUpModal &&
+        createPortal(
+          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[99999] flex items-start justify-center p-4 sm:p-6 overflow-y-auto no-scrollbar">
+            <div className="bg-white w-full max-w-xl rounded-xl shadow-2xl border border-slate-200 overflow-hidden animate-fade-in my-auto flex flex-col max-h-[90vh]">
             <div className="bg-primary p-4 text-white relative">
               <button
                 onClick={() => setShowFollowUpModal(false)}
@@ -2518,30 +2522,30 @@ const LeadList = ({
               </div>
             </div>
 
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                if (followUpData.description && followUpLeadId) {
-                  if (onAddActivity) {
-                    const combinedDateTime = new Date(
-                      `${followUpData.date}T${followUpData.time}`,
-                    );
-                    onAddActivity({
-                      clientId: followUpLeadId,
-                      type: followUpData.type,
-                      description: followUpData.description,
-                      date: combinedDateTime.toISOString(),
-                    });
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (followUpData.description && followUpLeadId) {
+                    if (onAddActivity) {
+                      const combinedDateTime = new Date(
+                        `${followUpData.date}T${followUpData.time}`,
+                      );
+                      onAddActivity({
+                        clientId: followUpLeadId,
+                        type: followUpData.type,
+                        description: followUpData.description,
+                        date: combinedDateTime.toISOString(),
+                      });
+                    }
+                    setShowFollowUpModal(false);
+                    const lead = clients.find((c) => c.id === followUpLeadId);
+                    if (lead) {
+                      onSelectClient(lead, "activity");
+                    }
                   }
-                  setShowFollowUpModal(false);
-                  const lead = clients.find((c) => c.id === followUpLeadId);
-                  if (lead) {
-                    onSelectClient(lead, "activity");
-                  }
-                }
-              }}
-              className="p-5 space-y-4"
-            >
+                }}
+                className="p-5 space-y-4 overflow-y-auto no-scrollbar"
+              >
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
                   <label className="text-[12px] font-bold text-primary  tracking-widest ml-1">
@@ -2623,7 +2627,7 @@ const LeadList = ({
                 />
               </div>
 
-              <div className="pt-2">
+              <div className="pt-2 shrink-0">
                 <button
                   type="submit"
                   className="w-full py-3 bg-primary text-white rounded-2xl hover:bg-slate-800 text-[13px] font-bold  tracking-[0.3em] transition-all shadow-lg active:scale-95 flex items-center justify-center gap-3"
@@ -2634,7 +2638,8 @@ const LeadList = ({
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </div>
   );

@@ -301,10 +301,11 @@ const ClientDetail = ({
 
         <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
           {/* Edit Lead Modal */}
-          {showEditModal && (
-            <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xl animate-fade-in overflow-y-auto py-10">
-              <div className="bg-white rounded-xl shadow-2xl w-full max-w-xl overflow-hidden animate-zoom-in my-auto border border-slate-200">
-                <div className="bg-primary p-4 text-white relative">
+          {showEditModal &&
+            createPortal(
+              <div className="fixed inset-0 z-[99999] flex items-start justify-center p-4 bg-slate-900/60 backdrop-blur-xl animate-fade-in overflow-y-auto py-10 no-scrollbar">
+                <div className="bg-white rounded-xl shadow-2xl w-full max-w-xl overflow-hidden animate-zoom-in my-auto border border-slate-200 flex flex-col max-h-[90vh]">
+                  <div className="bg-primary p-4 text-white relative shrink-0">
                   <button
                     onClick={() => setShowEditModal(false)}
                     className="absolute top-4 right-4 p-1.5 hover:bg-white/10 rounded-xl transition-colors"
@@ -380,7 +381,7 @@ const ClientDetail = ({
                       }
                     }
                   }}
-                  className="p-5 space-y-4"
+                  className="p-5 space-y-4 overflow-y-auto no-scrollbar"
                 >
                   <div className="space-y-2">
                     <label className="text-[12px] font-bold text-primary  tracking-widest ml-1 uppercase">
@@ -734,7 +735,7 @@ const ClientDetail = ({
                     />
                   </div>
 
-                  <div className="pt-2">
+                  <div className="pt-2 shrink-0">
                     <button
                       type="submit"
                       className="w-full py-3 bg-[#18254D] text-white rounded-xl text-[13px] font-bold  tracking-[0.25em] shadow-xl active:scale-[0.97] transition-all hover:bg-[#1e2e5e] hover:shadow-2xl flex items-center justify-center gap-3"
@@ -744,164 +745,168 @@ const ClientDetail = ({
                   </div>
                 </form>
               </div>
-            </div>
+            </div>,
+            document.body,
           )}
 
           {/* Log Activity Modal */}
-          {isLogging && (
-            <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xl animate-fade-in overflow-y-auto py-10">
-              <div className="bg-white rounded-xl shadow-2xl w-full max-w-xl overflow-hidden animate-zoom-in my-auto border border-slate-200">
-                <div className="bg-primary p-4 text-white relative">
-                  <button
-                    onClick={() => setIsLogging(false)}
-                    className="absolute top-4 right-4 p-1.5 hover:bg-white/10 rounded-xl transition-colors"
-                  >
-                    <X size={18} strokeWidth={3} />
-                  </button>
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-secondary/10 rounded-xl flex items-center justify-center shadow-lg border border-secondary/20">
-                      <MessageSquare
-                        size={18}
-                        className="text-secondary"
-                        strokeWidth={2.5}
-                      />
-                    </div>
-                    <div>
-                      <h3 className="text-base font-bold tracking-tighter leading-none">
-                        Log Conversation
-                      </h3>
-                      <p className="text-secondary text-[14px] font-bold  tracking-widest mt-0.5">
-                        Record interaction details
-                      </p>
+          {isLogging && 
+            createPortal(
+              <div className="fixed inset-0 z-[99999] flex items-start justify-center p-4 bg-slate-900/60 backdrop-blur-xl animate-fade-in overflow-y-auto py-10 no-scrollbar">
+                <div className="bg-white rounded-xl shadow-2xl w-full max-w-xl overflow-hidden animate-zoom-in my-auto border border-slate-200 flex flex-col max-h-[90vh]">
+                  <div className="bg-primary p-4 text-white relative shrink-0">
+                    <button
+                      onClick={() => setIsLogging(false)}
+                      className="absolute top-4 right-4 p-1.5 hover:bg-white/10 rounded-xl transition-colors"
+                    >
+                      <X size={18} strokeWidth={3} />
+                    </button>
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-secondary/10 rounded-xl flex items-center justify-center shadow-lg border border-secondary/20">
+                        <MessageSquare
+                          size={18}
+                          className="text-secondary"
+                          strokeWidth={2.5}
+                        />
+                      </div>
+                      <div>
+                        <h3 className="text-base font-bold tracking-tighter leading-none">
+                          Log Conversation
+                        </h3>
+                        <p className="text-secondary text-[14px] font-bold  tracking-widest mt-0.5">
+                          Record interaction details
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <form onSubmit={handleLogInteraction} className="p-5 space-y-4">
-                  <div className="grid grid-cols-2 gap-3">
+                  <form onSubmit={handleLogInteraction} className="p-5 space-y-4 overflow-y-auto no-scrollbar">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-2">
+                        <label className="text-[12px] font-bold text-primary  tracking-widest ml-1">
+                          Date
+                        </label>
+                        <DatePicker
+                          value={logData.date}
+                          onChange={(val) =>
+                            setLogData({ ...logData, date: val })
+                          }
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[12px] font-bold text-primary  tracking-widest ml-1">
+                          Time
+                        </label>
+                        <input
+                          required
+                          type="time"
+                          className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
+                          value={logData.time}
+                          onChange={(e) =>
+                            setLogData({ ...logData, time: e.target.value })
+                          }
+                        />
+                      </div>
+                    </div>
+
                     <div className="space-y-2">
                       <label className="text-[12px] font-bold text-primary  tracking-widest ml-1">
-                        Date
+                        {isLead ? "Subject" : "Project Name"}
                       </label>
-                      <DatePicker
-                        value={logData.date}
-                        onChange={(val) =>
-                          setLogData({ ...logData, date: val })
-                        }
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-[12px] font-bold text-primary  tracking-widest ml-1">
-                        Time
-                      </label>
-                      <input
-                        required
-                        type="time"
-                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
-                        value={logData.time}
-                        onChange={(e) =>
-                          setLogData({ ...logData, time: e.target.value })
-                        }
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-[12px] font-bold text-primary  tracking-widest ml-1">
-                      {isLead ? "Subject" : "Project Name"}
-                    </label>
-                    {!isLead && (
-                      <select
-                        required
-                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium appearance-none cursor-pointer"
-                        value={logData.projectId}
-                        onChange={(e) =>
-                          setLogData({
-                            ...logData,
-                            projectId: e.target.value,
-                          })
-                        }
-                      >
-                        <option value="" disabled>
-                          Select a project...
-                        </option>
-                        {clientProjects.length > 0 ? (
-                          clientProjects.map((project) => (
-                            <option key={project.id} value={project.id}>
-                              {project.name}
-                            </option>
-                          ))
-                        ) : (
-                          <>
-                            <option value="Website Redesign">
-                              Website Redesign
-                            </option>
-                            <option value="SEO Optimization">
-                              SEO Optimization
-                            </option>
-                            <option value="Brand Identity">
-                              Brand Identity
-                            </option>
-                          </>
-                        )}
-                      </select>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-[12px] font-bold text-primary  tracking-widest ml-1">
-                      Interaction Type
-                    </label>
-                    <div className="grid grid-cols-3 gap-2">
-                      {["call", "email", "meeting"].map((type) => (
-                        <button
-                          key={type}
-                          type="button"
-                          onClick={() =>
+                      {!isLead && (
+                        <select
+                          required
+                          className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium appearance-none cursor-pointer"
+                          value={logData.projectId}
+                          onChange={(e) =>
                             setLogData({
                               ...logData,
-                              type: type,
+                              projectId: e.target.value,
                             })
                           }
-                          className={`py-2 px-3 rounded-xl border text-[12px] font-bold  tracking-widest transition-all ${
-                            logData.type === type
-                              ? "bg-secondary border-secondary text-white shadow-md shadow-secondary/20"
-                              : "bg-white border-slate-100 text-slate-400 hover:border-slate-300"
-                          }`}
                         >
-                          {type}
-                        </button>
-                      ))}
+                          <option value="" disabled>
+                            Select a project...
+                          </option>
+                          {clientProjects.length > 0 ? (
+                            clientProjects.map((project) => (
+                              <option key={project.id} value={project.id}>
+                                {project.name}
+                              </option>
+                            ))
+                          ) : (
+                            <>
+                              <option value="Website Redesign">
+                                Website Redesign
+                              </option>
+                              <option value="SEO Optimization">
+                                SEO Optimization
+                              </option>
+                              <option value="Brand Identity">
+                                Brand Identity
+                              </option>
+                            </>
+                          )}
+                        </select>
+                      )}
                     </div>
-                  </div>
 
-                  <div className="space-y-2">
-                    <label className="text-[12px] font-bold text-primary  tracking-widest ml-1">
-                      Conversation Details
-                    </label>
-                    <textarea
-                      required
-                      placeholder="e.g. Discussed new service package and finalized onboarding steps..."
-                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-bold min-h-[100px] resize-none"
-                      value={logData.description}
-                      onChange={(e) =>
-                        setLogData({ ...logData, description: e.target.value })
-                      }
-                    />
-                  </div>
+                    <div className="space-y-2">
+                      <label className="text-[12px] font-bold text-primary  tracking-widest ml-1">
+                        Interaction Type
+                      </label>
+                      <div className="grid grid-cols-3 gap-2">
+                        {["call", "email", "meeting"].map((type) => (
+                          <button
+                            key={type}
+                            type="button"
+                            onClick={() =>
+                              setLogData({
+                                ...logData,
+                                type: type,
+                              })
+                            }
+                            className={`py-2 px-3 rounded-xl border text-[12px] font-bold  tracking-widest transition-all ${
+                              logData.type === type
+                                ? "bg-secondary border-secondary text-white shadow-md shadow-secondary/20"
+                                : "bg-white border-slate-100 text-slate-400 hover:border-slate-300"
+                            }`}
+                          >
+                            {type}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
 
-                  <div className="pt-2">
-                    <button
-                      type="submit"
-                      className="w-full py-3 bg-[#18254D] text-white rounded-xl text-[13px] font-bold  tracking-[0.25em] shadow-xl active:scale-[0.97] transition-all hover:bg-[#1e2e5e] hover:shadow-2xl flex items-center justify-center gap-3"
-                    >
-                      Save Entry
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          )}
+                    <div className="space-y-2">
+                      <label className="text-[12px] font-bold text-primary  tracking-widest ml-1">
+                        Conversation Details
+                      </label>
+                      <textarea
+                        required
+                        placeholder="e.g. Discussed new service package and finalized onboarding steps..."
+                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-bold min-h-[100px] resize-none"
+                        value={logData.description}
+                        onChange={(e) =>
+                          setLogData({ ...logData, description: e.target.value })
+                        }
+                      />
+                    </div>
+
+                    <div className="pt-2 shrink-0">
+                      <button
+                        type="submit"
+                        className="w-full py-3 bg-[#18254D] text-white rounded-xl text-[13px] font-bold  tracking-[0.25em] shadow-xl active:scale-[0.97] transition-all hover:bg-[#1e2e5e] hover:shadow-2xl flex items-center justify-center gap-3"
+                      >
+                        Save Entry
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>,
+              document.body,
+            )
+          }
 
           {/* Side Panel */}
           <div className="w-full lg:w-[280px] border-b lg:border-b-0 lg:border-r border-slate-100 p-4 md:p-6 overflow-y-auto bg-slate-50/20 no-scrollbar shrink-0">
