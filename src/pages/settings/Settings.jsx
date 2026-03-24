@@ -632,7 +632,16 @@ const Settings = ({
 
         {/* Top Navigation Tabs */}
         <div className="flex justify-center my-4 w-full px-1 sm:px-0">
-          <div className="flex flex-nowrap bg-slate-100/50 p-1 rounded-2xl border border-slate-200 shadow-sm leading-none w-full sm:w-auto items-center gap-0.5 sm:gap-1 overflow-x-auto no-scrollbar">
+          <div className="relative flex flex-nowrap bg-slate-100/50 p-0.5 rounded-[14px] border border-slate-200 shadow-sm leading-none w-full sm:w-auto items-center gap-0 overflow-hidden">
+            {/* Moving Indicator */}
+            <div
+              className="absolute top-[2px] bottom-[2px] left-[2px] bg-white rounded-[11px] shadow-sm transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] border border-white/20 z-0"
+              style={{
+                width: "calc(25% - 2px)",
+                transform: `translateX(${["profile", "security", "ai", "team"].indexOf(activeTab) * 100}%)`,
+              }}
+            />
+
             {[
               { id: "profile", label: "My Profile" },
               { id: "security", label: "Security" },
@@ -642,10 +651,10 @@ const Settings = ({
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex-1 sm:flex-none px-2 sm:px-6 py-2.5 sm:py-2 rounded-xl text-[10px] sm:text-[12px] font-bold tracking-wider transition-all flex items-center justify-center min-w-[80px] sm:min-w-[120px] h-[34px] sm:h-auto border border-transparent whitespace-nowrap ${
+                className={`relative z-10 flex-1 sm:flex-none px-2 sm:px-6 py-2.5 sm:py-2 rounded-xl text-[10px] sm:text-[12px] font-bold tracking-wider transition-all duration-300 flex items-center justify-center min-w-[75px] sm:min-w-[120px] h-[30px] sm:h-[36px] whitespace-nowrap active:scale-95 ${
                   activeTab === tab.id
-                    ? "bg-white text-blue-600 shadow-md border-blue-50"
-                    : "text-slate-400 hover:text-slate-500 hover:bg-white/50"
+                    ? "text-blue-600 scale-[1.02]"
+                    : "text-slate-400 hover:text-slate-600"
                 }`}
               >
                 {tab.label}

@@ -271,7 +271,7 @@ const ClientList = ({
   const totalPages = Math.ceil(filteredClients.length / RECORDS_PER_PAGE);
   const currentClients = filteredClients.slice(
     (currentPage - 1) * RECORDS_PER_PAGE,
-    currentPage * RECORDS_PER_PAGE
+    currentPage * RECORDS_PER_PAGE,
   );
 
   const getStatusBadge = (client) => {
@@ -380,7 +380,9 @@ const ClientList = ({
       <div className="w-full flex items-center justify-center h-64">
         <div className="flex flex-col items-center gap-3">
           <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
-          <p className="text-sm text-slate-500">Loading {title.toLowerCase()}...</p>
+          <p className="text-sm text-slate-500">
+            Loading {title.toLowerCase()}...
+          </p>
         </div>
       </div>
     );
@@ -519,7 +521,7 @@ const ClientList = ({
                       className="category-dropdown bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[9999] animate-fade-in-up origin-top"
                       style={categoryDropdownStyle}
                     >
-                      {["All", 1, 2, 3].map((catId) => (
+                      {["All", 1, 2].map((catId) => (
                         <button
                           key={catId}
                           onClick={() => {
@@ -565,33 +567,31 @@ const ClientList = ({
         {/* Lead View Toggles (Leads Only) */}
         {title === "Leads" && (
           <div className="flex justify-center my-4 w-full px-1 sm:px-0">
-            <div className="flex flex-nowrap bg-slate-100/50 p-1 rounded-2xl border border-slate-200 shadow-sm leading-none w-full sm:w-auto items-center gap-0.5 sm:gap-1 overflow-x-auto no-scrollbar">
+            <div className="relative flex flex-nowrap bg-slate-100/50 p-0.5 rounded-[14px] border border-slate-200 shadow-sm leading-none w-full sm:w-auto items-center gap-0 overflow-hidden">
+              {/* Moving Indicator */}
+              <div
+                className="absolute top-[2px] bottom-[2px] left-[2px] bg-white rounded-[11px] shadow-sm transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] border border-white/20 z-0"
+                style={{
+                  width: "calc(33.333% - 2px)",
+                  transform: `translateX(${["Pending", "Converted", "Dismissed"].indexOf(leadView) * 100}%)`,
+                }}
+              />
+
               {["Pending", "Converted", "Dismissed"].map((view) => {
                 const colors = {
-                  Pending: {
-                    active: "text-blue-600 border-blue-100 bg-white",
-                    hover: "hover:text-blue-500 hover:bg-white/50",
-                  },
-                  Converted: {
-                    active: "text-emerald-600 border-emerald-100 bg-white",
-                    hover: "hover:text-emerald-500 hover:bg-white/50",
-                  },
-                  Dismissed: {
-                    active: "text-rose-600 border-rose-100 bg-white",
-                    hover: "hover:text-rose-500 hover:bg-white/50",
-                  },
+                  Pending: "text-blue-600",
+                  Converted: "text-emerald-600",
+                  Dismissed: "text-rose-600",
                 };
-                const activeColor = colors[view].active;
-                const hoverColor = colors[view].hover;
 
                 return (
                   <button
                     key={view}
                     onClick={() => setLeadView(view)}
-                    className={`flex-1 sm:flex-none px-2 sm:px-5 py-2.5 sm:py-2 rounded-xl text-[10px] sm:text-[12px] font-bold tracking-wider transition-all flex items-center justify-center min-w-[65px] sm:min-w-[100px] h-[34px] sm:h-auto border border-transparent whitespace-nowrap ${
+                    className={`relative z-10 flex-1 sm:flex-none px-2 sm:px-5 py-2.5 sm:py-2 rounded-xl text-[10px] sm:text-[12px] font-bold tracking-wider transition-all duration-300 flex items-center justify-center min-w-[75px] sm:min-w-[110px] h-[30px] sm:h-[36px] whitespace-nowrap active:scale-95 ${
                       leadView === view
-                        ? `${activeColor} shadow-md`
-                        : `text-slate-400 ${hoverColor}`
+                        ? `${colors[view]} scale-[1.02]`
+                        : "text-slate-400 hover:text-slate-600"
                     }`}
                   >
                     {view}
@@ -669,13 +669,20 @@ const ClientList = ({
                           />
                           <span className="text-sm font-bold text-primary">
                             {(() => {
-                              const catName = CATEGORY_MAP[client.projectCategory] || client.industry || "Other";
+                              const catName =
+                                CATEGORY_MAP[client.projectCategory] ||
+                                client.industry ||
+                                "Other";
                               if (catName === "Other" || catName === "others") {
-                                console.log("Category mismatch for client:", client.name, {
-                                  projectCategory: client.projectCategory,
-                                  industry: client.industry,
-                                  catName
-                                });
+                                console.log(
+                                  "Category mismatch for client:",
+                                  client.name,
+                                  {
+                                    projectCategory: client.projectCategory,
+                                    industry: client.industry,
+                                    catName,
+                                  },
+                                );
                               }
                               return catName;
                             })()}
@@ -972,58 +979,64 @@ const ClientList = ({
           )}
         </div>
 
-      {/* Pagination Controls */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2 mt-8 mb-4">
-          <button
-            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            disabled={currentPage === 1}
-            className="p-2.5 rounded-xl border border-slate-200 bg-white text-slate-400 hover:text-primary hover:border-primary disabled:opacity-30 disabled:hover:border-slate-200 disabled:hover:text-slate-400 transition-all shadow-sm active:scale-95"
-          >
-            <ChevronLeft size={16} strokeWidth={2.5} />
-          </button>
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-2 mt-8 mb-4">
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="p-2.5 rounded-xl border border-slate-200 bg-white text-slate-400 hover:text-primary hover:border-primary disabled:opacity-30 disabled:hover:border-slate-200 disabled:hover:text-slate-400 transition-all shadow-sm active:scale-95"
+            >
+              <ChevronLeft size={16} strokeWidth={2.5} />
+            </button>
 
-          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-2xl shadow-inner mx-2">
-            {[...Array(totalPages)].map((_, i) => {
-              const pageNum = i + 1;
-              if (
-                totalPages > 7 &&
-                pageNum !== 1 &&
-                pageNum !== totalPages &&
-                Math.abs(pageNum - currentPage) > 1
-              ) {
-                if (pageNum === 2 || pageNum === totalPages - 1) {
-                  return <span key={pageNum} className="text-slate-300 px-1 font-bold">.</span>;
+            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-2xl shadow-inner mx-2">
+              {[...Array(totalPages)].map((_, i) => {
+                const pageNum = i + 1;
+                if (
+                  totalPages > 7 &&
+                  pageNum !== 1 &&
+                  pageNum !== totalPages &&
+                  Math.abs(pageNum - currentPage) > 1
+                ) {
+                  if (pageNum === 2 || pageNum === totalPages - 1) {
+                    return (
+                      <span
+                        key={pageNum}
+                        className="text-slate-300 px-1 font-bold"
+                      >
+                        .
+                      </span>
+                    );
+                  }
+                  return null;
                 }
-                return null;
-              }
 
-              return (
-                <button
-                  key={pageNum}
-                  onClick={() => setCurrentPage(pageNum)}
-                  className={`min-w-[32px] h-8 flex items-center justify-center rounded-lg text-sm font-black transition-all ${
-                    currentPage === pageNum
-                      ? "bg-[#18254D] text-white shadow-lg shadow-slate-300 scale-110"
-                      : "text-slate-400 hover:text-primary hover:bg-white"
-                  }`}
-                >
-                  {pageNum}
-                </button>
-              );
-            })}
+                return (
+                  <button
+                    key={pageNum}
+                    onClick={() => setCurrentPage(pageNum)}
+                    className={`min-w-[32px] h-8 flex items-center justify-center rounded-lg text-sm font-black transition-all ${
+                      currentPage === pageNum
+                        ? "bg-[#18254D] text-white shadow-lg shadow-slate-300 scale-110"
+                        : "text-slate-400 hover:text-primary hover:bg-white"
+                    }`}
+                  >
+                    {pageNum}
+                  </button>
+                );
+              })}
+            </div>
+
+            <button
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="p-2.5 rounded-xl border border-slate-200 bg-white text-slate-400 hover:text-primary hover:border-primary disabled:opacity-30 disabled:hover:border-slate-200 disabled:hover:text-slate-400 transition-all shadow-sm active:scale-95"
+            >
+              <ChevronRight size={16} strokeWidth={2.5} />
+            </button>
           </div>
-
-          <button
-            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-            disabled={currentPage === totalPages}
-            className="p-2.5 rounded-xl border border-slate-200 bg-white text-slate-400 hover:text-primary hover:border-primary disabled:opacity-30 disabled:hover:border-slate-200 disabled:hover:text-slate-400 transition-all shadow-sm active:scale-95"
-          >
-            <ChevronRight size={16} strokeWidth={2.5} />
-          </button>
-        </div>
-      )}
-
+        )}
       </div>
 
       {/* Add Modal */}
@@ -1106,7 +1119,10 @@ const ClientList = ({
                       className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
                       value={formData.phone}
                       onChange={(e) =>
-                        setFormData({ ...formData, phone: e.target.value.replace(/\D/g, "") })
+                        setFormData({
+                          ...formData,
+                          phone: e.target.value.replace(/\D/g, ""),
+                        })
                       }
                     />
                   </div>

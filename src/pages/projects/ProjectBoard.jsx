@@ -619,7 +619,12 @@ const ProjectBoard = ({
                 }
                 className="w-full h-[38px] flex items-center justify-between gap-3 px-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-[12px] font-bold  tracking-widest text-primary hover:bg-white hover:border-slate-200 transition-all shadow-sm shadow-slate-200/50 group"
               >
-                <span>{CATEGORY_MAP[selectedCategory]} Projects</span>
+                <span>
+                  {selectedCategory === 3
+                    ? "All"
+                    : CATEGORY_MAP[selectedCategory]}{" "}
+                  Projects
+                </span>
                 <ChevronDown
                   size={16}
                   strokeWidth={2.5}
@@ -643,7 +648,7 @@ const ProjectBoard = ({
                           Select Project Category
                         </p>
                       </div>
-                      {[1, 2, 3].map((catId) => (
+                      {[3, 1, 2].map((catId) => (
                         <button
                           key={catId}
                           onClick={() => handleCategoryChange(catId)}
@@ -653,7 +658,7 @@ const ProjectBoard = ({
                               : "text-[#18254D] hover:bg-slate-50"
                           }`}
                         >
-                          {CATEGORY_MAP[catId]} Projects
+                          {catId === 3 ? "All" : CATEGORY_MAP[catId]} Projects
                         </button>
                       ))}
                     </div>
@@ -666,39 +671,48 @@ const ProjectBoard = ({
 
         {/* Stage Toggle Tabs */}
         <div className="flex justify-center my-4 w-full px-1 sm:px-0">
-          <div className="flex flex-nowrap bg-slate-100/50 p-1 rounded-2xl border border-slate-200 shadow-sm leading-none w-full sm:w-auto items-center gap-0.5 sm:gap-1 overflow-x-auto no-scrollbar">
-            {COLUMNS.map((column) => {
-              const count = projects.filter(
-                (p) =>
-                  p.status === column.id &&
-                  (selectedCategory === 3 ||
-                    (p.category || 1) === selectedCategory),
-              ).length;
-              const isActive = activeStage === column.id;
-              return (
-                <button
-                  key={column.id}
-                  onClick={() => setActiveStage(column.id)}
-                  className={`flex-1 sm:flex-none px-2 sm:px-5 py-2.5 sm:py-2 rounded-xl text-[10px] sm:text-[12px] font-bold tracking-wider transition-all flex items-center justify-center min-w-[80px] sm:min-w-[120px] h-[34px] sm:h-auto border border-transparent whitespace-nowrap gap-2 ${
+        <div className="relative flex flex-nowrap bg-slate-100/50 p-0.5 rounded-[14px] border border-slate-200 shadow-sm leading-none w-full sm:w-auto items-center gap-0 overflow-hidden">
+          {/* Moving Indicator */}
+          <div
+            className="absolute top-[2px] bottom-[2px] left-[2px] bg-white rounded-[11px] shadow-sm transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] border border-white/20 z-0"
+            style={{
+              width: "calc(33.333% - 2px)",
+              transform: `translateX(${COLUMNS.findIndex((c) => c.id === activeStage) * 100}%)`,
+            }}
+          />
+
+          {COLUMNS.map((column) => {
+            const count = projects.filter(
+              (p) =>
+                p.status === column.id &&
+                (selectedCategory === 3 ||
+                  (p.category || 1) === selectedCategory),
+            ).length;
+            const isActive = activeStage === column.id;
+            return (
+              <button
+                key={column.id}
+                onClick={() => setActiveStage(column.id)}
+                className={`relative z-10 flex-1 sm:flex-none px-2 sm:px-5 py-2.5 sm:py-2 rounded-xl text-[10px] sm:text-[12px] font-bold tracking-wider transition-all duration-300 flex items-center justify-center min-w-[75px] sm:min-w-[110px] h-[30px] sm:h-[36px] whitespace-nowrap gap-2 active:scale-95 ${
+                  isActive
+                    ? "text-[#18254D] scale-[1.02]"
+                    : "text-slate-400 hover:text-slate-600"
+                }`}
+              >
+                <span>{column.title}</span>
+                <span
+                  className={`min-w-[18px] h-4.5 px-1.5 rounded-full text-[10px] sm:text-[12px] font-black flex items-center justify-center transition-colors duration-300 ${
                     isActive
-                      ? "text-primary bg-white shadow-md border-slate-100"
-                      : "text-slate-400 hover:text-slate-500 hover:bg-white/50"
+                      ? "bg-[#18254D] text-white"
+                      : "bg-slate-200 text-slate-500"
                   }`}
                 >
-                  <span>{column.title}</span>
-                  <span
-                    className={`min-w-[18px] h-4.5 px-1.5 rounded-full text-[10px] sm:text-[12px] font-black flex items-center justify-center ${
-                      isActive
-                        ? "bg-primary text-white"
-                        : "bg-slate-200 text-slate-500"
-                    }`}
-                  >
-                    {count}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
+                  {count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
         </div>
 
         {/* Active Stage Content */}

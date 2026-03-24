@@ -554,8 +554,8 @@ const EnquiryList = ({
             {activeTab === "new" && (
               <React.Fragment>
                 {/* AI Analysis Toggle */}
-                <div className="flex-1 sm:flex-none w-[auto] md:flex-1 min-w-[140px] flex items-center justify-between px-3 h-[38px] bg-slate-50 border border-slate-200 rounded-xl order-4">
-                  <span className={`text-[12px] font-bold  text-primary`}>
+                <div className="flex-1 sm:flex-none w-[auto] md:flex-1 min-w-[140px] flex items-center justify-between px-3 h-[34px] bg-slate-50 border border-slate-200 rounded-xl shadow-sm order-4">
+                  <span className={`text-[12px] font-bold text-primary`}>
                     AI Analysis
                   </span>
 
@@ -581,7 +581,7 @@ const EnquiryList = ({
 
                 {/* Filter Spam Toggle */}
                 <div
-                  className={`flex-1 sm:flex-none w-[auto] md:flex-1 min-w-[140px] flex items-center justify-between px-3 h-[38px] bg-slate-50 border border-slate-200 rounded-xl transition-all order-5 ${!aiAnalysisEnabled ? "opacity-50 pointer-events-none" : ""}`}
+                  className={`flex-1 sm:flex-none w-[auto] md:flex-1 min-w-[140px] flex items-center justify-between px-3 h-[34px] bg-slate-50 border border-slate-200 rounded-xl shadow-sm transition-all order-5 ${!aiAnalysisEnabled ? "opacity-50 pointer-events-none" : ""}`}
                 >
                   <span
                     className={`text-[12px] font-bold ${hideIrrelevant ? "text-primary" : "text-slate-400"}`}
@@ -616,7 +616,7 @@ const EnquiryList = ({
                       onClick={() =>
                         setIsModelDropdownOpen(!isModelDropdownOpen)
                       }
-                      className="w-full h-[38px] flex items-center justify-between gap-3 px-3 bg-white border border-slate-200 rounded-xl text-[12px] font-bold tracking-widest text-[#18254D] hover:bg-slate-50 transition-all shadow-sm active:scale-95 group"
+                      className="w-full h-[34px] flex items-center justify-between gap-3 px-3 bg-white border border-slate-200 rounded-xl text-[12px] font-bold tracking-widest text-[#18254D] hover:bg-slate-50 transition-all shadow-sm active:scale-95 group"
                     >
                       <span className="truncate text-[12px] uppercase tracking-tight">
                         {aiModels.find((m) => m.id === selectedAiModel)?.name ||
@@ -686,7 +686,7 @@ const EnquiryList = ({
         {/* AI Analysis Progress Message */}
         {activeTab === "new" && aiAnalysisEnabled && (
           <div className="mt-4 flex justify-center">
-            <div className="px-4 sm:px-5 py-2 sm:py-1.5 bg-slate-50 border border-slate-100 rounded-2xl sm:rounded-full shadow-sm flex flex-wrap justify-center items-center gap-2 sm:gap-3 animate-fade-in group w-full sm:w-auto">
+            <div className="px-4 sm:px-5 py-1 sm:py-0.5 bg-slate-50 border border-slate-100 rounded-2xl sm:rounded-full shadow-sm flex flex-wrap justify-center items-center gap-2 sm:gap-3 animate-fade-in group w-full sm:w-auto min-h-[32px]">
               <div className="flex items-center gap-2">
                 <span className="text-[12px] font-black  tracking-widest text-slate-400">
                   Analysis
@@ -722,37 +722,32 @@ const EnquiryList = ({
 
       {/* Lead View Toggles (Enquiries) */}
       <div className="flex justify-center my-4 w-full px-1 sm:px-0">
-        <div className="flex flex-nowrap bg-slate-100/50 p-1 rounded-2xl border border-slate-200 shadow-sm leading-none w-full sm:w-auto items-center gap-0.5 sm:gap-1 overflow-x-auto no-scrollbar">
+        <div className="relative flex flex-nowrap bg-slate-100/50 p-0.5 rounded-[14px] border border-slate-200 shadow-sm leading-none w-full sm:w-auto items-center gap-0 overflow-hidden">
+          {/* Moving Indicator */}
+          <div
+            className="absolute top-[2px] bottom-[2px] left-[2px] bg-white rounded-[11px] shadow-sm transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] border border-white/20 z-0"
+            style={{
+              width: "calc(25% - 2px)",
+              transform: `translateX(${["new", "hold", "converted", "dismissed"].indexOf(activeTab) * 100}%)`,
+            }}
+          />
+
           {["new", "hold", "converted", "dismissed"].map((tab) => {
             const colors = {
-              new: {
-                active: "text-blue-600 border-blue-100 bg-white",
-                hover: "hover:text-blue-500 hover:bg-white/50",
-              },
-              hold: {
-                active: "text-orange-600 border-orange-100 bg-white",
-                hover: "hover:text-orange-500 hover:bg-white/50",
-              },
-              converted: {
-                active: "text-emerald-600 border-emerald-100 bg-white",
-                hover: "hover:text-emerald-500 hover:bg-white/50",
-              },
-              dismissed: {
-                active: "text-rose-600 border-rose-100 bg-white",
-                hover: "hover:text-rose-500 hover:bg-white/50",
-              },
+              new: "text-blue-600",
+              hold: "text-orange-600",
+              converted: "text-emerald-600",
+              dismissed: "text-rose-600",
             };
-            const activeColor = colors[tab].active;
-            const hoverColor = colors[tab].hover;
 
             return (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`flex-1 sm:flex-none px-2 sm:px-5 py-2.5 sm:py-2 rounded-xl text-[10px] sm:text-[12px] font-bold tracking-wider transition-all flex items-center justify-center min-w-[65px] sm:min-w-[100px] h-[34px] sm:h-auto border border-transparent whitespace-nowrap ${
+                className={`relative z-10 flex-1 sm:flex-none px-2 sm:px-6 py-1.5 sm:py-1 rounded-xl text-[10px] sm:text-[12px] font-bold tracking-wider transition-all duration-300 flex items-center justify-center min-w-[75px] sm:min-w-[120px] h-[30px] sm:h-[36px] whitespace-nowrap active:scale-95 ${
                   activeTab === tab
-                    ? `${activeColor} shadow-md`
-                    : `text-slate-400 ${hoverColor}`
+                    ? `${colors[tab]} scale-[1.02]`
+                    : `text-slate-400 hover:text-slate-600`
                 }`}
               >
                 {tab === "new"
@@ -768,7 +763,10 @@ const EnquiryList = ({
         </div>
       </div>
 
-      <div className="flex flex-col gap-4 w-full">
+      <div
+        key={activeTab}
+        className="flex flex-col gap-4 w-full animate-fade-in duration-300"
+      >
         {paginatedEnquiries.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-10 bg-white rounded-3xl border border-slate-200 shadow-sm w-full">
             <Inbox size={22} className="text-slate-200 mb-2" />

@@ -444,18 +444,34 @@ const FollowUpList = ({
             <DatePicker label="To" value={endDate} onChange={setEndDate} />
           </div>
         </div>
-
         <div className="flex justify-center my-4 w-full px-1 sm:px-0">
-          <div className="flex flex-nowrap bg-slate-100/50 p-1 rounded-2xl border border-slate-200 shadow-sm leading-none w-full sm:w-auto items-center gap-0.5 sm:gap-1 overflow-x-auto no-scrollbar">
+          <div className="relative flex flex-nowrap bg-slate-100/50 p-0.5 rounded-[14px] border border-slate-200 shadow-sm leading-none w-full sm:w-auto items-center gap-0 overflow-hidden">
+            {/* Moving Indicator */}
+            <div
+              className="absolute top-[2px] bottom-[2px] left-[2px] bg-white rounded-[11px] shadow-sm transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] border border-white/20 z-0"
+              style={{
+                width: "calc(25% - 2px)",
+                transform: `translateX(${["All", "Overdue", "Today", "Upcoming"].indexOf(activeFilter) * 100}%)`,
+              }}
+            />
+
             {["All", "Overdue", "Today", "Upcoming"].map((f) => (
               <button
                 key={f}
                 onClick={() => setActiveFilter(f)}
-                className={`flex-1 sm:flex-none px-2 sm:px-5 py-2.5 sm:py-2 rounded-xl text-[10px] sm:text-[12px] font-bold tracking-wider transition-all flex items-center justify-center gap-1 sm:gap-1.5 min-w-[65px] sm:min-w-[100px] h-[34px] sm:h-auto border border-transparent whitespace-nowrap ${activeFilter === f ? "bg-white text-primary shadow-md border-slate-100" : "text-slate-400 hover:text-slate-600 hover:bg-white/50"}`}
+                className={`relative z-10 flex-1 sm:flex-none px-2 sm:px-5 py-2.5 sm:py-2 rounded-xl text-[10px] sm:text-[12px] font-bold tracking-wider transition-all duration-300 flex items-center justify-center gap-1.5 min-w-[75px] sm:min-w-[110px] h-[30px] sm:h-[36px] whitespace-nowrap active:scale-95 ${
+                  activeFilter === f
+                    ? "text-[#18254D] scale-[1.02]"
+                    : "text-slate-400 hover:text-[#18254D]/60"
+                }`}
               >
-                {f}
+                <span>{f}</span>
                 <span
-                  className={`text-[10px] sm:text-[14px] font-bold min-w-[16px] sm:min-w-[18px] h-[16px] sm:h-[18px] flex items-center justify-center rounded-full ${activeFilter === f ? "bg-primary text-white" : "bg-slate-200 text-slate-500"}`}
+                  className={`min-w-[18px] h-4.5 px-1.5 rounded-full text-[10px] sm:text-[12px] font-black flex items-center justify-center transition-colors duration-300 ${
+                    activeFilter === f
+                      ? "bg-[#18254D] text-white"
+                      : "bg-slate-200 text-slate-500"
+                  }`}
                 >
                   {tabCounts[f]}
                 </span>

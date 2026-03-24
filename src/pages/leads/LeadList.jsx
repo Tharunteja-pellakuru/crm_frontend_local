@@ -310,7 +310,7 @@ const LeadList = ({
       email: { required: true, pattern: /^\S+@\S+\.\S+$/, label: "Email" },
       phone: { required: true, minLength: 10, label: "Phone Number" },
       organisationName: { required: true, label: "Organization Name" },
-      projectName: { required: true, label: "Project Name" }
+      projectName: { required: true, label: "Project Name" },
     });
 
     if (!isValid) return;
@@ -346,7 +346,11 @@ const LeadList = ({
       email: { required: true, pattern: /^\S+@\S+\.\S+$/, label: "Email" },
       phone: { required: true, minLength: 10, label: "Phone Number" },
       projectName: { required: true, label: "Project Name" },
-      projectBudget: { required: true, type: "number", label: "Project Budget" }
+      projectBudget: {
+        required: true,
+        type: "number",
+        label: "Project Budget",
+      },
     });
 
     if (!isValid) return;
@@ -438,7 +442,7 @@ const LeadList = ({
   const totalPages = Math.ceil(filteredLeads.length / RECORDS_PER_PAGE);
   const currentLeads = filteredLeads.slice(
     (currentPage - 1) * RECORDS_PER_PAGE,
-    currentPage * RECORDS_PER_PAGE
+    currentPage * RECORDS_PER_PAGE,
   );
 
   const renderContactDetails = (lead) => {
@@ -616,7 +620,7 @@ const LeadList = ({
     const isValid = validateForm(formData, {
       name: { required: true, minLength: 2, label: "Full Name" },
       email: { required: true, pattern: /^\S+@\S+\.\S+$/, label: "Email" },
-      phone: { required: true, minLength: 10, label: "Phone Number" }
+      phone: { required: true, minLength: 10, label: "Phone Number" },
     });
 
     if (!isValid) return;
@@ -716,58 +720,58 @@ const LeadList = ({
             </div>
 
             {leadView !== "Converted" && leadView !== "Dismissed" && (
-            <div className="col-span-1 xl:flex-1 relative z-50">
-              <button
-                ref={tierButtonRef}
-                onClick={() => setIsTierDropdownOpen(!isTierDropdownOpen)}
-                className="w-full h-[38px] flex items-center justify-between gap-3 px-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-[12px] font-bold  tracking-widest text-[#18254D] hover:bg-white hover:border-slate-200 transition-all shadow-sm shadow-slate-200/50 group"
-              >
-                <span>
-                  {leadTypeFilter === "All"
-                    ? "All Lead Status"
-                    : leadTypeFilter}
-                </span>
-                <ChevronDown
-                  size={16}
-                  strokeWidth={2.5}
-                  className={`transition-transform duration-300 ${isTierDropdownOpen ? "rotate-180" : ""}`}
-                />
-              </button>
+              <div className="col-span-1 xl:flex-1 relative z-50">
+                <button
+                  ref={tierButtonRef}
+                  onClick={() => setIsTierDropdownOpen(!isTierDropdownOpen)}
+                  className="w-full h-[38px] flex items-center justify-between gap-3 px-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-[12px] font-bold  tracking-widest text-[#18254D] hover:bg-white hover:border-slate-200 transition-all shadow-sm shadow-slate-200/50 group"
+                >
+                  <span>
+                    {leadTypeFilter === "All"
+                      ? "All Lead Status"
+                      : leadTypeFilter}
+                  </span>
+                  <ChevronDown
+                    size={16}
+                    strokeWidth={2.5}
+                    className={`transition-transform duration-300 ${isTierDropdownOpen ? "rotate-180" : ""}`}
+                  />
+                </button>
 
-              {isTierDropdownOpen &&
-                createPortal(
-                  <>
-                    <div
-                      className="fixed inset-0 z-[9998]"
-                      onClick={() => setIsTierDropdownOpen(false)}
-                    />
-                    <div
-                      className="tier-dropdown bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[9999] animate-fade-in-up origin-top"
-                      style={tierDropdownStyle}
-                    >
-                      {["All", "Hot", "Warm", "Cold"].map((tier) => (
-                        <button
-                          key={tier}
-                          onClick={() => {
-                            setLeadTypeFilter(tier);
-                            setIsTierDropdownOpen(false);
-                          }}
-                          className={`w-full text-left px-5 py-4 text-[12px] font-bold  tracking-wider transition-colors ${
-                            tier === "All"
-                              ? "bg-[#18254D] text-white"
-                              : leadTypeFilter === tier
-                                ? "bg-slate-100 text-[#18254D]"
-                                : "text-[#18254D] hover:bg-slate-50"
-                          }`}
-                        >
-                          {tier === "All" ? "All Tiers" : tier}
-                        </button>
-                      ))}
-                    </div>
-                  </>,
-                  document.body,
-                )}
-            </div>
+                {isTierDropdownOpen &&
+                  createPortal(
+                    <>
+                      <div
+                        className="fixed inset-0 z-[9998]"
+                        onClick={() => setIsTierDropdownOpen(false)}
+                      />
+                      <div
+                        className="tier-dropdown bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[9999] animate-fade-in-up origin-top"
+                        style={tierDropdownStyle}
+                      >
+                        {["All", "Hot", "Warm", "Cold"].map((tier) => (
+                          <button
+                            key={tier}
+                            onClick={() => {
+                              setLeadTypeFilter(tier);
+                              setIsTierDropdownOpen(false);
+                            }}
+                            className={`w-full text-left px-5 py-4 text-[12px] font-bold  tracking-wider transition-colors ${
+                              tier === "All"
+                                ? "bg-[#18254D] text-white"
+                                : leadTypeFilter === tier
+                                  ? "bg-slate-100 text-[#18254D]"
+                                  : "text-[#18254D] hover:bg-slate-50"
+                            }`}
+                          >
+                            {tier === "All" ? "All Tiers" : tier}
+                          </button>
+                        ))}
+                      </div>
+                    </>,
+                    document.body,
+                  )}
+              </div>
             )}
 
             {/* Category Dropdown */}
@@ -847,33 +851,31 @@ const LeadList = ({
 
         {/* Lead View Toggles */}
         <div className="flex justify-center my-4 w-full px-1 sm:px-0">
-          <div className="flex flex-nowrap bg-slate-100/50 p-1 rounded-2xl border border-slate-200 shadow-sm leading-none w-full sm:w-auto items-center gap-0.5 sm:gap-1 overflow-x-auto no-scrollbar">
+          <div className="relative flex flex-nowrap bg-slate-100/50 p-0.5 rounded-[14px] border border-slate-200 shadow-sm leading-none w-full sm:w-auto items-center gap-0 overflow-hidden">
+            {/* Moving Indicator */}
+            <div
+              className="absolute top-[2px] bottom-[2px] left-[2px] bg-white rounded-[11px] shadow-sm transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] border border-white/20 z-0"
+              style={{
+                width: "calc(33.333% - 2px)",
+                transform: `translateX(${["Pending", "Converted", "Dismissed"].indexOf(leadView) * 100}%)`,
+              }}
+            />
+
             {["Pending", "Converted", "Dismissed"].map((view) => {
               const colors = {
-                Pending: {
-                  active: "text-blue-600 border-blue-100 bg-white",
-                  hover: "hover:text-blue-500 hover:bg-white/50",
-                },
-                Converted: {
-                  active: "text-emerald-600 border-emerald-100 bg-white",
-                  hover: "hover:text-emerald-500 hover:bg-white/50",
-                },
-                Dismissed: {
-                  active: "text-rose-600 border-rose-100 bg-white",
-                  hover: "hover:text-rose-500 hover:bg-white/50",
-                },
+                Pending: "text-blue-600",
+                Converted: "text-emerald-600",
+                Dismissed: "text-rose-600",
               };
-              const activeColor = colors[view].active;
-              const hoverColor = colors[view].hover;
 
               return (
                 <button
                   key={view}
                   onClick={() => setLeadView(view)}
-                  className={`flex-1 sm:flex-none px-2 sm:px-5 py-2.5 sm:py-2 rounded-xl text-[10px] sm:text-[12px] font-bold tracking-wider transition-all flex items-center justify-center min-w-[65px] sm:min-w-[100px] h-[34px] sm:h-auto border border-transparent whitespace-nowrap ${
+                  className={`relative z-10 flex-1 sm:flex-none px-2 sm:px-5 py-2.5 sm:py-2 rounded-xl text-[10px] sm:text-[12px] font-bold tracking-wider transition-all duration-300 flex items-center justify-center min-w-[75px] sm:min-w-[110px] h-[30px] sm:h-[36px] whitespace-nowrap active:scale-95 ${
                     leadView === view
-                      ? `${activeColor} shadow-md`
-                      : `text-slate-400 ${hoverColor}`
+                      ? `${colors[view]} scale-[1.02]`
+                      : "text-slate-400 hover:text-slate-600"
                   }`}
                 >
                   {view}
@@ -917,7 +919,10 @@ const LeadList = ({
                           ? "bg-slate-50/30 opacity-80 cursor-default"
                           : "hover:bg-slate-50/50 cursor-pointer"
                       }`}
-                      style={{ cursor: lead.status !== "Dismissed" ? "pointer" : "default" }}
+                      style={{
+                        cursor:
+                          lead.status !== "Dismissed" ? "pointer" : "default",
+                      }}
                     >
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-6">
@@ -1218,351 +1223,365 @@ const LeadList = ({
           )}
         </div>
 
-      {/* Pagination Controls */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2 mt-8 mb-4">
-          <button
-            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            disabled={currentPage === 1}
-            className="p-2.5 rounded-xl border border-slate-200 bg-white text-slate-400 hover:text-primary hover:border-primary disabled:opacity-30 disabled:hover:border-slate-200 disabled:hover:text-slate-400 transition-all shadow-sm active:scale-95"
-          >
-            <ChevronLeft size={16} strokeWidth={2.5} />
-          </button>
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-2 mt-8 mb-4">
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="p-2.5 rounded-xl border border-slate-200 bg-white text-slate-400 hover:text-primary hover:border-primary disabled:opacity-30 disabled:hover:border-slate-200 disabled:hover:text-slate-400 transition-all shadow-sm active:scale-95"
+            >
+              <ChevronLeft size={16} strokeWidth={2.5} />
+            </button>
 
-          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-2xl shadow-inner mx-2">
-            {[...Array(totalPages)].map((_, i) => {
-              const pageNum = i + 1;
-              if (
-                totalPages > 7 &&
-                pageNum !== 1 &&
-                pageNum !== totalPages &&
-                Math.abs(pageNum - currentPage) > 1
-              ) {
-                if (pageNum === 2 || pageNum === totalPages - 1) {
-                  return <span key={pageNum} className="text-slate-300 px-1 font-bold">.</span>;
+            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-2xl shadow-inner mx-2">
+              {[...Array(totalPages)].map((_, i) => {
+                const pageNum = i + 1;
+                if (
+                  totalPages > 7 &&
+                  pageNum !== 1 &&
+                  pageNum !== totalPages &&
+                  Math.abs(pageNum - currentPage) > 1
+                ) {
+                  if (pageNum === 2 || pageNum === totalPages - 1) {
+                    return (
+                      <span
+                        key={pageNum}
+                        className="text-slate-300 px-1 font-bold"
+                      >
+                        .
+                      </span>
+                    );
+                  }
+                  return null;
                 }
-                return null;
-              }
 
-              return (
-                <button
-                  key={pageNum}
-                  onClick={() => setCurrentPage(pageNum)}
-                  className={`min-w-[32px] h-8 flex items-center justify-center rounded-lg text-sm font-black transition-all ${
-                    currentPage === pageNum
-                      ? "bg-[#18254D] text-white shadow-lg shadow-slate-300 scale-110"
-                      : "text-slate-400 hover:text-primary hover:bg-white"
-                  }`}
-                >
-                  {pageNum}
-                </button>
-              );
-            })}
+                return (
+                  <button
+                    key={pageNum}
+                    onClick={() => setCurrentPage(pageNum)}
+                    className={`min-w-[32px] h-8 flex items-center justify-center rounded-lg text-sm font-black transition-all ${
+                      currentPage === pageNum
+                        ? "bg-[#18254D] text-white shadow-lg shadow-slate-300 scale-110"
+                        : "text-slate-400 hover:text-primary hover:bg-white"
+                    }`}
+                  >
+                    {pageNum}
+                  </button>
+                );
+              })}
+            </div>
+
+            <button
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="p-2.5 rounded-xl border border-slate-200 bg-white text-slate-400 hover:text-primary hover:border-primary disabled:opacity-30 disabled:hover:border-slate-200 disabled:hover:text-slate-400 transition-all shadow-sm active:scale-95"
+            >
+              <ChevronRight size={16} strokeWidth={2.5} />
+            </button>
           </div>
-
-          <button
-            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-            disabled={currentPage === totalPages}
-            className="p-2.5 rounded-xl border border-slate-200 bg-white text-slate-400 hover:text-primary hover:border-primary disabled:opacity-30 disabled:hover:border-slate-200 disabled:hover:text-slate-400 transition-all shadow-sm active:scale-95"
-          >
-            <ChevronRight size={16} strokeWidth={2.5} />
-          </button>
-        </div>
-      )}
-
+        )}
       </div>
 
       {/* Add Modal */}
-      {showAddModal && createPortal(
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[99999] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
-          <div className="bg-white w-full max-w-xl rounded-xl shadow-2xl border border-slate-200 overflow-hidden animate-fade-in relative flex flex-col max-h-[90vh]">
-            <div className="bg-primary p-4 text-white relative shrink-0">
-              <button
-                onClick={() => setShowAddModal(false)}
-                className="absolute top-4 right-4 p-1.5 hover:bg-white/10 rounded-xl transition-colors"
-              >
-                <X size={18} strokeWidth={3} />
-              </button>
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-secondary/10 rounded-xl flex items-center justify-center shadow-lg border border-secondary/20">
-                  <UserPlus
-                    size={18}
-                    className="text-secondary"
-                    strokeWidth={3}
-                  />
-                </div>
-                <div>
-                  <h3 className="text-base font-bold tracking-tighter leading-none">
-                    New Lead
-                  </h3>
-                  <p className="text-slate-400 text-[14px] font-bold  tracking-widest mt-0.5">
-                    Lead Details
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <form
-              onSubmit={handleSubmit}
-              className="p-4 md:p-5 space-y-4 overflow-y-auto no-scrollbar"
-            >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {/* ADD LEAD FIELDS */}
-                <div className="space-y-1.5">
-                  <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                    LEAD NAME
-                  </label>
-                  <input
-                    required
-                    type="text"
-                    placeholder="e.g. Rahul Sharma"
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
-                    value={formData.name}
-                    onChange={(e) =>
-                      setFormData({ ...formData, name: e.target.value })
-                    }
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                    EMAIL ID
-                  </label>
-                  <input
-                    required
-                    type="email"
-                    placeholder="rahul.sharma@example.com"
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
-                    value={formData.email}
-                    onChange={(e) =>
-                      setFormData({ ...formData, email: e.target.value })
-                    }
-                  />
-                </div>
-
-                <SearchableDropdown
-                  label="COUNTRY"
-                  options={countries}
-                  value={formData.country}
-                  onChange={(val) => setFormData({ ...formData, country: val })}
-                  placeholder="Select Country"
-                />
-
-                <div className="space-y-1.5">
-                  <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                    PHONE NUMBER
-                  </label>
-                  <input
-                    required
-                    type="tel"
-                    placeholder="e.g.  98765 43210"
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
-                    value={formData.phone}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        phone: e.target.value.replace(/\D/g, ""),
-                      })
-                    }
-                  />
-                </div>
-
-                <div className="space-y-1.5 md:col-span-2">
-                  <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                    WEBSITE URL (OPTIONAL)
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. www.company.com"
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
-                    value={formData.website}
-                    onChange={(e) =>
-                      setFormData({ ...formData, website: e.target.value })
-                    }
-                  />
-                </div>
-
-                <div className="md:col-span-2 space-y-2">
-                  <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1 uppercase">
-                    LEAD CATEGORY
-                  </label>
-                  <div className="relative">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setIsAddCategoryDropdownOpen(!isAddCategoryDropdownOpen)
-                      }
-                      className="w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold shadow-sm hover:border-secondary transition-all"
-                    >
-                      <span className="text-primary truncate">
-                        {CATEGORY_MAP[formData.projectCategory] ||
-                          "Select Category"}
-                      </span>
-                      <ChevronDown
-                        size={16}
-                        className={`text-slate-400 transition-transform ${
-                          isAddCategoryDropdownOpen ? "rotate-180" : ""
-                        }`}
-                      />
-                    </button>
-
-                    {isAddCategoryDropdownOpen && (
-                      <>
-                        <div
-                          className="fixed inset-0 z-[80]"
-                          onClick={() => setIsAddCategoryDropdownOpen(false)}
-                        />
-                        <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top">
-                          <div className="bg-[#18254D] px-4 py-3 border-b border-white/10">
-                            <p className="text-[14px] font-bold text-white/50  tracking-widest">
-                              Select Category
-                            </p>
-                          </div>
-                          {[1, 2, 3].map((catId) => (
-                            <button
-                              key={catId}
-                              type="button"
-                              onClick={() => {
-                                setFormData({
-                                  ...formData,
-                                  projectCategory: catId,
-                                });
-                                setIsAddCategoryDropdownOpen(false);
-                              }}
-                              className={`w-full text-left px-4 py-2.5 text-[12px] font-bold  tracking-widest transition-colors ${
-                                formData.projectCategory === catId
-                                  ? "bg-slate-100 text-secondary"
-                                  : "text-[#18254D] hover:bg-slate-50"
-                              }`}
-                            >
-                              {CATEGORY_MAP[catId]}
-                            </button>
-                          ))}
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </div>
-
-                <div className="md:col-span-2 space-y-2">
-                  <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1 uppercase">
-                    LEAD STATUS
-                  </label>
-                  <div className="relative">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setIsAddStatusDropdownOpen(!isAddStatusDropdownOpen)
-                      }
-                      className="w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold shadow-sm hover:border-secondary transition-all"
-                    >
-                      <span className="text-primary truncate">
-                        {formData.leadType || "Select Status"}
-                      </span>
-                      <ChevronDown
-                        size={16}
-                        className={`text-slate-400 transition-transform ${
-                          isAddStatusDropdownOpen ? "rotate-180" : ""
-                        }`}
-                      />
-                    </button>
-
-                    {isAddStatusDropdownOpen && (
-                      <>
-                        <div
-                          className="fixed inset-0 z-[80]"
-                          onClick={() => setIsAddStatusDropdownOpen(false)}
-                        />
-                        <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top">
-                          <div className="bg-[#18254D] px-4 py-3 border-b border-white/10">
-                            <p className="text-[14px] font-bold text-white/50  tracking-widest">
-                              Select Status
-                            </p>
-                          </div>
-                          {["Hot", "Warm", "Cold"].map((status) => (
-                            <button
-                              key={status}
-                              type="button"
-                              onClick={() => {
-                                setFormData({
-                                  ...formData,
-                                  leadType: status,
-                                });
-                                setIsAddStatusDropdownOpen(false);
-                              }}
-                              className={`w-full text-left px-4 py-2.5 text-[12px] font-bold  tracking-widest transition-colors ${
-                                formData.leadType === status
-                                  ? "bg-slate-100 text-secondary"
-                                  : "text-[#18254D] hover:bg-slate-50"
-                              }`}
-                            >
-                              <div className="flex items-center gap-2">
-                                {status === "Hot" && (
-                                  <Flame size={12} className="text-error" />
-                                )}
-                                {status === "Warm" && (
-                                  <Sun size={12} className="text-warning" />
-                                )}
-                                {status === "Cold" && (
-                                  <Snowflake size={12} className="text-info" />
-                                )}
-                                <span>{status}</span>
-                              </div>
-                            </button>
-                          ))}
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </div>
-
-                <div className="md:col-span-2 space-y-2">
-                  <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                    MESSAGE
-                  </label>
-                  <textarea
-                    rows={3}
-                    placeholder="e.g. Interested in cloud migration services..."
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium resize-none shadow-sm"
-                    value={formData.notes || formData.industry}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        notes: e.target.value,
-                        industry: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-              </div>
-
-              <div className="pt-2">
+      {showAddModal &&
+        createPortal(
+          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[99999] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+            <div className="bg-white w-full max-w-xl rounded-xl shadow-2xl border border-slate-200 overflow-hidden animate-fade-in relative flex flex-col max-h-[90vh]">
+              <div className="bg-primary p-4 text-white relative shrink-0">
                 <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full py-2.5 bg-[#18254D] text-white rounded-2xl text-[13px] font-bold  tracking-[0.25em] shadow-xl active:scale-[0.97] transition-all hover:bg-[#1e2e5e] hover:shadow-2xl flex items-center justify-center gap-3 group/btn disabled:opacity-70 disabled:cursor-not-allowed"
+                  onClick={() => setShowAddModal(false)}
+                  className="absolute top-4 right-4 p-1.5 hover:bg-white/10 rounded-xl transition-colors"
                 >
-                  {isSubmitting ? (
-                    <>
-                      <span>ADDING LEAD...</span>
-                      <Loader2 size={18} className="animate-spin" />
-                    </>
-                  ) : (
-                    <>
-                      <UserPlus
-                        size={20}
-                        className="group-hover/btn:translate-x-1 transition-transform"
-                      />
-                      <span>ADD LEAD</span>
-                    </>
-                  )}
+                  <X size={18} strokeWidth={3} />
                 </button>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-secondary/10 rounded-xl flex items-center justify-center shadow-lg border border-secondary/20">
+                    <UserPlus
+                      size={18}
+                      className="text-secondary"
+                      strokeWidth={3}
+                    />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold tracking-tighter leading-none">
+                      New Lead
+                    </h3>
+                    <p className="text-slate-400 text-[14px] font-bold  tracking-widest mt-0.5">
+                      Lead Details
+                    </p>
+                  </div>
+                </div>
               </div>
-            </form>
-          </div>
-        </div>,
-        document.body
-      )}
+
+              <form
+                onSubmit={handleSubmit}
+                className="p-4 md:p-5 space-y-4 overflow-y-auto no-scrollbar"
+              >
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {/* ADD LEAD FIELDS */}
+                  <div className="space-y-1.5">
+                    <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
+                      LEAD NAME
+                    </label>
+                    <input
+                      required
+                      type="text"
+                      placeholder="e.g. Rahul Sharma"
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
+                      value={formData.name}
+                      onChange={(e) =>
+                        setFormData({ ...formData, name: e.target.value })
+                      }
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
+                      EMAIL ID
+                    </label>
+                    <input
+                      required
+                      type="email"
+                      placeholder="rahul.sharma@example.com"
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
+                      value={formData.email}
+                      onChange={(e) =>
+                        setFormData({ ...formData, email: e.target.value })
+                      }
+                    />
+                  </div>
+
+                  <SearchableDropdown
+                    label="COUNTRY"
+                    options={countries}
+                    value={formData.country}
+                    onChange={(val) =>
+                      setFormData({ ...formData, country: val })
+                    }
+                    placeholder="Select Country"
+                  />
+
+                  <div className="space-y-1.5">
+                    <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
+                      PHONE NUMBER
+                    </label>
+                    <input
+                      required
+                      type="tel"
+                      placeholder="e.g.  98765 43210"
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
+                      value={formData.phone}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          phone: e.target.value.replace(/\D/g, ""),
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div className="space-y-1.5 md:col-span-2">
+                    <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
+                      WEBSITE URL (OPTIONAL)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. www.company.com"
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
+                      value={formData.website}
+                      onChange={(e) =>
+                        setFormData({ ...formData, website: e.target.value })
+                      }
+                    />
+                  </div>
+
+                  <div className="md:col-span-2 space-y-2">
+                    <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1 uppercase">
+                      LEAD CATEGORY
+                    </label>
+                    <div className="relative">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setIsAddCategoryDropdownOpen(
+                            !isAddCategoryDropdownOpen,
+                          )
+                        }
+                        className="w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold shadow-sm hover:border-secondary transition-all"
+                      >
+                        <span className="text-primary truncate">
+                          {CATEGORY_MAP[formData.projectCategory] ||
+                            "Select Category"}
+                        </span>
+                        <ChevronDown
+                          size={16}
+                          className={`text-slate-400 transition-transform ${
+                            isAddCategoryDropdownOpen ? "rotate-180" : ""
+                          }`}
+                        />
+                      </button>
+
+                      {isAddCategoryDropdownOpen && (
+                        <>
+                          <div
+                            className="fixed inset-0 z-[80]"
+                            onClick={() => setIsAddCategoryDropdownOpen(false)}
+                          />
+                          <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top">
+                            <div className="bg-[#18254D] px-4 py-3 border-b border-white/10">
+                              <p className="text-[14px] font-bold text-white/50  tracking-widest">
+                                Select Category
+                              </p>
+                            </div>
+                            {[1, 2, 3].map((catId) => (
+                              <button
+                                key={catId}
+                                type="button"
+                                onClick={() => {
+                                  setFormData({
+                                    ...formData,
+                                    projectCategory: catId,
+                                  });
+                                  setIsAddCategoryDropdownOpen(false);
+                                }}
+                                className={`w-full text-left px-4 py-2.5 text-[12px] font-bold  tracking-widest transition-colors ${
+                                  formData.projectCategory === catId
+                                    ? "bg-slate-100 text-secondary"
+                                    : "text-[#18254D] hover:bg-slate-50"
+                                }`}
+                              >
+                                {CATEGORY_MAP[catId]}
+                              </button>
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="md:col-span-2 space-y-2">
+                    <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1 uppercase">
+                      LEAD STATUS
+                    </label>
+                    <div className="relative">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setIsAddStatusDropdownOpen(!isAddStatusDropdownOpen)
+                        }
+                        className="w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold shadow-sm hover:border-secondary transition-all"
+                      >
+                        <span className="text-primary truncate">
+                          {formData.leadType || "Select Status"}
+                        </span>
+                        <ChevronDown
+                          size={16}
+                          className={`text-slate-400 transition-transform ${
+                            isAddStatusDropdownOpen ? "rotate-180" : ""
+                          }`}
+                        />
+                      </button>
+
+                      {isAddStatusDropdownOpen && (
+                        <>
+                          <div
+                            className="fixed inset-0 z-[80]"
+                            onClick={() => setIsAddStatusDropdownOpen(false)}
+                          />
+                          <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top">
+                            <div className="bg-[#18254D] px-4 py-3 border-b border-white/10">
+                              <p className="text-[14px] font-bold text-white/50  tracking-widest">
+                                Select Status
+                              </p>
+                            </div>
+                            {["Hot", "Warm", "Cold"].map((status) => (
+                              <button
+                                key={status}
+                                type="button"
+                                onClick={() => {
+                                  setFormData({
+                                    ...formData,
+                                    leadType: status,
+                                  });
+                                  setIsAddStatusDropdownOpen(false);
+                                }}
+                                className={`w-full text-left px-4 py-2.5 text-[12px] font-bold  tracking-widest transition-colors ${
+                                  formData.leadType === status
+                                    ? "bg-slate-100 text-secondary"
+                                    : "text-[#18254D] hover:bg-slate-50"
+                                }`}
+                              >
+                                <div className="flex items-center gap-2">
+                                  {status === "Hot" && (
+                                    <Flame size={12} className="text-error" />
+                                  )}
+                                  {status === "Warm" && (
+                                    <Sun size={12} className="text-warning" />
+                                  )}
+                                  {status === "Cold" && (
+                                    <Snowflake
+                                      size={12}
+                                      className="text-info"
+                                    />
+                                  )}
+                                  <span>{status}</span>
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="md:col-span-2 space-y-2">
+                    <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
+                      MESSAGE
+                    </label>
+                    <textarea
+                      rows={3}
+                      placeholder="e.g. Interested in cloud migration services..."
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium resize-none shadow-sm"
+                      value={formData.notes || formData.industry}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          notes: e.target.value,
+                          industry: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+
+                <div className="pt-2">
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full py-2.5 bg-[#18254D] text-white rounded-2xl text-[13px] font-bold  tracking-[0.25em] shadow-xl active:scale-[0.97] transition-all hover:bg-[#1e2e5e] hover:shadow-2xl flex items-center justify-center gap-3 group/btn disabled:opacity-70 disabled:cursor-not-allowed"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <span>ADDING LEAD...</span>
+                        <Loader2 size={18} className="animate-spin" />
+                      </>
+                    ) : (
+                      <>
+                        <UserPlus
+                          size={20}
+                          className="group-hover/btn:translate-x-1 transition-transform"
+                        />
+                        <span>ADD LEAD</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>,
+          document.body,
+        )}
       {/* Onboard Modal */}
       {showOnboardModal && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[100] flex items-center justify-center p-4 overflow-y-auto">
