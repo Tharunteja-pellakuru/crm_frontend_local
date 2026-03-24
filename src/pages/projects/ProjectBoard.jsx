@@ -594,9 +594,9 @@ const ProjectBoard = ({
 
         {/* Control Bar */}
         <div className="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm">
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:flex gap-2 w-full items-center">
+          <div className="flex flex-col md:flex-row md:justify-between gap-2 w-full items-center">
             {/* 1. Search Bar */}
-            <div className="relative md:col-span-2 xl:flex-[1.5]">
+            <div className="relative w-full md:w-80 flex-none transition-all duration-300">
               <Search
                 size={16}
                 className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
@@ -611,7 +611,7 @@ const ProjectBoard = ({
             </div>
 
             {/* Category Dropdown */}
-            <div className="relative md:col-span-2 xl:flex-1">
+            <div className="relative w-full md:w-60 flex-none transition-all duration-300">
               <button
                 ref={categoryButtonRef}
                 onClick={() =>
