@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { toast as hotToast } from "react-hot-toast";
 import {
   User,
@@ -132,76 +133,112 @@ const Settings = ({
     field,
     icon: Icon,
     onChange,
-  }) => (
-    <div className="space-y-2 relative">
-      <label className="text-[12px] font-bold text-slate-400 tracking-widest ml-1 uppercase opacity-60">
-        {label}
-      </label>
-      <button
-        type="button"
-        onClick={() =>
-          setActiveDropdown(activeDropdown === field ? null : field)
-        }
-        className="w-full h-[46px] flex items-center justify-between px-4 bg-white border border-slate-200 rounded-xl hover:border-secondary transition-all text-sm font-bold text-[#18254D] shadow-sm"
-      >
-        <div className="flex items-center gap-3">
-          {Icon && <Icon size={16} className="text-secondary" />}
-          <span>
-            {options.find(
-              (opt) => (typeof opt === "string" ? opt : opt.value) === value,
-            )?.label ||
-              (typeof options[0] === "string"
-                ? value
-                : options.find((opt) => opt.value === value)?.label || value)}
-          </span>
-        </div>
-        <ChevronDown
-          size={14}
-          className={`text-slate-400 transition-transform ${activeDropdown === field ? "rotate-180" : ""}`}
-        />
-      </button>
+  }) => {
+    const buttonRef = useRef(null);
+    const [dropdownStyles, setDropdownStyles] = useState({});
 
-      {activeDropdown === field && (
-        <>
-          <div
-            className="fixed inset-0 z-[110]"
-            onClick={() => setActiveDropdown(null)}
-          />
-          <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[120] animate-fade-in origin-top py-2">
-            <div className="bg-[#18254D] px-4 py-2 border-b border-white/10 -mt-2 mb-1">
-              <p className="text-[14px] font-bold text-white/50 tracking-widest uppercase">
-                Select {label}
-              </p>
-            </div>
-            {options.map((opt) => {
-              const optValue = typeof opt === "string" ? opt : opt.value;
-              const optLabel = typeof opt === "string" ? opt : opt.label;
-              return (
-                <button
-                  key={optValue}
-                  type="button"
-                  onClick={() => {
-                    onChange(optValue);
-                    setActiveDropdown(null);
-                  }}
-                  className={`w-full text-left px-5 py-3 text-[12px] font-bold tracking-widest transition-colors flex items-center justify-between ${
-                    optValue === value
-                      ? "bg-slate-50 text-secondary"
-                      : "text-[#18254D] hover:bg-slate-50"
-                  }`}
-                >
-                  {optLabel}
-                  {optValue === value && (
-                    <Check size={12} className="text-secondary" />
-                  )}
-                </button>
-              );
-            })}
+    const updateDropdownPosition = () => {
+      if (buttonRef.current) {
+        const rect = buttonRef.current.getBoundingClientRect();
+        setDropdownStyles({
+          position: "fixed",
+          top: `${rect.bottom + 8}px`,
+          left: `${rect.left}px`,
+          width: `${rect.width}px`,
+          zIndex: 9999,
+        });
+      }
+    };
+
+    useEffect(() => {
+      if (activeDropdown === field) {
+        updateDropdownPosition();
+        window.addEventListener("scroll", updateDropdownPosition, true);
+        window.addEventListener("resize", updateDropdownPosition);
+      }
+      return () => {
+        window.removeEventListener("scroll", updateDropdownPosition, true);
+        window.removeEventListener("resize", updateDropdownPosition);
+      };
+    }, [activeDropdown, field]);
+
+    return (
+      <div className="space-y-2 relative">
+        <label className="text-[12px] font-bold text-slate-400 tracking-widest ml-1 uppercase opacity-60">
+          {label}
+        </label>
+        <button
+          ref={buttonRef}
+          type="button"
+          onClick={() =>
+            setActiveDropdown(activeDropdown === field ? null : field)
+          }
+          className="w-full h-[40px] sm:h-[46px] flex items-center justify-between px-3 sm:px-4 bg-white border border-slate-200 rounded-xl hover:border-secondary transition-all text-[11px] sm:text-sm font-bold text-[#18254D] shadow-sm"
+        >
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            {Icon && <Icon size={14} className="text-secondary shrink-0" />}
+            <span className="truncate">
+              {options.find(
+                (opt) => (typeof opt === "string" ? opt : opt.value) === value,
+              )?.label ||
+                (typeof options[0] === "string"
+                  ? value
+                  : options.find((opt) => opt.value === value)?.label || value)}
+            </span>
           </div>
-        </>
-      )}
-    </div>
-  );
+          <ChevronDown
+            size={14}
+            className={`text-slate-400 shrink-0 transition-transform ${activeDropdown === field ? "rotate-180" : ""}`}
+          />
+        </button>
+
+        {activeDropdown === field &&
+          createPortal(
+            <>
+              <div
+                className="fixed inset-0 z-[9998]"
+                onClick={() => setActiveDropdown(null)}
+              />
+              <div
+                style={dropdownStyles}
+                className="bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden animate-fade-in origin-top py-1.5 sm:py-2"
+              >
+                <div className="bg-[#18254D] px-3 sm:px-4 py-1.5 sm:py-2 border-b border-white/10 -mt-2 mb-1">
+                  <p className="text-[10px] sm:text-[12px] font-bold text-white/50 tracking-widest uppercase truncate">
+                    Select {label}
+                  </p>
+                </div>
+                {options.map((opt) => {
+                  const optValue = typeof opt === "string" ? opt : opt.value;
+                  const optLabel = typeof opt === "string" ? opt : opt.label;
+                  return (
+                    <button
+                      key={optValue}
+                      type="button"
+                      onClick={() => {
+                        onChange(optValue);
+                        setActiveDropdown(null);
+                      }}
+                      className={`w-full text-left px-4 sm:px-5 py-2 sm:py-3 text-[10px] sm:text-[12px] font-bold tracking-widest transition-colors flex items-center justify-between gap-2 ${
+                        optValue === value
+                          ? "bg-slate-50 text-secondary"
+                          : "text-[#18254D] hover:bg-slate-50"
+                      }`}
+                    >
+                      <span className="truncate">{optLabel}</span>
+                      {optValue === value && (
+                        <Check size={12} className="text-secondary shrink-0" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </>,
+            document.body,
+          )}
+      </div>
+    );
+  };
 
   const [showPasswordForm, setShowPasswordForm] = useState(false);
   const [passwordData, setPasswordData] = useState({
@@ -1555,10 +1592,10 @@ const Settings = ({
                       {admins.map((admin) => (
                         <div
                           key={admin.id}
-                          className={`group bg-white border border-slate-200/60 rounded-[28px] hover:border-blue-200 hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-500 flex flex-col overflow-hidden ${
+                          className={`group bg-white border border-slate-200/60 rounded-[28px] hover:border-blue-200 hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-500 flex flex-col ${
                             editingAdminId === admin.id
-                              ? "ring-2 ring-blue-500"
-                              : ""
+                              ? "relative z-50 overflow-visible ring-2 ring-blue-500 scale-[1.02] shadow-2xl shadow-blue-500/20"
+                              : "overflow-hidden hover:scale-[1.01]"
                           }`}
                         >
                           {editingAdminId === admin.id ? (
