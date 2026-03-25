@@ -240,6 +240,10 @@ const FollowUpList = ({
         : formData.clientId;
 
     try {
+      const formattedStatus = formData.followup_status
+        ? formData.followup_status.charAt(0).toUpperCase() + formData.followup_status.slice(1).toLowerCase()
+        : "Pending";
+
       if (formData.id) {
         if (onEditFollowUp) {
           await onEditFollowUp({
@@ -248,6 +252,7 @@ const FollowUpList = ({
             dueDate: combinedDateTime,
             followup_date: combinedDateTime,
             completed_at: combinedCompletionStr,
+            followup_status: formattedStatus,
           });
           toast.success("Follow-up updated successfully!");
         }
@@ -258,6 +263,7 @@ const FollowUpList = ({
             clientId: finalClientId,
             dueDate: combinedDateTime,
             followup_date: combinedDateTime,
+            followup_status: formattedStatus,
           });
           toast.success("Follow-up added successfully!");
         }
@@ -756,7 +762,7 @@ const FollowUpList = ({
                 <div className="p-5 space-y-4 max-h-[70vh] overflow-y-auto custom-scrollbar">
                   <div className="space-y-1.5">
                     <label className="text-[14px] font-bold text-primary  tracking-widest ml-1">
-                      Conclusion Brief
+                      Conclusion Brief <span className="text-error">*</span>
                     </label>
                     <textarea
                       autoFocus
@@ -899,6 +905,11 @@ const FollowUpList = ({
                     <button
                       type="button"
                       onClick={() => {
+                        if (!completionBrief.trim()) {
+                          toast.error("Conclusion Brief is required to complete a follow-up.");
+                          return;
+                        }
+
                         if (completingFollowUpId) {
                           let hour = parseInt(completionHour);
                           if (completionPeriod === "PM" && hour < 12)
