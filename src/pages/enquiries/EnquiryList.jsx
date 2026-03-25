@@ -120,7 +120,7 @@ const EnquiryList = ({
     phone: "",
     website: "",
     leadType: "Hot",
-    leadCategory: 2,
+    leadCategory: 1,
     country: "",
     notes: "",
   });
@@ -386,7 +386,7 @@ const EnquiryList = ({
       phone: enquiry.phone,
       website: enquiry.website,
       leadType: "Hot",
-      leadCategory: 2,
+      leadCategory: 1,
       country: enquiry.country || "",
       notes: enquiry.message,
     });
@@ -397,9 +397,27 @@ const EnquiryList = ({
     if (!selectedEnquiry) return;
 
     const isValid = validateForm(promoteFormData, {
-      name: { required: true, minLength: 2, label: "Full Name", pattern: /^[a-zA-Z\s]+$/, errorMessage: "Full Name must contain only alphabets." },
-      email: { required: true, pattern: EMAIL_PATTERN, label: "Email", errorMessage: "Enter a valid email (e.g. john@gmail.com, john@yahoo.com)." },
-      phone: { required: true, minLength: 10, label: "Phone Number", pattern: /^\d+$/, errorMessage: "Phone Number must be at least 10 digits." },
+      name: {
+        required: true,
+        minLength: 2,
+        label: "Full Name",
+        pattern: /^[a-zA-Z\s]+$/,
+        errorMessage: "Full Name must contain only alphabets.",
+      },
+      email: {
+        required: true,
+        pattern: EMAIL_PATTERN,
+        label: "Email",
+        errorMessage:
+          "Enter a valid email (e.g. john@gmail.com, john@yahoo.com).",
+      },
+      phone: {
+        required: true,
+        minLength: 10,
+        label: "Phone Number",
+        pattern: /^\d+$/,
+        errorMessage: "Phone Number must be at least 10 digits.",
+      },
       country: { required: true, label: "Country Code" },
       leadType: { required: true, label: "Lead Status" },
       leadCategory: { required: true, label: "Lead Category" },
@@ -459,9 +477,27 @@ const EnquiryList = ({
     e.preventDefault();
 
     const isValid = validateForm(formData, {
-      name: { required: true, minLength: 2, label: "Full Name", pattern: /^[a-zA-Z\s]+$/, errorMessage: "Full Name must contain only alphabets." },
-      email: { required: true, pattern: EMAIL_PATTERN, label: "Email", errorMessage: "Enter a valid email (e.g. john@gmail.com, john@yahoo.com)." },
-      phone: { required: true, minLength: 10, label: "Phone Number", pattern: /^\d+$/, errorMessage: "Phone Number must be at least 10 digits." },
+      name: {
+        required: true,
+        minLength: 2,
+        label: "Full Name",
+        pattern: /^[a-zA-Z\s]+$/,
+        errorMessage: "Full Name must contain only alphabets.",
+      },
+      email: {
+        required: true,
+        pattern: EMAIL_PATTERN,
+        label: "Email",
+        errorMessage:
+          "Enter a valid email (e.g. john@gmail.com, john@yahoo.com).",
+      },
+      phone: {
+        required: true,
+        minLength: 10,
+        label: "Phone Number",
+        pattern: /^\d+$/,
+        errorMessage: "Phone Number must be at least 10 digits.",
+      },
       message: { required: true, label: "Note / Requirement Briefing" },
     });
 
@@ -575,7 +611,9 @@ const EnquiryList = ({
                   >
                     <span
                       className={`inline-block h-3.5 w-3.5 bg-white rounded-full transform transition-transform duration-300 ease-in-out ${
-                        aiAnalysisEnabled ? "translate-x-[18px]" : "translate-x-0.5"
+                        aiAnalysisEnabled
+                          ? "translate-x-[18px]"
+                          : "translate-x-0.5"
                       } mt-[3px] ml-0.5`}
                     />
                   </button>
@@ -602,7 +640,9 @@ const EnquiryList = ({
                   >
                     <span
                       className={`inline-block h-3.5 w-3.5 bg-white rounded-full transform transition-transform duration-300 ease-in-out ${
-                        hideIrrelevant ? "translate-x-[18px]" : "translate-x-0.5"
+                        hideIrrelevant
+                          ? "translate-x-[18px]"
+                          : "translate-x-0.5"
                       } mt-[3px] ml-0.5`}
                     />
                   </button>
@@ -1037,7 +1077,10 @@ const EnquiryList = ({
                       placeholder="e.g. John Doe"
                       value={formData.name}
                       onChange={(e) =>
-                        setFormData({ ...formData, name: e.target.value.replace(/[^a-zA-Z\s]/g, "") })
+                        setFormData({
+                          ...formData,
+                          name: e.target.value.replace(/[^a-zA-Z\s]/g, ""),
+                        })
                       }
                     />
                   </div>
@@ -1092,7 +1135,8 @@ const EnquiryList = ({
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-[12px] font-bold text-primary tracking-widest ml-1">
-                      Note / Requirement Briefing <span className="text-rose-500">*</span>
+                      Note / Requirement Briefing{" "}
+                      <span className="text-rose-500">*</span>
                     </label>
                     <textarea
                       required

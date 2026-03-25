@@ -345,12 +345,24 @@ const LeadList = ({
       name: { required: true, minLength: 2, label: "Full Name" },
       email: { required: true, pattern: /^\S+@\S+\.\S+$/, label: "Email" },
       phone: { required: true, minLength: 10, label: "Phone Number" },
+      organisationName: { required: true, label: "Organisation Name" },
+      country: { required: true, label: "Client Country" },
+      state: { required: true, label: "Client State" },
+      currency: { required: true, label: "Client Currency" },
+      clientStatus: { required: true, label: "Client Status" },
       projectName: { required: true, label: "Project Name" },
+      projectDescription: { required: true, label: "Project Description" },
+      projectCategory: { required: true, label: "Project Category" },
+      projectStatus: { required: true, label: "Project Status" },
+      projectPriority: { required: true, label: "Project Priority" },
       projectBudget: {
         required: true,
         type: "number",
         label: "Project Budget",
       },
+      onboardingDate: { required: true, label: "Onboarding Date" },
+      deadline: { required: true, label: "Deadline Date" },
+      scopeDocument: { required: true, label: "Scope Document" },
     });
 
     if (!isValid) return;
@@ -467,7 +479,7 @@ const LeadList = ({
       if (match && match[1]) {
         countryCode = match[1];
       }
-      
+
       const plainCountryCode = countryCode.replace("+", "");
       const cleanPhone = phone.replace("+", "").replace(/\s/g, "");
 
@@ -623,9 +635,27 @@ const LeadList = ({
     e.preventDefault();
 
     const isValid = validateForm(formData, {
-      name: { required: true, minLength: 2, label: "Full Name", pattern: /^[a-zA-Z\s]+$/, errorMessage: "Full Name must contain only alphabets." },
-      email: { required: true, pattern: EMAIL_PATTERN, label: "Email", errorMessage: "Enter a valid email (e.g. john@gmail.com, john@yahoo.com)." },
-      phone: { required: true, minLength: 10, label: "Phone Number", pattern: /^\d+$/, errorMessage: "Phone Number must be at least 10 digits." },
+      name: {
+        required: true,
+        minLength: 2,
+        label: "Full Name",
+        pattern: /^[a-zA-Z\s]+$/,
+        errorMessage: "Full Name must contain only alphabets.",
+      },
+      email: {
+        required: true,
+        pattern: EMAIL_PATTERN,
+        label: "Email",
+        errorMessage:
+          "Enter a valid email (e.g. john@gmail.com, john@yahoo.com).",
+      },
+      phone: {
+        required: true,
+        minLength: 10,
+        label: "Phone Number",
+        pattern: /^\d+$/,
+        errorMessage: "Phone Number must be at least 10 digits.",
+      },
       country: { required: true, label: "Country Code" },
       leadType: { required: true, label: "Lead Status" },
       projectCategory: { required: true, label: "Lead Category" },
@@ -1344,7 +1374,10 @@ const LeadList = ({
                       className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
                       value={formData.name}
                       onChange={(e) =>
-                        setFormData({ ...formData, name: e.target.value.replace(/[^a-zA-Z\s]/g, "") })
+                        setFormData({
+                          ...formData,
+                          name: e.target.value.replace(/[^a-zA-Z\s]/g, ""),
+                        })
                       }
                     />
                   </div>
@@ -1634,573 +1667,571 @@ const LeadList = ({
                 onSubmit={handleOnboardSubmit}
                 className="p-5 space-y-4 overflow-y-auto no-scrollbar"
               >
-              {/* CLIENT DETAILS HEADING */}
-              <div className="flex items-center gap-3 pt-2">
-                <div className="h-[2px] w-8 bg-secondary rounded-full" />
-                <h4 className="text-[14px] font-bold text-[#18254D]  tracking-[0.2em]">
-                  Client Details
-                </h4>
-                <div className="h-[2px] flex-1 bg-slate-100 rounded-full" />
-              </div>
-
-              <div className="space-y-3 pb-2">
-                <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                  CLIENT TYPE
-                </label>
-                <div className="grid grid-cols-1 gap-4">
-                  <label className="flex-1 flex items-center gap-3 p-4 bg-white border-2 border-[#18254D] rounded-xl cursor-default transition-all group shadow-sm">
-                    <div className="relative flex items-center justify-center">
-                      <input
-                        type="radio"
-                        checked={true}
-                        readOnly
-                        className="peer appearance-none w-6 h-6 border-2 border-[#18254D] rounded-full transition-all"
-                      />
-                      <div className="absolute w-3 h-3 bg-[#18254D] rounded-full" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold text-[#18254D] leading-none">
-                        New Client
-                      </p>
-                      <p className="text-[14px] text-slate-400 font-bold mt-1">
-                        First-time engagement
-                      </p>
-                    </div>
-                  </label>
+                {/* CLIENT DETAILS HEADING */}
+                <div className="flex items-center gap-3 pt-2">
+                  <div className="h-[2px] w-8 bg-secondary rounded-full" />
+                  <h4 className="text-[14px] font-bold text-[#18254D]  tracking-[0.2em]">
+                    Client Details
+                  </h4>
+                  <div className="h-[2px] flex-1 bg-slate-100 rounded-full" />
                 </div>
-              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <div className="space-y-2 relative">
+                <div className="space-y-3 pb-2">
                   <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                    CLIENT NAME
+                    CLIENT TYPE
                   </label>
-                  <input
-                    required
-                    type="text"
-                    placeholder="e.g. Anand Kumar"
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
-                    value={onboardingData.name}
-                    onChange={(e) =>
-                      setOnboardingData({
-                        ...onboardingData,
-                        name: e.target.value,
-                      })
-                    }
-                  />
+                  <div className="grid grid-cols-1 gap-4">
+                    <label className="flex-1 flex items-center gap-3 p-4 bg-white border-2 border-[#18254D] rounded-xl cursor-default transition-all group shadow-sm">
+                      <div className="relative flex items-center justify-center">
+                        <input
+                          type="radio"
+                          checked={true}
+                          readOnly
+                          className="peer appearance-none w-6 h-6 border-2 border-[#18254D] rounded-full transition-all"
+                        />
+                        <div className="absolute w-3 h-3 bg-[#18254D] rounded-full" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-[#18254D] leading-none">
+                          New Client
+                        </p>
+                        <p className="text-[14px] text-slate-400 font-bold mt-1">
+                          First-time engagement
+                        </p>
+                      </div>
+                    </label>
+                  </div>
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                    EMAIL ID
-                  </label>
-                  <input
-                    required
-                    type="email"
-                    placeholder="e.g. anand.kumar@fintech.in"
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
-                    value={onboardingData.email}
-                    onChange={(e) =>
-                      setOnboardingData({
-                        ...onboardingData,
-                        email: e.target.value,
-                      })
-                    }
-                  />
-                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div className="space-y-2 relative">
+                    <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
+                      CLIENT NAME <span className="text-error">*</span>
+                    </label>
+                    <input
+                      required
+                      readOnly
+                      disabled
+                      type="text"
+                      placeholder="e.g. Anand Kumar"
+                      className="w-full px-3.5 py-2.5 bg-slate-100 text-slate-500 cursor-not-allowed border border-slate-200 rounded-xl focus:outline-none text-sm font-medium"
+                      value={onboardingData.name}
+                    />
+                  </div>
 
-                <div className="space-y-2">
-                  <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                    PHONE NUMBER
-                  </label>
-                  <input
-                    required
-                    type="tel"
-                    placeholder="+91 98765 43210"
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
-                    value={onboardingData.phone}
-                    onChange={(e) =>
-                      setOnboardingData({
-                        ...onboardingData,
-                        phone: e.target.value.replace(/\D/g, ""),
-                      })
-                    }
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                    ORGANISATION NAME
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Acme Corp"
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
-                    value={onboardingData.organisationName}
-                    onChange={(e) =>
-                      setOnboardingData({
-                        ...onboardingData,
-                        organisationName: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-
-                <SearchableDropdown
-                  label="CLIENT COUNTRY"
-                  options={countries.map((c) => ({
-                    name: c.name,
-                    code: c.name,
-                  }))}
-                  value={onboardingData.country}
-                  onChange={(val) => {
-                    const countryCurrency = countryToCurrency[val];
-                    setOnboardingData({
-                      ...onboardingData,
-                      country: val,
-                      currency: countryCurrency
-                        ? countryCurrency.code
-                        : onboardingData.currency,
-                      state: "", // Reset state when country changes
-                    });
-                  }}
-                  placeholder="Select Country"
-                />
-
-                {onboardingData.country === "India" ? (
-                  <SearchableDropdown
-                    label="CLIENT STATE"
-                    options={indianStates}
-                    value={onboardingData.state}
-                    onChange={(val) =>
-                      setOnboardingData({ ...onboardingData, state: val })
-                    }
-                    placeholder="Select State"
-                  />
-                ) : (
                   <div className="space-y-2">
                     <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                      CLIENT STATE
+                      EMAIL ID <span className="text-error">*</span>
+                    </label>
+                    <input
+                      required
+                      readOnly
+                      disabled
+                      type="email"
+                      placeholder="e.g. anand.kumar@fintech.in"
+                      className="w-full px-3.5 py-2.5 bg-slate-100 text-slate-500 cursor-not-allowed border border-slate-200 rounded-xl focus:outline-none text-sm font-medium"
+                      value={onboardingData.email}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
+                      PHONE NUMBER <span className="text-error">*</span>
+                    </label>
+                    <input
+                      required
+                      readOnly
+                      disabled
+                      type="tel"
+                      placeholder="+91 98765 43210"
+                      className="w-full px-3.5 py-2.5 bg-slate-100 text-slate-500 cursor-not-allowed border border-slate-200 rounded-xl focus:outline-none text-sm font-medium"
+                      value={onboardingData.phone}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
+                      ORGANISATION NAME <span className="text-error">*</span>
                     </label>
                     <input
                       type="text"
-                      placeholder="e.g. California"
+                      placeholder="e.g. Acme Corp"
                       className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
-                      value={onboardingData.state}
+                      value={onboardingData.organisationName}
                       onChange={(e) =>
                         setOnboardingData({
                           ...onboardingData,
-                          state: e.target.value,
+                          organisationName: e.target.value,
                         })
                       }
                     />
                   </div>
-                )}
 
-                <SearchableDropdown
-                  label="CLIENT CURRENCY"
-                  options={commonCurrencies.map((c) => ({
-                    name: `${c.code} (${c.symbol})`,
-                    code: c.code,
-                  }))}
-                  value={onboardingData.currency}
-                  onChange={(val) =>
-                    setOnboardingData({ ...onboardingData, currency: val })
-                  }
-                  placeholder="Select Currency"
-                />
+                  <SearchableDropdown
+                    label="CLIENT COUNTRY"
+                    required
+                    options={countries.map((c) => ({
+                      name: c.name,
+                      code: c.name,
+                    }))}
+                    value={onboardingData.country}
+                    onChange={(val) => {
+                      const countryCurrency = countryToCurrency[val];
+                      setOnboardingData({
+                        ...onboardingData,
+                        country: val,
+                        currency: countryCurrency
+                          ? countryCurrency.code
+                          : onboardingData.currency,
+                        state: "", // Reset state when country changes
+                      });
+                    }}
+                    placeholder="Select Country"
+                  />
 
-                <div className="space-y-2">
-                  <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1 uppercase">
-                    CLIENT STATUS
-                  </label>
-                  <div className="relative">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setIsOnboardClientStatusDropdownOpen(
-                          !isOnboardClientStatusDropdownOpen,
-                        )
+                  {onboardingData.country === "India" ? (
+                    <SearchableDropdown
+                      label="CLIENT STATE"
+                      required
+                      options={indianStates}
+                      value={onboardingData.state}
+                      onChange={(val) =>
+                        setOnboardingData({ ...onboardingData, state: val })
                       }
-                      className="w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm shadow-sm hover:border-secondary transition-all"
-                    >
-                      <span className="text-primary truncate">
-                        {onboardingData.clientStatus}
-                      </span>
-                      <ChevronDown
-                        size={16}
-                        className={`text-slate-400 transition-transform ${
-                          isOnboardClientStatusDropdownOpen ? "rotate-180" : ""
-                        }`}
-                      />
-                    </button>
-
-                    {isOnboardClientStatusDropdownOpen && (
-                      <>
-                        <div
-                          className="fixed inset-0 z-[80]"
-                          onClick={() =>
-                            setIsOnboardClientStatusDropdownOpen(false)
-                          }
-                        />
-                        <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top">
-                          <div className="bg-[#18254D] px-4 py-3 border-b border-white/10">
-                            <p className="text-[14px] font-bold text-white/50  tracking-widest">
-                              Select Status
-                            </p>
-                          </div>
-                          {["Active", "Inactive"].map((status) => (
-                            <button
-                              key={status}
-                              type="button"
-                              onClick={() => {
-                                setOnboardingData({
-                                  ...onboardingData,
-                                  clientStatus: status,
-                                });
-                                setIsOnboardClientStatusDropdownOpen(false);
-                              }}
-                              className={`w-full text-left px-4 py-2.5 text-[12px] font-bold  tracking-widest transition-colors ${
-                                onboardingData.clientStatus === status
-                                  ? "bg-slate-100 text-secondary"
-                                  : "text-[#18254D] hover:bg-slate-50"
-                              }`}
-                            >
-                              {status}
-                            </button>
-                          ))}
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* PROJECT DETAILS HEADING */}
-              <div className="flex items-center gap-3 pt-6">
-                <div className="h-[2px] w-8 bg-secondary rounded-full" />
-                <h4 className="text-[14px] font-bold text-[#18254D]  tracking-[0.2em]">
-                  Project Details
-                </h4>
-                <div className="h-[2px] flex-1 bg-slate-100 rounded-full" />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div className="space-y-1.5 md:col-span-2">
-                  <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                    PROJECT NAME
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Route Optimization Platform"
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
-                    value={onboardingData.projectName}
-                    onChange={(e) =>
-                      setOnboardingData({
-                        ...onboardingData,
-                        projectName: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-
-                <div className="space-y-1.5 md:col-span-2">
-                  <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                    PROJECT DESCRIPTION
-                  </label>
-                  <textarea
-                    rows={3}
-                    placeholder="e.g. Focus on UI/UX redesign and performance optimization..."
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium resize-none shadow-sm"
-                    value={onboardingData.projectDescription}
-                    onChange={(e) =>
-                      setOnboardingData({
-                        ...onboardingData,
-                        projectDescription: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-
-                <div className="space-y-1.5 md:col-span-2">
-                  <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                    PROJECT CATEGORY
-                  </label>
-                  <div className="flex gap-2">
-                    {[1, 2, 3].map((catId) => (
-                      <button
-                        key={catId}
-                        type="button"
-                        onClick={() =>
+                      placeholder="Select State"
+                    />
+                  ) : (
+                    <div className="space-y-2">
+                      <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
+                        CLIENT STATE <span className="text-error">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. California"
+                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
+                        value={onboardingData.state}
+                        onChange={(e) =>
                           setOnboardingData({
                             ...onboardingData,
-                            projectCategory: catId,
+                            state: e.target.value,
                           })
                         }
-                        className={`flex-1 flex items-center justify-center p-2.5 border-2 rounded-xl transition-all font-bold  text-[12px] tracking-widest ${
-                          onboardingData.projectCategory === catId
-                            ? "border-primary bg-primary/5 text-primary shadow-sm"
-                            : "border-slate-100 text-slate-400 hover:border-slate-200"
-                        }`}
-                      >
-                        {CATEGORY_MAP[catId]}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                    PROJECT STATUS
-                  </label>
-                  <div className="relative">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setIsOnboardStatusDropdownOpen(
-                          !isOnboardStatusDropdownOpen,
-                        )
-                      }
-                      className="w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium shadow-sm hover:border-secondary transition-all"
-                    >
-                      <span className="text-primary">
-                        {onboardingData.projectStatus}
-                      </span>
-                      <ChevronDown
-                        size={16}
-                        className={`text-slate-400 transition-transform ${
-                          isOnboardStatusDropdownOpen ? "rotate-180" : ""
-                        }`}
                       />
-                    </button>
+                    </div>
+                  )}
 
-                    {isOnboardStatusDropdownOpen && (
-                      <>
-                        <div
-                          className="fixed inset-0 z-[80]"
-                          onClick={() => setIsOnboardStatusDropdownOpen(false)}
+                  <SearchableDropdown
+                    label="CLIENT CURRENCY"
+                    required
+                    options={commonCurrencies.map((c) => ({
+                      name: `${c.code} (${c.symbol})`,
+                      code: c.code,
+                    }))}
+                    value={onboardingData.currency}
+                    onChange={(val) =>
+                      setOnboardingData({ ...onboardingData, currency: val })
+                    }
+                    placeholder="Select Currency"
+                  />
+
+                  <div className="space-y-2">
+                    <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1 uppercase">
+                      CLIENT STATUS <span className="text-error">*</span>
+                    </label>
+                    <div className="relative">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setIsOnboardClientStatusDropdownOpen(
+                            !isOnboardClientStatusDropdownOpen,
+                          )
+                        }
+                        className="w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm shadow-sm hover:border-secondary transition-all"
+                      >
+                        <span className="text-primary truncate">
+                          {onboardingData.clientStatus}
+                        </span>
+                        <ChevronDown
+                          size={16}
+                          className={`text-slate-400 transition-transform ${
+                            isOnboardClientStatusDropdownOpen
+                              ? "rotate-180"
+                              : ""
+                          }`}
                         />
-                        <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top">
-                          <div className="bg-[#18254D] px-4 py-3 border-b border-white/10">
-                            <p className="text-[14px] font-bold text-white/50  tracking-widest">
-                              Select Status
-                            </p>
-                          </div>
-                          {["Hold", "In Progress", "Completed"].map(
-                            (status) => (
+                      </button>
+
+                      {isOnboardClientStatusDropdownOpen && (
+                        <>
+                          <div
+                            className="fixed inset-0 z-[80]"
+                            onClick={() =>
+                              setIsOnboardClientStatusDropdownOpen(false)
+                            }
+                          />
+                          <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top">
+                            <div className="bg-[#18254D] px-4 py-3 border-b border-white/10">
+                              <p className="text-[14px] font-bold text-white/50  tracking-widest">
+                                Select Status
+                              </p>
+                            </div>
+                            {["Active", "Inactive"].map((status) => (
                               <button
                                 key={status}
                                 type="button"
                                 onClick={() => {
                                   setOnboardingData({
                                     ...onboardingData,
-                                    projectStatus: status,
+                                    clientStatus: status,
                                   });
-                                  setIsOnboardStatusDropdownOpen(false);
+                                  setIsOnboardClientStatusDropdownOpen(false);
                                 }}
                                 className={`w-full text-left px-4 py-2.5 text-[12px] font-bold  tracking-widest transition-colors ${
-                                  onboardingData.projectStatus === status
+                                  onboardingData.clientStatus === status
                                     ? "bg-slate-100 text-secondary"
                                     : "text-[#18254D] hover:bg-slate-50"
                                 }`}
                               >
                                 {status}
                               </button>
-                            ),
-                          )}
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                    PROJECT PRIORITY
-                  </label>
-                  <div className="relative">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setIsOnboardPriorityDropdownOpen(
-                          !isOnboardPriorityDropdownOpen,
-                        )
-                      }
-                      className="w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium shadow-sm hover:border-secondary transition-all"
-                    >
-                      <span className="text-primary">
-                        {onboardingData.projectPriority}
-                      </span>
-                      <ChevronDown
-                        size={16}
-                        className={`text-slate-400 transition-transform ${
-                          isOnboardPriorityDropdownOpen ? "rotate-180" : ""
-                        }`}
-                      />
-                    </button>
-
-                    {isOnboardPriorityDropdownOpen && (
-                      <>
-                        <div
-                          className="fixed inset-0 z-[80]"
-                          onClick={() =>
-                            setIsOnboardPriorityDropdownOpen(false)
-                          }
-                        />
-                        <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top">
-                          <div className="bg-[#18254D] px-4 py-3 border-b border-white/10">
-                            <p className="text-[14px] font-bold text-white/50  tracking-widest">
-                              Select Priority
-                            </p>
+                            ))}
                           </div>
-                          {["High", "Medium", "Low"].map((level) => (
-                            <button
-                              key={level}
-                              type="button"
-                              onClick={() => {
-                                setOnboardingData({
-                                  ...onboardingData,
-                                  projectPriority: level,
-                                });
-                                setIsOnboardPriorityDropdownOpen(false);
-                              }}
-                              className={`w-full text-left px-4 py-2.5 text-[12px] font-bold  tracking-widest transition-colors ${
-                                onboardingData.projectPriority === level
-                                  ? "bg-slate-100 text-secondary"
-                                  : "text-[#18254D] hover:bg-slate-50"
-                              }`}
-                            >
-                              {level}
-                            </button>
-                          ))}
-                        </div>
-                      </>
-                    )}
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
 
-                <div className="space-y-1.5 md:col-span-2">
-                  <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1 flex items-center gap-1.5">
-                    PROJECT BUDGET (
-                    {onboardingData.currency === "USD" ? "USD" : "INR"})
-                  </label>
-                  <div className="relative">
-                    <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-bold">
-                      {onboardingData.currency === "USD" ? "$" : "₹"}
-                    </div>
+                {/* PROJECT DETAILS HEADING */}
+                <div className="flex items-center gap-3 pt-6">
+                  <div className="h-[2px] w-8 bg-secondary rounded-full" />
+                  <h4 className="text-[14px] font-bold text-[#18254D]  tracking-[0.2em]">
+                    Project Details
+                  </h4>
+                  <div className="h-[2px] flex-1 bg-slate-100 rounded-full" />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="space-y-1.5 md:col-span-2">
+                    <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
+                      PROJECT NAME <span className="text-error">*</span>
+                    </label>
                     <input
                       type="text"
-                      placeholder={
-                        onboardingData.currency === "USD"
-                          ? "e.g. 5,000"
-                          : "e.g. 5,00,000"
-                      }
-                      className="w-full pl-8 pr-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium shadow-sm"
-                      value={onboardingData.projectBudget}
+                      placeholder="e.g. Route Optimization Platform"
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
+                      value={onboardingData.projectName}
                       onChange={(e) =>
                         setOnboardingData({
                           ...onboardingData,
-                          projectBudget: e.target.value,
+                          projectName: e.target.value,
                         })
                       }
                     />
                   </div>
-                </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-[12px] font-bold text-[#18254D] tracking-widest ml-1">
-                    ONBOARDING DATE
-                  </label>
-                  <DatePicker
-                    value={onboardingData.onboardingDate}
-                    onChange={(val) =>
-                      setOnboardingData({
-                        ...onboardingData,
-                        onboardingDate: val,
-                      })
-                    }
-                  />
-                </div>
+                  <div className="space-y-1.5 md:col-span-2">
+                    <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
+                      PROJECT DESCRIPTION <span className="text-error">*</span>
+                    </label>
+                    <textarea
+                      rows={3}
+                      placeholder="e.g. Focus on UI/UX redesign and performance optimization..."
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium resize-none shadow-sm"
+                      value={onboardingData.projectDescription}
+                      onChange={(e) =>
+                        setOnboardingData({
+                          ...onboardingData,
+                          projectDescription: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-[12px] font-bold text-[#18254D] tracking-widest ml-1 whitespace-nowrap">
-                    DEADLINE (TENTATIVE)
-                  </label>
-                  <DatePicker
-                    value={onboardingData.deadline}
-                    onChange={(val) =>
-                      setOnboardingData({
-                        ...onboardingData,
-                        deadline: val,
-                      })
-                    }
-                  />
-                </div>
+                  <div className="space-y-1.5 md:col-span-2">
+                    <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
+                      PROJECT CATEGORY <span className="text-error">*</span>
+                    </label>
+                    <div className="flex gap-2">
+                      {[1, 2, 3].map((catId) => (
+                        <button
+                          key={catId}
+                          type="button"
+                          onClick={() =>
+                            setOnboardingData({
+                              ...onboardingData,
+                              projectCategory: catId,
+                            })
+                          }
+                          className={`flex-1 flex items-center justify-center p-2.5 border-2 rounded-xl transition-all font-bold  text-[12px] tracking-widest ${
+                            onboardingData.projectCategory === catId
+                              ? "border-primary bg-primary/5 text-primary shadow-sm"
+                              : "border-slate-100 text-slate-400 hover:border-slate-200"
+                          }`}
+                        >
+                          {CATEGORY_MAP[catId]}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
 
-                <div className="space-y-1.5 md:col-span-2">
-                  <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                    SCOPE DOCUMENT
-                  </label>
-                  <div className="relative group">
-                    <input
-                      type="file"
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                      onChange={(e) => {
-                        const file = e.target.files[0];
-                        if (file) {
+                  <div className="space-y-1.5">
+                    <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
+                      PROJECT STATUS <span className="text-error">*</span>
+                    </label>
+                    <div className="relative">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setIsOnboardStatusDropdownOpen(
+                            !isOnboardStatusDropdownOpen,
+                          )
+                        }
+                        className="w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium shadow-sm hover:border-secondary transition-all"
+                      >
+                        <span className="text-primary">
+                          {onboardingData.projectStatus}
+                        </span>
+                        <ChevronDown
+                          size={16}
+                          className={`text-slate-400 transition-transform ${
+                            isOnboardStatusDropdownOpen ? "rotate-180" : ""
+                          }`}
+                        />
+                      </button>
+
+                      {isOnboardStatusDropdownOpen && (
+                        <>
+                          <div
+                            className="fixed inset-0 z-[80]"
+                            onClick={() =>
+                              setIsOnboardStatusDropdownOpen(false)
+                            }
+                          />
+                          <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top">
+                            <div className="bg-[#18254D] px-4 py-3 border-b border-white/10">
+                              <p className="text-[14px] font-bold text-white/50  tracking-widest">
+                                Select Status{" "}
+                                <span className="text-error">*</span>
+                              </p>
+                            </div>
+                            {["Hold", "In Progress", "Completed"].map(
+                              (status) => (
+                                <button
+                                  key={status}
+                                  type="button"
+                                  onClick={() => {
+                                    setOnboardingData({
+                                      ...onboardingData,
+                                      projectStatus: status,
+                                    });
+                                    setIsOnboardStatusDropdownOpen(false);
+                                  }}
+                                  className={`w-full text-left px-4 py-2.5 text-[12px] font-bold  tracking-widest transition-colors ${
+                                    onboardingData.projectStatus === status
+                                      ? "bg-slate-100 text-secondary"
+                                      : "text-[#18254D] hover:bg-slate-50"
+                                  }`}
+                                >
+                                  {status}
+                                </button>
+                              ),
+                            )}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
+                      PROJECT PRIORITY <span className="text-error">*</span>
+                    </label>
+                    <div className="relative">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setIsOnboardPriorityDropdownOpen(
+                            !isOnboardPriorityDropdownOpen,
+                          )
+                        }
+                        className="w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium shadow-sm hover:border-secondary transition-all"
+                      >
+                        <span className="text-primary">
+                          {onboardingData.projectPriority}
+                        </span>
+                        <ChevronDown
+                          size={16}
+                          className={`text-slate-400 transition-transform ${
+                            isOnboardPriorityDropdownOpen ? "rotate-180" : ""
+                          }`}
+                        />
+                      </button>
+
+                      {isOnboardPriorityDropdownOpen && (
+                        <>
+                          <div
+                            className="fixed inset-0 z-[80]"
+                            onClick={() =>
+                              setIsOnboardPriorityDropdownOpen(false)
+                            }
+                          />
+                          <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top">
+                            <div className="bg-[#18254D] px-4 py-3 border-b border-white/10">
+                              <p className="text-[14px] font-bold text-white/50  tracking-widest">
+                                Select Priority
+                              </p>
+                            </div>
+                            {["High", "Medium", "Low"].map((level) => (
+                              <button
+                                key={level}
+                                type="button"
+                                onClick={() => {
+                                  setOnboardingData({
+                                    ...onboardingData,
+                                    projectPriority: level,
+                                  });
+                                  setIsOnboardPriorityDropdownOpen(false);
+                                }}
+                                className={`w-full text-left px-4 py-2.5 text-[12px] font-bold  tracking-widest transition-colors ${
+                                  onboardingData.projectPriority === level
+                                    ? "bg-slate-100 text-secondary"
+                                    : "text-[#18254D] hover:bg-slate-50"
+                                }`}
+                              >
+                                {level}
+                              </button>
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5 md:col-span-2">
+                    <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1 flex items-center gap-1.5">
+                      PROJECT BUDGET ({onboardingData.currency || "INR"}){" "}
+                      <span className="text-error">*</span>
+                    </label>
+                    <div className="relative">
+                      <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-bold">
+                        {commonCurrencies.find(
+                          (c) => c.code === onboardingData.currency,
+                        )?.symbol || "₹"}
+                      </div>
+                      <input
+                        type="text"
+                        placeholder={
+                          onboardingData.currency === "USD"
+                            ? "e.g. 5,000"
+                            : "e.g. 5,00,000"
+                        }
+                        className="w-full pl-8 pr-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium shadow-sm"
+                        value={onboardingData.projectBudget}
+                        onChange={(e) =>
                           setOnboardingData({
                             ...onboardingData,
-                            scopeDocument: file,
-                          });
+                            projectBudget: e.target.value,
+                          })
                         }
-                      }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[12px] font-bold text-[#18254D] tracking-widest ml-1">
+                      ONBOARDING DATE <span className="text-error">*</span>
+                    </label>
+                    <DatePicker
+                      value={onboardingData.onboardingDate}
+                      onChange={(val) =>
+                        setOnboardingData({
+                          ...onboardingData,
+                          onboardingDate: val,
+                        })
+                      }
                     />
-                    <div className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl group-hover:border-secondary group-hover:bg-secondary/5 transition-all flex items-center gap-3 shadow-sm">
-                      <div className="p-2 bg-white border border-slate-200 rounded-lg shadow-sm">
-                        <Upload size={16} className="text-secondary" />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[12px] font-bold text-[#18254D] tracking-widest ml-1 whitespace-nowrap">
+                      DEADLINE (TENTATIVE) <span className="text-error">*</span>
+                    </label>
+                    <DatePicker
+                      value={onboardingData.deadline}
+                      onChange={(val) =>
+                        setOnboardingData({
+                          ...onboardingData,
+                          deadline: val,
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div className="space-y-1.5 md:col-span-2">
+                    <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
+                      SCOPE DOCUMENT <span className="text-error">*</span>
+                    </label>
+                    <div className="relative group">
+                      <input
+                        type="file"
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                        onChange={(e) => {
+                          const file = e.target.files[0];
+                          if (file) {
+                            setOnboardingData({
+                              ...onboardingData,
+                              scopeDocument: file,
+                            });
+                          }
+                        }}
+                      />
+                      <div className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl group-hover:border-secondary group-hover:bg-secondary/5 transition-all flex items-center gap-3 shadow-sm">
+                        <div className="p-2 bg-white border border-slate-200 rounded-lg shadow-sm">
+                          <Upload size={16} className="text-secondary" />
+                        </div>
+                        <span
+                          className={`text-sm font-bold ${onboardingData.scopeDocument ? "text-[#18254D]" : "text-slate-400"}`}
+                        >
+                          {onboardingData.scopeDocument instanceof File
+                            ? onboardingData.scopeDocument.name
+                            : typeof onboardingData.scopeDocument ===
+                                  "string" && onboardingData.scopeDocument
+                              ? onboardingData.scopeDocument
+                              : "Upload scope document (PDF)"}
+                        </span>
                       </div>
-                      <span
-                        className={`text-sm font-bold ${onboardingData.scopeDocument ? "text-[#18254D]" : "text-slate-400"}`}
-                      >
-                        {onboardingData.scopeDocument instanceof File
-                          ? onboardingData.scopeDocument.name
-                          : typeof onboardingData.scopeDocument === "string" &&
-                              onboardingData.scopeDocument
-                            ? onboardingData.scopeDocument
-                            : "Upload scope document (PDF)"}
-                      </span>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="pt-2 shrink-0">
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full py-3 bg-[#18254D] text-white rounded-2xl text-[13px] font-bold  tracking-[0.25em] shadow-xl active:scale-[0.97] transition-all hover:bg-[#1e2e5e] hover:shadow-2xl flex items-center justify-center gap-3 group/btn disabled:opacity-70 disabled:cursor-not-allowed"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <span>CONVERTING...</span>
-                      <Loader2 size={20} className="animate-spin" />
-                    </>
-                  ) : (
-                    <>
-                      <UserCheck
-                        size={20}
-                        className="group-hover/btn:translate-x-1 transition-transform"
-                      />
-                      <span>CONVERT TO CLIENT</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>,
-        document.body,
-      )}
+                <div className="pt-2 shrink-0">
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full py-3 bg-[#18254D] text-white rounded-2xl text-[13px] font-bold  tracking-[0.25em] shadow-xl active:scale-[0.97] transition-all hover:bg-[#1e2e5e] hover:shadow-2xl flex items-center justify-center gap-3 group/btn disabled:opacity-70 disabled:cursor-not-allowed"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <span>CONVERTING...</span>
+                        <Loader2 size={20} className="animate-spin" />
+                      </>
+                    ) : (
+                      <>
+                        <UserCheck
+                          size={20}
+                          className="group-hover/btn:translate-x-1 transition-transform"
+                        />
+                        <span>CONVERT TO CLIENT</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>,
+          document.body,
+        )}
 
       {/* Edit Converted Lead Modal */}
       {showEditConvertedModal &&
@@ -2216,7 +2247,11 @@ const LeadList = ({
                 </button>
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 bg-secondary/10 rounded-xl flex items-center justify-center shadow-lg border border-secondary/20">
-                    <Pencil size={18} className="text-secondary" strokeWidth={3} />
+                    <Pencil
+                      size={18}
+                      className="text-secondary"
+                      strokeWidth={3}
+                    />
                   </div>
                   <div>
                     <h3 className="text-base font-bold tracking-tighter leading-none">
@@ -2233,311 +2268,305 @@ const LeadList = ({
                 onSubmit={handleEditConvertedSubmit}
                 className="p-4 md:p-5 space-y-4 overflow-y-auto no-scrollbar"
               >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {/* EDIT LEAD FIELDS (MATCHING NEW LEAD MODAL) */}
-                <div className="space-y-1.5">
-                  <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                    LEAD NAME
-                  </label>
-                  <input
-                    required
-                    type="text"
-                    placeholder="e.g. Rahul Sharma"
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
-                    value={editConvertedData.name}
-                    onChange={(e) =>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {/* EDIT LEAD FIELDS (MATCHING NEW LEAD MODAL) */}
+                  <div className="space-y-1.5">
+                    <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
+                      LEAD NAME
+                    </label>
+                    <input
+                      required
+                      readOnly
+                      disabled
+                      type="text"
+                      placeholder="e.g. Rahul Sharma"
+                      className="w-full px-3.5 py-2.5 bg-slate-100 text-slate-500 cursor-not-allowed border border-slate-200 rounded-xl focus:outline-none text-sm font-medium"
+                      value={editConvertedData.name}
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
+                      EMAIL ID
+                    </label>
+                    <input
+                      required
+                      readOnly
+                      disabled
+                      type="email"
+                      placeholder="rahul.sharma@example.com"
+                      className="w-full px-3.5 py-2.5 bg-slate-100 text-slate-500 cursor-not-allowed border border-slate-200 rounded-xl focus:outline-none text-sm font-medium"
+                      value={editConvertedData.email}
+                    />
+                  </div>
+
+                  <SearchableDropdown
+                    label="COUNTRY"
+                    options={countries}
+                    value={editConvertedData.country}
+                    onChange={(val) =>
                       setEditConvertedData({
                         ...editConvertedData,
-                        name: e.target.value,
+                        country: val,
                       })
                     }
+                    placeholder="Select Country"
                   />
-                </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                    EMAIL ID
-                  </label>
-                  <input
-                    required
-                    type="email"
-                    placeholder="rahul.sharma@example.com"
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
-                    value={editConvertedData.email}
-                    onChange={(e) =>
-                      setEditConvertedData({
-                        ...editConvertedData,
-                        email: e.target.value,
-                      })
-                    }
-                  />
-                </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
+                      PHONE NUMBER
+                    </label>
+                    <input
+                      required
+                      readOnly
+                      disabled
+                      type="tel"
+                      placeholder="e.g. +91 98765 43210"
+                      className="w-full px-3.5 py-2.5 bg-slate-100 text-slate-500 cursor-not-allowed border border-slate-200 rounded-xl focus:outline-none text-sm font-medium"
+                      value={editConvertedData.phone}
+                    />
+                  </div>
 
-                <SearchableDropdown
-                  label="COUNTRY"
-                  options={countries}
-                  value={editConvertedData.country}
-                  onChange={(val) =>
-                    setEditConvertedData({ ...editConvertedData, country: val })
-                  }
-                  placeholder="Select Country"
-                />
-
-                <div className="space-y-1.5">
-                  <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                    PHONE NUMBER
-                  </label>
-                  <input
-                    required
-                    type="tel"
-                    placeholder="e.g. +91 98765 43210"
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
-                    value={editConvertedData.phone}
-                    onChange={(e) =>
-                      setEditConvertedData({
-                        ...editConvertedData,
-                        phone: e.target.value.replace(/\D/g, ""),
-                      })
-                    }
-                  />
-                </div>
-
-                <div className="space-y-1.5 md:col-span-2">
-                  <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                    WEBSITE URL (OPTIONAL)
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. www.company.com"
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
-                    value={editConvertedData.website}
-                    onChange={(e) =>
-                      setEditConvertedData({
-                        ...editConvertedData,
-                        website: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-
-                <div className="md:col-span-2 space-y-2">
-                  <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1 uppercase">
-                    LEAD CATEGORY
-                  </label>
-                  <div className="relative">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setIsEditCategoryDropdownOpen(
-                          !isEditCategoryDropdownOpen,
-                        )
+                  <div className="space-y-1.5 md:col-span-2">
+                    <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
+                      WEBSITE URL (OPTIONAL)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. www.company.com"
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
+                      value={editConvertedData.website}
+                      onChange={(e) =>
+                        setEditConvertedData({
+                          ...editConvertedData,
+                          website: e.target.value,
+                        })
                       }
-                      className="w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold shadow-sm hover:border-secondary transition-all"
-                    >
-                      <span className="text-primary truncate">
-                        {CATEGORY_MAP[editConvertedData.projectCategory] ||
-                          "Select Category"}
-                      </span>
-                      <ChevronDown
-                        size={16}
-                        className={`text-slate-400 transition-transform ${
-                          isEditCategoryDropdownOpen ? "rotate-180" : ""
-                        }`}
-                      />
-                    </button>
+                    />
+                  </div>
 
-                    {isEditCategoryDropdownOpen && (
-                      <>
-                        <div
-                          className="fixed inset-0 z-[80]"
-                          onClick={() => setIsEditCategoryDropdownOpen(false)}
+                  <div className="md:col-span-2 space-y-2">
+                    <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1 uppercase">
+                      LEAD CATEGORY
+                    </label>
+                    <div className="relative">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setIsEditCategoryDropdownOpen(
+                            !isEditCategoryDropdownOpen,
+                          )
+                        }
+                        className="w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold shadow-sm hover:border-secondary transition-all"
+                      >
+                        <span className="text-primary truncate">
+                          {CATEGORY_MAP[editConvertedData.projectCategory] ||
+                            "Select Category"}
+                        </span>
+                        <ChevronDown
+                          size={16}
+                          className={`text-slate-400 transition-transform ${
+                            isEditCategoryDropdownOpen ? "rotate-180" : ""
+                          }`}
                         />
-                        <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top edit-category-dropdown">
-                          <div className="bg-[#18254D] px-4 py-3 border-b border-white/10">
-                            <p className="text-[14px] font-bold text-white/50  tracking-widest">
-                              Select Category
-                            </p>
+                      </button>
+
+                      {isEditCategoryDropdownOpen && (
+                        <>
+                          <div
+                            className="fixed inset-0 z-[80]"
+                            onClick={() => setIsEditCategoryDropdownOpen(false)}
+                          />
+                          <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top edit-category-dropdown">
+                            <div className="bg-[#18254D] px-4 py-3 border-b border-white/10">
+                              <p className="text-[14px] font-bold text-white/50  tracking-widest">
+                                Select Category
+                              </p>
+                            </div>
+                            {[1, 2, 3].map((catId) => (
+                              <button
+                                key={catId}
+                                type="button"
+                                onClick={() => {
+                                  setEditConvertedData({
+                                    ...editConvertedData,
+                                    projectCategory: catId,
+                                  });
+                                  setIsEditCategoryDropdownOpen(false);
+                                }}
+                                className={`w-full text-left px-4 py-2.5 text-[12px] font-bold  tracking-widest transition-colors ${
+                                  editConvertedData.projectCategory === catId
+                                    ? "bg-slate-100 text-secondary"
+                                    : "text-[#18254D] hover:bg-slate-50"
+                                }`}
+                              >
+                                {CATEGORY_MAP[catId]}
+                              </button>
+                            ))}
                           </div>
-                          {[1, 2, 3].map((catId) => (
-                            <button
-                              key={catId}
-                              type="button"
-                              onClick={() => {
-                                setEditConvertedData({
-                                  ...editConvertedData,
-                                  projectCategory: catId,
-                                });
-                                setIsEditCategoryDropdownOpen(false);
-                              }}
-                              className={`w-full text-left px-4 py-2.5 text-[12px] font-bold  tracking-widest transition-colors ${
-                                editConvertedData.projectCategory === catId
-                                  ? "bg-slate-100 text-secondary"
-                                  : "text-[#18254D] hover:bg-slate-50"
-                              }`}
-                            >
-                              {CATEGORY_MAP[catId]}
-                            </button>
-                          ))}
-                        </div>
-                      </>
-                    )}
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="md:col-span-2 space-y-2">
+                    <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1 uppercase">
+                      LEAD STATUS
+                    </label>
+                    <div className="relative">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setIsEditStatusDropdownOpen(!isEditStatusDropdownOpen)
+                        }
+                        className="w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold shadow-sm hover:border-secondary transition-all"
+                      >
+                        <span className="text-primary truncate">
+                          {editConvertedData.leadType || "Select Status"}
+                        </span>
+                        <ChevronDown
+                          size={16}
+                          className={`text-slate-400 transition-transform ${
+                            isEditStatusDropdownOpen ? "rotate-180" : ""
+                          }`}
+                        />
+                      </button>
+
+                      {isEditStatusDropdownOpen && (
+                        <>
+                          <div
+                            className="fixed inset-0 z-[80]"
+                            onClick={() => setIsEditStatusDropdownOpen(false)}
+                          />
+                          <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top edit-status-dropdown">
+                            <div className="bg-[#18254D] px-4 py-3 border-b border-white/10">
+                              <p className="text-[14px] font-bold text-white/50  tracking-widest">
+                                Select Status
+                              </p>
+                            </div>
+                            {["Converted"].map((status) => (
+                              <button
+                                key={status}
+                                type="button"
+                                onClick={() => {
+                                  setEditConvertedData({
+                                    ...editConvertedData,
+                                    leadType: status,
+                                  });
+                                  setIsEditStatusDropdownOpen(false);
+                                }}
+                                className={`w-full text-left px-4 py-2.5 text-[12px] font-bold  tracking-widest transition-colors ${
+                                  editConvertedData.leadType === status
+                                    ? "bg-slate-100 text-secondary"
+                                    : "text-[#18254D] hover:bg-slate-50"
+                                }`}
+                              >
+                                <div className="flex items-center gap-2">
+                                  {status === "Hot" && (
+                                    <Flame size={12} className="text-error" />
+                                  )}
+                                  {status === "Warm" && (
+                                    <Sun size={12} className="text-warning" />
+                                  )}
+                                  {status === "Cold" && (
+                                    <Snowflake
+                                      size={12}
+                                      className="text-info"
+                                    />
+                                  )}
+                                  {status === "Converted" && (
+                                    <UserCheck
+                                      size={12}
+                                      className="text-success"
+                                    />
+                                  )}
+                                  <span>{status}</span>
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="md:col-span-2 space-y-2">
+                    <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
+                      MESSAGE
+                    </label>
+                    <textarea
+                      rows={3}
+                      placeholder="e.g. Interested in cloud migration services..."
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium resize-none shadow-sm"
+                      value={editConvertedData.projectDescription}
+                      onChange={(e) =>
+                        setEditConvertedData({
+                          ...editConvertedData,
+                          projectDescription: e.target.value,
+                        })
+                      }
+                    />
                   </div>
                 </div>
 
-                <div className="md:col-span-2 space-y-2">
-                  <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1 uppercase">
-                    LEAD STATUS
-                  </label>
-                  <div className="relative">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setIsEditStatusDropdownOpen(!isEditStatusDropdownOpen)
-                      }
-                      className="w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold shadow-sm hover:border-secondary transition-all"
-                    >
-                      <span className="text-primary truncate">
-                        {editConvertedData.leadType || "Select Status"}
-                      </span>
-                      <ChevronDown
-                        size={16}
-                        className={`text-slate-400 transition-transform ${
-                          isEditStatusDropdownOpen ? "rotate-180" : ""
-                        }`}
-                      />
-                    </button>
-
-                    {isEditStatusDropdownOpen && (
+                <div className="pt-2 shrink-0">
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full py-2.5 bg-[#18254D] text-white rounded-2xl text-[13px] font-bold  tracking-[0.25em] shadow-xl active:scale-[0.97] transition-all hover:bg-[#1e2e5e] hover:shadow-2xl flex items-center justify-center gap-3 group/btn disabled:opacity-70 disabled:cursor-not-allowed"
+                  >
+                    {isSubmitting ? (
                       <>
-                        <div
-                          className="fixed inset-0 z-[80]"
-                          onClick={() => setIsEditStatusDropdownOpen(false)}
+                        <span>SAVING CHANGES...</span>
+                        <Loader2 size={20} className="animate-spin" />
+                      </>
+                    ) : (
+                      <>
+                        <Check
+                          size={20}
+                          className="group-hover/btn:scale-110 transition-transform"
                         />
-                        <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top edit-status-dropdown">
-                          <div className="bg-[#18254D] px-4 py-3 border-b border-white/10">
-                            <p className="text-[14px] font-bold text-white/50  tracking-widest">
-                              Select Status
-                            </p>
-                          </div>
-                          {["Converted"].map((status) => (
-                            <button
-                              key={status}
-                              type="button"
-                              onClick={() => {
-                                setEditConvertedData({
-                                  ...editConvertedData,
-                                  leadType: status,
-                                });
-                                setIsEditStatusDropdownOpen(false);
-                              }}
-                              className={`w-full text-left px-4 py-2.5 text-[12px] font-bold  tracking-widest transition-colors ${
-                                editConvertedData.leadType === status
-                                  ? "bg-slate-100 text-secondary"
-                                  : "text-[#18254D] hover:bg-slate-50"
-                              }`}
-                            >
-                              <div className="flex items-center gap-2">
-                                {status === "Hot" && (
-                                  <Flame size={12} className="text-error" />
-                                )}
-                                {status === "Warm" && (
-                                  <Sun size={12} className="text-warning" />
-                                )}
-                                {status === "Cold" && (
-                                  <Snowflake size={12} className="text-info" />
-                                )}
-                                {status === "Converted" && (
-                                  <UserCheck
-                                    size={12}
-                                    className="text-success"
-                                  />
-                                )}
-                                <span>{status}</span>
-                              </div>
-                            </button>
-                          ))}
-                        </div>
+                        <span>SAVE CHANGES</span>
                       </>
                     )}
-                  </div>
+                  </button>
                 </div>
-
-                <div className="md:col-span-2 space-y-2">
-                  <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                    MESSAGE
-                  </label>
-                  <textarea
-                    rows={3}
-                    placeholder="e.g. Interested in cloud migration services..."
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium resize-none shadow-sm"
-                    value={editConvertedData.projectDescription}
-                    onChange={(e) =>
-                      setEditConvertedData({
-                        ...editConvertedData,
-                        projectDescription: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-              </div>
-
-              <div className="pt-2 shrink-0">
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full py-2.5 bg-[#18254D] text-white rounded-2xl text-[13px] font-bold  tracking-[0.25em] shadow-xl active:scale-[0.97] transition-all hover:bg-[#1e2e5e] hover:shadow-2xl flex items-center justify-center gap-3 group/btn disabled:opacity-70 disabled:cursor-not-allowed"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <span>SAVING CHANGES...</span>
-                      <Loader2 size={20} className="animate-spin" />
-                    </>
-                  ) : (
-                    <>
-                      <Check
-                        size={20}
-                        className="group-hover/btn:scale-110 transition-transform"
-                      />
-                      <span>SAVE CHANGES</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>,
-        document.body,
-      )}
+              </form>
+            </div>
+          </div>,
+          document.body,
+        )}
 
       {showFollowUpModal &&
         createPortal(
           <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[99999] flex items-start justify-center p-4 sm:p-6 overflow-y-auto no-scrollbar">
             <div className="bg-white w-full max-w-xl rounded-xl shadow-2xl border border-slate-200 overflow-hidden animate-fade-in my-auto flex flex-col max-h-[90vh]">
-            <div className="bg-primary p-4 text-white relative">
-              <button
-                onClick={() => setShowFollowUpModal(false)}
-                className="absolute top-4 right-4 p-1.5 hover:bg-white/10 rounded-xl transition-colors"
-              >
-                <X size={18} strokeWidth={3} />
-              </button>
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-indigo-400/20 rounded-xl flex items-center justify-center shadow-lg border border-indigo-400/30">
-                  <MessageSquare
-                    size={18}
-                    className="text-indigo-300"
-                    strokeWidth={2.5}
-                  />
-                </div>
-                <div>
-                  <h3 className="text-base font-bold tracking-tighter leading-none">
-                    Follow Up
-                  </h3>
-                  <p className="text-slate-400 text-[14px] font-bold  tracking-widest mt-0.5">
-                    {followUpLeadName}
-                  </p>
+              <div className="bg-primary p-4 text-white relative">
+                <button
+                  onClick={() => setShowFollowUpModal(false)}
+                  className="absolute top-4 right-4 p-1.5 hover:bg-white/10 rounded-xl transition-colors"
+                >
+                  <X size={18} strokeWidth={3} />
+                </button>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-indigo-400/20 rounded-xl flex items-center justify-center shadow-lg border border-indigo-400/30">
+                    <MessageSquare
+                      size={18}
+                      className="text-indigo-300"
+                      strokeWidth={2.5}
+                    />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold tracking-tighter leading-none">
+                      Follow Up
+                    </h3>
+                    <p className="text-slate-400 text-[14px] font-bold  tracking-widest mt-0.5">
+                      {followUpLeadName}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
 
               <form
                 onSubmit={(e) => {
@@ -2563,101 +2592,101 @@ const LeadList = ({
                 }}
                 className="p-5 space-y-4 overflow-y-auto no-scrollbar"
               >
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2">
-                  <label className="text-[12px] font-bold text-primary  tracking-widest ml-1">
-                    Date
-                  </label>
-                  <DatePicker
-                    value={followUpData.date}
-                    onChange={(val) =>
-                      setFollowUpData({
-                        ...followUpData,
-                        date: val,
-                      })
-                    }
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[12px] font-bold text-primary  tracking-widest ml-1">
-                    Time
-                  </label>
-                  <div className="relative">
-                    <input
-                      required
-                      type="time"
-                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 focus:outline-none text-sm font-medium"
-                      value={followUpData.time}
-                      onChange={(e) =>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <label className="text-[12px] font-bold text-primary  tracking-widest ml-1">
+                      Date
+                    </label>
+                    <DatePicker
+                      value={followUpData.date}
+                      onChange={(val) =>
                         setFollowUpData({
                           ...followUpData,
-                          time: e.target.value,
+                          date: val,
                         })
                       }
                     />
                   </div>
+                  <div className="space-y-2">
+                    <label className="text-[12px] font-bold text-primary  tracking-widest ml-1">
+                      Time
+                    </label>
+                    <div className="relative">
+                      <input
+                        required
+                        type="time"
+                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 focus:outline-none text-sm font-medium"
+                        value={followUpData.time}
+                        onChange={(e) =>
+                          setFollowUpData({
+                            ...followUpData,
+                            time: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
                 </div>
-              </div>
 
-              <div className="space-y-2">
-                <label className="text-[12px] font-bold text-primary  tracking-widest ml-1">
-                  Interaction Type
-                </label>
-                <div className="grid grid-cols-3 gap-2">
-                  {["Call", "Email", "Meeting"].map((type) => (
-                    <button
-                      key={type}
-                      type="button"
-                      onClick={() =>
-                        setFollowUpData({
-                          ...followUpData,
-                          type: type,
-                        })
-                      }
-                      className={`py-2.5 px-3 rounded-xl border text-[12px] font-bold  tracking-widest transition-all ${
-                        followUpData.type === type
-                          ? "bg-indigo-500 border-indigo-500 text-white shadow-md shadow-indigo-200"
-                          : "bg-white border-slate-100 text-slate-400 hover:border-slate-300"
-                      }`}
-                    >
-                      {type}
-                    </button>
-                  ))}
+                <div className="space-y-2">
+                  <label className="text-[12px] font-bold text-primary  tracking-widest ml-1">
+                    Interaction Type
+                  </label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {["Call", "Email", "Meeting"].map((type) => (
+                      <button
+                        key={type}
+                        type="button"
+                        onClick={() =>
+                          setFollowUpData({
+                            ...followUpData,
+                            type: type,
+                          })
+                        }
+                        className={`py-2.5 px-3 rounded-xl border text-[12px] font-bold  tracking-widest transition-all ${
+                          followUpData.type === type
+                            ? "bg-indigo-500 border-indigo-500 text-white shadow-md shadow-indigo-200"
+                            : "bg-white border-slate-100 text-slate-400 hover:border-slate-300"
+                        }`}
+                      >
+                        {type}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
 
-              <div className="space-y-2">
-                <label className="text-[12px] font-bold text-primary  tracking-widest ml-1">
-                  Follow Up Message
-                </label>
-                <textarea
-                  required
-                  placeholder="e.g. Discussed budget constraints and finalized timeline..."
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 focus:outline-none text-sm font-medium min-h-[100px] resize-none"
-                  value={followUpData.description}
-                  onChange={(e) =>
-                    setFollowUpData({
-                      ...followUpData,
-                      description: e.target.value,
-                    })
-                  }
-                />
-              </div>
+                <div className="space-y-2">
+                  <label className="text-[12px] font-bold text-primary  tracking-widest ml-1">
+                    Follow Up Message
+                  </label>
+                  <textarea
+                    required
+                    placeholder="e.g. Discussed budget constraints and finalized timeline..."
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 focus:outline-none text-sm font-medium min-h-[100px] resize-none"
+                    value={followUpData.description}
+                    onChange={(e) =>
+                      setFollowUpData({
+                        ...followUpData,
+                        description: e.target.value,
+                      })
+                    }
+                  />
+                </div>
 
-              <div className="pt-2 shrink-0">
-                <button
-                  type="submit"
-                  className="w-full py-3 bg-primary text-white rounded-2xl hover:bg-slate-800 text-[13px] font-bold  tracking-[0.3em] transition-all shadow-lg active:scale-95 flex items-center justify-center gap-3"
-                >
-                  <MessageSquare size={18} />
-                  Save & View Conversations
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>,
-        document.body,
-      )}
+                <div className="pt-2 shrink-0">
+                  <button
+                    type="submit"
+                    className="w-full py-3 bg-primary text-white rounded-2xl hover:bg-slate-800 text-[13px] font-bold  tracking-[0.3em] transition-all shadow-lg active:scale-95 flex items-center justify-center gap-3"
+                  >
+                    <MessageSquare size={18} />
+                    Save & View Conversations
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>,
+          document.body,
+        )}
     </div>
   );
 };

@@ -210,8 +210,14 @@ const FollowUpList = ({
     const isValid = validateForm(formData, {
       title: { required: true, minLength: 2, label: "Title" },
       description: { required: true, label: "Description" },
-      clientId: { required: true, label: "Client" },
+      clientId: { required: true, label: "Client/Lead Name" },
       followup_date: { required: true, label: "Follow-up Date" },
+      timeHour: { required: true, label: "Follow-up Hour" },
+      timeMinute: { required: true, label: "Follow-up Minute" },
+      timePeriod: { required: true, label: "Follow-up Period" },
+      priority: { required: true, label: "Priority" },
+      followup_mode: { required: true, label: "Follow-up Mode" },
+      followup_status: { required: true, label: "Follow-up Status" },
     });
 
     if (!isValid) return;
@@ -776,8 +782,8 @@ const FollowUpList = ({
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div className="space-y-1.5">
-                      <label className="text-[14px] font-bold text-primary  tracking-widest ml-1">
-                        Completion Date
+                      <label className="text-[14px] font-bold text-primary tracking-widest ml-1">
+                        Completion Date <span className="text-error">*</span>
                       </label>
                       <input
                         type="date"
@@ -787,8 +793,8 @@ const FollowUpList = ({
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-[14px] font-bold text-primary  tracking-widest ml-1">
-                        Completion Time
+                      <label className="text-[14px] font-bold text-primary tracking-widest ml-1">
+                        Completion Time <span className="text-error">*</span>
                       </label>
                       <div className="flex gap-2">
                         {/* Hour */}
@@ -796,7 +802,7 @@ const FollowUpList = ({
                           <button
                             type="button"
                             onClick={() => setIsCompHourOpen(!isCompHourOpen)}
-                            className="w-full flex items-center justify-between px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold shadow-sm"
+                            className="w-full flex items-center justify-between px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold shadow-sm"
                           >
                             <span>{completionHour.padStart(2, "0")}</span>
                             <ChevronDown size={12} />
@@ -828,7 +834,7 @@ const FollowUpList = ({
                           <button
                             type="button"
                             onClick={() => setIsCompMinOpen(!isCompMinOpen)}
-                            className="w-full flex items-center justify-between px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold shadow-sm"
+                            className="w-full flex items-center justify-between px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold shadow-sm"
                           >
                             <span>{completionMinute}</span>
                             <ChevronDown size={12} />
@@ -862,7 +868,7 @@ const FollowUpList = ({
                             onClick={() =>
                               setIsCompPeriodOpen(!isCompPeriodOpen)
                             }
-                            className="w-full flex items-center justify-between px-2 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold shadow-sm"
+                            className="w-full flex items-center justify-between px-2 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold shadow-sm"
                           >
                             <span>{completionPeriod}</span>
                             <ChevronDown size={12} />
@@ -891,7 +897,7 @@ const FollowUpList = ({
 
                   <div className="space-y-1.5">
                     <label className="text-[14px] font-bold text-primary  tracking-widest ml-1">
-                      Completed By
+                      Completed By <span className="text-error">*</span>
                     </label>
                     <input
                       type="text"
@@ -906,7 +912,15 @@ const FollowUpList = ({
                       type="button"
                       onClick={() => {
                         if (!completionBrief.trim()) {
-                          toast.error("Conclusion Brief is required to complete a follow-up.");
+                          toast.error("Conclusion Brief is required.");
+                          return;
+                        }
+                        if (!completionDate) {
+                          toast.error("Completion Date is required.");
+                          return;
+                        }
+                        if (!completedBy.trim()) {
+                          toast.error("Completed By is required.");
                           return;
                         }
 
@@ -1104,7 +1118,8 @@ const FollowUpList = ({
                       <label className="text-[14px] font-bold text-primary tracking-widest ml-1">
                         {typeFilter === "Lead"
                           ? "Lead Name"
-                          : "Target Identity"}
+                          : "Target Identity"}{" "}
+                        <span className="text-error">*</span>
                       </label>
                       <div className="relative">
                         <button
@@ -1235,7 +1250,7 @@ const FollowUpList = ({
 
                   <div className="space-y-1.5">
                     <label className="text-[14px] font-bold text-primary  tracking-widest ml-1">
-                      Task Title
+                      Task Title <span className="text-error">*</span>
                     </label>
                     <input
                       required
@@ -1251,7 +1266,7 @@ const FollowUpList = ({
 
                   <div className="space-y-1.5">
                     <label className="text-[14px] font-bold text-primary  tracking-widest ml-1">
-                      Description
+                      Description <span className="text-error">*</span>
                     </label>
                     <textarea
                       placeholder="Add details about your follow-up..."
@@ -1270,7 +1285,7 @@ const FollowUpList = ({
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div className="space-y-1.5">
                       <label className="text-[14px] font-bold text-primary  tracking-widest ml-1">
-                        Follow-up Date
+                        Follow-up Date <span className="text-error">*</span>
                       </label>
                       <DatePicker
                         value={formData.followup_date}
@@ -1282,7 +1297,7 @@ const FollowUpList = ({
 
                     <div className="space-y-1.5">
                       <label className="text-[14px] font-bold text-primary  tracking-widest ml-1">
-                        Follow-up Time (12h)
+                        Follow-up Time (12h) <span className="text-error">*</span>
                       </label>
                       <div className="flex gap-2 relative">
                         {/* Hour Dropdown */}
@@ -1426,7 +1441,7 @@ const FollowUpList = ({
 
                   <div className="space-y-1.5">
                     <label className="text-[14px] font-bold text-primary  tracking-widest ml-1">
-                      Priority
+                      Priority <span className="text-error">*</span>
                     </label>
                     <div className="relative">
                       <button
@@ -1473,7 +1488,7 @@ const FollowUpList = ({
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-[14px] font-bold text-primary  tracking-widest ml-1">
-                      Follow-up Mode
+                      Follow-up Mode <span className="text-error">*</span>
                     </label>
                     <div className="relative">
                       <button
@@ -1732,7 +1747,7 @@ const FollowUpList = ({
 
                   <div className="space-y-1.5">
                     <label className="text-[14px] font-bold text-primary  tracking-widest ml-1">
-                      Follow-up Status
+                      Follow-up Status <span className="text-error">*</span>
                     </label>
                     <div className="relative">
                       <button
