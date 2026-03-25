@@ -42,7 +42,7 @@ import {
   countryToCurrency,
 } from "../../utils/locationData";
 import SearchableDropdown from "../../components/common/SearchableDropdown";
-import { validateForm } from "../../utils/validation";
+import { validateForm, EMAIL_PATTERN } from "../../utils/validation";
 import {
   CATEGORY_MAP,
   REVERSE_CATEGORY_MAP,
@@ -463,6 +463,11 @@ const LeadList = ({
 
     let phone = (lead.phone || "").trim();
     if (countryCode) {
+      const match = countryCode.match(/\(([^)]+)\)/);
+      if (match && match[1]) {
+        countryCode = match[1];
+      }
+      
       const plainCountryCode = countryCode.replace("+", "");
       const cleanPhone = phone.replace("+", "").replace(/\s/g, "");
 
@@ -618,9 +623,12 @@ const LeadList = ({
     e.preventDefault();
 
     const isValid = validateForm(formData, {
-      name: { required: true, minLength: 2, label: "Full Name" },
-      email: { required: true, pattern: /^\S+@\S+\.\S+$/, label: "Email" },
-      phone: { required: true, minLength: 10, label: "Phone Number" },
+      name: { required: true, minLength: 2, label: "Full Name", pattern: /^[a-zA-Z\s]+$/, errorMessage: "Full Name must contain only alphabets." },
+      email: { required: true, pattern: EMAIL_PATTERN, label: "Email", errorMessage: "Enter a valid email (e.g. john@gmail.com, john@yahoo.com)." },
+      phone: { required: true, minLength: 10, label: "Phone Number", pattern: /^\d+$/, errorMessage: "Phone Number must be at least 10 digits." },
+      country: { required: true, label: "Country Code" },
+      leadType: { required: true, label: "Lead Status" },
+      projectCategory: { required: true, label: "Lead Category" },
     });
 
     if (!isValid) return;
@@ -900,6 +908,9 @@ const LeadList = ({
                   <th className="px-6 py-4 text-left text-[12px] font-bold text-slate-400  tracking-widest border-b border-slate-100">
                     Lead Category
                   </th>
+                  <th className="px-6 py-4 text-left text-[12px] font-bold text-slate-400  tracking-widest border-b border-slate-100">
+                    Lead Status
+                  </th>
                   <th className="px-6 py-4 text-right text-[12px] font-bold text-slate-400  tracking-widest border-b border-slate-100">
                     Control
                   </th>
@@ -933,20 +944,6 @@ const LeadList = ({
                             <div className="font-bold text-sm text-primary tracking-tight leading-none group-hover:text-secondary transition-colors">
                               {lead.name}
                             </div>
-                            {lead.status === "Lead" ? (
-                              <span
-                                className={`px-3 py-1 rounded-xl text-[14px] font-bold border flex items-center gap-2 shadow-sm transition-all shrink-0 ${status.className}`}
-                              >
-                                {status.icon}
-                                {status.label}
-                              </span>
-                            ) : (
-                              <span
-                                className={`px-2 py-0.5 rounded-lg text-[14px] font-bold tracking-widest shrink-0 ${lead.status === "Active" ? "bg-success/10 text-success border border-success/20" : "bg-slate-100 text-slate-400 border border-slate-200"}`}
-                              >
-                                {lead.status || "Active"}
-                              </span>
-                            )}
                           </div>
                         </div>
                       </td>
@@ -964,6 +961,22 @@ const LeadList = ({
                               "Other"}
                           </span>
                         </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        {lead.status === "Lead" ? (
+                          <span
+                            className={`px-3 py-1 rounded-xl text-[14px] font-bold border flex items-center gap-2 shadow-sm transition-all w-fit ${status.className}`}
+                          >
+                            {status.icon}
+                            {status.label}
+                          </span>
+                        ) : (
+                          <span
+                            className={`px-2 py-0.5 rounded-lg text-[14px] font-bold tracking-widest w-fit ${lead.status === "Active" ? "bg-success/10 text-success border border-success/20" : "bg-slate-100 text-slate-400 border border-slate-200"}`}
+                          >
+                            {lead.status || "Active"}
+                          </span>
+                        )}
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div
@@ -1049,7 +1062,7 @@ const LeadList = ({
                 })}
                 {filteredLeads.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="px-10 py-32 text-center">
+                    <td colSpan={6} className="px-10 py-32 text-center">
                       <div className="w-14 h-14 bg-slate-50 text-slate-200 p-4 rounded-xl mb-4 shadow-inner flex items-center justify-center mx-auto">
                         <Search size={32} />
                       </div>
@@ -1321,8 +1334,8 @@ const LeadList = ({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {/* ADD LEAD FIELDS */}
                   <div className="space-y-1.5">
-                    <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                      LEAD NAME
+                    <label className="text-[12px] font-bold text-[#18254D] tracking-widest ml-1">
+                      LEAD NAME <span className="text-rose-500">*</span>
                     </label>
                     <input
                       required
@@ -1331,19 +1344,19 @@ const LeadList = ({
                       className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
                       value={formData.name}
                       onChange={(e) =>
-                        setFormData({ ...formData, name: e.target.value })
+                        setFormData({ ...formData, name: e.target.value.replace(/[^a-zA-Z\s]/g, "") })
                       }
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                      EMAIL ID
+                    <label className="text-[12px] font-bold text-[#18254D] tracking-widest ml-1">
+                      EMAIL ID <span className="text-rose-500">*</span>
                     </label>
                     <input
                       required
                       type="email"
-                      placeholder="rahul.sharma@example.com"
+                      placeholder="e.g. rahul@gmail.com"
                       className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
                       value={formData.email}
                       onChange={(e) =>
@@ -1353,23 +1366,27 @@ const LeadList = ({
                   </div>
 
                   <SearchableDropdown
-                    label="COUNTRY"
+                    label={
+                      <span className="text-[12px] font-bold text-[#18254D] tracking-widest ml-1">
+                        COUNTRY CODE <span className="text-rose-500">*</span>
+                      </span>
+                    }
                     options={countries}
                     value={formData.country}
                     onChange={(val) =>
                       setFormData({ ...formData, country: val })
                     }
-                    placeholder="Select Country"
+                    placeholder="Select Country Code"
                   />
 
                   <div className="space-y-1.5">
-                    <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                      PHONE NUMBER
+                    <label className="text-[12px] font-bold text-[#18254D] tracking-widest ml-1">
+                      PHONE NUMBER <span className="text-rose-500">*</span>
                     </label>
                     <input
                       required
                       type="tel"
-                      placeholder="e.g.  98765 43210"
+                      placeholder="e.g. 9876543210 (min 10 digits)"
                       className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
                       value={formData.phone}
                       onChange={(e) =>
@@ -1382,7 +1399,7 @@ const LeadList = ({
                   </div>
 
                   <div className="space-y-1.5 md:col-span-2">
-                    <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
+                    <label className="text-[12px] font-bold text-[#18254D] tracking-widest ml-1">
                       WEBSITE URL (OPTIONAL)
                     </label>
                     <input
@@ -1397,8 +1414,8 @@ const LeadList = ({
                   </div>
 
                   <div className="md:col-span-2 space-y-2">
-                    <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1 uppercase">
-                      LEAD CATEGORY
+                    <label className="text-[12px] font-bold text-[#18254D] tracking-widest ml-1 uppercase">
+                      LEAD CATEGORY <span className="text-rose-500">*</span>
                     </label>
                     <div className="relative">
                       <button
@@ -1461,8 +1478,8 @@ const LeadList = ({
                   </div>
 
                   <div className="md:col-span-2 space-y-2">
-                    <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1 uppercase">
-                      LEAD STATUS
+                    <label className="text-[12px] font-bold text-[#18254D] tracking-widest ml-1 uppercase">
+                      LEAD STATUS <span className="text-rose-500">*</span>
                     </label>
                     <div className="relative">
                       <button
@@ -1536,8 +1553,8 @@ const LeadList = ({
                   </div>
 
                   <div className="md:col-span-2 space-y-2">
-                    <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                      MESSAGE
+                    <label className="text-[12px] font-bold text-[#18254D] tracking-widest ml-1">
+                      NOTE / MESSAGE
                     </label>
                     <textarea
                       rows={3}

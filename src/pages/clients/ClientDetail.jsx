@@ -28,6 +28,7 @@ import {
   ChevronDown,
   Globe,
   UserCheck,
+  Tag,
 } from "lucide-react";
 import { MOCK_ACTIVITIES } from "../../constants/mockData";
 import {
@@ -251,55 +252,56 @@ const ClientDetail = ({
             : "Get a complete overview of client details."}
         </p>
       </div>
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col min-h-[calc(100vh-8rem)] animate-fade-in relative">
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 md:overflow-hidden flex flex-col min-h-[calc(100vh-8rem)] md:h-[calc(100vh-8rem)] animate-fade-in relative">
         {/* Header */}
-        <div className="p-4 md:p-6 border-b border-slate-100 flex flex-col lg:flex-row items-start lg:items-center justify-between bg-white gap-4">
-          <div className="flex items-center gap-5 w-full lg:w-auto">
+        <div className="p-3 md:p-6 border-b border-slate-100 flex flex-row items-center justify-between bg-white gap-2 md:gap-4">
+          <div className="flex items-center gap-2 md:gap-5 min-w-0">
             <button
               onClick={onBack}
-              className="p-3.5 hover:bg-slate-100 rounded-xl text-slate-400 hover:text-primary transition-all border border-slate-100 shadow-sm"
+              className="p-2 md:p-3.5 hover:bg-slate-100 rounded-lg md:rounded-xl text-slate-400 hover:text-primary transition-all border border-slate-100 shadow-sm shrink-0"
             >
-              <ArrowLeft size={20} strokeWidth={3} />
+              <ArrowLeft className="w-4 h-4 md:w-5 md:h-5" strokeWidth={3} />
             </button>
-            <div className="flex items-center gap-5 overflow-hidden">
-              <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-primary flex items-center justify-center text-white font-bold text-xl border-2 border-slate-50 shadow-lg shrink-0">
+            <div className="flex items-center gap-2 md:gap-5 overflow-hidden min-w-0">
+              <div className="w-8 h-8 md:w-12 md:h-12 rounded-lg md:rounded-xl bg-primary flex items-center justify-center text-white font-bold text-sm md:text-xl border md:border-2 border-slate-50 shadow-md md:shadow-lg shrink-0">
                 {client.name.charAt(0).toUpperCase()}
               </div>
               <div className="min-w-0">
-                <h2 className="text-lg md:text-xl font-bold text-primary tracking-tight truncate leading-none mb-1.5">
+                <h2 className="text-sm md:text-xl font-bold text-primary tracking-tight truncate leading-none mb-0.5 md:mb-1.5 capitalize">
                   {client.name}
                 </h2>
-                <div className="flex items-center gap-2.5 text-[13px] text-textMuted font-bold  tracking-widest truncate">
-                  <span className="truncate">
-                    {isLead
-                      ? client.company || ""
-                      : client.projectName ||
-                        client.company ||
-                        "Global Project"}
-                  </span>
-                  <span className="px-3 py-1 bg-secondary/10 text-secondary rounded-lg text-[14px] font-bold tracking-widest border border-secondary/20">
+                <div className="flex items-center gap-1.5 md:gap-2 text-[10px] md:text-[13px] text-textMuted font-bold tracking-widest truncate">
+                  {isLead ? (
+                    client.company && (
+                      <span className="truncate">{client.company}</span>
+                    )
+                  ) : (
+                    <span className="truncate">
+                      {client.projectName || client.company || "Global Project"}
+                    </span>
+                  )}
+                  <span className="px-1.5 md:px-3 py-0.5 md:py-1 bg-secondary/10 text-secondary rounded-md md:rounded-lg text-[9px] md:text-[14px] font-bold tracking-widest border border-secondary/20 whitespace-nowrap">
                     {client.status}
                   </span>
                 </div>
               </div>
             </div>
           </div>
-          <div className="flex gap-3 w-full lg:w-auto">
-            {isLead && (
+          {isLead && (
+            <div className="flex shrink-0">
               <button
                 onClick={() => {
                   setShowEditModal(true);
                 }}
-                className="flex-shrink-0 p-3.5 bg-slate-50 text-primary border border-slate-200 rounded-xl hover:bg-white hover:border-primary transition-all shadow-sm"
+                className="flex items-center justify-center p-2 md:p-3.5 bg-slate-50 text-primary border border-slate-200 rounded-lg md:rounded-xl hover:bg-white hover:border-primary transition-all shadow-sm"
                 title="Edit Lead Details"
               >
-                <Pencil size={18} />
+                <Pencil className="w-4 h-4 md:w-[18px] md:h-[18px]" />
               </button>
-            )}
-          </div>
+            </div>
+          )}
         </div>
-
-        <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
+        <div className="flex-1 flex flex-col md:flex-row md:overflow-hidden">
           {/* Edit Lead Modal */}
           {showEditModal &&
             createPortal(
@@ -909,44 +911,63 @@ const ClientDetail = ({
           }
 
           {/* Side Panel */}
-          <div className="w-full lg:w-[280px] border-b lg:border-b-0 lg:border-r border-slate-100 p-4 md:p-6 overflow-y-auto bg-slate-50/20 no-scrollbar shrink-0">
-            <div className="space-y-8">
+          <div className="w-full md:w-[260px] lg:w-[300px] border-b md:border-b-0 md:border-r border-slate-100 p-4 md:p-6 md:overflow-y-auto bg-slate-50/20 no-scrollbar shrink-0">
+            <div className="space-y-6 md:space-y-8">
               <div>
-                <h3 className="text-[14px] font-bold text-primary  tracking-widest mb-4 opacity-40">
+                <h3 className="text-[12px] md:text-[14px] font-bold text-primary tracking-widest mb-3 md:mb-4 opacity-40">
                   Contact Details
                 </h3>
-                <div className="space-y-3">
+                <div className="space-y-2.5 md:space-y-3">
                   {client.organisationName && (
-                    <div className="flex items-center gap-4 p-3.5 bg-white rounded-xl border border-slate-100 shadow-sm group">
+                    <div className="flex items-center gap-3 md:gap-4 p-2.5 md:p-3.5 bg-white rounded-xl border border-slate-100 shadow-sm group">
                       <Briefcase
-                        size={14}
-                        className="text-slate-400 shrink-0"
+                        className="w-3.5 h-3.5 md:w-4 md:h-4 text-slate-400 shrink-0"
                       />
-                      <span className="text-xs font-bold text-primary truncate">
+                      <span className="text-[11px] md:text-xs font-bold text-primary truncate">
                         {client.organisationName}
                       </span>
                     </div>
                   )}
-                  <div className="flex items-center gap-4 p-3.5 bg-white rounded-xl border border-slate-100 shadow-sm group">
+                  <div className="flex items-center gap-3 md:gap-4 p-2.5 md:p-3.5 bg-white rounded-xl border border-slate-100 shadow-sm group">
                     <Mail
-                      size={14}
-                      className="text-slate-400 group-hover:text-secondary shrink-0"
+                      className="w-3.5 h-3.5 md:w-4 md:h-4 text-slate-400 group-hover:text-secondary shrink-0"
                     />
-                    <span className="text-xs font-bold text-primary truncate">
+                    <span className="text-[11px] md:text-xs font-bold text-primary truncate">
                       {client.email}
                     </span>
                   </div>
-                  <div className="flex items-center gap-4 p-3.5 bg-white rounded-xl border border-slate-100 shadow-sm group">
-                    <Phone size={14} className="text-slate-400 shrink-0" />
-                    <span className="text-xs font-bold text-primary truncate">
-                      {client.country ? `${client.country} ` : ""}
-                      {client.phone}
+                  <div className="flex items-center gap-3 md:gap-4 p-2.5 md:p-3.5 bg-white rounded-xl border border-slate-100 shadow-sm group">
+                    <Phone className="w-3.5 h-3.5 md:w-4 md:h-4 text-slate-400 shrink-0" />
+                    <span className="text-[11px] md:text-xs font-bold text-primary truncate">
+                      {(() => {
+                        const countryVal = (client.country || "").trim();
+                        // Extract just the dial code if the country value contains a name like "India (+91)"
+                        let dialCode = countryVal;
+                        
+                        // First check regex to extract code from parens e.g. "India (+91)" -> "+91"
+                        const match = countryVal.match(/\(([^)]+)\)/);
+                        if (match && match[1]) {
+                          dialCode = match[1];
+                        } else {
+                          const countryObj = countries?.find((c) =>
+                            c.name?.toLowerCase() === countryVal.toLowerCase() ||
+                            c.code === countryVal ||
+                            c.code?.replace("+", "") === countryVal.replace("+", "") ||
+                            countryVal.includes(`(${c.code})`)
+                          );
+                          if (countryObj) {
+                            dialCode = countryObj.code;
+                          }
+                        }
+                        
+                        return dialCode ? `${dialCode} ${client.phone}` : client.phone;
+                      })()}
                     </span>
                   </div>
                   {!isLead && (client.state || client.country) && (
-                    <div className="flex items-center gap-4 p-3.5 bg-white rounded-xl border border-slate-100 shadow-sm group">
-                      <MapPin size={14} className="text-slate-400 shrink-0" />
-                      <span className="text-xs font-bold text-primary truncate">
+                    <div className="flex items-center gap-3 md:gap-4 p-2.5 md:p-3.5 bg-white rounded-xl border border-slate-100 shadow-sm group">
+                      <MapPin className="w-3.5 h-3.5 md:w-4 md:h-4 text-slate-400 shrink-0" />
+                      <span className="text-[11px] md:text-xs font-bold text-primary truncate">
                         {client.state ? `${client.state}, ` : ""}
                         {client.country}
                       </span>
@@ -961,13 +982,12 @@ const ClientDetail = ({
                       }
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-4 p-3.5 bg-white rounded-xl border border-slate-100 shadow-sm group hover:border-secondary transition-all"
+                      className="flex items-center gap-3 md:gap-4 p-2.5 md:p-3.5 bg-white rounded-xl border border-slate-100 shadow-sm group hover:border-secondary transition-all"
                     >
                       <Globe
-                        size={14}
-                        className="text-slate-400 group-hover:text-secondary shrink-0"
+                        className="w-3.5 h-3.5 md:w-4 md:h-4 text-slate-400 group-hover:text-secondary shrink-0"
                       />
-                      <span className="text-xs font-bold text-primary truncate group-hover:text-secondary">
+                      <span className="text-[11px] md:text-xs font-bold text-primary truncate group-hover:text-secondary">
                         {client.website.replace(/^https?:\/\//, "")}
                       </span>
                     </a>
@@ -975,20 +995,19 @@ const ClientDetail = ({
                 </div>
               </div>
               <div>
-                <h3 className="text-[14px] font-bold text-primary  tracking-widest mb-4 opacity-40">
+                <h3 className="text-[12px] md:text-[14px] font-bold text-primary tracking-widest mb-3 md:mb-4 opacity-40">
                   Brief Message
                 </h3>
-                <div className="p-5 bg-white border border-slate-100 rounded-xl shadow-inner italic text-xs md:text-sm text-primary leading-relaxed font-medium">
+                <div className="p-3.5 md:p-5 bg-white border border-slate-100 rounded-xl shadow-inner italic text-[11px] md:text-[13px] lg:text-sm text-primary leading-relaxed font-medium">
                   {client.notes}
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Content View */}
-          <div className="flex-1 flex flex-col overflow-hidden bg-white">
+          <div className="flex-1 flex flex-col md:overflow-hidden bg-white">
             <div className="bg-white p-2 border-b border-slate-100">
-              <div className="flex bg-slate-100/50 p-1 rounded-2xl border border-slate-200 shadow-sm overflow-x-auto no-scrollbar h-[42px] items-center gap-1">
+              <div className="flex bg-slate-100/50 p-1 rounded-2xl border border-slate-200 shadow-sm overflow-x-auto no-scrollbar h-[40px] md:h-[42px] items-center gap-1">
                 {[
                   { id: "overview", label: "Overview" },
                   {
@@ -1000,7 +1019,7 @@ const ClientDetail = ({
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`flex-1 px-5 h-full rounded-xl text-[12px] font-bold  tracking-wider transition-all flex items-center justify-center min-w-[100px] border border-transparent whitespace-nowrap ${activeTab === tab.id ? "bg-white text-primary shadow-md border-slate-100" : "text-slate-400 hover:text-slate-600 hover:bg-white/50"}`}
+                    className={`flex-1 px-3 md:px-5 h-full rounded-xl text-[11px] md:text-[12px] font-bold  tracking-wider transition-all flex items-center justify-center min-w-[80px] md:min-w-[100px] border border-transparent whitespace-nowrap ${activeTab === tab.id ? "bg-white text-primary shadow-md border-slate-100" : "text-slate-400 hover:text-slate-600 hover:bg-white/50"}`}
                   >
                     {tab.label}
                   </button>
@@ -1008,9 +1027,9 @@ const ClientDetail = ({
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4 md:p-6 no-scrollbar bg-white">
+            <div className="flex-1 md:overflow-y-auto p-4 md:p-6 no-scrollbar bg-white">
               {activeTab === "overview" && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 animate-fade-in text-start">
                   {isLead ? (
                     <>
                       <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 group relative overflow-hidden hover:shadow-md hover:border-secondary/30 transition-all">
@@ -1034,15 +1053,13 @@ const ClientDetail = ({
                       </div>
                       <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 group relative overflow-hidden hover:shadow-md hover:border-secondary/30 transition-all">
                         <div className="w-8 h-8 bg-primary/10 text-primary rounded-xl flex items-center justify-center mb-3 group-hover:bg-primary group-hover:text-white transition-all border border-primary/20">
-                          <MessageSquare size={16} strokeWidth={2.5} />
+                          <Tag size={16} strokeWidth={2.5} />
                         </div>
                         <h3 className="text-[14px] font-bold text-slate-400  tracking-widest mb-1">
-                          Recent Context
+                          Lead Category
                         </h3>
-                        <p className="text-sm font-bold text-primary truncate">
-                          {client.notes?.split("\n")[0].substring(0, 40) ||
-                            "No interaction logged"}
-                          ...
+                        <p className="text-lg font-bold text-primary tracking-tight">
+                          {CATEGORY_MAP[client.projectCategory] || client.industry || "Tech"}
                         </p>
                       </div>
                     </>
@@ -1172,7 +1189,7 @@ const ClientDetail = ({
                     /* Lead: Simple flat timeline, no project grouping */
                     <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
                       <div className="p-4">
-                        <div className="relative border-l-2 border-slate-100 ml-3 space-y-4">
+                        <div className="relative border-l-2 border-slate-100 ml-4 md:ml-3 space-y-4">
                           {clientActivities.length === 0 &&
                           completedFollowUps.length === 0 ? (
                             <p className="ml-6 text-[12px] font-bold text-slate-300  tracking-widest py-4">
@@ -1186,7 +1203,7 @@ const ClientDetail = ({
                                   className="ml-6 relative"
                                 >
                                   <div
-                                    className={`absolute -left-[33px] w-6 h-6 rounded-lg flex items-center justify-center text-white shadow-sm z-10 ${
+                                    className={`absolute -left-[32px] md:-left-[33px] w-6 h-6 rounded-lg flex items-center justify-center text-white shadow-sm z-10 ${
                                       fu.followup_mode?.toLowerCase() === "call"
                                         ? "bg-success"
                                         : fu.followup_mode?.toLowerCase() ===
@@ -1221,8 +1238,8 @@ const ClientDetail = ({
                                     )}
                                   </div>
                                   <div className="bg-success/5 p-3 rounded-xl border border-success/20 hover:border-success/40 transition-all">
-                                    <div className="flex items-center justify-between mb-1.5">
-                                      <span className="text-[14px] font-bold text-slate-400  tracking-widest">
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-1.5">
+                                      <span className="text-[11px] md:text-[14px] font-bold text-slate-400  tracking-widest capitalize">
                                         {fu.completed_at
                                           ? new Date(
                                               fu.completed_at,
@@ -1250,7 +1267,7 @@ const ClientDetail = ({
                                               hour12: true,
                                             })}
                                       </span>
-                                      <span className="text-[13px] font-bold  tracking-widest px-2 py-0.5 rounded-md bg-success/10 text-success">
+                                      <span className="text-[11px] md:text-[13px] font-bold  tracking-widest px-2 py-0.5 rounded-md bg-success/10 text-success w-fit">
                                         Follow-Up Completed
                                       </span>
                                     </div>
@@ -1295,7 +1312,7 @@ const ClientDetail = ({
                               {clientActivities.map((conv) => (
                                 <div key={conv.id} className="ml-6 relative">
                                   <div
-                                    className={`absolute -left-[33px] w-6 h-6 rounded-lg flex items-center justify-center text-white shadow-sm z-10 ${
+                                    className={`absolute -left-[32px] md:-left-[33px] w-6 h-6 rounded-lg flex items-center justify-center text-white shadow-sm z-10 ${
                                       conv.type === "email"
                                         ? "bg-info"
                                         : conv.type === "call"
@@ -1314,8 +1331,8 @@ const ClientDetail = ({
                                     )}
                                   </div>
                                   <div className="bg-slate-50/50 p-3 rounded-xl border border-slate-100 hover:border-slate-200 transition-all">
-                                    <div className="flex items-center justify-between mb-1.5">
-                                      <span className="text-[14px] font-bold text-slate-400  tracking-widest">
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-1.5">
+                                      <span className="text-[11px] md:text-[14px] font-bold text-slate-400  tracking-widest capitalize">
                                         {new Date(conv.date).toLocaleDateString(
                                           [],
                                           {
@@ -1326,7 +1343,7 @@ const ClientDetail = ({
                                         )}
                                       </span>
                                       <span
-                                        className={`text-[13px] font-bold  tracking-widest px-2 py-0.5 rounded-md ${
+                                        className={`text-[11px] md:text-[13px] font-bold  tracking-widest px-2 py-0.5 rounded-md w-fit ${
                                           conv.type === "call"
                                             ? "bg-success/10 text-success"
                                             : conv.type === "meeting"

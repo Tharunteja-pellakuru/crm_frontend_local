@@ -1,5 +1,14 @@
 import { toast } from "react-hot-toast";
 
+// Common email pattern for popular providers (gmail, yahoo, outlook)
+export const EMAIL_PATTERN = /^[a-zA-Z0-9._%+-]+@(gmail|yahoo|outlook)\.com$/i;
+
+// Digits-only phone pattern
+export const PHONE_PATTERN = /^\d+$/;
+
+// Alphabets and spaces only pattern for names
+export const NAME_PATTERN = /^[a-zA-Z\s]+$/;
+
 /**
  * Validates form data against a schema and shows toast errors.
  * @param {Object} data - The form data object.
@@ -19,12 +28,12 @@ export const validateForm = (data, schema) => {
 
     if (value !== undefined && value !== null && value !== "") {
       if (rules.minLength && value.length < rules.minLength) {
-        toast.error(`${label} must be at least ${rules.minLength} characters.`);
+        toast.error(rules.errorMessage || `${label} must be at least ${rules.minLength} characters.`);
         return false;
       }
 
       if (rules.pattern && !rules.pattern.test(value)) {
-        toast.error(`Invalid ${label} format.`);
+        toast.error(rules.errorMessage || `Invalid ${label} format.`);
         return false;
       }
 

@@ -38,7 +38,7 @@ import {
 } from "../../constants/categoryConstants";
 import { countries } from "../../utils/countries";
 import SearchableDropdown from "../../components/common/SearchableDropdown";
-import { validateForm } from "../../utils/validation";
+import { validateForm, EMAIL_PATTERN } from "../../utils/validation";
 import {
   analyzeEnquiryRelevance,
   batchAnalyzeEnquiries,
@@ -397,10 +397,12 @@ const EnquiryList = ({
     if (!selectedEnquiry) return;
 
     const isValid = validateForm(promoteFormData, {
-      name: { required: true, minLength: 2, label: "Full Name" },
-      email: { required: true, pattern: /^\S+@\S+\.\S+$/, label: "Email" },
-      phone: { required: true, minLength: 10, label: "Phone Number" },
-      country: { required: true, label: "Country" },
+      name: { required: true, minLength: 2, label: "Full Name", pattern: /^[a-zA-Z\s]+$/, errorMessage: "Full Name must contain only alphabets." },
+      email: { required: true, pattern: EMAIL_PATTERN, label: "Email", errorMessage: "Enter a valid email (e.g. john@gmail.com, john@yahoo.com)." },
+      phone: { required: true, minLength: 10, label: "Phone Number", pattern: /^\d+$/, errorMessage: "Phone Number must be at least 10 digits." },
+      country: { required: true, label: "Country Code" },
+      leadType: { required: true, label: "Lead Status" },
+      leadCategory: { required: true, label: "Lead Category" },
     });
 
     if (!isValid) return;
@@ -457,10 +459,10 @@ const EnquiryList = ({
     e.preventDefault();
 
     const isValid = validateForm(formData, {
-      name: { required: true, minLength: 2, label: "Full Name" },
-      email: { required: true, pattern: /^\S+@\S+\.\S+$/, label: "Email" },
-      phone: { required: true, minLength: 10, label: "Phone Number" },
-      message: { required: true, label: "Requirement Briefing" },
+      name: { required: true, minLength: 2, label: "Full Name", pattern: /^[a-zA-Z\s]+$/, errorMessage: "Full Name must contain only alphabets." },
+      email: { required: true, pattern: EMAIL_PATTERN, label: "Email", errorMessage: "Enter a valid email (e.g. john@gmail.com, john@yahoo.com)." },
+      phone: { required: true, minLength: 10, label: "Phone Number", pattern: /^\d+$/, errorMessage: "Phone Number must be at least 10 digits." },
+      message: { required: true, label: "Note / Requirement Briefing" },
     });
 
     if (!isValid) return;
@@ -1025,30 +1027,30 @@ const EnquiryList = ({
               >
                 <div className="space-y-4">
                   <div className="space-y-1.5">
-                    <label className="text-[12px] font-bold text-primary  tracking-widest ml-1">
-                      Full Name
+                    <label className="text-[12px] font-bold text-primary tracking-widest ml-1">
+                      Full Name <span className="text-rose-500">*</span>
                     </label>
                     <input
                       required
                       type="text"
                       className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary/5 outline-none transition-all"
-                      placeholder="Enter full name..."
+                      placeholder="e.g. John Doe"
                       value={formData.name}
                       onChange={(e) =>
-                        setFormData({ ...formData, name: e.target.value })
+                        setFormData({ ...formData, name: e.target.value.replace(/[^a-zA-Z\s]/g, "") })
                       }
                     />
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                      <label className="text-[12px] font-bold text-primary  tracking-widest ml-1">
-                        Email
+                      <label className="text-[12px] font-bold text-primary tracking-widest ml-1">
+                        Email <span className="text-rose-500">*</span>
                       </label>
                       <input
                         required
                         type="email"
                         className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary/5 outline-none transition-all"
-                        placeholder="Email address..."
+                        placeholder="e.g. john@gmail.com"
                         value={formData.email}
                         onChange={(e) =>
                           setFormData({ ...formData, email: e.target.value })
@@ -1056,14 +1058,14 @@ const EnquiryList = ({
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-[12px] font-bold text-primary  tracking-widest ml-1">
-                        Phone
+                      <label className="text-[12px] font-bold text-primary tracking-widest ml-1">
+                        Phone <span className="text-rose-500">*</span>
                       </label>
                       <input
                         type="tel"
                         required
                         className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary/5 outline-none transition-all"
-                        placeholder="Phone number..."
+                        placeholder="e.g. 9876543210 (min 10 digits)"
                         value={formData.phone}
                         onChange={(e) =>
                           setFormData({
@@ -1075,13 +1077,13 @@ const EnquiryList = ({
                     </div>
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-[12px] font-bold text-primary  tracking-widest ml-1">
+                    <label className="text-[12px] font-bold text-primary tracking-widest ml-1">
                       Website URL (Optional)
                     </label>
                     <input
                       type="text"
                       className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary/5 outline-none transition-all"
-                      placeholder="https://example.com"
+                      placeholder="e.g. www.example.com"
                       value={formData.website}
                       onChange={(e) =>
                         setFormData({ ...formData, website: e.target.value })
@@ -1089,14 +1091,14 @@ const EnquiryList = ({
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-[12px] font-bold text-primary  tracking-widest ml-1">
-                      Requirement Briefing
+                    <label className="text-[12px] font-bold text-primary tracking-widest ml-1">
+                      Note / Requirement Briefing <span className="text-rose-500">*</span>
                     </label>
                     <textarea
                       required
                       rows={4}
                       className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium resize-none focus:ring-2 focus:ring-primary/5 outline-none transition-all"
-                      placeholder="Type message here..."
+                      placeholder="Describe the enquiry or message from the lead..."
                       value={formData.message}
                       onChange={(e) =>
                         setFormData({ ...formData, message: e.target.value })
@@ -1143,7 +1145,7 @@ const EnquiryList = ({
                     <Plus size={18} className="text-white" />
                   </div>
                   <h3 className="text-lg font-bold tracking-tight ">
-                    New Lead
+                    Add to Lead
                   </h3>
                 </div>
                 <button
@@ -1157,27 +1159,31 @@ const EnquiryList = ({
               <div className="p-5 space-y-4 overflow-y-auto no-scrollbar">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <label className="text-[14px] font-bold text-primary  tracking-widest ml-1">
-                      Full Name
+                    <label className="text-[14px] font-bold text-primary tracking-widest ml-1">
+                      Full Name <span className="text-rose-500">*</span>
                     </label>
                     <input
                       type="text"
+                      required
+                      placeholder="e.g. John Doe"
                       className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary/5 outline-none transition-all"
                       value={promoteFormData.name}
                       onChange={(e) =>
                         setPromoteFormData({
                           ...promoteFormData,
-                          name: e.target.value,
+                          name: e.target.value.replace(/[^a-zA-Z\s]/g, ""),
                         })
                       }
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-[14px] font-bold text-primary  tracking-widest ml-1">
-                      Email ID
+                    <label className="text-[14px] font-bold text-primary tracking-widest ml-1">
+                      Email ID <span className="text-rose-500">*</span>
                     </label>
                     <input
                       type="email"
+                      required
+                      placeholder="e.g. john@gmail.com"
                       className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary/5 outline-none transition-all"
                       value={promoteFormData.email}
                       onChange={(e) =>
@@ -1190,7 +1196,11 @@ const EnquiryList = ({
                   </div>
                   <div className="space-y-1.5">
                     <SearchableDropdown
-                      label="Country Code"
+                      label={
+                        <span>
+                          Country Code <span className="text-rose-500">*</span>
+                        </span>
+                      }
                       options={countries.map((c) => ({
                         name: `${c.name} (${c.code})`,
                       }))}
@@ -1202,12 +1212,13 @@ const EnquiryList = ({
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-[14px] font-bold text-primary  tracking-widest ml-1 uppercase">
-                      Phone Number
+                    <label className="text-[14px] font-bold text-primary tracking-widest ml-1 uppercase">
+                      Phone Number <span className="text-rose-500">*</span>
                     </label>
                     <input
                       type="tel"
                       required
+                      placeholder="e.g. 9876543210"
                       className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary/5 outline-none transition-all"
                       value={promoteFormData.phone}
                       onChange={(e) =>
@@ -1219,11 +1230,12 @@ const EnquiryList = ({
                     />
                   </div>
                   <div className="space-y-1.5 md:col-span-2">
-                    <label className="text-[14px] font-bold text-primary  tracking-widest ml-1 uppercase">
+                    <label className="text-[14px] font-bold text-primary tracking-widest ml-1 uppercase">
                       Website URL (Optional)
                     </label>
                     <input
                       type="text"
+                      placeholder="e.g. www.google.com"
                       className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary/5 outline-none transition-all"
                       value={promoteFormData.website}
                       onChange={(e) =>
@@ -1237,8 +1249,8 @@ const EnquiryList = ({
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[14px] font-bold text-primary  tracking-widest ml-1 uppercase">
-                    Lead Category
+                  <label className="text-[14px] font-bold text-primary tracking-widest ml-1 uppercase">
+                    Lead Category <span className="text-rose-500">*</span>
                   </label>
                   <div className="relative">
                     <button
@@ -1248,7 +1260,7 @@ const EnquiryList = ({
                           !isEnquiryCategoryDropdownOpen,
                         )
                       }
-                      className="w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold shadow-sm hover:border-secondary transition-all"
+                      className="w-full h-[46px] flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold shadow-sm hover:border-secondary transition-all"
                     >
                       <span className="text-primary truncate">
                         {CATEGORY_MAP[promoteFormData.leadCategory] ||
@@ -1303,8 +1315,8 @@ const EnquiryList = ({
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[14px] font-bold text-primary  tracking-widest ml-1 uppercase">
-                    Lead Status
+                  <label className="text-[14px] font-bold text-primary tracking-widest ml-1 uppercase">
+                    Lead Status <span className="text-rose-500">*</span>
                   </label>
                   <div className="relative">
                     <button
@@ -1314,7 +1326,7 @@ const EnquiryList = ({
                           !isEnquiryStatusDropdownOpen,
                         )
                       }
-                      className="w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold shadow-sm hover:border-secondary transition-all"
+                      className="w-full h-[46px] flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold shadow-sm hover:border-secondary transition-all"
                     >
                       <span className="text-primary truncate">
                         {promoteFormData.leadType || "Select Status"}
@@ -1366,12 +1378,6 @@ const EnquiryList = ({
                                 {status === "Cold" && (
                                   <Snowflake size={12} className="text-info" />
                                 )}
-                                {status === "Converted" && (
-                                  <UserCheck
-                                    size={12}
-                                    className="text-success"
-                                  />
-                                )}
                                 <span>{status}</span>
                               </div>
                             </button>
@@ -1383,11 +1389,12 @@ const EnquiryList = ({
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[14px] font-bold text-primary  tracking-widest ml-1">
+                  <label className="text-[14px] font-bold text-primary tracking-widest ml-1">
                     Note
                   </label>
                   <textarea
                     rows={3}
+                    placeholder="Enter briefing or message from the Lead..."
                     className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium resize-none focus:ring-2 focus:ring-primary/5 outline-none transition-all"
                     value={promoteFormData.notes}
                     onChange={(e) =>
@@ -1403,7 +1410,7 @@ const EnquiryList = ({
                   type="button"
                   onClick={confirmLeadConversion}
                   disabled={isSubmitting}
-                  className="w-full py-3.5 bg-[#18254D] text-white rounded-2xl text-[13px] font-bold  tracking-widest shadow-lg active:scale-[0.98] transition-all hover:bg-slate-800 flex items-center justify-center gap-3 disabled:opacity-70 disabled:cursor-not-allowed"
+                  className="w-full h-12 bg-[#18254D] text-white rounded-2xl text-[13px] font-bold  tracking-widest shadow-lg active:scale-[0.98] transition-all hover:bg-slate-800 flex items-center justify-center gap-3 disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                   {isSubmitting ? (
                     <>

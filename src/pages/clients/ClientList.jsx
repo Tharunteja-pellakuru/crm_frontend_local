@@ -195,7 +195,11 @@ const ClientList = ({
         phone: { required: true, minLength: 10, label: "Phone Number" },
         organisationName: { required: true, label: "Organization Name" },
         projectName: { required: true, label: "Project Name" },
-        projectBudget: { required: true, type: "number", label: "Project Budget" },
+        projectBudget: {
+          required: true,
+          type: "number",
+          label: "Project Budget",
+        },
       })
     )
       return;
