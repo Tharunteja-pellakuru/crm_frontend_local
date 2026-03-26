@@ -123,7 +123,9 @@ const FollowUpList = ({
     const client = getClientById(f.clientId);
     if (typeFilter !== "All") {
       if (!client) return false;
+      // Reference Follow-ups -> Active Clients (or converted leads now active)
       if (typeFilter === "Active" && client.status !== "Active") return false;
+      // New Reference Follow-ups -> Leads
       if (typeFilter === "Lead" && client.status !== "Lead") return false;
     }
 
@@ -333,14 +335,14 @@ const FollowUpList = ({
               {typeFilter === "Active"
                 ? "Reference Follow-Ups"
                 : typeFilter === "Lead"
-                  ? "New Follow-Ups"
+                  ? "New Reference Follow-ups"
                   : "Follow-Ups"}
             </h2>
             <p className="text-xs md:text-sm text-textMuted font-medium leading-relaxed max-w-md">
               {typeFilter === "Active"
                 ? "Manage communications with your reference clients."
                 : typeFilter === "Lead"
-                  ? "Track interactions with your new follow-ups."
+                  ? "Track interactions with your new reference follow-ups."
                   : "Stay on top of your client and lead communications."}
             </p>
           </div>

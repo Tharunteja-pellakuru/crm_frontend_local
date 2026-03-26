@@ -38,8 +38,20 @@ const Layout = ({
           onLogout={onLogout}
           enquiryCount={enquiries.filter(e => e.status === "new" || e.status === "read").length}
           followUpCount={followUps.filter(f => f.status === "pending").length}
-          clientFollowUpCount={followUps.filter(f => f.status === "pending" && clients.find(c => c.id === f.clientId)?.status === "Active").length}
-          leadFollowUpCount={followUps.filter(f => f.status === "pending" && clients.find(c => c.id === f.clientId)?.status === "Lead").length}
+          clientFollowUpCount={
+            followUps.filter(
+              (f) =>
+                f.status === "pending" &&
+                clients.find((c) => c.id == f.clientId)?.status === "Active",
+            ).length
+          }
+          leadFollowUpCount={
+            followUps.filter(
+              (f) =>
+                f.status === "pending" &&
+                clients.find((c) => c.id == f.clientId)?.status === "Lead",
+            ).length
+          }
           onCloseMobile={() => setIsMobileSidebarOpen(false)}
         />
       </div>

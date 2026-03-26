@@ -15,7 +15,7 @@ function Sidebar({ activeTab, setActiveTab, onLogout, enquiryCount = 0, followUp
       badge: followUpCount,
       subItems: [
         { id: "followups-clients", label: "Reference Follow-ups", icon: Users, badge: clientFollowUpCount },
-        { id: "followups-leads", label: "New Follow-ups", icon: UserPlus, badge: leadFollowUpCount },
+        { id: "followups-leads", label: "New Reference Follow-ups", icon: UserPlus, badge: leadFollowUpCount },
       ],
     },
     { id: "leads", label: "Leads", icon: UserPlus },
