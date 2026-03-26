@@ -221,12 +221,17 @@ function AppRoutes() {
 
         setLeads(transformedLeads);
 
-        // Also update clients state with real leads, keeping non-lead clients
+        // Only add non-converted leads to clients state.
+        // Converted leads already exist in crm_tbl_clients with correct org data.
+        // Adding them here (with website_url as company) would overwrite correct data.
+        const pendingLeads = transformedLeads.filter(
+          (l) => l.status === "Lead" || l.status === "Dismissed"
+        );
         setClients((prev) => {
           const nonLeads = prev.filter(
             (c) => c.status !== "Lead" && c.status !== "Dismissed",
           );
-          return [...nonLeads, ...transformedLeads];
+          return [...nonLeads, ...pendingLeads];
         });
 
         setLeadsLoading(false);
@@ -281,6 +286,7 @@ function AppRoutes() {
           id: c.id?.toString() || c.client_id?.toString(),
           name: c.name || c.client_name,
           company: c.organisation_name,
+          organisation_name: c.organisation_name || "",
           email: c.email || "", 
           phone: c.phone || "",
           status: c.status || c.client_status || "Active",
@@ -1006,9 +1012,89 @@ function AppRoutes() {
 
       return finalLead;
     } catch (error) {
-      console.error("Error updating client:", error);
-      toast.error("Failed to update client.");
+      console.error("Error updating lead:", error);
+      toast.error("Failed to update lead.");
       throw error;
+    }
+  }
+
+  async function handleEditClient(clientId, data) {
+    try {
+      // 1. Find existing client to get lead_id and original data
+      const clientToUpdate = clients.find((c) => c.id == clientId);
+      if (!clientToUpdate) throw new Error("Client not found");
+
+      const leadId = clientToUpdate.lead_id || clientToUpdate.id; // Fallback to id if lead_id not present
+
+      // 2. Optimistic update for both clients and leads states
+      const updatedClient = {
+        ...clientToUpdate,
+        name: data.name || clientToUpdate.name,
+        company: data.organisationName || clientToUpdate.company,
+        organisation_name: data.organisationName || clientToUpdate.organisation_name,
+        email: data.email || clientToUpdate.email,
+        phone: data.phone || clientToUpdate.phone,
+        country: data.country || clientToUpdate.country,
+        state: data.state || clientToUpdate.state,
+        currency: data.currency || clientToUpdate.currency,
+        clientStatus: data.clientStatus || clientToUpdate.clientStatus,
+        status: data.clientStatus || clientToUpdate.status,
+        projectCategory: data.projectCategory || clientToUpdate.projectCategory,
+      };
+
+      setClients((prev) =>
+        prev.map((c) => (c.id == clientId ? updatedClient : c)),
+      );
+      setLeads((prev) =>
+        prev.map((l) => (l.id == leadId ? { ...l, ...updatedClient, id: l.id } : l)),
+      );
+
+      // 3. Update Client Table (organisation, name, country, etc.)
+      const clientPayload = {
+        organisation_name: data.organisationName || updatedClient.company,
+        client_name: data.name || updatedClient.name,
+        client_country: data.country || updatedClient.country,
+        client_state: data.state || updatedClient.state,
+        client_currency: data.currency || updatedClient.currency,
+        client_status: data.clientStatus || updatedClient.clientStatus || "Active",
+      };
+
+      const clientRes = await fetch(`${BASE_URL}/api/update-client/${clientId}`, {
+        method: "PUT",
+        headers: getAuthHeaders(),
+        body: JSON.stringify(clientPayload),
+      });
+
+      if (!clientRes.ok) throw new Error("Failed to update client details");
+
+      // 4. Update Lead Table (email, phone, category, notes if any)
+      // Only call if these fields are provided or we want to keep them in sync
+      const leadPayload = {
+        full_name: data.name || updatedClient.name,
+        phone_number: data.phone || updatedClient.phone,
+        email: data.email || updatedClient.email,
+        lead_category: data.projectCategory || updatedClient.projectCategory,
+        country: data.country || updatedClient.country,
+        lead_status: "Converted", // Keep status as converted
+      };
+
+      const leadRes = await fetch(`${BASE_URL}/api/update-lead/${leadId}`, {
+        method: "PUT",
+        headers: getAuthHeaders(),
+        body: JSON.stringify(leadPayload),
+      });
+
+      if (!leadRes.ok) {
+        console.warn("Failed to update lead table, but client table was updated.");
+      }
+
+      toast.success("Client updated successfully!");
+      return { success: true };
+    } catch (error) {
+      console.error("Error editing client:", error);
+      toast.error("Failed to update client: " + error.message);
+      // Refresh data to rollback optimistic update if needed
+      return { success: false };
     }
   }
 
@@ -1609,11 +1695,12 @@ function AppRoutes() {
           path="/clients"
           element={
             <ClientList
-              clients={clients.filter((c) => c.status === "Active")}
+              clients={clients.filter((c) => c.status !== "Lead" && c.status !== "Dismissed")}
               loading={clientsLoading}
               onSelectClient={handleClientSelect}
               onDeleteClient={handleDeleteClient}
               onAddClient={handleAddClient}
+              onUpdateClient={handleEditClient}
               allClients={clients}
             />
           }

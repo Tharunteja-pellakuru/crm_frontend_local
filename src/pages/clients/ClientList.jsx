@@ -31,6 +31,7 @@ import {
   Zap,
   AlertTriangle,
   Loader2,
+  Pencil,
 } from "lucide-react";
 import DatePicker from "../../components/ui/DatePicker";
 import {
@@ -58,6 +59,7 @@ const ClientList = ({
   allClients = [],
   title = "Clients",
   loading = false,
+  onUpdateClient,
 }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("All");
@@ -185,6 +187,51 @@ const ClientList = ({
     organisationName: "",
     clientStatus: "Active",
   });
+  
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [isEditStatusDropdownOpen, setIsEditStatusDropdownOpen] = useState(false);
+  const [editingClient, setEditingClient] = useState(null);
+  const [editFormData, setEditFormData] = useState({
+    name: "",
+    organisationName: "",
+    email: "",
+    phone: "",
+    country: "",
+    state: "",
+    currency: "",
+    clientStatus: "Active",
+    projectCategory: 1,
+  });
+
+  const handleEditClick = (client) => {
+    setEditingClient(client);
+    setEditFormData({
+      name: client.name || "",
+      organisationName: client.organisation_name || client.company || "",
+      email: client.email || "",
+      phone: client.phone || "",
+      country: client.country || "India",
+      state: client.state || "",
+      currency: client.currency || "INR",
+      clientStatus: client.status || "Active",
+      projectCategory: client.projectCategory || 1,
+    });
+    setShowEditModal(true);
+  };
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      await onUpdateClient(editingClient.id, editFormData);
+      setShowEditModal(false);
+      setEditingClient(null);
+    } catch (err) {
+      console.error("Edit failed:", err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const handleOnboardSubmit = async (e) => {
     e.preventDefault();
@@ -239,8 +286,8 @@ const ClientList = ({
 
   const filteredClients = clients.filter((client) => {
     const matchesSearch =
-      client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      client.company.toLowerCase().includes(searchTerm.toLowerCase());
+      (client.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (client.company || client.organisation_name || "").toLowerCase().includes(searchTerm.toLowerCase());
 
     let matchesStatus =
       filterStatus === "All" || client.status === filterStatus;
@@ -808,18 +855,16 @@ const ClientList = ({
                                 <RotateCcw size={18} />
                               </button>
                             )}
-                          {onRestoreLead && client.status === "Dismissed" && (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onRestoreLead(client.id);
-                              }}
-                              className="p-2.5 bg-white border border-slate-200 rounded-lg text-slate-300 hover:text-blue-500 hover:border-blue-500 hover:bg-blue-50 transition-all active:scale-90 shadow-sm"
-                              title="Restore Lead"
-                            >
-                              <RotateCcw size={18} />
-                            </button>
-                          )}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEditClick(client);
+                            }}
+                            className="p-2.5 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-primary hover:border-primary hover:bg-slate-50 transition-all active:scale-90 shadow-sm"
+                            title="Edit Client"
+                          >
+                            <Pencil size={18} />
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -973,19 +1018,16 @@ const ClientList = ({
                           <Trash2 size={16} />
                         </button>
                       )} */}
-                    {onDismissLead &&
-                      (client.status === "Lead" || client.isConverted) &&
-                      client.status !== "Dismissed" && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onDismissLead(client.id);
-                          }}
-                          className="p-2 bg-amber-50 text-amber-600 border border-amber-100 rounded-lg hover:bg-amber-100 transition-all active:scale-90"
-                        >
-                          <UserX size={16} />
-                        </button>
-                      )}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEditClick(client);
+                      }}
+                      className="p-2 bg-slate-50 text-slate-600 border border-slate-100 rounded-lg hover:bg-slate-100 transition-all active:scale-90"
+                      title="Edit Client"
+                    >
+                      <Pencil size={16} />
+                    </button>
                   </div>
                 </div>
               </div>
@@ -2448,6 +2490,232 @@ const ClientList = ({
                         className="group-hover/btn:translate-x-1 transition-transform"
                       />
                       <span>CONVERT TO CLIENT</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Client Modal */}
+      {showEditModal && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[100] flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white w-full max-w-xl rounded-xl shadow-2xl border border-slate-200 animate-fade-in my-auto flex flex-col">
+            <div className="bg-primary p-4 text-white relative rounded-t-xl">
+              <button
+                onClick={() => setShowEditModal(false)}
+                className="absolute top-4 right-4 p-1.5 hover:bg-white/10 rounded-xl transition-colors"
+              >
+                <X size={18} strokeWidth={3} />
+              </button>
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-secondary/10 rounded-xl flex items-center justify-center shadow-lg border border-secondary/20">
+                  <Pencil
+                    size={18}
+                    className="text-secondary"
+                    strokeWidth={3}
+                  />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold tracking-tighter leading-none">
+                    Edit Client Information
+                  </h3>
+                  <p className="text-secondary text-[14px] font-bold  tracking-widest mt-0.5 uppercase">
+                    Update client data
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <form onSubmit={handleEditSubmit} className="p-4 md:p-5 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="space-y-1.5">
+                  <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1 uppercase">
+                    ORGANISATION NAME
+                  </label>
+                  <input
+                    type="text"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
+                    placeholder="Enter Organisation Name"
+                    value={editFormData.organisationName}
+                    onChange={(e) =>
+                      setEditFormData({
+                        ...editFormData,
+                        organisationName: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1 uppercase">
+                    CLIENT NAME
+                  </label>
+                  <input
+                    type="text"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
+                    placeholder="Enter Client Name"
+                    value={editFormData.name}
+                    onChange={(e) =>
+                      setEditFormData({
+                        ...editFormData,
+                        name: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+                <SearchableDropdown
+                  label="CLIENT COUNTRY"
+                  options={countries.map((c) => ({
+                    name: c.name,
+                    code: c.name,
+                  }))}
+                  value={editFormData.country}
+                  onChange={(val) => {
+                    const countryCurrency = countryToCurrency[val];
+                    setEditFormData({
+                      ...editFormData,
+                      country: val,
+                      currency: countryCurrency
+                        ? countryCurrency.code
+                        : editFormData.currency,
+                      state: "", // Reset state when country changes
+                    });
+                  }}
+                  placeholder="Select Country"
+                />
+
+                {editFormData.country === "India" ? (
+                  <SearchableDropdown
+                    label="CLIENT STATE"
+                    options={indianStates}
+                    value={editFormData.state}
+                    onChange={(val) =>
+                      setEditFormData({
+                        ...editFormData,
+                        state: val,
+                      })
+                    }
+                    placeholder="Select State"
+                  />
+                ) : (
+                  <div className="space-y-2">
+                    <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1 uppercase">
+                      CLIENT STATE
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
+                      placeholder="e.g. California"
+                      value={editFormData.state}
+                      onChange={(e) =>
+                        setEditFormData({
+                          ...editFormData,
+                          state: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                )}
+                <SearchableDropdown
+                  label="CLIENT CURRENCY"
+                  options={commonCurrencies.map((c) => ({
+                    name: `${c.code} (${c.symbol})`,
+                    code: c.code,
+                  }))}
+                  value={editFormData.currency}
+                  onChange={(val) =>
+                    setEditFormData({
+                      ...editFormData,
+                      currency: val,
+                    })
+                  }
+                  placeholder="Select Currency"
+                />
+                <div className="space-y-2">
+                  <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1 uppercase">
+                    CLIENT STATUS
+                  </label>
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setIsEditStatusDropdownOpen(!isEditStatusDropdownOpen)
+                      }
+                      className="w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold shadow-sm hover:border-secondary transition-all"
+                    >
+                      <span className="text-primary truncate">
+                        {editFormData.clientStatus || "Select Status"}
+                      </span>
+                      <ChevronDown
+                        size={16}
+                        className={`text-slate-400 transition-transform ${
+                          isEditStatusDropdownOpen ? "rotate-180" : ""
+                        }`}
+                      />
+                    </button>
+
+                    {isEditStatusDropdownOpen && (
+                      <>
+                        <div
+                          className="fixed inset-0 z-[110]"
+                          onClick={() => setIsEditStatusDropdownOpen(false)}
+                        />
+                        <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[120] animate-fade-in-up origin-top">
+                          <div className="bg-[#18254D] px-4 py-3 border-b border-white/10">
+                            <p className="text-[14px] font-bold text-white/50  tracking-widest">
+                              Select Status
+                            </p>
+                          </div>
+                          {["Active", "On Hold", "Completed", "Dropped"].map(
+                            (status) => (
+                              <button
+                                key={status}
+                                type="button"
+                                onClick={() => {
+                                  setEditFormData({
+                                    ...editFormData,
+                                    clientStatus: status,
+                                  });
+                                  setIsEditStatusDropdownOpen(false);
+                                }}
+                                className={`w-full text-left px-4 py-3 text-[12px] font-bold  tracking-widest transition-colors ${
+                                  editFormData.clientStatus === status
+                                    ? "bg-slate-100 text-secondary"
+                                    : "text-[#18254D] hover:bg-slate-50"
+                                }`}
+                              >
+                                {status}
+                              </button>
+                            ),
+                          )}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+
+              <div className="pt-2">
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full py-3 bg-[#18254D] text-white rounded-2xl text-[13px] font-bold  tracking-[0.25em] shadow-xl active:scale-[0.97] transition-all hover:bg-[#1e2e5e] hover:shadow-2xl flex items-center justify-center gap-3 group/btn disabled:opacity-70 disabled:cursor-not-allowed"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <span>SAVING CHANGES...</span>
+                      <Loader2 size={20} className="animate-spin" />
+                    </>
+                  ) : (
+                    <>
+                      <Pencil
+                        size={20}
+                        className="group-hover/btn:rotate-12 transition-transform"
+                      />
+                      <span>UPDATE CLIENT</span>
                     </>
                   )}
                 </button>
