@@ -93,7 +93,7 @@ function Sidebar({ activeTab, setActiveTab, onLogout, enquiryCount = 0, followUp
                     <item.icon size={20} />
                   </span>
                   {!isCollapsed && (
-                    <span className="text-sidebar-nav font-medium tracking-wide">
+                    <span className="text-sidebar-nav font-medium tracking-wide font-sans">
                       {item.label}
                     </span>
                   )}

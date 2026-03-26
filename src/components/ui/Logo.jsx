@@ -16,16 +16,25 @@ function Logo({ className = "", size = 48, showText = true }) {
           onError={() => setImgError(true)}
         />
       ) : (
-        <div style={{ width: size, height: size }} className="bg-secondary text-primary rounded-lg flex items-center justify-center">
+        <div
+          style={{ width: size, height: size }}
+          className="bg-secondary text-primary rounded-lg flex items-center justify-center"
+        >
           <Leaf size={size * 0.6} fill="currentColor" />
         </div>
       )}
       {showText && (
         <div className="flex flex-col border-l-2 border-white/30 pl-3">
-          <span className="font-black text-white leading-none tracking-tight" style={{ fontSize: size > 40 ? "22px" : "18px" }}>
+          <span
+            className="font-extrabold text-white leading-none tracking-tight font-sans"
+            style={{ fontSize: size > 40 ? "22px" : "18px" }}
+          >
             Parivartan
           </span>
-          <span className="font-bold text-white tracking-[0.2em] mt-1" style={{ fontSize: size > 40 ? "11px" : "9px" }}>
+          <span
+            className="font-bold text-white tracking-[0.2em] mt-1"
+            style={{ fontSize: size > 40 ? "11px" : "9px" }}
+          >
             CRM Portal
           </span>
         </div>
