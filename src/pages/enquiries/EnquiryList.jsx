@@ -408,8 +408,7 @@ const EnquiryList = ({
         required: true,
         pattern: EMAIL_PATTERN,
         label: "Email",
-        errorMessage:
-          "Enter a valid email (e.g. john@gmail.com, john@yahoo.com).",
+        errorMessage: "Enter a valid email address.",
       },
       phone: {
         required: true,
@@ -488,8 +487,7 @@ const EnquiryList = ({
         required: true,
         pattern: EMAIL_PATTERN,
         label: "Email",
-        errorMessage:
-          "Enter a valid email (e.g. john@gmail.com, john@yahoo.com).",
+        errorMessage: "Enter a valid email address.",
       },
       phone: {
         required: true,

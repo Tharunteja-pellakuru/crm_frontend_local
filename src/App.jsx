@@ -42,6 +42,7 @@ function ClientDetailWrapper({
   followUps,
   onUpdateClient,
   onAddActivity,
+  onAddFollowUp, // Added this prop
   onSelectProject,
   projects,
   loading,
@@ -71,6 +72,7 @@ function ClientDetailWrapper({
       onBack={() => navigate(`/${type}`)}
       onUpdateClient={onUpdateClient}
       onAddActivity={onAddActivity}
+      onAddFollowUp={onAddFollowUp} // Passed this prop
       activities={activities}
       followUps={followUps}
       initialTab={location.state?.tab || "overview"}
@@ -1654,6 +1656,7 @@ function AppRoutes() {
               activities={activities}
               onUpdateClient={handleUpdateClient}
               onAddActivity={handleAddActivity}
+              onAddFollowUp={handleAddFollowUp} // Added this
               onSelectProject={handleProjectSelect}
               projects={projects}
               loading={clientsLoading}
@@ -1671,6 +1674,7 @@ function AppRoutes() {
               followUps={followUps}
               onUpdateClient={handleEditLead}
               onAddActivity={handleAddActivity}
+              onAddFollowUp={handleAddFollowUp} // Added this
               onSelectProject={handleProjectSelect}
               projects={projects}
               loading={leadsLoading}

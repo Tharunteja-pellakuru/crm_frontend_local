@@ -243,13 +243,14 @@ const FollowUpList = ({
 
     const selectedClient = clients.find((c) => c.id == formData.clientId);
     const finalClientId =
-      selectedClient?.status === "Active"
+      selectedClient?.status === "Active" && selectedClient.lead_id
         ? selectedClient.lead_id
         : formData.clientId;
 
     try {
       const formattedStatus = formData.followup_status
-        ? formData.followup_status.charAt(0).toUpperCase() + formData.followup_status.slice(1).toLowerCase()
+        ? formData.followup_status.charAt(0).toUpperCase() +
+          formData.followup_status.slice(1).toLowerCase()
         : "Pending";
 
       if (formData.id) {
@@ -335,7 +336,7 @@ const FollowUpList = ({
               {typeFilter === "Active"
                 ? "Reference Follow-Ups"
                 : typeFilter === "Lead"
-                  ? "New Reference Follow-ups"
+                  ? "New Follow-ups"
                   : "Follow-Ups"}
             </h2>
             <p className="text-xs md:text-sm text-textMuted font-medium leading-relaxed max-w-md">
@@ -1299,7 +1300,8 @@ const FollowUpList = ({
 
                     <div className="space-y-1.5">
                       <label className="text-[14px] font-bold text-primary  tracking-widest ml-1">
-                        Follow-up Time (12h) <span className="text-error">*</span>
+                        Follow-up Time (12h){" "}
+                        <span className="text-error">*</span>
                       </label>
                       <div className="flex gap-2 relative">
                         {/* Hour Dropdown */}

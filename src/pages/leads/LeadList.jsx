@@ -47,6 +47,7 @@ import {
   CATEGORY_MAP,
   REVERSE_CATEGORY_MAP,
 } from "../../constants/categoryConstants";
+import { extractCountryAndPhone } from "../../utils/leadUtils";
 
 const LeadList = ({
   leads,
@@ -240,41 +241,10 @@ const LeadList = ({
   const handleEditConvertedClick = (lead) => {
     setEditingConvertedLeadId(lead.id);
 
-    // Separating country code from phone number
-    let initialPhone = (lead.phone || "").trim();
-    let initialCountry = (lead.country || "").trim();
+    const { phone: initialPhone, countryCode: initialCountry } = 
+      extractCountryAndPhone(lead.phone, lead.country, countries);
 
-    // Attempt to extract country code from phone if country is not already set clearly
-    const matchedCountry = countries.find((c) => {
-      const code = c.code;
-      const plainCode = code.replace("+", "");
-      const cleanPhone = initialPhone.replace("+", "").replace(/\s/g, "");
-      return cleanPhone.startsWith(plainCode);
-    });
-
-    if (matchedCountry) {
-      const code = matchedCountry.code;
-      const plainCode = code.replace("+", "");
-
-      // If the phone starts with the code, strip it
-      if (initialPhone.startsWith(code)) {
-        initialPhone = initialPhone.slice(code.length).trim();
-      } else if (initialPhone.replace("+", "").startsWith(plainCode)) {
-        initialPhone = initialPhone
-          .replace("+", "")
-          .slice(plainCode.length)
-          .trim();
-      }
-
-      // If country was not set or was set to the code, use the canonical name for the dropdown
-      if (
-        !initialCountry ||
-        initialCountry === code ||
-        initialCountry === plainCode
-      ) {
-        initialCountry = matchedCountry.code;
-      }
-    }
+    console.log("Extracted for editing converted lead:", { initialPhone, initialCountry });
 
     setEditConvertedData({
       name: lead.name,

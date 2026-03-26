@@ -1,21 +1,52 @@
 import { useState } from "react";
-import { LayoutDashboard, Users, FolderKanban, Settings, Inbox, UserPlus, BellRing, LogOut, X, ChevronDown } from "lucide-react";
+import {
+  LayoutDashboard,
+  Users,
+  FolderKanban,
+  Settings,
+  Inbox,
+  UserPlus,
+  BellRing,
+  LogOut,
+  X,
+  ChevronDown,
+} from "lucide-react";
 import Logo from "../components/ui/Logo";
 
-function Sidebar({ activeTab, setActiveTab, onLogout, enquiryCount = 0, followUpCount = 0, clientFollowUpCount = 0, leadFollowUpCount = 0, onCloseMobile, isCollapsed = false }) {
+function Sidebar({
+  activeTab,
+  setActiveTab,
+  onLogout,
+  enquiryCount = 0,
+  followUpCount = 0,
+  clientFollowUpCount = 0,
+  leadFollowUpCount = 0,
+  onCloseMobile,
+  isCollapsed = false,
+}) {
   const [expandedItems, setExpandedItems] = useState(["followups"]);
 
   const menuItems = [
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
     { id: "enquiries", label: "Enquiries", icon: Inbox, badge: enquiryCount },
-    { 
-      id: "followups", 
-      label: "Follow-ups", 
-      icon: BellRing, 
-      badge: followUpCount,
+    {
+      id: "followups",
+      label: "Follow-ups",
+      icon: BellRing,
+      badge: clientFollowUpCount,
       subItems: [
-        { id: "followups-clients", label: "Reference Follow-ups", icon: Users, badge: clientFollowUpCount },
-        { id: "followups-leads", label: "New Reference Follow-ups", icon: UserPlus, badge: leadFollowUpCount },
+        {
+          id: "followups-clients",
+          label: "Reference Follow-ups",
+          icon: Users,
+          badge: clientFollowUpCount,
+        },
+        {
+          id: "followups-leads",
+          label: "New Follow-ups",
+          icon: UserPlus,
+          badge: leadFollowUpCount,
+        },
       ],
     },
     { id: "leads", label: "Leads", icon: UserPlus },
@@ -102,7 +133,7 @@ function Sidebar({ activeTab, setActiveTab, onLogout, enquiryCount = 0, followUp
                   <div className="flex items-center gap-2.5">
                     {item.badge !== undefined &&
                       item.badge > 0 &&
-                      !isExpanded && (
+                      (!isExpanded || item.id === "followups") && (
                         <span className="bg-white text-secondary text-sidebar-badge font-bold px-2 h-5 min-w-[1.25rem] rounded-md flex items-center justify-center shadow-lg shadow-black/10">
                           {item.badge}
                         </span>
@@ -160,6 +191,6 @@ function Sidebar({ activeTab, setActiveTab, onLogout, enquiryCount = 0, followUp
       </nav>
     </aside>
   );
-};
+}
 
 export default Sidebar;

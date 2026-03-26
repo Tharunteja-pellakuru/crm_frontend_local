@@ -1,7 +1,7 @@
 import { toast } from "react-hot-toast";
 
-// Common email pattern for popular providers (gmail, yahoo, outlook)
-export const EMAIL_PATTERN = /^[a-zA-Z0-9._%+-]+@(gmail|yahoo|outlook)\.com$/i;
+// Standard email pattern to allow all domains
+export const EMAIL_PATTERN = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
 // Digits-only phone pattern
 export const PHONE_PATTERN = /^\d+$/;

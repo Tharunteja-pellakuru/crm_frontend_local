@@ -49,6 +49,7 @@ import {
 } from "../../constants/categoryConstants";
 import { BASE_URL } from "../../constants/config";
 import { validateForm } from "../../utils/validation";
+import { extractCountryAndPhone } from "../../utils/leadUtils";
 
 const ClientDetail = ({
   client,
@@ -57,6 +58,7 @@ const ClientDetail = ({
   onAddActivity,
   activities,
   followUps = [],
+  onAddFollowUp,
   initialTab = "overview",
   onSelectProject,
   projects = [],
@@ -107,47 +109,98 @@ const ClientDetail = ({
   }, [initialTab]);
 
   // Update form data when modal opens or client changes
+  const [showAddFollowUpModal, setShowAddFollowUpModal] = useState(false);
+  const [followUpFormData, setFollowUpFormData] = useState({
+    title: "",
+    description: "",
+    followup_date: new Date().toLocaleDateString("en-CA"),
+    timeHour: "12",
+    timeMinute: "00",
+    timePeriod: "PM",
+    priority: "Medium",
+    followup_mode: "Call",
+    followup_status: "Pending",
+    projectId: "",
+  });
+
+  const [isFollowHourOpen, setIsFollowHourOpen] = useState(false);
+  const [isFollowMinOpen, setIsFollowMinOpen] = useState(false);
+  const [isFollowPeriodOpen, setIsFollowPeriodOpen] = useState(false);
+  const [isFollowModeOpen, setIsFollowModeOpen] = useState(false);
+  const [isFollowPriorityOpen, setIsFollowPriorityOpen] = useState(false);
+  const [isFollowStatusOpen, setIsFollowStatusOpen] = useState(false);
+  const [isFollowProjectOpen, setIsFollowProjectOpen] = useState(false);
+
+  const handleAddFollowUpSubmit = async (e) => {
+    e.preventDefault();
+    if (!followUpFormData.title || !followUpFormData.description) {
+      toast.error("Please fill in title and description");
+      return;
+    }
+
+    let hour = parseInt(followUpFormData.timeHour);
+    if (followUpFormData.timePeriod === "PM" && hour < 12) hour += 12;
+    if (followUpFormData.timePeriod === "AM" && hour === 12) hour = 0;
+    const time24 = `${hour.toString().padStart(2, "0")}:${followUpFormData.timeMinute}`;
+    const combinedDateTime = `${followUpFormData.followup_date} ${time24}:00`;
+
+    const finalClientId =
+      !isLead && client.lead_id ? client.lead_id : client.id;
+
+    try {
+      const formattedStatus =
+        followUpFormData.followup_status.charAt(0).toUpperCase() +
+        followUpFormData.followup_status.slice(1).toLowerCase();
+
+      if (onAddFollowUp) {
+        await onAddFollowUp({
+          ...followUpFormData,
+          clientId: finalClientId,
+          dueDate: combinedDateTime,
+          followup_date: combinedDateTime,
+          followup_status: formattedStatus,
+        });
+        toast.success("Follow-up added successfully!");
+      }
+      setShowAddFollowUpModal(false);
+      setFollowUpFormData({
+        title: "",
+        description: "",
+        followup_date: new Date().toLocaleDateString("en-CA"),
+        timeHour: "12",
+        timeMinute: "00",
+        timePeriod: "PM",
+        priority: "Medium",
+        followup_mode: "Call",
+        followup_status: "Pending",
+        projectId: "",
+      });
+    } catch (error) {
+      console.error("Error adding follow-up:", error);
+      toast.error("Failed to add follow-up");
+    }
+  };
+
   useEffect(() => {
     if (showEditModal && client) {
-      let localPhone = client.phone || "";
-      let usedCountryCode = "";
+      const {
+        phone: localPhone,
+        countryCode: usedCountryCode,
+        countryName: countryName,
+      } = extractCountryAndPhone(client.phone, client.country, countries);
 
-      // Try to extract country code from the phone number
-      if (localPhone.startsWith("+")) {
-        // Find the matching country code from countries list
-        const matchingCountry = [...countries]
-          .sort((a, b) => b.code.length - a.code.length) // Sort by length descending to match longest code first (e.g., +1-242 before +1)
-          .find((c) => localPhone.startsWith(c.code));
-
-        if (matchingCountry) {
-          usedCountryCode = matchingCountry.code;
-          localPhone = localPhone.substring(usedCountryCode.length).trim();
-        }
-      }
-
-      // If no country code found from phone, try to derive from client.country
-      if (!usedCountryCode && client.country) {
-        // Check if client.country is itself a country code (e.g., "+91")
-        const countryByCode = countries.find((c) => c.code === client.country);
-        if (countryByCode) {
-          usedCountryCode = countryByCode.code;
-        } else {
-          // Check if client.country is a country name (e.g., "India")
-          const countryByName = countries.find(
-            (c) => c.name.toLowerCase() === client.country.toLowerCase(),
-          );
-          if (countryByName) {
-            usedCountryCode = countryByName.code;
-          }
-        }
-      }
+      console.log("Extracted for client detail edit:", {
+        localPhone,
+        usedCountryCode,
+        countryName,
+      });
 
       setEditFormData({
         name: client.name || "",
         email: client.email || "",
         phone: localPhone,
         countryCode: usedCountryCode,
-        leadType: client.leadType || "Warm",
+        leadType: client.leadType || "Hot",
         notes: client.notes || "",
         website: client.website || "",
         projectCategory:
@@ -211,9 +264,13 @@ const ClientDetail = ({
     e.preventDefault();
 
     const isValid = validateForm(logData, {
-      description: { required: true, minLength: 5, label: "Interaction Details" },
+      description: {
+        required: true,
+        minLength: 5,
+        label: "Interaction Details",
+      },
       date: { required: true, label: "Date" },
-      time: { required: true, label: "Time" }
+      time: { required: true, label: "Time" },
     });
 
     if (!isValid) return;
@@ -308,451 +365,469 @@ const ClientDetail = ({
               <div className="fixed inset-0 z-[99999] flex items-start justify-center p-4 bg-slate-900/60 backdrop-blur-xl animate-fade-in overflow-y-auto py-10 no-scrollbar">
                 <div className="bg-white rounded-xl shadow-2xl w-full max-w-xl overflow-hidden animate-zoom-in my-auto border border-slate-200 flex flex-col max-h-[90vh]">
                   <div className="bg-primary p-4 text-white relative shrink-0">
-                  <button
-                    onClick={() => setShowEditModal(false)}
-                    className="absolute top-4 right-4 p-1.5 hover:bg-white/10 rounded-xl transition-colors"
+                    <button
+                      onClick={() => setShowEditModal(false)}
+                      className="absolute top-4 right-4 p-1.5 hover:bg-white/10 rounded-xl transition-colors"
+                    >
+                      <X size={18} strokeWidth={3} />
+                    </button>
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-secondary/10 rounded-xl flex items-center justify-center shadow-lg border border-secondary/20">
+                        <Pencil
+                          size={18}
+                          className="text-secondary"
+                          strokeWidth={2.5}
+                        />
+                      </div>
+                      <div>
+                        <h3 className="text-base font-bold tracking-tighter leading-none">
+                          Edit {isLead ? "Lead" : "Client"} Details
+                        </h3>
+                        <p className="text-secondary text-[14px] font-bold  tracking-widest mt-0.5">
+                          Update primary contact information
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <form
+                    onSubmit={async (e) => {
+                      e.preventDefault();
+
+                      const isValid = validateForm(editFormData, {
+                        name: {
+                          required: true,
+                          minLength: 2,
+                          label: "Full Name",
+                        },
+                        email: {
+                          required: true,
+                          pattern: /^\S+@\S+\.\S+$/,
+                          label: "Email",
+                        },
+                        phone: {
+                          required: true,
+                          minLength: 10,
+                          label: "Phone Number",
+                        },
+                      });
+
+                      if (!isValid) return;
+
+                      if (onUpdateClient) {
+                        try {
+                          // Ensure we have the latest values
+                          const formDataToSubmit = {
+                            name: editFormData.name,
+                            email: editFormData.email,
+                            phone: `${editFormData.countryCode}${editFormData.phone}`,
+                            leadType: editFormData.leadType,
+                            notes: editFormData.notes,
+                            website: editFormData.website,
+                            projectCategory: editFormData.projectCategory,
+                            country: editFormData.country,
+                            state: editFormData.state,
+                            currency: editFormData.currency,
+                            organisationName: editFormData.organisationName,
+                            clientStatus: editFormData.clientStatus,
+                          };
+                          console.log("=== FORM SUBMISSION DEBUG ===");
+                          console.log(
+                            "Submitting edit form with data:",
+                            formDataToSubmit,
+                          );
+                          console.log(
+                            "Website value being sent:",
+                            formDataToSubmit.website,
+                          );
+
+                          await onUpdateClient(client.id, formDataToSubmit);
+
+                          toast.success("Details updated successfully!");
+                          console.log("=== END DEBUG ===");
+                          setShowEditModal(false);
+                        } catch (error) {
+                          console.error("Failed to update lead:", error);
+                          toast.error(
+                            "Failed to update lead. Please try again.",
+                          );
+                        }
+                      }
+                    }}
+                    className="p-5 space-y-4 overflow-y-auto no-scrollbar"
                   >
-                    <X size={18} strokeWidth={3} />
-                  </button>
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-secondary/10 rounded-xl flex items-center justify-center shadow-lg border border-secondary/20">
-                      <Pencil
-                        size={18}
-                        className="text-secondary"
-                        strokeWidth={2.5}
-                      />
-                    </div>
-                    <div>
-                      <h3 className="text-base font-bold tracking-tighter leading-none">
-                        Edit {isLead ? "Lead" : "Client"} Details
-                      </h3>
-                      <p className="text-secondary text-[14px] font-bold  tracking-widest mt-0.5">
-                        Update primary contact information
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <form
-                  onSubmit={async (e) => {
-                    e.preventDefault();
-
-                    const isValid = validateForm(editFormData, {
-                      name: { required: true, minLength: 2, label: "Full Name" },
-                      email: { required: true, pattern: /^\S+@\S+\.\S+$/, label: "Email" },
-                      phone: { required: true, minLength: 10, label: "Phone Number" }
-                    });
-
-                    if (!isValid) return;
-
-                    if (onUpdateClient) {
-                      try {
-                        // Ensure we have the latest values
-                        const formDataToSubmit = {
-                          name: editFormData.name,
-                          email: editFormData.email,
-                          phone: `${editFormData.countryCode}${editFormData.phone}`,
-                          leadType: editFormData.leadType,
-                          notes: editFormData.notes,
-                          website: editFormData.website,
-                          projectCategory: editFormData.projectCategory,
-                          country: editFormData.country,
-                          state: editFormData.state,
-                          currency: editFormData.currency,
-                          organisationName: editFormData.organisationName,
-                          clientStatus: editFormData.clientStatus,
-                        };
-                        console.log("=== FORM SUBMISSION DEBUG ===");
-                        console.log(
-                          "Submitting edit form with data:",
-                          formDataToSubmit,
-                        );
-                        console.log(
-                          "Website value being sent:",
-                          formDataToSubmit.website,
-                        );
-
-                        await onUpdateClient(client.id, formDataToSubmit);
-
-                        toast.success("Details updated successfully!");
-                        console.log("=== END DEBUG ===");
-                        setShowEditModal(false);
-                      } catch (error) {
-                        console.error("Failed to update lead:", error);
-                        toast.error("Failed to update lead. Please try again.");
-                      }
-                    }
-                  }}
-                  className="p-5 space-y-4 overflow-y-auto no-scrollbar"
-                >
-                  <div className="space-y-2">
-                    <label className="text-[12px] font-bold text-primary  tracking-widest ml-1 uppercase">
-                      FULL NAME
-                    </label>
-                    <input
-                      required
-                      type="text"
-                      placeholder="e.g. Sameer Kapoor"
-                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
-                      value={editFormData.name}
-                      onChange={(e) =>
-                        setEditFormData({
-                          ...editFormData,
-                          name: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-[12px] font-bold text-primary  tracking-widest ml-1 uppercase">
-                      EMAIL ID
-                    </label>
-                    <input
-                      required
-                      type="email"
-                      placeholder="sameer@fintech.com"
-                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
-                      value={editFormData.email}
-                      onChange={(e) =>
-                        setEditFormData({
-                          ...editFormData,
-                          email: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <SearchableDropdown
-                      label="Country Code"
-                      options={countries.map((c) => ({
-                        name: `${c.name} (${c.code})`,
-                        code: c.code,
-                      }))}
-                      value={editFormData.countryCode}
-                      onChange={(val) => {
-                        const selectedCountry = countries.find(
-                          (c) => c.code === val,
-                        );
-                        setEditFormData({
-                          ...editFormData,
-                          countryCode: val,
-                          country: selectedCountry
-                            ? selectedCountry.name
-                            : editFormData.country,
-                        });
-                      }}
-                      placeholder="Select Country Code"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-[12px] font-bold text-primary  tracking-widest ml-1 uppercase">
-                      PHONE NUMBER
-                    </label>
-                    <input
-                      required
-                      type="tel"
-                      placeholder="e.g. 98765 43210"
-                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
-                      value={editFormData.phone}
-                      onChange={(e) =>
-                        setEditFormData({
-                          ...editFormData,
-                          phone: e.target.value.replace(/\D/g, ""),
-                        })
-                      }
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-[12px] font-bold text-primary  tracking-widest ml-1 uppercase">
-                      WEBSITE URL (OPTIONAL)
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="e.g. www.fintech.com"
-                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
-                      value={editFormData.website}
-                      onChange={(e) =>
-                        setEditFormData({
-                          ...editFormData,
-                          website: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-
-                  {!isLead && (
                     <div className="space-y-2">
                       <label className="text-[12px] font-bold text-primary  tracking-widest ml-1 uppercase">
-                        ORGANISATION NAME
+                        FULL NAME
                       </label>
                       <input
+                        required
                         type="text"
-                        placeholder="e.g. Acme Corp"
+                        placeholder="e.g. Sameer Kapoor"
                         className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
-                        value={editFormData.organisationName}
+                        value={editFormData.name}
                         onChange={(e) =>
                           setEditFormData({
                             ...editFormData,
-                            organisationName: e.target.value,
+                            name: e.target.value,
                           })
                         }
                       />
                     </div>
-                  )}
 
-                  {!isLead &&
-                    (editFormData.country === "India" ? (
-                      <SearchableDropdown
-                        label="CLIENT STATE"
-                        options={indianStates}
-                        value={editFormData.state}
-                        onChange={(val) =>
-                          setEditFormData({ ...editFormData, state: val })
+                    <div className="space-y-2">
+                      <label className="text-[12px] font-bold text-primary  tracking-widest ml-1 uppercase">
+                        EMAIL ID
+                      </label>
+                      <input
+                        required
+                        type="email"
+                        placeholder="sameer@fintech.com"
+                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
+                        value={editFormData.email}
+                        onChange={(e) =>
+                          setEditFormData({
+                            ...editFormData,
+                            email: e.target.value,
+                          })
                         }
-                        placeholder="Select State"
                       />
-                    ) : (
+                    </div>
+
+                    <div className="space-y-2">
+                      <SearchableDropdown
+                        label="Country Code"
+                        options={countries.map((c) => ({
+                          name: `${c.name} (${c.code})`,
+                          code: c.code,
+                        }))}
+                        value={editFormData.countryCode}
+                        onChange={(val) => {
+                          const selectedCountry = countries.find(
+                            (c) => c.code === val,
+                          );
+                          setEditFormData({
+                            ...editFormData,
+                            countryCode: val,
+                            country: selectedCountry
+                              ? selectedCountry.name
+                              : editFormData.country,
+                          });
+                        }}
+                        placeholder="Select Country Code"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-[12px] font-bold text-primary  tracking-widest ml-1 uppercase">
+                        PHONE NUMBER
+                      </label>
+                      <input
+                        required
+                        type="tel"
+                        placeholder="e.g. 98765 43210"
+                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
+                        value={editFormData.phone}
+                        onChange={(e) =>
+                          setEditFormData({
+                            ...editFormData,
+                            phone: e.target.value.replace(/\D/g, ""),
+                          })
+                        }
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-[12px] font-bold text-primary  tracking-widest ml-1 uppercase">
+                        WEBSITE URL (OPTIONAL)
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. www.fintech.com"
+                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
+                        value={editFormData.website}
+                        onChange={(e) =>
+                          setEditFormData({
+                            ...editFormData,
+                            website: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+
+                    {!isLead && (
                       <div className="space-y-2">
                         <label className="text-[12px] font-bold text-primary  tracking-widest ml-1 uppercase">
-                          CLIENT STATE
+                          ORGANISATION NAME
                         </label>
                         <input
                           type="text"
-                          placeholder="e.g. California"
+                          placeholder="e.g. Acme Corp"
                           className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
+                          value={editFormData.organisationName}
+                          onChange={(e) =>
+                            setEditFormData({
+                              ...editFormData,
+                              organisationName: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                    )}
+
+                    {!isLead &&
+                      (editFormData.country === "India" ? (
+                        <SearchableDropdown
+                          label="CLIENT STATE"
+                          options={indianStates}
                           value={editFormData.state}
-                          onChange={(e) =>
-                            setEditFormData({
-                              ...editFormData,
-                              state: e.target.value,
-                            })
+                          onChange={(val) =>
+                            setEditFormData({ ...editFormData, state: val })
                           }
+                          placeholder="Select State"
                         />
-                      </div>
-                    ))}
+                      ) : (
+                        <div className="space-y-2">
+                          <label className="text-[12px] font-bold text-primary  tracking-widest ml-1 uppercase">
+                            CLIENT STATE
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="e.g. California"
+                            className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
+                            value={editFormData.state}
+                            onChange={(e) =>
+                              setEditFormData({
+                                ...editFormData,
+                                state: e.target.value,
+                              })
+                            }
+                          />
+                        </div>
+                      ))}
 
-                  {!isLead && (
-                    <>
-                      <SearchableDropdown
-                        label="CLIENT CURRENCY"
-                        options={commonCurrencies.map((c) => ({
-                          name: `${c.code} (${c.symbol})`,
-                          code: c.code,
-                        }))}
-                        value={editFormData.currency}
-                        onChange={(val) =>
-                          setEditFormData({ ...editFormData, currency: val })
-                        }
-                        placeholder="Select Currency"
-                      />
-
-                      <div className="space-y-2">
-                        <label className="text-[12px] font-bold text-primary  tracking-widest ml-1 uppercase">
-                          CLIENT STATUS
-                        </label>
-                        <select
-                          className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-bold"
-                          value={editFormData.clientStatus}
-                          onChange={(e) =>
-                            setEditFormData({
-                              ...editFormData,
-                              clientStatus: e.target.value,
-                            })
+                    {!isLead && (
+                      <>
+                        <SearchableDropdown
+                          label="CLIENT CURRENCY"
+                          options={commonCurrencies.map((c) => ({
+                            name: `${c.code} (${c.symbol})`,
+                            code: c.code,
+                          }))}
+                          value={editFormData.currency}
+                          onChange={(val) =>
+                            setEditFormData({ ...editFormData, currency: val })
                           }
+                          placeholder="Select Currency"
+                        />
+
+                        <div className="space-y-2">
+                          <label className="text-[12px] font-bold text-primary  tracking-widest ml-1 uppercase">
+                            CLIENT STATUS
+                          </label>
+                          <select
+                            className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-bold"
+                            value={editFormData.clientStatus}
+                            onChange={(e) =>
+                              setEditFormData({
+                                ...editFormData,
+                                clientStatus: e.target.value,
+                              })
+                            }
+                          >
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
+                          </select>
+                        </div>
+                      </>
+                    )}
+
+                    <div className="space-y-2">
+                      <label className="text-[12px] font-bold text-primary  tracking-widest ml-1 uppercase">
+                        {isLead ? "Lead" : "Client"} Category
+                      </label>
+                      <div className="relative">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setIsEditCategoryDropdownOpen(
+                              !isEditCategoryDropdownOpen,
+                            )
+                          }
+                          className="w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold shadow-sm hover:border-secondary transition-all"
                         >
-                          <option value="Active">Active</option>
-                          <option value="Inactive">Inactive</option>
-                        </select>
+                          <span className="text-primary truncate">
+                            {CATEGORY_MAP[editFormData.projectCategory] ||
+                              "Select Category"}
+                          </span>
+                          <ChevronDown
+                            size={16}
+                            className={`text-slate-400 transition-transform ${
+                              isEditCategoryDropdownOpen ? "rotate-180" : ""
+                            }`}
+                          />
+                        </button>
+
+                        {isEditCategoryDropdownOpen && (
+                          <>
+                            <div
+                              className="fixed inset-0 z-[80]"
+                              onClick={() =>
+                                setIsEditCategoryDropdownOpen(false)
+                              }
+                            />
+                            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top">
+                              <div className="bg-[#18254D] px-4 py-3 border-b border-white/10">
+                                <p className="text-[14px] font-bold text-white/50  tracking-widest">
+                                  Select Category
+                                </p>
+                              </div>
+                              {[1, 2, 3].map((catId) => (
+                                <button
+                                  key={catId}
+                                  type="button"
+                                  onClick={() => {
+                                    setEditFormData({
+                                      ...editFormData,
+                                      projectCategory: catId,
+                                    });
+                                    setIsEditCategoryDropdownOpen(false);
+                                  }}
+                                  className={`w-full text-left px-4 py-2.5 text-[12px] font-bold  tracking-widest transition-colors ${
+                                    editFormData.projectCategory === catId
+                                      ? "bg-slate-100 text-secondary"
+                                      : "text-[#18254D] hover:bg-slate-50"
+                                  }`}
+                                >
+                                  {CATEGORY_MAP[catId]}
+                                </button>
+                              ))}
+                            </div>
+                          </>
+                        )}
                       </div>
-                    </>
-                  )}
-
-                  <div className="space-y-2">
-                    <label className="text-[12px] font-bold text-primary  tracking-widest ml-1 uppercase">
-                      {isLead ? "Lead" : "Client"} Category
-                    </label>
-                    <div className="relative">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setIsEditCategoryDropdownOpen(
-                            !isEditCategoryDropdownOpen,
-                          )
-                        }
-                        className="w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold shadow-sm hover:border-secondary transition-all"
-                      >
-                        <span className="text-primary truncate">
-                          {CATEGORY_MAP[editFormData.projectCategory] ||
-                            "Select Category"}
-                        </span>
-                        <ChevronDown
-                          size={16}
-                          className={`text-slate-400 transition-transform ${
-                            isEditCategoryDropdownOpen ? "rotate-180" : ""
-                          }`}
-                        />
-                      </button>
-
-                      {isEditCategoryDropdownOpen && (
-                        <>
-                          <div
-                            className="fixed inset-0 z-[80]"
-                            onClick={() => setIsEditCategoryDropdownOpen(false)}
-                          />
-                          <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top">
-                            <div className="bg-[#18254D] px-4 py-3 border-b border-white/10">
-                              <p className="text-[14px] font-bold text-white/50  tracking-widest">
-                                Select Category
-                              </p>
-                            </div>
-                            {[1, 2, 3].map((catId) => (
-                              <button
-                                key={catId}
-                                type="button"
-                                onClick={() => {
-                                  setEditFormData({
-                                    ...editFormData,
-                                    projectCategory: catId,
-                                  });
-                                  setIsEditCategoryDropdownOpen(false);
-                                }}
-                                className={`w-full text-left px-4 py-2.5 text-[12px] font-bold  tracking-widest transition-colors ${
-                                  editFormData.projectCategory === catId
-                                    ? "bg-slate-100 text-secondary"
-                                    : "text-[#18254D] hover:bg-slate-50"
-                                }`}
-                              >
-                                {CATEGORY_MAP[catId]}
-                              </button>
-                            ))}
-                          </div>
-                        </>
-                      )}
                     </div>
-                  </div>
 
-                  <div className="space-y-2">
-                    <label className="text-[12px] font-bold text-primary  tracking-widest ml-1 uppercase">
-                      {isLead ? "Lead Status" : "Project Status"}
-                    </label>
-                    <div className="relative">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setIsEditStatusDropdownOpen(!isEditStatusDropdownOpen)
-                        }
-                        className="w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold shadow-sm hover:border-secondary transition-all"
-                      >
-                        <span className="text-primary truncate">
-                          {editFormData.leadType || "Select Status"}
-                        </span>
-                        <ChevronDown
-                          size={16}
-                          className={`text-slate-400 transition-transform ${
-                            isEditStatusDropdownOpen ? "rotate-180" : ""
-                          }`}
-                        />
-                      </button>
-
-                      {isEditStatusDropdownOpen && (
-                        <>
-                          <div
-                            className="fixed inset-0 z-[80]"
-                            onClick={() => setIsEditStatusDropdownOpen(false)}
+                    <div className="space-y-2">
+                      <label className="text-[12px] font-bold text-primary  tracking-widest ml-1 uppercase">
+                        {isLead ? "Lead Status" : "Project Status"}
+                      </label>
+                      <div className="relative">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setIsEditStatusDropdownOpen(
+                              !isEditStatusDropdownOpen,
+                            )
+                          }
+                          className="w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold shadow-sm hover:border-secondary transition-all"
+                        >
+                          <span className="text-primary truncate">
+                            {editFormData.leadType || "Select Status"}
+                          </span>
+                          <ChevronDown
+                            size={16}
+                            className={`text-slate-400 transition-transform ${
+                              isEditStatusDropdownOpen ? "rotate-180" : ""
+                            }`}
                           />
-                          <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top">
-                            <div className="bg-[#18254D] px-4 py-3 border-b border-white/10">
-                              <p className="text-[14px] font-bold text-white/50  tracking-widest">
-                                Select Status
-                              </p>
+                        </button>
+
+                        {isEditStatusDropdownOpen && (
+                          <>
+                            <div
+                              className="fixed inset-0 z-[80]"
+                              onClick={() => setIsEditStatusDropdownOpen(false)}
+                            />
+                            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top">
+                              <div className="bg-[#18254D] px-4 py-3 border-b border-white/10">
+                                <p className="text-[14px] font-bold text-white/50  tracking-widest">
+                                  Select Status
+                                </p>
+                              </div>
+                              {(client.isConverted
+                                ? ["Hot", "Warm", "Cold", "Converted"]
+                                : ["Hot", "Warm", "Cold"]
+                              ).map((status) => (
+                                <button
+                                  key={status}
+                                  type="button"
+                                  onClick={() => {
+                                    setEditFormData({
+                                      ...editFormData,
+                                      leadType: status,
+                                    });
+                                    setIsEditStatusDropdownOpen(false);
+                                  }}
+                                  className={`w-full text-left px-4 py-2.5 text-[12px] font-bold  tracking-widest transition-colors ${
+                                    editFormData.leadType === status
+                                      ? "bg-slate-100 text-secondary"
+                                      : "text-[#18254D] hover:bg-slate-50"
+                                  }`}
+                                >
+                                  <div className="flex items-center gap-2">
+                                    {status === "Hot" && (
+                                      <Flame size={12} className="text-error" />
+                                    )}
+                                    {status === "Warm" && (
+                                      <Sun size={12} className="text-warning" />
+                                    )}
+                                    {status === "Cold" && (
+                                      <Snowflake
+                                        size={12}
+                                        className="text-info"
+                                      />
+                                    )}
+                                    {status === "Converted" && (
+                                      <UserCheck
+                                        size={12}
+                                        className="text-success"
+                                      />
+                                    )}
+                                    <span>{status}</span>
+                                  </div>
+                                </button>
+                              ))}
                             </div>
-                            {(client.isConverted
-                              ? ["Hot", "Warm", "Cold", "Converted"]
-                              : ["Hot", "Warm", "Cold"]
-                            ).map((status) => (
-                              <button
-                                key={status}
-                                type="button"
-                                onClick={() => {
-                                  setEditFormData({
-                                    ...editFormData,
-                                    leadType: status,
-                                  });
-                                  setIsEditStatusDropdownOpen(false);
-                                }}
-                                className={`w-full text-left px-4 py-2.5 text-[12px] font-bold  tracking-widest transition-colors ${
-                                  editFormData.leadType === status
-                                    ? "bg-slate-100 text-secondary"
-                                    : "text-[#18254D] hover:bg-slate-50"
-                                }`}
-                              >
-                                <div className="flex items-center gap-2">
-                                  {status === "Hot" && (
-                                    <Flame size={12} className="text-error" />
-                                  )}
-                                  {status === "Warm" && (
-                                    <Sun size={12} className="text-warning" />
-                                  )}
-                                  {status === "Cold" && (
-                                    <Snowflake
-                                      size={12}
-                                      className="text-info"
-                                    />
-                                  )}
-                                  {status === "Converted" && (
-                                    <UserCheck
-                                      size={12}
-                                      className="text-success"
-                                    />
-                                  )}
-                                  <span>{status}</span>
-                                </div>
-                              </button>
-                            ))}
-                          </div>
-                        </>
-                      )}
+                          </>
+                        )}
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="space-y-2">
-                    <label className="text-[12px] font-bold text-primary  tracking-widest ml-1 uppercase">
-                      MESSAGE
-                    </label>
-                    <textarea
-                      rows={3}
-                      placeholder="e.g. Additional details about the project requirements or client background..."
-                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-bold resize-none"
-                      value={editFormData.notes}
-                      onChange={(e) =>
-                        setEditFormData({
-                          ...editFormData,
-                          notes: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
+                    <div className="space-y-2">
+                      <label className="text-[12px] font-bold text-primary  tracking-widest ml-1 uppercase">
+                        MESSAGE
+                      </label>
+                      <textarea
+                        rows={3}
+                        placeholder="e.g. Additional details about the project requirements or client background..."
+                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-bold resize-none"
+                        value={editFormData.notes}
+                        onChange={(e) =>
+                          setEditFormData({
+                            ...editFormData,
+                            notes: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
 
-                  <div className="pt-2 shrink-0">
-                    <button
-                      type="submit"
-                      className="w-full py-3 bg-[#18254D] text-white rounded-xl text-[13px] font-bold  tracking-[0.25em] shadow-xl active:scale-[0.97] transition-all hover:bg-[#1e2e5e] hover:shadow-2xl flex items-center justify-center gap-3"
-                    >
-                      Update {isLead ? "Lead" : "Client"}
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>,
-            document.body,
-          )}
+                    <div className="pt-2 shrink-0">
+                      <button
+                        type="submit"
+                        className="w-full py-3 bg-[#18254D] text-white rounded-xl text-[13px] font-bold  tracking-[0.25em] shadow-xl active:scale-[0.97] transition-all hover:bg-[#1e2e5e] hover:shadow-2xl flex items-center justify-center gap-3"
+                      >
+                        Update {isLead ? "Lead" : "Client"}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>,
+              document.body,
+            )}
 
           {/* Log Activity Modal */}
-          {isLogging && 
+          {isLogging &&
             createPortal(
               <div className="fixed inset-0 z-[99999] flex items-start justify-center p-4 bg-slate-900/60 backdrop-blur-xl animate-fade-in overflow-y-auto py-10 no-scrollbar">
                 <div className="bg-white rounded-xl shadow-2xl w-full max-w-xl overflow-hidden animate-zoom-in my-auto border border-slate-200 flex flex-col max-h-[90vh]">
@@ -782,7 +857,10 @@ const ClientDetail = ({
                     </div>
                   </div>
 
-                  <form onSubmit={handleLogInteraction} className="p-5 space-y-4 overflow-y-auto no-scrollbar">
+                  <form
+                    onSubmit={handleLogInteraction}
+                    className="p-5 space-y-4 overflow-y-auto no-scrollbar"
+                  >
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-2">
                         <label className="text-[12px] font-bold text-primary  tracking-widest ml-1">
@@ -890,7 +968,10 @@ const ClientDetail = ({
                         className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-bold min-h-[100px] resize-none"
                         value={logData.description}
                         onChange={(e) =>
-                          setLogData({ ...logData, description: e.target.value })
+                          setLogData({
+                            ...logData,
+                            description: e.target.value,
+                          })
                         }
                       />
                     </div>
@@ -907,8 +988,7 @@ const ClientDetail = ({
                 </div>
               </div>,
               document.body,
-            )
-          }
+            )}
 
           {/* Side Panel */}
           <div className="w-full md:w-[260px] lg:w-[300px] border-b md:border-b-0 md:border-r border-slate-100 p-4 md:p-6 md:overflow-y-auto bg-slate-50/20 no-scrollbar shrink-0">
@@ -920,18 +1000,14 @@ const ClientDetail = ({
                 <div className="space-y-2.5 md:space-y-3">
                   {client.organisationName && (
                     <div className="flex items-center gap-3 md:gap-4 p-2.5 md:p-3.5 bg-white rounded-xl border border-slate-100 shadow-sm group">
-                      <Briefcase
-                        className="w-3.5 h-3.5 md:w-4 md:h-4 text-slate-400 shrink-0"
-                      />
+                      <Briefcase className="w-3.5 h-3.5 md:w-4 md:h-4 text-slate-400 shrink-0" />
                       <span className="text-[11px] md:text-xs font-bold text-primary truncate">
                         {client.organisationName}
                       </span>
                     </div>
                   )}
                   <div className="flex items-center gap-3 md:gap-4 p-2.5 md:p-3.5 bg-white rounded-xl border border-slate-100 shadow-sm group">
-                    <Mail
-                      className="w-3.5 h-3.5 md:w-4 md:h-4 text-slate-400 group-hover:text-secondary shrink-0"
-                    />
+                    <Mail className="w-3.5 h-3.5 md:w-4 md:h-4 text-slate-400 group-hover:text-secondary shrink-0" />
                     <span className="text-[11px] md:text-xs font-bold text-primary truncate">
                       {client.email}
                     </span>
@@ -943,24 +1019,29 @@ const ClientDetail = ({
                         const countryVal = (client.country || "").trim();
                         // Extract just the dial code if the country value contains a name like "India (+91)"
                         let dialCode = countryVal;
-                        
+
                         // First check regex to extract code from parens e.g. "India (+91)" -> "+91"
                         const match = countryVal.match(/\(([^)]+)\)/);
                         if (match && match[1]) {
                           dialCode = match[1];
                         } else {
-                          const countryObj = countries?.find((c) =>
-                            c.name?.toLowerCase() === countryVal.toLowerCase() ||
-                            c.code === countryVal ||
-                            c.code?.replace("+", "") === countryVal.replace("+", "") ||
-                            countryVal.includes(`(${c.code})`)
+                          const countryObj = countries?.find(
+                            (c) =>
+                              c.name?.toLowerCase() ===
+                                countryVal.toLowerCase() ||
+                              c.code === countryVal ||
+                              c.code?.replace("+", "") ===
+                                countryVal.replace("+", "") ||
+                              countryVal.includes(`(${c.code})`),
                           );
                           if (countryObj) {
                             dialCode = countryObj.code;
                           }
                         }
-                        
-                        return dialCode ? `${dialCode} ${client.phone}` : client.phone;
+
+                        return dialCode
+                          ? `${dialCode} ${client.phone}`
+                          : client.phone;
                       })()}
                     </span>
                   </div>
@@ -984,9 +1065,7 @@ const ClientDetail = ({
                       rel="noopener noreferrer"
                       className="flex items-center gap-3 md:gap-4 p-2.5 md:p-3.5 bg-white rounded-xl border border-slate-100 shadow-sm group hover:border-secondary transition-all"
                     >
-                      <Globe
-                        className="w-3.5 h-3.5 md:w-4 md:h-4 text-slate-400 group-hover:text-secondary shrink-0"
-                      />
+                      <Globe className="w-3.5 h-3.5 md:w-4 md:h-4 text-slate-400 group-hover:text-secondary shrink-0" />
                       <span className="text-[11px] md:text-xs font-bold text-primary truncate group-hover:text-secondary">
                         {client.website.replace(/^https?:\/\//, "")}
                       </span>
@@ -1059,7 +1138,9 @@ const ClientDetail = ({
                           Lead Category
                         </h3>
                         <p className="text-lg font-bold text-primary tracking-tight">
-                          {CATEGORY_MAP[client.projectCategory] || client.industry || "Tech"}
+                          {CATEGORY_MAP[client.projectCategory] ||
+                            client.industry ||
+                            "Tech"}
                         </p>
                       </div>
                     </>

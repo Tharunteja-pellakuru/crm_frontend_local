@@ -42,14 +42,14 @@ const Layout = ({
             followUps.filter(
               (f) =>
                 f.status === "pending" &&
-                clients.find((c) => c.id == f.clientId)?.status === "Active",
+                clients.find((c) => c.id == f.clientId || (c.lead_id && c.lead_id == f.clientId))?.status === "Active",
             ).length
           }
           leadFollowUpCount={
             followUps.filter(
               (f) =>
                 f.status === "pending" &&
-                clients.find((c) => c.id == f.clientId)?.status === "Lead",
+                clients.find((c) => c.id == f.clientId || (c.lead_id && c.lead_id == f.clientId))?.status === "Lead",
             ).length
           }
           onCloseMobile={() => setIsMobileSidebarOpen(false)}
