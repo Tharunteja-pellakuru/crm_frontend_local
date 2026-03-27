@@ -616,8 +616,12 @@ function AppRoutes() {
         const projectFormData = new FormData();
         projectFormData.append("project_name", data.projectName);
         projectFormData.append("project_description", data.projectDescription || "");
-        projectFormData.append("project_category", data.projectCategory || 1);
-        projectFormData.append("project_status", data.projectStatus || "Planning");
+        
+        // Map category ID to string for backend ENUM compatibility
+        const categoryString = CATEGORY_MAP[data.projectCategory] || "Tech";
+        projectFormData.append("project_category", categoryString);
+        
+        projectFormData.append("project_status", data.projectStatus || "In Progress");
         projectFormData.append("project_priority", data.projectPriority || "High");
         projectFormData.append("project_budget", parseInt(data.projectBudget) || 0);
         projectFormData.append("onboarding_date", data.onboardingDate || new Date().toISOString().split("T")[0]);
@@ -641,6 +645,21 @@ function AppRoutes() {
         if (projectRes.ok) {
           const projectResult = await projectRes.json();
           newProject = projectResult.project;
+        } else {
+          // Check if response is JSON before parsing
+          const contentType = projectRes.headers.get("content-type");
+          let errorMessage = "Failed to create project";
+          
+          if (contentType && contentType.includes("application/json")) {
+            const errorData = await projectRes.json();
+            errorMessage = errorData.message || errorMessage;
+          } else {
+            const errorText = await projectRes.text();
+            console.error("Non-JSON error response:", errorText);
+          }
+          
+          console.error("Project creation failed:", errorMessage);
+          throw new Error(errorMessage);
         }
       }
 

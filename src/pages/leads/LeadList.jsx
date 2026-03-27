@@ -219,6 +219,9 @@ const LeadList = ({
     currency: "",
     organisationName: "",
     clientStatus: "Active",
+    onboardingDate: new Date().toISOString().split("T")[0],
+    deadline: "",
+    scopeDocument: "",
   });
 
   const [formData, setFormData] = useState({
@@ -2145,10 +2148,16 @@ const LeadList = ({
                     <div className="relative group">
                       <input
                         type="file"
+                        accept="application/pdf"
                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                         onChange={(e) => {
                           const file = e.target.files[0];
                           if (file) {
+                            if (file.type !== "application/pdf") {
+                              toast.error("Please upload only PDF documents.");
+                              e.target.value = ""; // Clear selection
+                              return;
+                            }
                             setOnboardingData({
                               ...onboardingData,
                               scopeDocument: file,

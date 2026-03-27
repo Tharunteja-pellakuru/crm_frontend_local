@@ -1459,6 +1459,7 @@ const ClientDetail = ({
 
                       // 2. Add an "Other / General" group for interactions without a project
                       const generalInteractions = [];
+                      const leadHistoryInteractions = [];
 
                       // 3. Helper to find or add to group
                       const addToGroup = (interaction) => {
@@ -1471,6 +1472,11 @@ const ClientDetail = ({
                         );
                         if (targetProject) {
                           targetProject.interactions.push(interaction);
+                        } else if (
+                          client.lead_id &&
+                          interaction.clientId == client.lead_id
+                        ) {
+                          leadHistoryInteractions.push(interaction);
                         } else {
                           generalInteractions.push(interaction);
                         }
@@ -1485,6 +1491,7 @@ const ClientDetail = ({
                           description: a.description,
                           projectName: a.projectName,
                           projectId: a.projectId,
+                          clientId: a.clientId,
                           source: "activity",
                         }),
                       );
@@ -1501,6 +1508,7 @@ const ClientDetail = ({
                           completedBy: f.completed_by,
                           projectName: f.projectName,
                           projectId: f.projectId,
+                          clientId: f.clientId,
                           source: "followup",
                         }),
                       );
@@ -1510,9 +1518,18 @@ const ClientDetail = ({
                         ...(generalInteractions.length > 0
                           ? [
                               {
-                                projectName: "General / Other",
+                                projectName: "other Conversations",
                                 projectStatus: "N/A",
                                 interactions: generalInteractions,
+                              },
+                            ]
+                          : []),
+                        ...(leadHistoryInteractions.length > 0
+                          ? [
+                              {
+                                projectName: "Lead Conversations",
+                                projectStatus: "Lead History",
+                                interactions: leadHistoryInteractions,
                               },
                             ]
                           : []),
