@@ -145,7 +145,7 @@ const ClientDetail = ({
     const combinedDateTime = `${followUpFormData.followup_date} ${time24}:00`;
 
     const finalClientId =
-      !isLead && client.lead_id ? client.lead_id : client.id;
+      followUpFormData.projectId ? null : (!isLead && client.lead_id ? client.lead_id : client.id);
 
     try {
       const formattedStatus =

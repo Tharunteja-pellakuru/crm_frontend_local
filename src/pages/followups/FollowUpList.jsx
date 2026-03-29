@@ -102,9 +102,20 @@ const FollowUpList = ({
   const [isCompMinOpen, setIsCompMinOpen] = useState(false);
   const [isCompPeriodOpen, setIsCompPeriodOpen] = useState(false);
 
-  const getClientById = (id) => {
-    if (!id) return null;
-    return clients.find((c) => c.id == id || (c.lead_id && c.lead_id == id));
+  const getClientById = (id, leadId, projectId) => {
+    if (!id && !leadId && !projectId) return null;
+    let client = clients.find(
+      (c) =>
+        (id && (c.id == id || c.client_id == id)) ||
+        (leadId && (c.lead_id == leadId || c.id == leadId)),
+    );
+    if (!client && projectId) {
+      const project = projects.find((p) => p.id == projectId || p.project_id == projectId);
+      if (project) {
+        client = clients.find((c) => c.id == project.clientId || c.client_id == project.clientId);
+      }
+    }
+    return client;
   };
   const isOverdue = (date) =>
     new Date(date) < new Date(new Date().setHours(0, 0, 0, 0));
@@ -120,7 +131,7 @@ const FollowUpList = ({
 
   // Base filtering (type + category + search) — before status tab filter
   const baseFiltered = followUps.filter((f) => {
-    const client = getClientById(f.clientId);
+    const client = getClientById(f.clientId, f.leadId, f.projectId);
     if (typeFilter !== "All") {
       if (!client) return false;
       // Reference Follow-ups -> Active Clients (or converted leads now active)
@@ -505,7 +516,7 @@ const FollowUpList = ({
             </div>
           ) : (
             currentFollowUps.map((f) => {
-              const client = getClientById(f.clientId);
+              const client = getClientById(f.clientId, f.leadId, f.projectId);
               const overdue = isOverdue(f.dueDate) && f.status === "pending";
               return (
                 <div

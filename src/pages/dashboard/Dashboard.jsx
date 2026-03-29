@@ -56,8 +56,8 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
   const [isYearDropdownOpen, setIsYearDropdownOpen] = useState(false);
   const [isMonthDropdownOpen, setIsMonthDropdownOpen] = useState(false);
   const [showViewAllModal, setShowViewAllModal] = useState(false);
-  const [viewAllTab, setViewAllTab] = useState("Today");
-  const [activeTaskTab, setActiveTaskTab] = useState("Today");
+  const [viewAllTab, setViewAllTab] = useState("Overdue");
+  const [activeTaskTab, setActiveTaskTab] = useState("Pending");
   const [currentUser, setCurrentUser] = useState(null);
   const dropdownRef = useRef(null);
 
@@ -450,7 +450,11 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
                   </div>
                 ) : (
                   todayTasks.slice(0, 4).map((f) => {
-                    const client = clients.find((c) => c.id === f.clientId);
+                    const client = clients.find(
+                      (c) =>
+                        (f.clientId && (c.id == f.clientId || c.client_id == f.clientId)) ||
+                        (f.leadId && (c.lead_id == f.leadId || c.id == f.leadId)),
+                    );
                     return (
                       <div
                         key={f.id}
@@ -510,7 +514,11 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
                   </div>
                 ) : (
                   missedTasks.slice(0, 4).map((f) => {
-                    const client = clients.find((c) => c.id === f.clientId);
+                    const client = clients.find(
+                      (c) =>
+                        (f.clientId && (c.id === f.clientId || c.client_id === f.clientId)) ||
+                        (f.leadId && (c.id === f.leadId || c.lead_id === f.leadId)),
+                    );
                     return (
                       <div
                         key={f.id}

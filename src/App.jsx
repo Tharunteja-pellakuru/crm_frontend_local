@@ -564,6 +564,7 @@ function AppRoutes() {
             country: createdClient.client_country,
             state: createdClient.client_state,
             currency: createdClient.client_currency,
+            lead_id: createdClient.lead_id, // Ensure lead_id is present
             avatar: `https://picsum.photos/100/100?random=${createdClient.client_id}`,
             joinedDate: createdClient.created_at?.split("T")[0] || new Date().toISOString().split("T")[0],
             lastContact: new Date().toISOString().split("T")[0],
@@ -680,6 +681,7 @@ function AppRoutes() {
         lastContact: new Date().toISOString().split("T")[0],
         isConverted: true,
         leadType: "Converted",
+        lead_id: id, // Ensure lead_id is preserved for followups
         industry: data.projectCategory || 1,
         projectCategory: data.projectCategory || 1,
         notes: data.projectDescription || data.notes || "",
