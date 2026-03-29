@@ -8,7 +8,7 @@ import {
   X,
 } from "lucide-react";
 
-const DatePicker = ({ label, value, onChange, placeholder }) => {
+const DatePicker = ({ label, value, onChange, placeholder, disabled = false }) => {
   const [isOpen, setIsOpen] = useState(false);
   const triggerRef = useRef(null);
   const [dropdownStyle, setDropdownStyle] = useState({});
@@ -225,8 +225,9 @@ const DatePicker = ({ label, value, onChange, placeholder }) => {
       <button
         ref={triggerRef}
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className={`datepicker-trigger w-full h-[38px] grid ${label ? "grid-cols-[auto_1fr_auto]" : "grid-cols-[1fr_auto]"} items-center gap-2 px-3 bg-slate-50 border border-slate-100 rounded-xl text-[12px] font-bold text-[#18254D] focus:outline-none focus:ring-4 focus:ring-[#18254D]/10 hover:bg-white hover:border-slate-200 transition-all shadow-sm shadow-slate-200/50`}
+        disabled={disabled}
+        onClick={() => !disabled && setIsOpen(!isOpen)}
+        className={`datepicker-trigger w-full h-[38px] grid ${label ? "grid-cols-[auto_1fr_auto]" : "grid-cols-[1fr_auto]"} items-center gap-2 px-3 ${disabled ? "bg-slate-100 opacity-60 cursor-not-allowed" : "bg-slate-50 hover:bg-white hover:border-slate-200 cursor-pointer"} border border-slate-100 rounded-xl text-[12px] font-bold text-[#18254D] focus:outline-none focus:ring-4 focus:ring-[#18254D]/10 transition-all shadow-sm shadow-slate-200/50`}
       >
         {label && (
           <div className="flex items-center justify-start shrink-0 pr-1">
@@ -244,7 +245,7 @@ const DatePicker = ({ label, value, onChange, placeholder }) => {
         </div>
         <div className="flex items-center justify-end gap-1.5 shrink-0 min-w-[35px]">
           <Calendar size={13} className="text-[#18254D]/60" />
-          {value && (
+          {value && !disabled && (
             <div
               onClick={handleClear}
               className="p-1 hover:text-error transition-colors"

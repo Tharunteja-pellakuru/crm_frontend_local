@@ -1269,8 +1269,9 @@ const FollowUpList = ({
                     <input
                       required
                       type="text"
+                      disabled={formData.followup_status === "completed"}
                       placeholder="e.g. Discuss project scope"
-                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium shadow-sm focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none"
+                      className={`w-full px-3.5 py-2.5 border rounded-xl text-sm font-medium shadow-sm focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none ${formData.followup_status === "completed" ? "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed" : "bg-slate-50 border-slate-200"}`}
                       value={formData.title}
                       onChange={(e) =>
                         setFormData({ ...formData, title: e.target.value })
@@ -1283,8 +1284,9 @@ const FollowUpList = ({
                       Description <span className="text-error">*</span>
                     </label>
                     <textarea
+                      disabled={formData.followup_status === "completed"}
                       placeholder="Add details about your follow-up..."
-                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium shadow-sm focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none resize-none"
+                      className={`w-full px-3.5 py-2.5 border rounded-xl text-sm font-medium shadow-sm focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none resize-none ${formData.followup_status === "completed" ? "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed" : "bg-slate-50 border-slate-200"}`}
                       value={formData.description}
                       onChange={(e) =>
                         setFormData({
@@ -1303,6 +1305,7 @@ const FollowUpList = ({
                       </label>
                       <DatePicker
                         value={formData.followup_date}
+                        disabled={formData.followup_status === "completed"}
                         onChange={(val) =>
                           setFormData({ ...formData, followup_date: val })
                         }
@@ -1319,16 +1322,19 @@ const FollowUpList = ({
                         <div className="flex-1 relative">
                           <button
                             type="button"
+                            disabled={formData.followup_status === "completed"}
                             onClick={() =>
                               setIsHourDropdownOpen(!isHourDropdownOpen)
                             }
-                            className="w-full flex items-center justify-between px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold shadow-sm hover:border-secondary transition-all"
+                            className={`w-full flex items-center justify-between px-3 py-2.5 border rounded-xl text-sm font-bold shadow-sm transition-all ${formData.followup_status === "completed" ? "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed" : "bg-slate-50 border-slate-200 hover:border-secondary"}`}
                           >
                             <span>{formData.timeHour.padStart(2, "0")}</span>
-                            <ChevronDown
-                              size={14}
-                              className={`text-slate-400 transition-transform ${isHourDropdownOpen ? "rotate-180" : ""}`}
-                            />
+                            {formData.followup_status !== "completed" && (
+                              <ChevronDown
+                                size={14}
+                                className={`text-slate-400 transition-transform ${isHourDropdownOpen ? "rotate-180" : ""}`}
+                              />
+                            )}
                           </button>
                           {isHourDropdownOpen && (
                             <>
@@ -1365,16 +1371,19 @@ const FollowUpList = ({
                         <div className="flex-1 relative">
                           <button
                             type="button"
+                            disabled={formData.followup_status === "completed"}
                             onClick={() =>
                               setIsMinuteDropdownOpen(!isMinuteDropdownOpen)
                             }
-                            className="w-full flex items-center justify-between px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold shadow-sm hover:border-secondary transition-all"
+                            className={`w-full flex items-center justify-between px-3 py-2.5 border rounded-xl text-sm font-bold shadow-sm transition-all ${formData.followup_status === "completed" ? "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed" : "bg-slate-50 border-slate-200 hover:border-secondary"}`}
                           >
                             <span>{formData.timeMinute}</span>
-                            <ChevronDown
-                              size={14}
-                              className={`text-slate-400 transition-transform ${isMinuteDropdownOpen ? "rotate-180" : ""}`}
-                            />
+                            {formData.followup_status !== "completed" && (
+                              <ChevronDown
+                                size={14}
+                                className={`text-slate-400 transition-transform ${isMinuteDropdownOpen ? "rotate-180" : ""}`}
+                              />
+                            )}
                           </button>
                           {isMinuteDropdownOpen && (
                             <>
@@ -1412,16 +1421,19 @@ const FollowUpList = ({
                         <div className="w-20 relative">
                           <button
                             type="button"
+                            disabled={formData.followup_status === "completed"}
                             onClick={() =>
                               setIsPeriodDropdownOpen(!isPeriodDropdownOpen)
                             }
-                            className="w-full flex items-center justify-between px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold shadow-sm hover:border-secondary transition-all"
+                            className={`w-full flex items-center justify-between px-3 py-2.5 border rounded-xl text-sm font-bold shadow-sm transition-all ${formData.followup_status === "completed" ? "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed" : "bg-slate-50 border-slate-200 hover:border-secondary"}`}
                           >
                             <span>{formData.timePeriod}</span>
-                            <ChevronDown
-                              size={14}
-                              className={`text-slate-400 transition-transform ${isPeriodDropdownOpen ? "rotate-180" : ""}`}
-                            />
+                            {formData.followup_status !== "completed" && (
+                              <ChevronDown
+                                size={14}
+                                className={`text-slate-400 transition-transform ${isPeriodDropdownOpen ? "rotate-180" : ""}`}
+                              />
+                            )}
                           </button>
                           {isPeriodDropdownOpen && (
                             <>
