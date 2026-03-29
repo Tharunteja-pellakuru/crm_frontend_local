@@ -2668,7 +2668,7 @@ const ClientList = ({
                               Select Status
                             </p>
                           </div>
-                          {["Active", "On Hold", "Completed", "Dropped"].map(
+                          {["Active", "InActive"].map(
                             (status) => (
                               <button
                                 key={status}
