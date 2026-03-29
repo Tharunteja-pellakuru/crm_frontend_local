@@ -734,7 +734,7 @@ function AppRoutes() {
         email: data.email,
         phone_number: data.phone,
         lead_category: data.projectCategory,
-        country: data.country,
+        country: data.country && data.countryCode ? `${data.country} (${data.countryCode})` : (data.country || data.countryCode),
         lead_status: "Converted",
         website_url: data.website || "",
         message: data.projectDescription || data.notes || "",

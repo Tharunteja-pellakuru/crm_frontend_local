@@ -181,6 +181,7 @@ const LeadList = ({
     name: "",
     email: "",
     phone: "",
+    countryCode: "",
     organisationName: "",
     country: "",
     state: "",
@@ -244,17 +245,18 @@ const LeadList = ({
   const handleEditConvertedClick = (lead) => {
     setEditingConvertedLeadId(lead.id);
 
-    const { phone: initialPhone, countryCode: initialCountry } = 
+    const { phone: initialPhone, countryCode: dialCode, countryName } = 
       extractCountryAndPhone(lead.phone, lead.country, countries);
 
-    console.log("Extracted for editing converted lead:", { initialPhone, initialCountry });
+    console.log("Extracted for editing converted lead:", { initialPhone, dialCode, countryName });
 
     setEditConvertedData({
       name: lead.name,
       email: lead.email,
       phone: initialPhone,
+      countryCode: dialCode,
       organisationName: lead.company || "",
-      country: initialCountry,
+      country: countryName,
       state: lead.state || "",
       currency: lead.currency || "",
       clientStatus: lead.status || "Active",
@@ -281,9 +283,8 @@ const LeadList = ({
     const isValid = validateForm(editConvertedData, {
       name: { required: true, minLength: 2, label: "Full Name" },
       email: { required: true, pattern: /^\S+@\S+\.\S+$/, label: "Email" },
+      countryCode: { required: true, minLength: 2, label: "Country Code" },
       phone: { required: true, minLength: 10, label: "Phone Number" },
-      organisationName: { required: true, label: "Organization Name" },
-      projectName: { required: true, label: "Project Name" },
     });
 
     if (!isValid) return;
@@ -2278,32 +2279,41 @@ const LeadList = ({
                       value={editConvertedData.email}
                     />
                   </div>
-
                   <SearchableDropdown
-                    label="COUNTRY"
-                    options={countries}
-                    value={editConvertedData.country}
-                    onChange={(val) =>
+                    label="COUNTRY CODE"
+                    options={countries.map((c) => ({
+                      name: `${c.name} (${c.code})`,
+                      code: c.code,
+                    }))}
+                    value={editConvertedData.countryCode}
+                    onChange={(val) => {
+                      const countryObj = countries.find((c) => c.code === val);
                       setEditConvertedData({
                         ...editConvertedData,
-                        country: val,
-                      })
-                    }
-                    placeholder="Select Country"
+                        countryCode: val,
+                        country: countryObj ? countryObj.name : editConvertedData.country,
+                      });
+                    }}
+                    placeholder="Select Code"
                   />
 
                   <div className="space-y-1.5">
-                    <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
+                    <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1 uppercase">
                       PHONE NUMBER
                     </label>
                     <input
                       required
-                      readOnly
-                      disabled
                       type="tel"
-                      placeholder="e.g. +91 98765 43210"
-                      className="w-full px-3.5 py-2.5 bg-slate-100 text-slate-500 cursor-not-allowed border border-slate-200 rounded-xl focus:outline-none text-sm font-medium"
+                      placeholder="e.g. 9876543210"
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
                       value={editConvertedData.phone}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, "");
+                        setEditConvertedData({
+                          ...editConvertedData,
+                          phone: value,
+                        });
+                      }}
                     />
                   </div>
 

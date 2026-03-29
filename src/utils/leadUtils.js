@@ -18,24 +18,51 @@ export const extractCountryAndPhone = (rawPhone = "", rawCountry = "", countries
 
   // 1. Try to match by the explicit country field FIRST (most reliable)
   if (country) {
-    // Check if country is a code (e.g., "+91", "91")
-    const matchByCode = countries.find(c => 
-      c.code === country || 
-      c.code === `+${country}` || 
-      c.code.replace("+", "") === country
-    );
-    
-    if (matchByCode) {
-      detectedCountryCode = matchByCode.code;
-      detectedCountryName = matchByCode.name;
-    } else {
-      // Check if country is a name (e.g., "India")
-      const matchByName = countries.find(c => 
-        c.name.toLowerCase() === country.toLowerCase()
+    // Handle combined format: "India (+91)" or "United States (+1)"
+    const combinedMatch = country.match(/^(.+?)\s*\(([^)]+)\)\s*$/);
+    let parsedName = "";
+    let parsedCode = "";
+    if (combinedMatch) {
+      parsedName = combinedMatch[1].trim();
+      parsedCode = combinedMatch[2].trim();
+    }
+
+    if (parsedName && parsedCode) {
+      // Try to match by parsed name first
+      const matchByParsed = countries.find(c =>
+        c.name.toLowerCase() === parsedName.toLowerCase() ||
+        c.code === parsedCode ||
+        c.code === `+${parsedCode}` ||
+        c.code.replace("+", "") === parsedCode.replace("+", "")
       );
-      if (matchByName) {
-        detectedCountryCode = matchByName.code;
-        detectedCountryName = matchByName.name;
+      if (matchByParsed) {
+        detectedCountryCode = matchByParsed.code;
+        detectedCountryName = matchByParsed.name;
+      } else {
+        // Use parsed values directly as fallback
+        detectedCountryCode = parsedCode.startsWith("+") ? parsedCode : `+${parsedCode}`;
+        detectedCountryName = parsedName;
+      }
+    } else {
+      // Check if country is a code (e.g., "+91", "91")
+      const matchByCode = countries.find(c => 
+        c.code === country || 
+        c.code === `+${country}` || 
+        c.code.replace("+", "") === country
+      );
+      
+      if (matchByCode) {
+        detectedCountryCode = matchByCode.code;
+        detectedCountryName = matchByCode.name;
+      } else {
+        // Check if country is a name (e.g., "India")
+        const matchByName = countries.find(c => 
+          c.name.toLowerCase() === country.toLowerCase()
+        );
+        if (matchByName) {
+          detectedCountryCode = matchByName.code;
+          detectedCountryName = matchByName.name;
+        }
       }
     }
   }
