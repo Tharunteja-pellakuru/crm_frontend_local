@@ -458,9 +458,11 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
                     return (
                       <div
                         key={f.id}
-                        onClick={() =>
-                          client && onSelectFollowUp(client, "activity")
-                        }
+                        onClick={() => {
+                          if (!client) return;
+                          const route = client.status?.toLowerCase() === "lead" ? "followups-leads" : "followups-clients";
+                          onNavigate(route);
+                        }}
                         className="p-4 bg-slate-50 border border-slate-100 rounded-xl hover:bg-white hover:border-secondary transition-all cursor-pointer shadow-sm group"
                       >
                         <div className="flex justify-between items-start mb-2.5">
@@ -522,9 +524,11 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
                     return (
                       <div
                         key={f.id}
-                        onClick={() =>
-                          client && onSelectFollowUp(client, "activity")
-                        }
+                        onClick={() => {
+                          if (!client) return;
+                          const route = client.status?.toLowerCase() === "lead" ? "followups-leads" : "followups-clients";
+                          onNavigate(route);
+                        }}
                         className="p-4 bg-error/5 border border-error/10 rounded-xl hover:bg-white hover:border-error transition-all cursor-pointer shadow-sm group"
                       >
                         <div className="flex justify-between items-start mb-2.5">
