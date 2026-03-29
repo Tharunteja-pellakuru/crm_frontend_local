@@ -474,11 +474,11 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
                               <span
                                 className={`px-2 py-0.5 rounded-lg text-[13px] font-bold tracking-widest ${
                                   client.status === "Active"
-                                    ? "bg-primary/10 text-primary uppercase"
-                                    : "bg-secondary/10 text-secondary uppercase"
+                                    ? "bg-primary text-white uppercase shadow-sm"
+                                    : "bg-secondary text-white uppercase shadow-sm"
                                 }`}
                               >
-                                {client.status === "Lead" ? "New" : "Reference"}
+                                {client.status?.toLowerCase() === "lead" ? "New" : "Reference"}
                               </span>
                             )}
                           </div>
@@ -516,8 +516,8 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
                   missedTasks.slice(0, 4).map((f) => {
                     const client = clients.find(
                       (c) =>
-                        (f.clientId && (c.id === f.clientId || c.client_id === f.clientId)) ||
-                        (f.leadId && (c.id === f.leadId || c.lead_id === f.leadId)),
+                        (f.clientId && (c.id == f.clientId || c.client_id == f.clientId)) ||
+                        (f.leadId && (c.id == f.leadId || c.lead_id == f.leadId)),
                     );
                     return (
                       <div
@@ -538,11 +538,11 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
                               <span
                                 className={`px-2 py-0.5 rounded-lg text-[13px] font-bold tracking-widest ${
                                   client.status === "Active"
-                                    ? "bg-primary text-white uppercase"
-                                    : "bg-secondary text-white uppercase"
-                                } shadow-sm`}
+                                    ? "bg-primary text-white uppercase shadow-sm"
+                                    : "bg-secondary text-white uppercase shadow-sm"
+                                }`}
                               >
-                                {client.status === "Lead" ? "New" : "Reference"}
+                                {client.status?.toLowerCase() === "lead" ? "New" : "Reference"}
                               </span>
                             )}
                           </div>
