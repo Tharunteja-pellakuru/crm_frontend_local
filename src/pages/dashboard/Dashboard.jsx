@@ -7,11 +7,11 @@ import { Users, UserPlus, Clock, CheckCircle2, ChevronRight, ChevronDown, Filter
 function StatCard({ title, value, trend, trendUp, icon, description, delay = 0 }) {
   return (
     <div 
-      className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:-translate-y-1 hover:shadow-md transition-all duration-300 relative animate-fade-in-up"
+      className="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 hover:-translate-y-1 hover:shadow-md transition-all duration-300 relative animate-fade-in-up"
       style={{ animationDelay: `${delay}ms` }}
     >
-      <div className="flex justify-between items-start mb-4">
-        <div className="p-2.5 bg-primary/5 text-primary rounded-xl">
+      <div className="flex justify-between items-start mb-3">
+        <div className="p-2 bg-primary/5 text-primary rounded-xl">
           {icon}
         </div>
         {trend && (
@@ -205,13 +205,13 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
 
   return (
     <div className="w-full relative">
-      <div className="space-y-6 md:space-y-8 relative z-0">
-        <div className="flex flex-row flex-wrap justify-between items-center gap-6 animate-fade-in relative z-50" style={{ animationDelay: '100ms' }}>
+      <div className="space-y-4 md:space-y-5 relative z-0">
+        <div className="flex flex-row flex-wrap justify-between items-center gap-4 animate-fade-in relative z-50" style={{ animationDelay: '100ms' }}>
           <div className="max-w-2xl shrink-0">
-            <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-[#18254D] tracking-tight mb-1.5">
+            <h2 className="text-base md:text-lg lg:text-xl font-bold text-[#18254D] tracking-tight mb-1">
               Welcome back, {currentUser?.full_name?.split(' ')[0] || 'Admin'}
             </h2>
-            <p className="text-xs md:text-sm text-textMuted font-medium leading-relaxed">
+            <p className="text-[11px] md:text-xs text-textMuted font-medium leading-relaxed">
               Let's build something remarkable today.
             </p>
           </div>
@@ -400,7 +400,7 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
 
         <div className="flex flex-col gap-4 md:gap-5 animate-fade-in-up" style={{ animationDelay: '350ms' }}>
           <div className="flex flex-col lg:flex-row gap-4 md:gap-5">
-            <div className="w-full lg:w-[35%] xl:w-[30%] bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col h-[500px]">
+            <div className="w-full lg:w-[35%] xl:w-[30%] bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col h-[420px]">
             <div className="flex flex-row justify-between items-center gap-2 mb-6 flex-nowrap">
               <div className="flex items-center gap-1 p-0.5 bg-slate-50 rounded-xl border border-slate-100 shrink-0">
                 <button
@@ -685,7 +685,7 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
                 </div>
               </div>
             </div>
-            <div className="h-64 md:h-72 w-full min-w-0">
+            <div className="h-48 md:h-56 w-full min-w-0">
               <ResponsiveContainer width="100%" height="100%">
                 <ComposedChart data={chartData}>
                   <CartesianGrid
