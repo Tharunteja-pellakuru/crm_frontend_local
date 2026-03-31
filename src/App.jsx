@@ -587,84 +587,50 @@ function AppRoutes() {
 
   async function handleOnboardClient(id, data) {
     try {
-      // 1. Add Client
-      const clientPayload = {
-        organisation_name: data.organisationName || data.projectName || "",
-        client_name: data.name,
-        client_country: data.country || "",
-        client_state: data.state || "",
-        client_currency: data.currency || "",
-        client_status: data.clientStatus || "Active",
-        lead_id: id,
-      };
+      const formData = new FormData();
+      // Client details
+      formData.append("organisation_name", data.organisationName || data.projectName || "");
+      formData.append("client_name", data.name);
+      formData.append("client_country", data.country || "");
+      formData.append("client_state", data.state || "");
+      formData.append("client_currency", data.currency || "");
+      formData.append("client_status", data.clientStatus || "Active");
+      formData.append("lead_id", id);
 
-      const clientRes = await fetch(`${BASE_URL}/api/add-client`, {
-        method: "POST",
-        headers: getAuthHeaders(),
-        body: JSON.stringify(clientPayload),
-      });
-
-      if (!clientRes.ok) {
-        throw new Error("Failed to create client");
-      }
-
-      const clientResult = await clientRes.json();
-      const newClient = clientResult.client;
-
-      // 2. Add Project if name exists
-      let newProject = null;
+      // Project details
       if (data.projectName) {
-        const projectFormData = new FormData();
-        projectFormData.append("project_name", data.projectName);
-        projectFormData.append("project_description", data.projectDescription || "");
-        
-        // Map category ID to string for backend ENUM compatibility
-        const categoryString = CATEGORY_MAP[data.projectCategory] || "Tech";
-        projectFormData.append("project_category", categoryString);
-        
-        projectFormData.append("project_status", data.projectStatus || "In Progress");
-        projectFormData.append("project_priority", data.projectPriority || "High");
-        projectFormData.append("project_budget", parseInt(data.projectBudget) || 0);
-        projectFormData.append("onboarding_date", data.onboardingDate || new Date().toISOString().split("T")[0]);
-        projectFormData.append("deadline_date", data.deadline || "");
-        projectFormData.append("client_id", newClient.client_id);
+        formData.append("project_name", data.projectName);
+        formData.append("project_description", data.projectDescription || "");
+        formData.append("project_category", CATEGORY_MAP[data.projectCategory] || "Tech");
+        formData.append("project_status", data.projectStatus || "In Progress");
+        formData.append("project_priority", data.projectPriority || "High");
+        formData.append("project_budget", parseInt(data.projectBudget) || 0);
+        formData.append("onboarding_date", data.onboardingDate || new Date().toISOString().split("T")[0]);
+        formData.append("deadline_date", data.deadline || "");
         
         if (data.scopeDocument instanceof File) {
-          projectFormData.append("scope_document", data.scopeDocument);
-        } else if (data.scopeDocument) {
-          projectFormData.append("scope_document", data.scopeDocument);
-        }
-
-        const projectRes = await fetch(`${BASE_URL}/api/add-project`, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: projectFormData,
-        });
-
-        if (projectRes.ok) {
-          const projectResult = await projectRes.json();
-          newProject = projectResult.project;
-        } else {
-          // Check if response is JSON before parsing
-          const contentType = projectRes.headers.get("content-type");
-          let errorMessage = "Failed to create project";
-          
-          if (contentType && contentType.includes("application/json")) {
-            const errorData = await projectRes.json();
-            errorMessage = errorData.message || errorMessage;
-          } else {
-            const errorText = await projectRes.text();
-            console.error("Non-JSON error response:", errorText);
-          }
-          
-          console.error("Project creation failed:", errorMessage);
-          throw new Error(errorMessage);
+          formData.append("scope_document", data.scopeDocument);
         }
       }
 
-      // 3. Update local states
+      const res = await fetch(`${BASE_URL}/api/convert-lead`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Failed to convert lead");
+      }
+
+      const result = await res.json();
+      const newClient = result.client;
+      const newProjectData = result.project; // Note: My backend doesn't return the project yet, let me fix it in the next step or adjust here.
+      // Actually, I should probably return both from the backend.
+
       // Transform new client to match frontend format
       const transformedClient = {
         id: newClient.client_id.toString(),
@@ -681,7 +647,7 @@ function AppRoutes() {
         lastContact: new Date().toISOString().split("T")[0],
         isConverted: true,
         leadType: "Converted",
-        lead_id: id, // Ensure lead_id is preserved for followups
+        lead_id: id,
         industry: data.projectCategory || 1,
         projectCategory: data.projectCategory || 1,
         notes: data.projectDescription || data.notes || "",
@@ -690,21 +656,34 @@ function AppRoutes() {
       // Update clients state
       setClients((prev) => [transformedClient, ...prev]);
 
-      // Update projects if created
-      if (newProject) {
-        setProjects((prev) => [{
-          id: newProject.project_id.toString(),
-          name: newProject.project_name,
-          description: newProject.project_description,
-          status: newProject.project_status,
-          category: newProject.project_category,
-          priority: newProject.project_priority,
-          budget: newProject.project_budget,
-          onboardingDate: newProject.onboarding_date,
-          deadline: newProject.deadline_date,
-          scopeDocument: newProject.scope_document,
-          clientId: newProject.client_id.toString(),
-        }, ...prev]);
+      // If project was created, update projects state
+      // (Even if backend didn't return it yet, we can refetch or optimistically add)
+      // For now, I'll update the backend to return the project too.
+      if (data.projectName) {
+        // We'll refetch projects to get the latest DB state including the new project
+        fetch(`${BASE_URL}/api/get-projects`, {
+          headers: getAuthHeaders(),
+        })
+          .then((res) => (res.ok ? res.json() : []))
+          .then((data) => {
+            const transformedProjects = data.map((p) => ({
+              id: p.project_id.toString(),
+              clientId: p.client_id.toString(),
+              name: p.project_name,
+              description: p.project_description,
+              status: p.project_status,
+              budget: p.project_budget,
+              deadline: p.deadline_date?.split("T")[0],
+              onboardingDate: p.onboarding_date?.split("T")[0],
+              priority: p.project_priority,
+              category: typeof p.project_category === 'string' 
+                ? (REVERSE_CATEGORY_MAP[p.project_category] || 1)
+                : (p.project_category || 1),
+              scopeDocument: p.scope_document,
+              progress: 0,
+            }));
+            setProjects(transformedProjects);
+          });
       }
 
       // Update leads state to mark as converted
@@ -714,10 +693,11 @@ function AppRoutes() {
         ),
       );
 
+      toast.success("Lead onboarded successfully!");
       return { success: true };
     } catch (error) {
       console.error("Conversion error:", error);
-      toast.error("Failed to convert lead to client: " + error.message);
+      toast.error(error.message || "Failed to convert lead to client");
       return { success: false };
     }
   }
@@ -1493,10 +1473,11 @@ function AppRoutes() {
     }
   }
 
-  async function handleUpdateEnquiryStatus(id, status, remarks) {
+  async function handleUpdateEnquiryStatus(id, status, remarks, message) {
     let actualId = id;
     let actualStatus = status;
     let actualRemarks = remarks;
+    let actualMessage = message;
 
     // Handle object argument from some components
     if (typeof id === 'object' && id !== null) {
@@ -1513,7 +1494,7 @@ function AppRoutes() {
       const res = await fetch(`${BASE_URL}/api/update-enquiry-status/${actualId}`, {
         method: "PUT",
         headers: getAuthHeaders(),
-        body: JSON.stringify({ status: actualStatus, remarks: actualRemarks }),
+        body: JSON.stringify({ status: actualStatus, remarks: actualRemarks, message: actualMessage }),
       });
 
       if (res.ok) {
@@ -1525,7 +1506,7 @@ function AppRoutes() {
         }
 
         setEnquiries((prev) =>
-          prev.map((e) => (e.id == actualId ? { ...e, status: actualStatus.toLowerCase(), remarks: actualRemarks, holdReason: actualRemarks } : e))
+          prev.map((e) => (e.id == actualId ? { ...e, status: actualStatus.toLowerCase(), remarks: actualRemarks, holdReason: actualRemarks, message: actualMessage !== undefined ? actualMessage : e.message } : e))
         );
         toast.success(`Enquiry marked as ${actualStatus}!`);
       } else {
@@ -1568,10 +1549,9 @@ function AppRoutes() {
       
       const newLead = await handleAddClient(leadDataWithEnquiry);
       if (newLead && enquiry) {
-        await handleUpdateEnquiryStatus(enquiry.id, "Converted");
+        await handleUpdateEnquiryStatus(enquiry.id, "Converted", null, leadData.notes);
       } else if (newLead && enquiryUuid) {
-        // Backup if we only have the ID/UUID
-        await handleUpdateEnquiryStatus(enquiryUuid, "Converted");
+        await handleUpdateEnquiryStatus(enquiryUuid, "Converted", null, leadData.notes);
       }
       navigate("/leads");
     } catch (err) {

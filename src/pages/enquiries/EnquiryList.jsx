@@ -1432,7 +1432,7 @@ const EnquiryList = ({
 
                 <div className="space-y-1.5">
                   <label className="text-[14px] font-bold text-primary tracking-widest ml-1">
-                    Note
+                    Enquiry Message / Note
                   </label>
                   <textarea
                     rows={3}
