@@ -46,6 +46,7 @@ import {
 } from "../../utils/locationData";
 import SearchableDropdown from "../../components/common/SearchableDropdown";
 import { validateForm } from "../../utils/validation";
+import { formatBudget, parseBudget } from "../../utils/formatters";
 
 const ClientList = ({
   clients,
@@ -2392,17 +2393,17 @@ const ClientList = ({
                     </label>
                     <div className="relative">
                       <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">
-                        ₹
+                        {commonCurrencies.find((c) => c.code === onboardingData.currency)?.symbol || "₹"}
                       </span>
                       <input
                         type="text"
-                        placeholder="e.g. 5,00,000"
-                        className="w-full pl-8 pr-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
-                        value={onboardingData.projectBudget}
+                        placeholder="Project Budget"
+                        className="w-full pl-10 pr-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
+                        value={formatBudget(onboardingData.projectBudget, onboardingData.currency)}
                         onChange={(e) =>
                           setOnboardingData({
                             ...onboardingData,
-                            projectBudget: e.target.value,
+                            projectBudget: parseBudget(e.target.value),
                           })
                         }
                       />

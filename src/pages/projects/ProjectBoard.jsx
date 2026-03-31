@@ -33,6 +33,7 @@ import {
   commonCurrencies,
   countryToCurrency,
 } from "../../utils/locationData";
+import { formatBudget, parseBudget } from "../../utils/formatters";
 import SearchableDropdown from "../../components/common/SearchableDropdown";
 import { validateForm } from "../../utils/validation";
 
@@ -1260,11 +1261,11 @@ const ProjectBoard = ({
                           : "e.g. 5,00,000"
                       }
                       className="w-full pl-8 pr-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium shadow-sm"
-                      value={formData.budget || ""}
+                      value={formatBudget(formData.budget, formData.currency)}
                       onChange={(e) =>
                         setFormData({
                           ...formData,
-                          budget: e.target.value,
+                          budget: parseBudget(e.target.value),
                         })
                       }
                     />

@@ -41,6 +41,7 @@ import {
   commonCurrencies,
   countryToCurrency,
 } from "../../utils/locationData";
+import { formatBudget, parseBudget } from "../../utils/formatters";
 import SearchableDropdown from "../../components/common/SearchableDropdown";
 import { validateForm, EMAIL_PATTERN } from "../../utils/validation";
 import {
@@ -2101,11 +2102,11 @@ const LeadList = ({
                             : "e.g. 5,00,000"
                         }
                         className="w-full pl-8 pr-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium shadow-sm"
-                        value={onboardingData.projectBudget}
+                        value={formatBudget(onboardingData.projectBudget, onboardingData.currency)}
                         onChange={(e) =>
                           setOnboardingData({
                             ...onboardingData,
-                            projectBudget: e.target.value,
+                            projectBudget: parseBudget(e.target.value),
                           })
                         }
                       />

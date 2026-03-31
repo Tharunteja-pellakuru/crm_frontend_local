@@ -31,6 +31,8 @@ import {
 } from "../../constants/categoryConstants";
 import { BASE_URL } from "../../constants/config";
 import { validateForm } from "../../utils/validation";
+import { commonCurrencies } from "../../utils/locationData";
+import { formatBudget, parseBudget } from "../../utils/formatters";
 
 const ProjectOverview = ({
   project,
@@ -618,25 +620,25 @@ const ProjectOverview = ({
             {isEditing ? (
               <div className="relative">
                 <div className="absolute left-4 top-1/2 -translate-y-1/2 text-success font-bold text-lg">
-                  ₹
+                  {commonCurrencies.find((c) => c.code === project?.currency)?.symbol || "₹"}
                 </div>
                 <input
-                  type="number"
-                  value={formData.budget}
+                  type="text"
+                  value={formatBudget(formData.budget, project?.currency)}
                   onChange={(e) =>
                     setFormData({
                       ...formData,
-                      budget: parseInt(e.target.value) || 0,
+                      budget: parseBudget(e.target.value),
                     })
                   }
-                  className="w-full pl-10 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:border-success text-2xl font-black text-primary tracking-tighter"
+                  className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:border-success text-2xl font-black text-primary tracking-tighter"
                 />
               </div>
             ) : (
               <p className="text-xl sm:text-2xl font-bold text-[#18254D] tracking-tight shrink-0">
                 {formData.budget > 0
-                  ? `₹${formData.budget.toLocaleString("en-IN")}`
-                  : "₹0.00"}
+                  ? `${commonCurrencies.find((c) => c.code === project?.currency)?.symbol || "₹"}${formatBudget(formData.budget, project?.currency)}`
+                  : `${commonCurrencies.find((c) => c.code === project?.currency)?.symbol || "₹"}0`}
               </p>
             )}
           </div>
