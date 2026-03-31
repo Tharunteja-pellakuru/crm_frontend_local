@@ -820,11 +820,6 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
                   <ChevronRight size={16} />
                 </button>
               </div>
-              <div className="p-3 bg-slate-50/50 text-center">
-                <p className="text-[14px] text-slate-400 font-bold uppercase tracking-widest">
-                  Parivartan CRM Selection
-                </p>
-              </div>
             </div>
           </div>
         )}
