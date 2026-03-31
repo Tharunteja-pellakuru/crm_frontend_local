@@ -2,7 +2,7 @@
 
 ## 1. Typography System
 
-**Font Family**: `Inter`, system-ui, sans-serif
+**Font Family**: `Calibri`, sans-serif
 **Base Font Size**: `15px` (0.9375rem) - Refined for clarity and SaaS professional feel.
 **Line Height**: `1.6` (Body), `1.25` (Headings)
 **Letter Spacing**: `-0.01em` (Headings), `-0.005em` (Body)
