@@ -62,10 +62,24 @@ function Sidebar({
     >
       <div className="p-6 pb-4 relative shrink-0 flex items-center justify-between">
         {!isCollapsed && (
-          <Logo size={260} showText={false} className="!gap-3" />
+          <div 
+            onClick={() => {
+              setActiveTab("dashboard");
+              if (onCloseMobile) onCloseMobile();
+            }}
+            className="cursor-pointer transition-transform hover:scale-[1.02] active:scale-95"
+          >
+            <Logo size={260} showText={false} className="!gap-3" />
+          </div>
         )}
         {isCollapsed && (
-          <div className="mx-auto flex items-center justify-center w-full">
+          <div 
+            onClick={() => {
+              setActiveTab("dashboard");
+              if (onCloseMobile) onCloseMobile();
+            }}
+            className="mx-auto flex items-center justify-center w-full cursor-pointer transition-transform hover:scale-110 active:scale-90"
+          >
             <Logo size={44} showText={false} />
           </div>
         )}
