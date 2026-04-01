@@ -1,92 +1,88 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+  @tailwind base;
+  @tailwind components;
+  @tailwind utilities;
 
-* {
-  font-family: "Calibri", sans-serif !important;
-}
+  @layer base {
+    body {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+      @apply bg-background text-textPrimary font-sans;
+    }
 
-@layer base {
-  body {
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-rendering: optimizeLegibility;
-    @apply bg-background text-textPrimary font-sans;
-  }
+    /* Headings */
+    h1 {
+      @apply font-bold text-3xl tracking-tight;
+    }
 
-  /* Headings */
-  h1 {
-    @apply font-bold text-3xl tracking-tight;
-  }
+    h2 {
+      @apply font-semibold text-2xl tracking-tight;
+    }
 
-  h2 {
-    @apply font-semibold text-2xl tracking-tight;
-  }
+    h3 {
+      @apply font-semibold text-xl tracking-tight;
+    }
 
-  h3 {
-    @apply font-semibold text-xl tracking-tight;
-  }
+    h4 {
+      @apply font-semibold text-lg;
+    }
 
-  h4 {
-    @apply font-semibold text-lg;
-  }
-
-  p {
-    @apply leading-relaxed;
-  }
-}
-
-@layer components {
-  /* Navigation */
-  .nav-link {
-    @apply font-medium text-sidebar-nav tracking-wide transition-all duration-200;
+    p {
+      @apply leading-relaxed;
+    }
   }
 
-  /* Table Headers */
-  .table-th {
-    @apply font-semibold text-xs tracking-wider text-textMuted uppercase;
+  @layer components {
+    /* Navigation */
+    .nav-link {
+      @apply font-medium text-sidebar-nav tracking-wide transition-all duration-200;
+    }
+
+    /* Table Headers */
+    .table-th {
+      @apply font-semibold text-xs tracking-wider text-textMuted uppercase;
+    }
+
+    /* Dashboard Stats */
+    .stat-value {
+      @apply font-bold text-3xl tracking-tight;
+    }
+
+    .stat-label {
+      @apply font-medium text-sm text-textMuted;
+    }
+
+    /* Cards */
+    .card-primary {
+      @apply bg-surface rounded-2xl border border-slate-200 shadow-sm p-6 transition-all;
+    }
   }
 
-  /* Dashboard Stats */
-  .stat-value {
-    @apply font-bold text-3xl tracking-tight;
-  }
+  @layer utilities {
+    .text-balance {
+      text-wrap: balance;
+    }
 
-  .stat-label {
-    @apply font-medium text-sm text-textMuted;
-  }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
 
-  /* Cards */
-  .card-primary {
-    @apply bg-surface rounded-2xl border border-slate-200 shadow-sm p-6 transition-all;
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: 10px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 0, 0, 0.2);
+    }
   }
-}
-
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
-
-  .no-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-  .no-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-
-  .custom-scrollbar::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-  .custom-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.1);
-    border-radius: 10px;
-  }
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: rgba(0, 0, 0, 0.2);
-  }
-}
