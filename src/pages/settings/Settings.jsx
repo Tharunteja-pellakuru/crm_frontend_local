@@ -932,13 +932,13 @@ const Settings = ({
                         Add and manage AI models for enquiry filtering.
                       </p>
                     </div>
-                    {/* <button
+                    <button
                       onClick={() => setShowAddModelForm(!showAddModelForm)}
                       className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white rounded-2xl hover:bg-slate-800 transition-all active:scale-95 text-[13px] font-bold tracking-wider shadow-lg"
                     >
                       <Plus size={16} />
                       ADD AI MODEL
-                    </button> */}
+                    </button>
                   </div>
 
                   {/* Add Model Form */}
