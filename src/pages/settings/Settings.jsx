@@ -21,10 +21,15 @@ import {
   Zap,
   X,
   Loader2,
+  Download,
+  FileText,
+  Users as UsersIcon,
+  Calendar,
+  Briefcase,
+  MessageSquare,
 } from "lucide-react";
 import { BASE_URL } from "../../constants/config";
 import { getAuthHeaders } from "../../utils/auth";
-import anandImg from "../../assets/Anand.png";
 import openaiLogo from "../../assets/openai_logo.png";
 import geminiLogo from "../../assets/gemini_logo.png";
 import grokLogo from "../../assets/grok_logo.png";
@@ -652,6 +657,33 @@ const Settings = ({
     }
   };
 
+  // Export functions
+  const handleExport = async (exportType, filename) => {
+    try {
+      const response = await fetch(`${BASE_URL}/api/export/${exportType}`, {
+        headers: getAuthHeaders(),
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        showToastMessage(`${filename} downloaded successfully`, "success");
+      } else {
+        showToastMessage(`Failed to export ${exportType}`, "error");
+      }
+    } catch (error) {
+      console.error(`Export error for ${exportType}:`, error);
+      showToastMessage(`Error downloading ${filename}`, "error");
+    }
+  };
+
   return (
     <div className="w-full relative">
       <div className="space-y-5 animate-fade-in w-full">
@@ -674,27 +706,28 @@ const Settings = ({
             <div
               className="absolute top-[2px] bottom-[2px] left-[2px] bg-white rounded-[11px] shadow-sm transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] border border-white/20 z-0"
               style={{
-                width: "calc(25% - 2px)",
-                transform: `translateX(${["profile", "security", "ai", "team"].indexOf(activeTab) * 100}%)`,
+                width: "calc(20% - 2px)",
+                transform: `translateX(${["profile", "security", "ai", "team", "export"].indexOf(activeTab) * 100}%)`,
               }}
             />
 
             {[
-              { id: "profile", label: "My Profile" },
-              { id: "security", label: "Security" },
-              { id: "ai", label: "AI Settings" },
-              { id: "team", label: "Admins" },
+              ["profile", "My Profile"],
+              ["security", "Security"],
+              ["ai", "AI Settings"],
+              ["team", "Admins"],
+              ["export", "Data Export"],
             ].map((tab) => (
               <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                key={tab[0]}
+                onClick={() => setActiveTab(tab[0])}
                 className={`relative z-10 flex-1 sm:flex-none px-2 sm:px-6 py-2.5 sm:py-2 rounded-xl text-[10px] sm:text-[12px] font-bold tracking-wider transition-all duration-300 flex items-center justify-center min-w-[75px] sm:min-w-[120px] h-[30px] sm:h-[36px] whitespace-nowrap active:scale-95 ${
-                  activeTab === tab.id
+                  activeTab === tab[0]
                     ? "text-blue-600 scale-[1.02]"
                     : "text-slate-400 hover:text-slate-600"
                 }`}
               >
-                {tab.label}
+                {tab[1]}
               </button>
             ))}
           </div>
@@ -1818,6 +1851,232 @@ const Settings = ({
                     </div>
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* DATA EXPORT TAB */}
+            {activeTab === "export" && (
+              <div className="space-y-8 animate-fade-in w-full">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div>
+                    <h3 className="text-3xl font-black text-[#18254D] mb-2 tracking-tight">
+                      Data Export Center
+                    </h3>
+                    <p className="text-sm font-black text-slate-500">
+                      Download your CRM data in CSV format for analysis and
+                      reporting.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {/* Enquiries Export */}
+                  <div className="group bg-white border border-slate-200/60 rounded-[20px] p-6 hover:border-slate-300 hover:shadow-lg transition-all duration-300 flex flex-col">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="w-12 h-12 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center flex-shrink-0">
+                        <FileText size={24} className="text-blue-600" />
+                      </div>
+                      <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-full border border-blue-100">
+                        Raw Data
+                      </span>
+                    </div>
+                    <h4 className="text-lg font-bold text-[#18254D] mb-2">
+                      Enquiries
+                    </h4>
+                    <p className="text-sm text-slate-600 mb-4 leading-relaxed flex-1">
+                      All incoming enquiries before conversion to leads.
+                    </p>
+                    <button
+                      onClick={() =>
+                        handleExport("enquiries", "enquiries_export.xlsx")
+                      }
+                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#18254D] text-white rounded-xl hover:bg-[#1e2e5e] transition-all active:scale-95 text-sm font-bold shadow-lg shadow-slate-900/20 mt-auto"
+                    >
+                      <Download size={16} />
+                      Download Excel
+                    </button>
+                  </div>
+
+                  {/* Leads Export */}
+                  <div className="group bg-white border border-slate-200/60 rounded-[20px] p-6 hover:border-slate-300 hover:shadow-lg transition-all duration-300 flex flex-col">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="w-12 h-12 rounded-xl bg-green-50 border border-green-100 flex items-center justify-center flex-shrink-0">
+                        <UsersIcon size={24} className="text-green-600" />
+                      </div>
+                      <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full border border-green-100">
+                        Converted
+                      </span>
+                    </div>
+                    <h4 className="text-lg font-bold text-[#18254D] mb-2">
+                      Leads
+                    </h4>
+                    <p className="text-sm text-slate-600 mb-4 leading-relaxed flex-1">
+                      Converted leads with enquiry linkage and contact details.
+                    </p>
+                    <button
+                      onClick={() => handleExport("leads", "leads_export.xlsx")}
+                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#18254D] text-white rounded-xl hover:bg-[#1e2e5e] transition-all active:scale-95 text-sm font-bold shadow-lg shadow-slate-900/20 mt-auto"
+                    >
+                      <Download size={16} />
+                      Download Excel
+                    </button>
+                  </div>
+
+                  {/* Follow-ups Export */}
+                  <div className="group bg-white border border-slate-200/60 rounded-[20px] p-6 hover:border-slate-300 hover:shadow-lg transition-all duration-300 flex flex-col">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="w-12 h-12 rounded-xl bg-purple-50 border border-purple-100 flex items-center justify-center flex-shrink-0">
+                        <Calendar size={24} className="text-purple-600" />
+                      </div>
+                      <span className="text-xs font-bold text-purple-600 bg-purple-50 px-2 py-1 rounded-full border border-purple-100">
+                        Activity
+                      </span>
+                    </div>
+                    <h4 className="text-lg font-bold text-[#18254D] mb-2">
+                      Follow-ups
+                    </h4>
+                    <p className="text-sm text-slate-600 mb-4 leading-relaxed flex-1">
+                      All follow-up activities with lead and project details.
+                    </p>
+                    <button
+                      onClick={() =>
+                        handleExport("followups", "followups_export.xlsx")
+                      }
+                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#18254D] text-white rounded-xl hover:bg-[#1e2e5e] transition-all active:scale-95 text-sm font-bold shadow-lg shadow-slate-900/20 mt-auto"
+                    >
+                      <Download size={16} />
+                      Download Excel
+                    </button>
+                  </div>
+
+                  {/* Clients Export */}
+                  <div className="group bg-white border border-slate-200/60 rounded-[20px] p-6 hover:border-slate-300 hover:shadow-lg transition-all duration-300 flex flex-col">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="w-12 h-12 rounded-xl bg-orange-50 border border-orange-100 flex items-center justify-center flex-shrink-0">
+                        <Building2 size={24} className="text-orange-600" />
+                      </div>
+                      <span className="text-xs font-bold text-orange-600 bg-orange-50 px-2 py-1 rounded-full border border-orange-100">
+                        Business
+                      </span>
+                    </div>
+                    <h4 className="text-lg font-bold text-[#18254D] mb-2">
+                      Clients
+                    </h4>
+                    <p className="text-sm text-slate-600 mb-4 leading-relaxed flex-1">
+                      Converted business entities with organization details.
+                    </p>
+                    <button
+                      onClick={() =>
+                        handleExport("clients", "clients_export.xlsx")
+                      }
+                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#18254D] text-white rounded-xl hover:bg-[#1e2e5e] transition-all active:scale-95 text-sm font-bold shadow-lg shadow-slate-900/20 mt-auto"
+                    >
+                      <Download size={16} />
+                      Download Excel
+                    </button>
+                  </div>
+
+                  {/* Projects Export */}
+                  <div className="group bg-white border border-slate-200/60 rounded-[20px] p-6 hover:border-slate-300 hover:shadow-lg transition-all duration-300 flex flex-col">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="w-12 h-12 rounded-xl bg-red-50 border border-red-100 flex items-center justify-center flex-shrink-0">
+                        <Briefcase size={24} className="text-red-600" />
+                      </div>
+                      <span className="text-xs font-bold text-red-600 bg-red-50 px-2 py-1 rounded-full border border-red-100">
+                        Revenue
+                      </span>
+                    </div>
+                    <h4 className="text-lg font-bold text-[#18254D] mb-2">
+                      Projects
+                    </h4>
+                    <p className="text-sm text-slate-600 mb-4 leading-relaxed flex-1">
+                      Active projects with budget, deadlines, and client info.
+                    </p>
+                    <button
+                      onClick={() =>
+                        handleExport("projects", "projects_export.xlsx")
+                      }
+                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#18254D] text-white rounded-xl hover:bg-[#1e2e5e] transition-all active:scale-95 text-sm font-bold shadow-lg shadow-slate-900/20 mt-auto"
+                    >
+                      <Download size={16} />
+                      Download Excel
+                    </button>
+                  </div>
+
+                  {/* All-in-One Export */}
+                  {/* <div className="group bg-white border border-slate-200/60 rounded-[20px] p-6 hover:border-indigo-200 hover:shadow-xl hover:shadow-indigo-500/10 transition-all duration-300 md:col-span-2 lg:col-span-3">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="w-12 h-12 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center">
+                        <MessageSquare size={24} className="text-indigo-600" />
+                      </div>
+                      <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded-full border border-indigo-100">
+                        Complete View
+                      </span>
+                    </div>
+                    <h4 className="text-lg font-bold text-slate-900 mb-2">
+                      All CRM Data
+                    </h4>
+                    <p className="text-sm text-slate-500 mb-4 leading-relaxed">
+                      Comprehensive export linking leads, clients, projects, and
+                      follow-ups for complete CRM analysis.
+                    </p>
+                    <button
+                      onClick={() =>
+                        handleExport("all-crm-data", "all_crm_data_export.csv")
+                      }
+                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all active:scale-95 text-sm font-bold shadow-lg shadow-indigo-500/20 group-hover:shadow-indigo-500/30"
+                    >
+                      <Download size={16} />
+                      Download Complete CSV
+                    </button>
+                  </div> */}
+                </div>
+
+                <div className="bg-slate-50 border border-slate-200 rounded-[20px] p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center flex-shrink-0">
+                      <Zap size={20} className="text-slate-600" />
+                    </div>
+                    <div>
+                      <h4 className="text-lg font-bold text-[#18254D] mb-2">
+                        Export Features
+                      </h4>
+                      <ul className="text-sm text-slate-700 space-y-1">
+                        <li>
+                          • <strong>User-friendly column names</strong> instead
+                          of raw database fields
+                        </li>
+                        <li>
+                          • <strong>Proper date formatting</strong> (DD-MM-YYYY
+                          format)
+                        </li>
+                        <li>
+                          • <strong>Currency formatting</strong> with Indian
+                          Rupee symbol
+                        </li>
+                        <li>
+                          • <strong>Serial numbers</strong> for easy reference
+                        </li>
+                        <li>
+                          • <strong>Linked data</strong> showing relationships
+                          between tables
+                        </li>
+                        <li>
+                          • <strong>Excel format (.xlsx)</strong> with
+                          professional styling and formatting
+                        </li>
+                        <li>
+                          • <strong>Auto-sized columns</strong> and{" "}
+                          <strong>alternating row colors</strong>
+                        </li>
+                        <li>
+                          • <strong>Sheet titles</strong> and{" "}
+                          <strong>metadata</strong> for better organization
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
           </div>
