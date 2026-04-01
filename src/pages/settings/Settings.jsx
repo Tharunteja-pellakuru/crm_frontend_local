@@ -48,6 +48,7 @@ const Settings = ({
 }) => {
   const [activeTab, setActiveTab] = useState("profile");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [exportingType, setExportingType] = useState(null);
 
   const [profile, setProfile] = useState(
     JSON.parse(localStorage.getItem("user")) || null,
@@ -658,11 +659,18 @@ const Settings = ({
   };
 
   // Export functions
+  // Export functions
   const handleExport = async (exportType, filename) => {
+    setExportingType(exportType);
     try {
       const response = await fetch(`${BASE_URL}/api/export/${exportType}`, {
         headers: getAuthHeaders(),
       });
+
+      if (response.status === 404) {
+        hotToast.error("Empty records");
+        return;
+      }
 
       if (response.ok) {
         const blob = await response.blob();
@@ -674,13 +682,29 @@ const Settings = ({
         a.click();
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
-        showToastMessage(`${filename} downloaded successfully`, "success");
+
+        const typeLabels = {
+          enquiries: "Enquiries",
+          leads: "Leads",
+          followups: "Follow-ups",
+          clients: "Clients",
+          projects: "Projects",
+          "all-crm-data": "All CRM Data",
+        };
+
+        const label = typeLabels[exportType] || "File";
+        const successMessage = `${label} Downloaded Successfully!`;
+
+        hotToast.success(successMessage);
       } else {
-        showToastMessage(`Failed to export ${exportType}`, "error");
+        const errorData = await response.json().catch(() => ({}));
+        hotToast.error(errorData.message || `Failed to export ${exportType}`);
       }
     } catch (error) {
       console.error(`Export error for ${exportType}:`, error);
-      showToastMessage(`Error downloading ${filename}`, "error");
+      hotToast.error(`Error downloading ${filename}`);
+    } finally {
+      setExportingType(null);
     }
   };
 
@@ -1890,10 +1914,20 @@ const Settings = ({
                       onClick={() =>
                         handleExport("enquiries", "enquiries_export.xlsx")
                       }
-                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#18254D] text-white rounded-xl hover:bg-[#1e2e5e] transition-all active:scale-95 text-sm font-bold shadow-lg shadow-slate-900/20 mt-auto"
+                      disabled={exportingType === "enquiries"}
+                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#18254D] text-white rounded-xl hover:bg-[#1e2e5e] transition-all active:scale-95 text-sm font-bold shadow-lg shadow-slate-900/20 mt-auto disabled:opacity-70 disabled:cursor-not-allowed"
                     >
-                      <Download size={16} />
-                      Download Excel
+                      {exportingType === "enquiries" ? (
+                        <>
+                          <Loader2 size={16} className="animate-spin" />
+                          <span>Downloading...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Download size={16} />
+                          <span>Download Excel</span>
+                        </>
+                      )}
                     </button>
                   </div>
 
@@ -1915,10 +1949,20 @@ const Settings = ({
                     </p>
                     <button
                       onClick={() => handleExport("leads", "leads_export.xlsx")}
-                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#18254D] text-white rounded-xl hover:bg-[#1e2e5e] transition-all active:scale-95 text-sm font-bold shadow-lg shadow-slate-900/20 mt-auto"
+                      disabled={exportingType === "leads"}
+                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#18254D] text-white rounded-xl hover:bg-[#1e2e5e] transition-all active:scale-95 text-sm font-bold shadow-lg shadow-slate-900/20 mt-auto disabled:opacity-70 disabled:cursor-not-allowed"
                     >
-                      <Download size={16} />
-                      Download Excel
+                      {exportingType === "leads" ? (
+                        <>
+                          <Loader2 size={16} className="animate-spin" />
+                          <span>Downloading...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Download size={16} />
+                          <span>Download Excel</span>
+                        </>
+                      )}
                     </button>
                   </div>
 
@@ -1942,10 +1986,20 @@ const Settings = ({
                       onClick={() =>
                         handleExport("followups", "followups_export.xlsx")
                       }
-                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#18254D] text-white rounded-xl hover:bg-[#1e2e5e] transition-all active:scale-95 text-sm font-bold shadow-lg shadow-slate-900/20 mt-auto"
+                      disabled={exportingType === "followups"}
+                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#18254D] text-white rounded-xl hover:bg-[#1e2e5e] transition-all active:scale-95 text-sm font-bold shadow-lg shadow-slate-900/20 mt-auto disabled:opacity-70 disabled:cursor-not-allowed"
                     >
-                      <Download size={16} />
-                      Download Excel
+                      {exportingType === "followups" ? (
+                        <>
+                          <Loader2 size={16} className="animate-spin" />
+                          <span>Downloading...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Download size={16} />
+                          <span>Download Excel</span>
+                        </>
+                      )}
                     </button>
                   </div>
 
@@ -1969,10 +2023,20 @@ const Settings = ({
                       onClick={() =>
                         handleExport("clients", "clients_export.xlsx")
                       }
-                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#18254D] text-white rounded-xl hover:bg-[#1e2e5e] transition-all active:scale-95 text-sm font-bold shadow-lg shadow-slate-900/20 mt-auto"
+                      disabled={exportingType === "clients"}
+                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#18254D] text-white rounded-xl hover:bg-[#1e2e5e] transition-all active:scale-95 text-sm font-bold shadow-lg shadow-slate-900/20 mt-auto disabled:opacity-70 disabled:cursor-not-allowed"
                     >
-                      <Download size={16} />
-                      Download Excel
+                      {exportingType === "clients" ? (
+                        <>
+                          <Loader2 size={16} className="animate-spin" />
+                          <span>Downloading...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Download size={16} />
+                          <span>Download Excel</span>
+                        </>
+                      )}
                     </button>
                   </div>
 
@@ -1996,10 +2060,20 @@ const Settings = ({
                       onClick={() =>
                         handleExport("projects", "projects_export.xlsx")
                       }
-                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#18254D] text-white rounded-xl hover:bg-[#1e2e5e] transition-all active:scale-95 text-sm font-bold shadow-lg shadow-slate-900/20 mt-auto"
+                      disabled={exportingType === "projects"}
+                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#18254D] text-white rounded-xl hover:bg-[#1e2e5e] transition-all active:scale-95 text-sm font-bold shadow-lg shadow-slate-900/20 mt-auto disabled:opacity-70 disabled:cursor-not-allowed"
                     >
-                      <Download size={16} />
-                      Download Excel
+                      {exportingType === "projects" ? (
+                        <>
+                          <Loader2 size={16} className="animate-spin" />
+                          <span>Downloading...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Download size={16} />
+                          <span>Download Excel</span>
+                        </>
+                      )}
                     </button>
                   </div>
 
