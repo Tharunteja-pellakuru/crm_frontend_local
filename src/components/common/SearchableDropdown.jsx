@@ -109,7 +109,7 @@ const SearchableDropdown = ({
                   const optionLabel =
                     typeof option === "string"
                       ? option
-                      : option.code ? `${option.name} (${option.code})` : (option.name || option.label);
+                      : (option.name || option.label || option.code);
                   const isSelected = optionValue === value;
 
                   return (

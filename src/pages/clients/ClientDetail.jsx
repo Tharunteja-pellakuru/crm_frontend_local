@@ -420,7 +420,8 @@ const ClientDetail = ({
                           const formDataToSubmit = {
                             name: editFormData.name,
                             email: editFormData.email,
-                            phone: `${editFormData.countryCode}${editFormData.phone}`,
+                            phone: editFormData.phone,
+                            countryCode: editFormData.countryCode,
                             leadType: editFormData.leadType,
                             notes: editFormData.notes,
                             website: editFormData.website,

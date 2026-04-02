@@ -473,6 +473,7 @@ function AppRoutes() {
           message: data.notes || "",
           website_url: data.website || "",
           country: data.country || "",
+          country_code: data.countryCode || "",
           enquiry_id: data.enquiry_id || null,
           lead_category:
             data.projectCategory || data.leadCategory || REVERSE_CATEGORY_MAP[data.industry] || 1,
@@ -506,6 +507,7 @@ function AppRoutes() {
               result.lead?.lead_category || data.projectCategory || 1,
             industry: result.lead?.lead_category || data.projectCategory || 1,
             country: result.lead?.country || data.country || "",
+            country_code: result.lead?.country_code || data.countryCode || "",
             state: result.lead?.state || data.state || "",
             currency: result.lead?.currency || data.currency || "",
             website: result.lead?.website_url || data.website || "",
@@ -710,11 +712,11 @@ function AppRoutes() {
     try {
       // 1. Update Lead Details (Name, Email, Phone, Category, Country)
       const leadPayload = {
-        full_name: data.name,
         email: data.email,
         phone_number: data.phone,
         lead_category: data.projectCategory,
-        country: data.country && data.countryCode ? `${data.country} (${data.countryCode})` : (data.country || data.countryCode),
+        country: data.country || "",
+        country_code: data.countryCode || "",
         lead_status: "Converted",
         website_url: data.website || "",
         message: data.projectDescription || data.notes || "",
@@ -769,6 +771,7 @@ function AppRoutes() {
           message: leadToUpdate.notes,
           website_url: leadToUpdate.website || "",
           lead_category: leadToUpdate.projectCategory || 1,
+          country_code: leadToUpdate.country_code || "",
         }),
       });
 
@@ -795,6 +798,7 @@ function AppRoutes() {
           website: result.lead?.website_url || leadToUpdate.website,
           notes: result.lead?.message || leadToUpdate.notes,
           country: result.lead?.country || leadToUpdate.country || "",
+          country_code: result.lead?.country_code || leadToUpdate.country_code || "",
         };
 
         console.log("Transformed dismissed lead:", dismissedLead);
@@ -836,6 +840,7 @@ function AppRoutes() {
           message: leadToUpdate.notes,
           website_url: leadToUpdate.website || "",
           lead_category: leadToUpdate.projectCategory || 1,
+          country_code: leadToUpdate.country_code || "",
         }),
       });
 
@@ -861,6 +866,7 @@ function AppRoutes() {
           website: result.lead?.website_url || leadToUpdate.website,
           notes: result.lead?.message || leadToUpdate.notes,
           country: result.lead?.country || leadToUpdate.country || "",
+          country_code: result.lead?.country_code || leadToUpdate.country_code || "",
           isConverted: false,
         };
 
@@ -938,6 +944,10 @@ function AppRoutes() {
           editData.currency !== undefined && editData.currency !== null
             ? editData.currency
             : leadToUpdate.currency || "",
+        country_code:
+          editData.countryCode !== undefined && editData.countryCode !== null
+            ? editData.countryCode
+            : leadToUpdate.country_code || "",
         organisationName:
           editData.organisationName !== undefined &&
           editData.organisationName !== null
@@ -964,6 +974,7 @@ function AppRoutes() {
           lead_status: optimisticLead.leadType,
           website_url: optimisticLead.website,
           country: optimisticLead.country,
+          country_code: optimisticLead.country_code,
           message: optimisticLead.notes,
           lead_category: optimisticLead.projectCategory,
         }),
@@ -1000,6 +1011,7 @@ function AppRoutes() {
           ? updatedLead.lead.updated_at.split("T")[0]
           : optimisticLead.lastContact,
         country: updatedLead.lead?.country || optimisticLead.country,
+        country_code: updatedLead.lead?.country_code || optimisticLead.country_code,
         status:
           updatedLead.lead?.lead_status === "Dismissed"
             ? "Dismissed"

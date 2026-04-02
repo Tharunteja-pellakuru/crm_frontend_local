@@ -241,6 +241,7 @@ const LeadList = ({
     projectPriority: "Medium",
     projectDescription: "",
     country: "",
+    countryCode: "",
   });
 
   const handleEditConvertedClick = (lead) => {
@@ -438,7 +439,9 @@ const LeadList = ({
     const countryInput = (lead.country || "").trim();
     let countryCode = "";
 
-    if (countryInput) {
+    if (lead.country_code) {
+      countryCode = lead.country_code;
+    } else if (countryInput) {
       const countryObj = countries.find(
         (c) =>
           c.name.toLowerCase() === countryInput.toLowerCase() ||
@@ -631,7 +634,7 @@ const LeadList = ({
         pattern: /^\d+$/,
         errorMessage: "Phone Number must be at least 10 digits.",
       },
-      country: { required: true, label: "Country Code" },
+      countryCode: { required: true, label: "Country Code" },
       leadType: { required: true, label: "Lead Status" },
       projectCategory: { required: true, label: "Lead Category" },
     });
@@ -663,6 +666,7 @@ const LeadList = ({
           projectPriority: "Medium",
           projectDescription: "",
           country: "",
+          countryCode: "",
         });
         toast.success("Lead added successfully!");
       }
@@ -1373,17 +1377,25 @@ const LeadList = ({
                     />
                   </div>
 
-                  <SearchableDropdown
+                   <SearchableDropdown
                     label={
                       <span className="text-[12px] font-bold text-[#18254D] tracking-widest ml-1">
                         COUNTRY CODE <span className="text-rose-500">*</span>
                       </span>
                     }
-                    options={countries}
-                    value={formData.country}
-                    onChange={(val) =>
-                      setFormData({ ...formData, country: val })
-                    }
+                    options={countries.map((c) => ({
+                      name: `${c.name} (${c.code})`,
+                      code: c.code,
+                    }))}
+                    value={formData.countryCode || formData.country}
+                    onChange={(val) => {
+                      const selectedCountry = countries.find(c => c.code === val || c.name === val);
+                      setFormData({ 
+                        ...formData, 
+                        country: selectedCountry ? selectedCountry.name : val,
+                        countryCode: selectedCountry ? selectedCountry.code : ""
+                      });
+                    }}
                     placeholder="Select Country Code"
                   />
 

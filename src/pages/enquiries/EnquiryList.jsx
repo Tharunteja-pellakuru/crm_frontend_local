@@ -122,6 +122,7 @@ const EnquiryList = ({
     leadType: "Hot",
     leadCategory: 1,
     country: "",
+    countryCode: "",
     notes: "",
   });
   const [showSimulateForm, setShowSimulateForm] = useState(false);
@@ -387,7 +388,8 @@ const EnquiryList = ({
       website: enquiry.website,
       leadType: "Hot",
       leadCategory: 1,
-      country: enquiry.country || "",
+      country: enquiry.countryName || enquiry.country || "",
+      countryCode: enquiry.countryCode || "",
       notes: enquiry.message,
     });
     setLeadModalOpen(true);
@@ -1245,11 +1247,17 @@ const EnquiryList = ({
                       }
                       options={countries.map((c) => ({
                         name: `${c.name} (${c.code})`,
+                        code: c.code,
                       }))}
-                      value={promoteFormData.country}
-                      onChange={(val) =>
-                        setPromoteFormData({ ...promoteFormData, country: val })
-                      }
+                      value={promoteFormData.countryCode || promoteFormData.country}
+                      onChange={(val) => {
+                        const selectedCountry = countries.find(c => c.code === val || c.name === val);
+                        setPromoteFormData({ 
+                          ...promoteFormData, 
+                          country: selectedCountry ? selectedCountry.name : val,
+                          countryCode: selectedCountry ? selectedCountry.code : ""
+                        });
+                      }}
                       placeholder="Search country..."
                     />
                   </div>
