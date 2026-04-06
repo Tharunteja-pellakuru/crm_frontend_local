@@ -247,18 +247,27 @@ const LeadList = ({
   const handleEditConvertedClick = (lead) => {
     setEditingConvertedLeadId(lead.id);
 
-    const { phone: initialPhone, countryCode: dialCode, countryName } = 
+    const { phone: extractedPhone, countryCode: extractedDialCode, countryName: extractedCountryName } = 
       extractCountryAndPhone(lead.phone, lead.country, countries);
 
-    console.log("Extracted for editing converted lead:", { initialPhone, dialCode, countryName });
+    const dialCode = lead.country_code || extractedDialCode || "";
+    const name = lead.country || extractedCountryName || "";
+    const phone = extractedPhone || lead.phone || "";
+
+    let finalDialCode = dialCode || "";
+    if (finalDialCode && !finalDialCode.startsWith("+") && /^\d+$/.test(finalDialCode)) {
+      finalDialCode = `+${finalDialCode}`;
+    }
+
+    console.log("Extracted for editing converted lead:", { phone, dialCode: finalDialCode, name });
 
     setEditConvertedData({
       name: lead.name,
       email: lead.email,
-      phone: initialPhone,
-      countryCode: dialCode,
+      phone: phone,
+      countryCode: finalDialCode,
       organisationName: lead.company || "",
-      country: countryName,
+      country: name,
       state: lead.state || "",
       currency: lead.currency || "",
       clientStatus: lead.status || "Active",
@@ -449,6 +458,11 @@ const LeadList = ({
           c.code.replace("+", "") === countryInput.replace("+", ""),
       );
       countryCode = countryObj ? countryObj.code : countryInput;
+    }
+
+    // Ensure countryCode has + prefix if it's just numbers
+    if (countryCode && /^\d+$/.test(countryCode)) {
+      countryCode = `+${countryCode}`;
     }
 
     let phone = (lead.phone || "").trim();
@@ -1135,10 +1149,15 @@ const LeadList = ({
 
                 <div className="space-y-3 mb-4">
                   {lead.status === "Lead" ? (
-                    <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                      <p className="text-xs text-primary/80 font-medium italic line-clamp-2">
-                        "{lead.notes || lead.industry || "No notes available"}"
-                      </p>
+                    <div className="space-y-3">
+                      <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                        <p className="text-xs text-primary/80 font-medium italic line-clamp-2">
+                          "{lead.notes || lead.industry || "No notes available"}"
+                        </p>
+                      </div>
+                      <div className="px-1">
+                        {renderContactDetails(lead)}
+                      </div>
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 gap-2">

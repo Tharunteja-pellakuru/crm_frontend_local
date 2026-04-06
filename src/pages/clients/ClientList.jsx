@@ -202,6 +202,7 @@ const ClientList = ({
     currency: "",
     clientStatus: "Active",
     projectCategory: 1,
+    country_code: "",
   });
 
   const handleEditClick = (client) => {
@@ -216,6 +217,7 @@ const ClientList = ({
       currency: client.currency || "INR",
       clientStatus: client.status || "Active",
       projectCategory: client.projectCategory || 1,
+      country_code: client.country_code || "",
     });
     setShowEditModal(true);
   };
@@ -457,6 +459,75 @@ const ClientList = ({
       </div>
     );
   }
+
+  const renderContactDetails = (client) => {
+    if (!client.phone && !client.email) return "N/A";
+
+    const countryInput = (client.country || "").trim();
+    let countryCode = "";
+
+    if (client.country_code) {
+      countryCode = client.country_code;
+    } else if (countryInput) {
+      const countryObj = countries.find(
+        (c) =>
+          c.name.toLowerCase() === countryInput.toLowerCase() ||
+          c.code === countryInput ||
+          c.code.replace("+", "") === countryInput.replace("+", ""),
+      );
+      countryCode = countryObj ? countryObj.code : countryInput;
+    }
+
+    // Ensure countryCode has + prefix if it's just numbers
+    if (countryCode && /^\d+$/.test(countryCode)) {
+      countryCode = `+${countryCode}`;
+    }
+
+    let phone = (client.phone || "").trim();
+    if (countryCode) {
+      const match = countryCode.match(/\(([^)]+)\)/);
+      if (match && match[1]) {
+        countryCode = match[1];
+      }
+
+      const plainCountryCode = countryCode.replace("+", "");
+      const cleanPhone = phone.replace("+", "").replace(/\s/g, "");
+
+      if (cleanPhone.startsWith(plainCountryCode)) {
+        if (phone.startsWith(countryCode)) {
+          phone = phone.slice(countryCode.length).trim();
+        } else if (phone.startsWith(plainCountryCode)) {
+          phone = phone.slice(plainCountryCode.length).trim();
+        } else if (
+          phone.startsWith("+") &&
+          phone.slice(1).trim().startsWith(plainCountryCode)
+        ) {
+          const afterPlus = phone.slice(1).trim();
+          phone = afterPlus.slice(plainCountryCode.length).trim();
+        }
+      }
+    }
+
+    return (
+      <div className="flex flex-col">
+        <div className="flex items-center gap-2 text-primary">
+          <Phone size={12} className="text-secondary" />
+          <span className="text-xs font-bold whitespace-nowrap">
+            {countryCode ? `${countryCode} ` : ""}
+            {phone || "N/A"}
+          </span>
+        </div>
+        {client.email && (
+          <div className="flex items-center gap-2 text-slate-400 mt-1">
+            <Mail size={12} />
+            <span className="text-[12px] font-bold truncate max-w-[150px]">
+              {client.email}
+            </span>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="w-full relative">
@@ -717,20 +788,7 @@ const ClientList = ({
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="flex flex-col">
-                          <div className="flex items-center gap-2 text-primary">
-                            <Phone size={12} className="text-secondary" />
-                            <span className="text-xs font-bold whitespace-nowrap">
-                              {client.phone || "N/A"}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2 text-slate-400 mt-1">
-                            <Mail size={12} />
-                            <span className="text-[12px] font-bold truncate max-w-[150px]">
-                              {client.email || "N/A"}
-                            </span>
-                          </div>
-                        </div>
+                        {renderContactDetails(client)}
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
@@ -932,33 +990,23 @@ const ClientList = ({
 
                 <div className="space-y-3 mb-4">
                   {client.status === "Lead" ? (
-                    <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                      <p className="text-xs text-primary/80 font-medium italic line-clamp-2">
-                        "
-                        {client.notes ||
-                          client.industry ||
-                          "No notes available"}
-                        "
-                      </p>
+                    <div className="space-y-3">
+                      <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                        <p className="text-xs text-primary/80 font-medium italic line-clamp-2">
+                          "
+                          {client.notes ||
+                            client.industry ||
+                            "No notes available"}
+                          "
+                        </p>
+                      </div>
+                      <div className="px-1">
+                        {renderContactDetails(client)}
+                      </div>
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 gap-2">
-                      <div className="flex items-center gap-2.5 text-primary group">
-                        <div className="w-7 h-7 rounded-lg bg-secondary/10 flex items-center justify-center text-secondary">
-                          <Phone size={14} />
-                        </div>
-                        <span className="text-xs font-bold whitespace-nowrap">
-                          {client.phone || "N/A"}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2.5 text-slate-500">
-                        <div className="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400">
-                          <Mail size={14} />
-                        </div>
-                        <span className="text-xs font-bold truncate">
-                          {client.email || "N/A"}
-                        </span>
-                      </div>
+                      {renderContactDetails(client)}
                     </div>
                   )}
                 </div>

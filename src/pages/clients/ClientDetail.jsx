@@ -183,29 +183,22 @@ const ClientDetail = ({
 
   useEffect(() => {
     if (showEditModal && client) {
-      const {
-        phone: localPhone,
-        countryCode: usedCountryCode,
-        countryName: countryName,
-      } = extractCountryAndPhone(client.phone, client.country, countries);
-
-      console.log("Extracted for client detail edit:", {
-        localPhone,
-        usedCountryCode,
-        countryName,
-      });
+      // Prioritize the actual country_code column from the backend
+      const dialCode = client.country_code || "";
+      const phone = client.phone || "";
+      const countryName = client.country || "";
 
       setEditFormData({
         name: client.name || "",
         email: client.email || "",
-        phone: localPhone,
-        countryCode: usedCountryCode,
+        phone: phone,
+        countryCode: dialCode.replace("+", ""),
         leadType: client.leadType || "Hot",
         notes: client.notes || "",
         website: client.website || "",
         projectCategory:
           client.projectCategory || REVERSE_CATEGORY_MAP[client.industry] || 1,
-        country: client.country || "",
+        country: countryName,
         state: client.state || "",
         currency: client.currency || "",
         organisationName: client.organisationName || "",
@@ -1017,26 +1010,19 @@ const ClientDetail = ({
                     <Phone className="w-3.5 h-3.5 md:w-4 md:h-4 text-slate-400 shrink-0" />
                     <span className="text-[11px] md:text-xs font-bold text-primary truncate">
                       {(() => {
-                        const countryVal = (client.country || "").trim();
-                        // Extract just the dial code if the country value contains a name like "India (+91)"
-                        let dialCode = countryVal;
+                        let dialCode = client.country_code || "";
 
-                        // First check regex to extract code from parens e.g. "India (+91)" -> "+91"
-                        const match = countryVal.match(/\(([^)]+)\)/);
-                        if (match && match[1]) {
-                          dialCode = match[1];
-                        } else {
-                          const countryObj = countries?.find(
-                            (c) =>
-                              c.name?.toLowerCase() ===
-                                countryVal.toLowerCase() ||
-                              c.code === countryVal ||
-                              c.code?.replace("+", "") ===
-                                countryVal.replace("+", "") ||
-                              countryVal.includes(`(${c.code})`),
-                          );
-                          if (countryObj) {
-                            dialCode = countryObj.code;
+                        // Ensure + prefix
+                        if (dialCode && /^\d+$/.test(dialCode)) {
+                          dialCode = `+${dialCode}`;
+                        }
+
+                        // If still no dialCode, try to fallback to the old logic (but cleaner)
+                        if (!dialCode && client.country) {
+                          const countryVal = client.country.trim();
+                          const match = countryVal.match(/\(([^)]+)\)/);
+                          if (match && match[1]) {
+                            dialCode = match[1];
                           }
                         }
 

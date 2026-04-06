@@ -201,6 +201,7 @@ function AppRoutes() {
             lead.website_url?.replace(/^https?:\/\//, "").split("/")[0] || "",
           email: lead.email || "",
           phone: lead.phone_number || "",
+          country_code: lead.country_code || "",
           status: lead.lead_status === "Dismissed" ? "Dismissed" : (lead.lead_status === "Converted" ? "Active" : "Lead"),
           isConverted: lead.lead_status === "Converted",
           leadType: lead.lead_status || "Warm",
@@ -289,6 +290,7 @@ function AppRoutes() {
           organisation_name: c.organisation_name || "",
           email: c.email || "", 
           phone: c.phone || "",
+          country_code: c.country_code || "",
           status: c.status || c.client_status || "Active",
           projectCategory: c.projectCategory || 1,
           briefMessage: c.brief_message || "",
@@ -712,6 +714,7 @@ function AppRoutes() {
     try {
       // 1. Update Lead Details (Name, Email, Phone, Category, Country)
       const leadPayload = {
+        full_name: data.name,
         email: data.email,
         phone_number: data.phone,
         lead_category: data.projectCategory,
@@ -735,13 +738,32 @@ function AppRoutes() {
       setLeads((prev) =>
         prev.map((l) =>
           l.id == id
-            ? { ...l, ...data, status: "Active", isConverted: true, leadType: "Converted" }
+            ? { 
+                ...l, 
+                ...data, 
+                country_code: data.countryCode || data.country_code || l.country_code,
+                status: "Active", 
+                isConverted: true, 
+                leadType: "Converted" 
+              }
             : l,
         ),
       );
 
-      // We no longer update Clients or Projects tables/states from this modal
-      // as per user request to only update the Leads table.
+      // Sync Clients state (since this is a converted lead, it exists in both lists)
+      setClients((prev) =>
+        prev.map((c) =>
+          c.lead_id == id
+            ? { 
+                ...c, 
+                ...data,
+                // Ensure data fields match client object naming where necessary
+                phone: data.phone || c.phone,
+                country_code: data.countryCode || data.country_code || c.country_code,
+              }
+            : c,
+        ),
+      );
 
       return { success: true };
     } catch (error) {

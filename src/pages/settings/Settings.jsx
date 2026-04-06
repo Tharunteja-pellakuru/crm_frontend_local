@@ -22,6 +22,10 @@ import {
   X,
   Loader2,
   Download,
+  Inbox,
+  UserPlus,
+  BellRing,
+  FolderKanban,
   FileText,
   Users as UsersIcon,
   Calendar,
@@ -43,7 +47,7 @@ import { CATEGORY_MAP } from "../../constants/categoryConstants";
 const Settings = ({
   aiModels = [],
   onAddAiModel,
-  onUpdateAiModel,
+  onUpdateAiModel,  
   onDeleteAiModel,
 }) => {
   const [activeTab, setActiveTab] = useState("profile");
@@ -1898,7 +1902,7 @@ const Settings = ({
                   <div className="group bg-white border border-slate-200/60 rounded-[20px] p-6 hover:border-slate-300 hover:shadow-lg transition-all duration-300 flex flex-col">
                     <div className="flex items-start justify-between mb-4">
                       <div className="w-12 h-12 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center flex-shrink-0">
-                        <FileText size={24} className="text-blue-600" />
+                        <Inbox size={24} className="text-blue-600" />
                       </div>
                       <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-full border border-blue-100">
                         Raw Data
@@ -1935,7 +1939,7 @@ const Settings = ({
                   <div className="group bg-white border border-slate-200/60 rounded-[20px] p-6 hover:border-slate-300 hover:shadow-lg transition-all duration-300 flex flex-col">
                     <div className="flex items-start justify-between mb-4">
                       <div className="w-12 h-12 rounded-xl bg-green-50 border border-green-100 flex items-center justify-center flex-shrink-0">
-                        <UsersIcon size={24} className="text-green-600" />
+                        <UserPlus size={24} className="text-green-600" />
                       </div>
                       <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full border border-green-100">
                         Converted
@@ -1970,7 +1974,7 @@ const Settings = ({
                   <div className="group bg-white border border-slate-200/60 rounded-[20px] p-6 hover:border-slate-300 hover:shadow-lg transition-all duration-300 flex flex-col">
                     <div className="flex items-start justify-between mb-4">
                       <div className="w-12 h-12 rounded-xl bg-purple-50 border border-purple-100 flex items-center justify-center flex-shrink-0">
-                        <Calendar size={24} className="text-purple-600" />
+                        <BellRing size={24} className="text-purple-600" />
                       </div>
                       <span className="text-xs font-bold text-purple-600 bg-purple-50 px-2 py-1 rounded-full border border-purple-100">
                         Activity
@@ -2007,7 +2011,7 @@ const Settings = ({
                   <div className="group bg-white border border-slate-200/60 rounded-[20px] p-6 hover:border-slate-300 hover:shadow-lg transition-all duration-300 flex flex-col">
                     <div className="flex items-start justify-between mb-4">
                       <div className="w-12 h-12 rounded-xl bg-orange-50 border border-orange-100 flex items-center justify-center flex-shrink-0">
-                        <Building2 size={24} className="text-orange-600" />
+                        <Users size={24} className="text-orange-600" />
                       </div>
                       <span className="text-xs font-bold text-orange-600 bg-orange-50 px-2 py-1 rounded-full border border-orange-100">
                         Business
@@ -2044,7 +2048,7 @@ const Settings = ({
                   <div className="group bg-white border border-slate-200/60 rounded-[20px] p-6 hover:border-slate-300 hover:shadow-lg transition-all duration-300 flex flex-col">
                     <div className="flex items-start justify-between mb-4">
                       <div className="w-12 h-12 rounded-xl bg-red-50 border border-red-100 flex items-center justify-center flex-shrink-0">
-                        <Briefcase size={24} className="text-red-600" />
+                        <FolderKanban size={24} className="text-red-600" />
                       </div>
                       <span className="text-xs font-bold text-red-600 bg-red-50 px-2 py-1 rounded-full border border-red-100">
                         Revenue
@@ -2105,7 +2109,7 @@ const Settings = ({
                     </button>
                   </div> */}
                 </div>
-
+{/* 
                 <div className="bg-slate-50 border border-slate-200 rounded-[20px] p-6">
                   <div className="flex items-start gap-4">
                     <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center flex-shrink-0">
@@ -2150,7 +2154,7 @@ const Settings = ({
                       </ul>
                     </div>
                   </div>
-                </div>
+                </div> */}
               </div>
             )}
           </div>
