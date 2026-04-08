@@ -147,7 +147,7 @@ const EnquiryList = ({
     if (aiModels.length > 0 && !selectedAiModel) {
       const def = aiModels.find((m) => m.isDefault) || aiModels[0];
       // select the database id on startup
-      setSelectedAiModel(def.id);
+      setSelectedAiModel(def.aimodel_id);
     }
   }, [aiModels]);
 
@@ -212,7 +212,7 @@ const EnquiryList = ({
           setAiAnalysisError(null);
           // look up using the record id stored in state
           const modelObj =
-            aiModels.find((m) => m.id === selectedAiModel) ||
+            aiModels.find((m) => m.aimodel_id === selectedAiModel) ||
             aiModels.find((m) => m.isDefault) ||
             aiModels[0];
           const apiKey = modelObj?.apiKey || process.env.API_KEY;
@@ -661,7 +661,7 @@ const EnquiryList = ({
                       className="w-full h-[34px] flex items-center justify-between gap-3 px-3 bg-white border border-slate-200 rounded-xl text-[12px] font-bold tracking-widest text-[#18254D] hover:bg-slate-50 transition-all shadow-sm active:scale-95 group"
                     >
                       <span className="truncate text-[12px] uppercase tracking-tight">
-                        {aiModels.find((m) => m.id === selectedAiModel)?.name ||
+                        {aiModels.find((m) => m.aimodel_id === selectedAiModel)?.name ||
                           "AI Model"}
                       </span>
                       <ChevronDown
@@ -685,10 +685,10 @@ const EnquiryList = ({
                                 <button
                                   key={model.modelId}
                                   onClick={() => {
-                                    setSelectedAiModel(model.id);
+                                    setSelectedAiModel(model.aimodel_id);
                                     setIsModelDropdownOpen(false);
                                   }}
-                                  className={`w-full text-left px-4 py-2.5 hover:bg-slate-50 transition-colors flex flex-col gap-0.5 ${selectedAiModel === model.id ? "bg-slate-50" : ""}`}
+                                  className={`w-full text-left px-4 py-2.5 hover:bg-slate-50 transition-colors flex flex-col gap-0.5 ${selectedAiModel === model.aimodel_id ? "bg-slate-50" : ""}`}
                                 >
                                   <span className="text-[12px] font-bold text-primary">
                                     {model.name}

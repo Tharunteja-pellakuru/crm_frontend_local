@@ -95,7 +95,7 @@ const Settings = ({
     setLoadingAdmins(true);
     try {
       const loggedInUser = JSON.parse(localStorage.getItem("user"));
-      const excludeUuid = loggedInUser?.uuid || loggedInUser?.id;
+      const excludeUuid = loggedInUser?.uuid || loggedInUser?.admin_id;
 
       const response = await fetch(
         `${BASE_URL}/api/admin-users${excludeUuid ? `?excludeUuid=${excludeUuid}` : ""}`,
@@ -316,7 +316,7 @@ const Settings = ({
         formData.append("image", selectedImageFile);
       }
 
-      const userId = profile.uuid || profile.id;
+      const userId = profile.uuid || profile.admin_id;
       const response = await fetch(
         `${BASE_URL}/api/admin-users/update/${userId}`,
         {
@@ -608,7 +608,7 @@ const Settings = ({
 
       setIsSubmitting(true);
       try {
-        const userId = profile?.uuid || profile?.id;
+        const userId = profile?.uuid || profile?.admin_id;
         const response = await fetch(
           `${BASE_URL}/api/admin-users/update-password/${userId}`,
           {
@@ -1186,10 +1186,10 @@ const Settings = ({
 
                       return (
                         <div
-                          key={model.id}
+                          key={model.aimodel_id}
                           className="p-4 bg-white border border-slate-200 rounded-xl hover:border-violet-200 hover:shadow-md transition-all"
                         >
-                          {editingModelId === model.id ? (
+                          {editingModelId === model.aimodel_id ? (
                             <div className="space-y-4">
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                 <div className="space-y-2">
@@ -1211,7 +1211,7 @@ const Settings = ({
                                 <CustomDropdown
                                   label="Provider"
                                   value={editModelData.provider}
-                                  field={`edit_ai_provider_${model.id}`}
+                                  field={`edit_ai_provider_${model.aimodel_id}`}
                                   options={[
                                     {
                                       value: "openai",
@@ -1326,7 +1326,7 @@ const Settings = ({
                               <div className="flex items-center justify-end gap-1.5 pt-3 sm:pt-0 border-t sm:border-t-0 border-slate-100 w-full sm:w-auto">
                                 <button
                                   onClick={() => {
-                                    setEditingModelId(model.id);
+                                    setEditingModelId(model.aimodel_id);
                                     setEditModelData({ ...model });
                                   }}
                                   className="flex-1 sm:flex-none p-2.5 hover:bg-slate-100 rounded-xl transition-all text-slate-400 hover:text-primary flex items-center justify-center gap-2 text-[12px] font-bold group"
@@ -1340,7 +1340,7 @@ const Settings = ({
                                 </button>
                                 {!model.isDefault && (
                                   <button
-                                    onClick={() => onDeleteAiModel(model.id)}
+                                    onClick={() => onDeleteAiModel(model.aimodel_id)}
                                     className="flex-1 sm:flex-none p-2.5 hover:bg-red-50 rounded-xl transition-all text-slate-400 hover:text-red-500 flex items-center justify-center gap-2 text-[12px] font-bold group"
                                     title="Delete model"
                                   >

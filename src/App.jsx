@@ -154,7 +154,7 @@ function AppRoutes() {
       .then((data) => {
         setAiModels(
           data.map((m) => ({
-            id: m.id,
+            aimodel_id: m.aimodel_id,
             name: m.name,
             provider: m.provider,
             modelId: m.model_id,
@@ -1420,7 +1420,7 @@ function AppRoutes() {
       });
       if (res.ok) {
         const data = await res.json();
-        setAiModels([...aiModels, { ...model, id: data.id }]);
+        setAiModels([...aiModels, { ...model, aimodel_id: data.aimodel_id }]);
         toast.success("AI model added successfully!");
       } else {
         toast.error("Failed to add AI model.");
@@ -1433,13 +1433,13 @@ function AppRoutes() {
 
   async function handleUpdateAiModel(updated) {
     try {
-      const res = await fetch(`${BASE_URL}/api/ai-models/${updated.id}`, {
+      const res = await fetch(`${BASE_URL}/api/ai-models/${updated.aimodel_id}`, {
         method: "PUT",
         headers: getAuthHeaders(),
         body: JSON.stringify(updated),
       });
       if (res.ok) {
-        setAiModels(aiModels.map((m) => (m.id == updated.id ? updated : m)));
+        setAiModels(aiModels.map((m) => (m.aimodel_id == updated.aimodel_id ? updated : m)));
         toast.success("AI model updated successfully!");
       } else {
         toast.error("Failed to update AI model.");
@@ -1457,7 +1457,7 @@ function AppRoutes() {
         headers: getAuthHeaders(),
       });
       if (res.ok) {
-        setAiModels(aiModels.filter((m) => m.id != id));
+        setAiModels(aiModels.filter((m) => m.aimodel_id != id));
         toast.success("AI model deleted successfully!");
       } else {
         toast.error("Failed to delete AI model.");
