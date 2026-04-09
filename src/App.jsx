@@ -1,3 +1,7 @@
+
+
+
+
 import { useState, useEffect } from "react";
 import { Toaster, toast } from "react-hot-toast";
 import {
@@ -195,7 +199,7 @@ function AppRoutes() {
 
         // Transform API data to match component expected format
         const transformedLeads = leadsArray.map((lead) => ({
-          id: lead.id?.toString() || lead.uuid,
+          lead_id: lead.lead_id?.toString() || lead.uuid,
           name: lead.full_name || "Unknown",
           company:
             lead.website_url?.replace(/^https?:\/\//, "").split("/")[0] || "",
@@ -216,7 +220,7 @@ function AppRoutes() {
           lastContact: lead.updated_at
             ? lead.updated_at.split("T")[0]
             : new Date().toISOString().split("T")[0],
-          avatar: `https://picsum.photos/100/100?random=${lead.id || Math.floor(Math.random() * 100)}`,
+          avatar: `https://picsum.photos/100/100?random=${lead.lead_id || Math.floor(Math.random() * 100)}`,
           enquiry_id: lead.enquiry_id,
         }));
 
@@ -406,7 +410,7 @@ function AppRoutes() {
   function handleClientSelect(client, tab = "overview") {
     // If it's a converted lead, we should redirect to the associated client detail page
     if (client.isConverted) {
-      const associatedClient = clients.find((c) => c.lead_id == client.id);
+      const associatedClient = clients.find((c) => c.lead_id == client.lead_id);
       if (associatedClient) {
         navigate(`/clients/${associatedClient.id}`, { state: { tab } });
         return;
@@ -418,7 +422,7 @@ function AppRoutes() {
       client.status === "Lead" || client.status === "Dismissed"
         ? "leads"
         : "clients";
-    navigate(`/${route}/${client.id}`, { state: { tab } });
+    navigate(`/${route}/${client.lead_id || client.id}`, { state: { tab } });
   }
 
   function handleDeleteClient(id) {
@@ -428,7 +432,7 @@ function AppRoutes() {
   async function handleDeleteLead(id) {
     try {
       // Find the lead to get its ID
-      const leadToDelete = leads.find((l) => l.id == id);
+      const leadToDelete = leads.find((l) => l.lead_id == id);
       if (!leadToDelete) return;
 
       console.log("Deleting lead:", id);
@@ -446,10 +450,10 @@ function AppRoutes() {
         console.log("Lead deleted successfully:", result);
 
         // Remove from local state after successful API call
-        setLeads((prev) => prev.filter((l) => l.id != id));
+        setLeads((prev) => prev.filter((l) => l.lead_id != id));
 
         // Also update clients array and enquiries array to keep them in sync
-        setClients((prev) => prev.filter((c) => c.id != id));
+        setClients((prev) => prev.filter((c) => (c.lead_id || c.id) != id));
         if (leadToDelete.enquiry_id) {
           setEnquiries((prev) => prev.filter((e) => e.id != leadToDelete.enquiry_id));
         }
@@ -491,7 +495,7 @@ function AppRoutes() {
           const result = await res.json();
           const newLead = {
             id:
-              result.lead?.id?.toString() ||
+              result.lead?.lead_id?.toString() ||
               result.lead?.uuid ||
               `new-${Date.now()}`,
             name: result.lead?.full_name || data.name,
@@ -520,7 +524,7 @@ function AppRoutes() {
             lastContact: result.lead?.updated_at
               ? result.lead.updated_at.split("T")[0]
               : new Date().toISOString().split("T")[0],
-            avatar: `https://picsum.photos/100/100?random=${result.lead?.id || Date.now() % 100}`,
+            avatar: `https://picsum.photos/100/100?random=${result.lead?.lead_id || Date.now() % 100}`,
             enquiry_id: result.lead?.enquiry_id || data.enquiry_id,
           };
 
@@ -693,7 +697,7 @@ function AppRoutes() {
       // Update leads state to mark as converted
       setLeads((prev) =>
         prev.map((c) =>
-          c.id == id ? { ...transformedClient, id: c.id, status: "Active" } : c,
+          c.lead_id == id ? { ...transformedClient, lead_id: c.lead_id, status: "Active" } : c,
         ),
       );
 
@@ -737,7 +741,7 @@ function AppRoutes() {
       // Update Leads
       setLeads((prev) =>
         prev.map((l) =>
-          l.id == id
+          l.lead_id == id
             ? { 
                 ...l, 
                 ...data, 
@@ -776,7 +780,7 @@ function AppRoutes() {
   async function handleDismissLead(id) {
     try {
       // Find the lead to update
-      const leadToUpdate = leads.find((l) => l.id == id);
+      const leadToUpdate = leads.find((l) => l.lead_id == id);
       if (!leadToUpdate) return;
 
       console.log("Dismissing lead:", id);
@@ -803,10 +807,9 @@ function AppRoutes() {
         const result = await res.json();
         console.log("Lead dismissed successfully:", result);
 
-        // Transform API response to match frontend format
         const dismissedLead = {
           ...leadToUpdate,
-          id: result.lead?.id?.toString() || id.toString(),
+          lead_id: result.lead?.lead_id?.toString() || id.toString(),
           name: result.lead?.full_name || leadToUpdate.name,
           company: result.lead?.website_url
             ? result.lead.website_url.replace(/^https?:\/\//, "").split("/")[0]
@@ -826,10 +829,10 @@ function AppRoutes() {
         console.log("Transformed dismissed lead:", dismissedLead);
 
         // Update local state after successful API call with complete data
-        setLeads((prev) => prev.map((l) => (l.id == id ? dismissedLead : l)));
+        setLeads((prev) => prev.map((l) => (l.lead_id == id ? dismissedLead : l)));
 
         // Also update clients array to keep them in sync
-        setClients((prev) => prev.map((c) => (c.id == id ? dismissedLead : c)));
+        setClients((prev) => prev.map((c) => (c.lead_id == id ? dismissedLead : c)));
       } else {
         const errorData = await res.json();
         console.error("Failed to dismiss lead:", errorData);
@@ -844,7 +847,7 @@ function AppRoutes() {
   async function handleRestoreLead(id) {
     try {
       // Find the lead to update
-      const leadToUpdate = leads.find((l) => l.id == id);
+      const leadToUpdate = leads.find((l) => l.lead_id == id);
       if (!leadToUpdate) return;
 
       console.log("Restoring lead:", id);
@@ -870,11 +873,9 @@ function AppRoutes() {
 
       if (res.ok) {
         const result = await res.json();
-        console.log("Lead restored successfully:", result);
-
         const restoredLead = {
           ...leadToUpdate,
-          id: result.lead?.id?.toString() || id.toString(),
+          lead_id: result.lead?.lead_id?.toString() || id.toString(),
           name: result.lead?.full_name || leadToUpdate.name,
           company: result.lead?.website_url
             ? result.lead.website_url.replace(/^https?:\/\//, "").split("/")[0]
@@ -893,8 +894,8 @@ function AppRoutes() {
         };
 
         // Update local state after successful API call
-        setLeads((prev) => prev.map((l) => (l.id == id ? restoredLead : l)));
-        setClients((prev) => prev.map((c) => (c.id == id ? restoredLead : c)));
+        setLeads((prev) => prev.map((l) => (l.lead_id == id ? restoredLead : l)));
+        setClients((prev) => prev.map((c) => (c.lead_id == id ? restoredLead : c)));
       } else {
         const errorData = await res.json();
         console.error("Failed to restore lead:", errorData);
@@ -909,7 +910,7 @@ function AppRoutes() {
   async function handleEditLead(id, editData) {
     try {
       // Find the lead to update
-      const leadToUpdate = leads.find((l) => l.id == id);
+      const leadToUpdate = leads.find((l) => l.lead_id == id);
       if (!leadToUpdate) return;
 
       // 1. Calculate the expected new state (Optimistic Update)
@@ -982,8 +983,8 @@ function AppRoutes() {
       };
 
       // 2. Update state immediately
-      setLeads((prev) => prev.map((l) => (l.id == id ? optimisticLead : l)));
-      setClients((prev) => prev.map((c) => (c.id == id ? optimisticLead : c)));
+      setLeads((prev) => prev.map((l) => (l.lead_id == id ? optimisticLead : l)));
+      setClients((prev) => prev.map((c) => (c.lead_id == id ? optimisticLead : c)));
 
       // Call API to update the lead
       const res = await fetch(`${BASE_URL}/api/update-lead/${id}`, {
@@ -1004,46 +1005,46 @@ function AppRoutes() {
 
       if (!res.ok) {
         // Rollback on failure
-        setLeads((prev) => prev.map((l) => (l.id == id ? leadToUpdate : l)));
-        setClients((prev) => prev.map((c) => (c.id == id ? leadToUpdate : c)));
+        setLeads((prev) => prev.map((l) => (l.lead_id == id ? leadToUpdate : l)));
+        setClients((prev) => prev.map((c) => (c.lead_id == id ? leadToUpdate : c)));
         const errorData = await res.json();
         toast.error(errorData.message || "Failed to update lead");
         throw new Error(errorData.message || "Failed to update lead");
       }
 
-      const updatedLead = await res.json();
+      const updatedLeadData = await res.json();
 
       // Update with final data from API if necessary (e.g. IDs, timestamps)
       const finalLead = {
         ...optimisticLead,
-        id: updatedLead.lead?.id?.toString() || id.toString(),
-        name: updatedLead.lead?.full_name || optimisticLead.name,
-        email: updatedLead.lead?.email || optimisticLead.email,
-        phone: updatedLead.lead?.phone_number || optimisticLead.phone,
-        leadType: updatedLead.lead?.lead_status || optimisticLead.leadType,
-        isConverted: updatedLead.lead?.lead_status === "Converted",
-        projectCategory: updatedLead.lead?.lead_category || optimisticLead.projectCategory,
-        industry: updatedLead.lead?.lead_category || optimisticLead.industry,
-        website: updatedLead.lead?.website_url || optimisticLead.website,
-        notes: updatedLead.lead?.message || optimisticLead.notes,
-        joinedDate: updatedLead.lead?.created_at
-          ? updatedLead.lead.created_at.split("T")[0]
+        lead_id: updatedLeadData.lead?.lead_id?.toString() || id.toString(),
+        name: updatedLeadData.lead?.full_name || optimisticLead.name,
+        email: updatedLeadData.lead?.email || optimisticLead.email,
+        phone: updatedLeadData.lead?.phone_number || optimisticLead.phone,
+        leadType: updatedLeadData.lead?.lead_status || optimisticLead.leadType,
+        isConverted: updatedLeadData.lead?.lead_status === "Converted",
+        projectCategory: updatedLeadData.lead?.lead_category || optimisticLead.projectCategory,
+        industry: updatedLeadData.lead?.lead_category || optimisticLead.industry,
+        website: updatedLeadData.lead?.website_url || optimisticLead.website,
+        notes: updatedLeadData.lead?.message || optimisticLead.notes,
+        joinedDate: updatedLeadData.lead?.created_at
+          ? updatedLeadData.lead.created_at.split("T")[0]
           : optimisticLead.joinedDate,
-        lastContact: updatedLead.lead?.updated_at
-          ? updatedLead.lead.updated_at.split("T")[0]
+        lastContact: updatedLeadData.lead?.updated_at
+          ? updatedLeadData.lead.updated_at.split("T")[0]
           : optimisticLead.lastContact,
-        country: updatedLead.lead?.country || optimisticLead.country,
-        country_code: updatedLead.lead?.country_code || optimisticLead.country_code,
+        country: updatedLeadData.lead?.country || optimisticLead.country,
+        country_code: updatedLeadData.lead?.country_code || optimisticLead.country_code,
         status:
-          updatedLead.lead?.lead_status === "Dismissed"
+          updatedLeadData.lead?.lead_status === "Dismissed"
             ? "Dismissed"
-            : updatedLead.lead?.lead_status === "Converted"
+            : updatedLeadData.lead?.lead_status === "Converted"
               ? "Active"
               : "Lead",
       };
 
-      setLeads((prev) => prev.map((l) => (l.id == id ? finalLead : l)));
-      setClients((prev) => prev.map((c) => (c.id == id ? finalLead : c)));
+      setLeads((prev) => prev.map((l) => (l.lead_id == id ? finalLead : l)));
+      setClients((prev) => prev.map((c) => (c.lead_id == id ? finalLead : c)));
 
       return finalLead;
     } catch (error) {
@@ -1081,7 +1082,7 @@ function AppRoutes() {
         prev.map((c) => (c.id == clientId ? updatedClient : c)),
       );
       setLeads((prev) =>
-        prev.map((l) => (l.id == leadId ? { ...l, ...updatedClient, id: l.id } : l)),
+        prev.map((l) => (l.lead_id == leadId ? { ...l, ...updatedClient, lead_id: l.lead_id } : l)),
       );
 
       // 3. Update Client Table (organisation, name, country, etc.)

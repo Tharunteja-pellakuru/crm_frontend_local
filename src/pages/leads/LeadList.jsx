@@ -240,12 +240,11 @@ const LeadList = ({
     projectCategory: 1,
     projectPriority: "Medium",
     projectDescription: "",
-    country: "",
     countryCode: "",
   });
 
   const handleEditConvertedClick = (lead) => {
-    setEditingConvertedLeadId(lead.id);
+    setEditingConvertedLeadId(lead.lead_id);
 
     const { phone: extractedPhone, countryCode: extractedDialCode, countryName: extractedCountryName } = 
       extractCountryAndPhone(lead.phone, lead.country, countries);
@@ -445,20 +444,7 @@ const LeadList = ({
   const renderContactDetails = (lead) => {
     if (!lead.phone && !lead.email) return "N/A";
 
-    const countryInput = (lead.country || "").trim();
-    let countryCode = "";
-
-    if (lead.country_code) {
-      countryCode = lead.country_code;
-    } else if (countryInput) {
-      const countryObj = countries.find(
-        (c) =>
-          c.name.toLowerCase() === countryInput.toLowerCase() ||
-          c.code === countryInput ||
-          c.code.replace("+", "") === countryInput.replace("+", ""),
-      );
-      countryCode = countryObj ? countryObj.code : countryInput;
-    }
+    let countryCode = lead.country_code || "";
 
     // Ensure countryCode has + prefix if it's just numbers
     if (countryCode && /^\d+$/.test(countryCode)) {
@@ -679,7 +665,6 @@ const LeadList = ({
           projectCategory: 1, // Changed to numeric ID
           projectPriority: "Medium",
           projectDescription: "",
-          country: "",
           countryCode: "",
         });
         toast.success("Lead added successfully!");
@@ -944,7 +929,7 @@ const LeadList = ({
                   const status = getStatusBadge(lead);
                   return (
                     <tr
-                      key={lead.id}
+                      key={lead.lead_id}
                       onClick={() =>
                         lead.status !== "Dismissed" && onSelectLead(lead)
                       }
@@ -1023,7 +1008,7 @@ const LeadList = ({
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    setOnboardingLeadId(lead.id);
+                                    setOnboardingLeadId(lead.lead_id);
                                     setOnboardingData({
                                       name: lead.name,
                                       email: lead.email,
@@ -1056,7 +1041,7 @@ const LeadList = ({
                                   <button
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      onDismissLead(lead.id);
+                                      onDismissLead(lead.lead_id);
                                     }}
                                     className="p-2.5 bg-amber-50/50 border border-amber-200/50 rounded-lg text-amber-500/70 hover:text-amber-600 hover:border-amber-500 hover:bg-amber-50 transition-all active:scale-90 shadow-sm"
                                     title="Dismiss Lead"
@@ -1068,7 +1053,7 @@ const LeadList = ({
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    onRestoreLead(lead.id);
+                                    onRestoreLead(lead.lead_id);
                                   }}
                                   className="p-2.5 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-blue-500 hover:border-blue-500 hover:bg-blue-50 transition-all active:scale-90 shadow-sm"
                                   title="Restore Lead"
@@ -1109,7 +1094,7 @@ const LeadList = ({
             const status = getStatusBadge(lead);
             return (
               <div
-                key={lead.id}
+                key={lead.lead_id}
                 onClick={() =>
                   lead.status !== "Dismissed" && onSelectLead(lead)
                 }
@@ -1199,7 +1184,7 @@ const LeadList = ({
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              setOnboardingLeadId(lead.id);
+                              setOnboardingLeadId(lead.lead_id);
                               setOnboardingData({
                                 name: lead.name,
                                 email: lead.email,
@@ -1229,7 +1214,7 @@ const LeadList = ({
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                onDismissLead(lead.id);
+                                onDismissLead(lead.lead_id);
                               }}
                               className="p-2 bg-amber-50 text-amber-600 border border-amber-100 rounded-lg hover:bg-amber-100 transition-all active:scale-90"
                             >
@@ -1240,7 +1225,7 @@ const LeadList = ({
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              onRestoreLead(lead.id);
+                              onRestoreLead(lead.lead_id);
                             }}
                             className="p-2 bg-blue-50 text-blue-600 border border-blue-100 rounded-lg hover:bg-blue-100 transition-all active:scale-90"
                           >
@@ -1406,13 +1391,12 @@ const LeadList = ({
                       name: `${c.name} (${c.code})`,
                       code: c.code,
                     }))}
-                    value={formData.countryCode || formData.country}
+                    value={formData.countryCode}
                     onChange={(val) => {
                       const selectedCountry = countries.find(c => c.code === val || c.name === val);
                       setFormData({ 
                         ...formData, 
-                        country: selectedCountry ? selectedCountry.name : val,
-                        countryCode: selectedCountry ? selectedCountry.code : ""
+                        countryCode: selectedCountry ? selectedCountry.code : val
                       });
                     }}
                     placeholder="Select Country Code"
@@ -2605,7 +2589,7 @@ const LeadList = ({
                       });
                     }
                     setShowFollowUpModal(false);
-                    const lead = clients.find((c) => c.id === followUpLeadId);
+                    const lead = clients.find((c) => c.lead_id === followUpLeadId);
                     if (lead) {
                       onSelectClient(lead, "activity");
                     }
