@@ -435,7 +435,7 @@ const ClientDetail = ({
                             formDataToSubmit.website,
                           );
 
-                          await onUpdateClient(client.id, formDataToSubmit);
+                          await onUpdateClient(client.lead_id || client.id, formDataToSubmit);
 
                           toast.success("Details updated successfully!");
                           console.log("=== END DEBUG ===");

@@ -223,7 +223,7 @@ const LeadList = ({
     clientStatus: "Active",
     onboardingDate: new Date().toISOString().split("T")[0],
     deadline: "",
-    scopeDocument: "",
+    scopeDocument: null,
   });
 
   const [formData, setFormData] = useState({
@@ -346,7 +346,7 @@ const LeadList = ({
       },
       onboardingDate: { required: true, label: "Onboarding Date" },
       deadline: { required: true, label: "Deadline Date" },
-      scopeDocument: { required: true, label: "Scope Document" },
+      scopeDocument: { required: false, label: "Scope Document" },
     });
 
     if (!isValid) return;
@@ -925,14 +925,14 @@ const LeadList = ({
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {currentLeads.map((lead) => {
+                {currentLeads.map((lead, index) => {
                   const status = getStatusBadge(lead);
                   return (
-                    <tr
-                      key={lead.lead_id}
-                      onClick={() =>
-                        lead.status !== "Dismissed" && onSelectLead(lead)
-                      }
+                      <tr
+                        key={lead.lead_id || `lead-${index}`}
+                        onClick={() =>
+                          lead.status !== "Dismissed" && onSelectLead(lead)
+                        }
                       className={`group transition-all ${
                         lead.status === "Dismissed"
                           ? "bg-slate-50/30 opacity-80 cursor-default"
@@ -2450,7 +2450,7 @@ const LeadList = ({
                                 Select Status
                               </p>
                             </div>
-                            {["Converted"].map((status) => (
+                            {["Hot", "Warm", "Cold", "Converted"].map((status) => (
                               <button
                                 key={status}
                                 type="button"

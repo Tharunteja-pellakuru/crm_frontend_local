@@ -66,7 +66,9 @@ function ClientDetailWrapper({
     );
   }
 
-  const client = clients.find((c) => c.id == id);
+  const client = clients.find(
+    (c) => c.id == id || c.lead_id == id || c.client_id == id,
+  );
 
   if (!client) return <Navigate to={`/${type}`} replace />;
 
@@ -199,6 +201,7 @@ function AppRoutes() {
 
         // Transform API data to match component expected format
         const transformedLeads = leadsArray.map((lead) => ({
+          id: lead.lead_id?.toString() || lead.uuid,
           lead_id: lead.lead_id?.toString() || lead.uuid,
           name: lead.full_name || "Unknown",
           company:
@@ -716,17 +719,21 @@ function AppRoutes() {
 
   async function handleUpdateConvertedLead(id, data) {
     try {
-      // 1. Update Lead Details (Name, Email, Phone, Category, Country)
+      // 1. Find the existing lead to preserve its current status/state
+      const existingLead = leads.find((l) => l.lead_id == id || l.id == id);
+      if (!existingLead) throw new Error("Lead not found");
+
+      // 2. Update Lead Details (Name, Email, Phone, Category, Country)
       const leadPayload = {
-        full_name: data.name,
-        email: data.email,
-        phone_number: data.phone,
-        lead_category: data.projectCategory,
-        country: data.country || "",
-        country_code: data.countryCode || "",
-        lead_status: "Converted",
-        website_url: data.website || "",
-        message: data.projectDescription || data.notes || "",
+        full_name: data.name || existingLead.name,
+        email: data.email || existingLead.email,
+        phone_number: data.phone || existingLead.phone,
+        lead_category: data.projectCategory || existingLead.projectCategory || 1,
+        country: data.country || existingLead.country || "",
+        country_code: data.countryCode || existingLead.countryCode || "",
+        lead_status: data.leadType || (existingLead.isConverted ? "Converted" : (existingLead.status || "Lead")),
+        website_url: data.website || existingLead.website || "",
+        message: data.projectDescription || data.notes || existingLead.notes || "",
       };
 
       const leadRes = await fetch(`${BASE_URL}/api/update-lead/${id}`, {
@@ -735,35 +742,42 @@ function AppRoutes() {
         body: JSON.stringify(leadPayload),
       });
 
-      if (!leadRes.ok) throw new Error("Failed to update lead details");
+      if (!leadRes.ok) {
+        const errorData = await leadRes.json();
+        throw new Error(errorData.message || "Failed to update lead details");
+      }
+
+      const updatedDataFromServer = await leadRes.json();
+      const revisedLead = updatedDataFromServer.lead;
+
+      if (!revisedLead) throw new Error("No lead data returned from server");
 
       // 3. Update local states
       // Update Leads
       setLeads((prev) =>
         prev.map((l) =>
-          l.lead_id == id
+          (l.lead_id == id || l.id == id)
             ? { 
                 ...l, 
-                ...data, 
-                country_code: data.countryCode || data.country_code || l.country_code,
-                status: "Active", 
-                isConverted: true, 
-                leadType: "Converted" 
+                ...revisedLead,
+                // Ensure name mapping is consistent if backend uses full_name
+                name: revisedLead.full_name || l.name,
+                phone: revisedLead.phone_number || l.phone,
+                notes: revisedLead.message || l.notes,
               }
             : l,
         ),
       );
 
-      // Sync Clients state (since this is a converted lead, it exists in both lists)
+      // Sync Clients state (if this is a converted lead, it exists in both lists)
       setClients((prev) =>
         prev.map((c) =>
           c.lead_id == id
             ? { 
                 ...c, 
-                ...data,
-                // Ensure data fields match client object naming where necessary
-                phone: data.phone || c.phone,
-                country_code: data.countryCode || data.country_code || c.country_code,
+                ...revisedLead,
+                name: revisedLead.full_name || c.name,
+                phone: revisedLead.phone_number || c.phone,
               }
             : c,
         ),
@@ -772,7 +786,7 @@ function AppRoutes() {
       return { success: true };
     } catch (error) {
       console.error("Update error:", error);
-      toast.error("Failed to update converted lead: " + error.message);
+      toast.error("Failed to update lead: " + error.message);
       return { success: false };
     }
   }
@@ -1584,9 +1598,9 @@ function AppRoutes() {
       
       const newLead = await handleAddClient(leadDataWithEnquiry);
       if (newLead && enquiry) {
-        await handleUpdateEnquiryStatus(enquiry.id, "Converted", null, leadData.notes);
+        await handleUpdateEnquiryStatus(enquiry.id, "Converted");
       } else if (newLead && enquiryUuid) {
-        await handleUpdateEnquiryStatus(enquiryUuid, "Converted", null, leadData.notes);
+        await handleUpdateEnquiryStatus(enquiryUuid, "Converted");
       }
       navigate("/leads");
     } catch (err) {
