@@ -1003,7 +1003,7 @@ const LeadList = ({
                                       clientType: "New",
                                       status: "Active",
                                       projectName: "",
-                                      projectCategory: 1,
+                                      projectCategory: lead.projectCategory || 1,
                                       projectPriority: "High",
                                       projectDescription: "",
                                       onboardingDate: new Date()
@@ -1186,6 +1186,7 @@ const LeadList = ({
                                 deadline: "",
                                 scopeDocument: "",
                                 projectStatus: "Planning",
+                                projectCategory: lead.projectCategory || 1,
                                 clientStatus: "Active",
                               });
                               setShowOnboardModal(true);

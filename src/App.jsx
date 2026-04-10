@@ -212,8 +212,12 @@ function AppRoutes() {
           status: lead.lead_status === "Dismissed" ? "Dismissed" : (lead.lead_status === "Converted" ? "Active" : "Lead"),
           isConverted: lead.lead_status === "Converted",
           leadType: lead.lead_status || "Warm",
-          projectCategory: lead.lead_category || 1,
-          industry: lead.lead_category || 1,
+          projectCategory: typeof lead.lead_category === 'string' 
+            ? (REVERSE_CATEGORY_MAP[lead.lead_category] || 1) 
+            : (lead.lead_category || 1),
+          industry: typeof lead.lead_category === 'string' 
+            ? (REVERSE_CATEGORY_MAP[lead.lead_category] || 1) 
+            : (lead.lead_category || 1),
           website: lead.website_url || "",
           country: lead.country || "",
           notes: lead.message || "",
