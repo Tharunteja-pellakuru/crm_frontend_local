@@ -6,28 +6,23 @@ import {
   IndianRupee,
   Edit2,
   Save,
-  X,
   AlertCircle,
   CheckCircle,
   Zap,
   Tag,
-  Clock,
-  User,
-  FileText,
-  ChevronDown,
   Mail,
   Phone,
-  Monitor,
   MessageSquare,
+  FileText,
   Eye,
   Download,
   Upload,
   Loader2,
+  ChevronDown,
 } from "lucide-react";
 import DatePicker from "../../components/ui/DatePicker";
 import {
   CATEGORY_MAP,
-  REVERSE_CATEGORY_MAP,
 } from "../../constants/categoryConstants";
 import { BASE_URL } from "../../constants/config";
 import { validateForm } from "../../utils/validation";
@@ -40,6 +35,7 @@ const ProjectOverview = ({
   onBack,
   onUpdateProject,
   followUps,
+  activities,
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -116,7 +112,6 @@ const ProjectOverview = ({
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Download failed:", error);
-      // Fallback to direct link if fetch fails
       window.open(`${BASE_URL}/uploads/${filename}`, "_blank");
     }
   };
@@ -190,9 +185,6 @@ const ProjectOverview = ({
     }
   };
 
-  const priorityStyle = getPriorityStyles(formData.priority);
-  const PriorityIcon = priorityStyle.icon;
-
   const CustomDropdown = ({ label, value, options, field, icon: Icon }) => (
     <div className="space-y-2 relative">
       <label className="text-[11px] sm:text-[12px] font-bold text-primary tracking-widest ml-1 opacity-50">
@@ -252,7 +244,6 @@ const ProjectOverview = ({
 
   return (
     <div className="w-full h-full relative space-y-6">
-      {/* Page Title & Tagline */}
       <div className="max-w-2xl">
         <h2 className="text-lg sm:text-lg md:text-xl lg:text-2xl font-bold text-primary tracking-tight mb-2">
           Project Overview
@@ -263,7 +254,6 @@ const ProjectOverview = ({
         </p>
       </div>
 
-      {/* Premium Header */}
       <div className="bg-white rounded-2xl p-4 md:p-5 border border-slate-200 shadow-sm flex items-center justify-between gap-3 md:gap-5 animate-fade-in">
         <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
           <button
@@ -300,7 +290,7 @@ const ProjectOverview = ({
                   ) : (
                     <>
                       <Save size={16} />
-                      <span>Save<span className="hidden sm:inline"> Changes</span></span>
+                      <span>Save Changes</span>
                     </>
                   )}
                 </button>
@@ -314,18 +304,14 @@ const ProjectOverview = ({
                 size={14}
                 className="group-hover:rotate-12 transition-transform"
               />
-              <span>Edit<span className="hidden sm:inline"> Project</span></span>
+              <span>Edit Project</span>
             </button>
           )}
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 pb-12">
-        {/* Main Section */}
         <div className="lg:col-span-2 space-y-5">
-          {/* Overview & Progress */}
-
-          {/* Configuration Grid */}
           <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm animate-fade-in">
             <div className="flex items-center gap-3 mb-6">
               <Zap size={18} className="text-warning" />
@@ -432,7 +418,6 @@ const ProjectOverview = ({
                 </div>
               )}
 
-              {/* Project Description Block */}
               <div className="space-y-2 md:col-span-2">
                 <label className="text-[12px] font-bold text-primary  tracking-widest ml-1 opacity-50">
                   Project Description
@@ -456,7 +441,150 @@ const ProjectOverview = ({
             </div>
           </div>
 
-          {/* Project Documents */}
+          {/* Follow-ups & History */}
+          <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm animate-fade-in-up">
+            <div className="bg-slate-50/50 px-5 py-3.5 border-b border-slate-100 flex items-center justify-between">
+              <h3 className="text-xs sm:text-sm font-bold text-[#18254D] tracking-widest flex items-center gap-3">
+                <MessageSquare size={18} className="text-secondary" />
+                Follow-ups & History
+              </h3>
+            </div>
+            <div className="p-5">
+              {(() => {
+                const combinedHistory = [
+                  ...(followUps?.filter((f) => (f.projectId || f.project_id) == project.id) || []),
+                  ...(activities?.filter((a) => (a.projectId || a.project_id) == project.id) || []),
+                ].sort((a, b) => {
+                  const dateA = new Date(a.dueDate || a.date);
+                  const dateB = new Date(b.dueDate || b.date);
+                  return dateB - dateA;
+                });
+
+                if (combinedHistory.length === 0) {
+                  return (
+                    <div className="text-center py-8">
+                      <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-3 text-slate-300">
+                        <MessageSquare size={24} />
+                      </div>
+                      <p className="text-[10px] sm:text-xs font-bold text-slate-400 tracking-widest">
+                        No history linked to this project
+                      </p>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div className="relative border-l-2 border-slate-100 ml-3 space-y-4">
+                    {combinedHistory.map((item, idx) => {
+                      const isFollowUp = !!item.dueDate;
+                      const date = new Date(item.dueDate || item.date);
+                      const type = (item.followup_mode || item.type || "call").toLowerCase();
+
+                      return (
+                        <div key={item.id || idx} className="ml-6 relative">
+                          <div
+                            className={`absolute -left-[33px] w-6 h-6 rounded-lg flex items-center justify-center text-white shadow-sm z-10 ${
+                              isFollowUp
+                                ? item.status === "completed"
+                                  ? "bg-success"
+                                  : "bg-warning"
+                                : type === "email"
+                                  ? "bg-info"
+                                  : type === "call"
+                                    ? "bg-success"
+                                    : type === "meeting"
+                                      ? "bg-secondary"
+                                      : "bg-slate-400"
+                            }`}
+                          >
+                            {type === "call" ? (
+                              <Phone size={11} strokeWidth={2.5} />
+                            ) : type === "meeting" ? (
+                              <Calendar size={11} strokeWidth={2.5} />
+                            ) : (
+                              <Mail size={11} strokeWidth={2.5} />
+                            )}
+                          </div>
+                          <div
+                            className={`${isFollowUp ? (item.status === "completed" ? "bg-success/5 border-success/20" : "bg-warning/5 border-warning/20") : "bg-slate-50 border-slate-100"} p-3.5 rounded-xl border transition-all hover:shadow-sm`}
+                          >
+                            <div className="flex items-center justify-between mb-1.5">
+                              <span className="text-[12px] md:text-[14px] font-bold text-slate-400 tracking-widest">
+                                {date.toLocaleDateString([], {
+                                  month: "short",
+                                  day: "numeric",
+                                  year: "numeric",
+                                })}
+                                {" · "}
+                                {date.toLocaleTimeString([], {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                  hour12: true,
+                                })}
+                              </span>
+                              <span
+                                className={`text-[11px] md:text-[13px] font-bold tracking-widest px-2 py-0.5 rounded-md ${
+                                  isFollowUp
+                                    ? item.status === "completed"
+                                      ? "bg-success/10 text-success"
+                                      : "bg-warning/10 text-warning"
+                                    : "bg-slate-200 text-slate-600"
+                                }`}
+                              >
+                                {isFollowUp 
+                                  ? (item.status === "completed" ? "FOLLOW-UP COMPLETED" : item.status.toUpperCase()) 
+                                  : "INTERACTION"}
+                              </span>
+                            </div>
+                            <p className="text-[13px] font-bold text-primary tracking-tight mb-1">
+                              {item.title || (isFollowUp ? "Follow-up Scheduled" : "Conversation Logged")}
+                            </p>
+                            
+                            {isFollowUp && item.status === "completed" ? (
+                              <div className="space-y-3 mt-3">
+                                {item.description && (
+                                  <div className="p-2.5 bg-slate-50 border border-slate-100 rounded-lg">
+                                    <p className="text-[13px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
+                                      <span className="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
+                                      Planned Follow-up
+                                    </p>
+                                    <p className="text-[13px] text-slate-600 leading-relaxed font-medium">
+                                      {item.description}
+                                    </p>
+                                  </div>
+                                )}
+                                {item.follow_brief && (
+                                  <div className="mt-2">
+                                    <p className="text-[13px] font-bold text-success uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
+                                      <span className="w-1.5 h-1.5 rounded-full bg-success"></span>
+                                      Completion Summary
+                                    </p>
+                                    <p className="text-[12px] font-medium text-primary leading-relaxed">
+                                      {item.follow_brief}
+                                    </p>
+                                  </div>
+                                )}
+                                {item.completed_by && (
+                                  <p className="text-[14px] font-bold text-slate-400 tracking-widest mt-2">
+                                    Completed by: {item.completed_by}
+                                  </p>
+                                )}
+                              </div>
+                            ) : (
+                              <p className="text-[12px] font-medium text-primary/80 leading-relaxed italic">
+                                "{item.follow_brief || item.description}"
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
+            </div>
+          </div>
+
           <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm animate-fade-in-up">
             <div className="bg-slate-50/50 px-5 py-3.5 border-b border-slate-100 flex items-center justify-between">
               <h3 className="text-xs sm:text-sm font-bold text-[#18254D] tracking-widest flex items-center gap-3">
@@ -502,11 +630,6 @@ const ProjectOverview = ({
                       <Upload size={14} />
                       {formData.scopeFile ? "File Selected" : "Upload New PDF"}
                     </label>
-                    {formData.scopeFile && (
-                      <span className="text-[11px] md:text-[12px] font-bold text-secondary truncate max-w-[80px] md:max-w-[100px]">
-                        {formData.scopeFile.name}
-                      </span>
-                    )}
                   </div>
                 ) : project?.scopeDocument ? (
                   <div className="flex items-center gap-2">
@@ -515,7 +638,6 @@ const ProjectOverview = ({
                       target="_blank"
                       rel="noopener noreferrer"
                       className="px-3 py-2 bg-white border border-slate-200 text-[#18254D] rounded-lg text-[11px] md:text-[12px] font-bold tracking-widest hover:bg-slate-50 transition-all flex items-center gap-2 whitespace-nowrap"
-                      title="View Document"
                     >
                       <Eye size={14} className="text-secondary" />
                       View
@@ -523,7 +645,6 @@ const ProjectOverview = ({
                     <button
                       onClick={() => handleDownload(project.scopeDocument)}
                       className="px-3 py-2 bg-white border border-slate-200 text-[#18254D] rounded-lg text-[11px] md:text-[12px] font-bold tracking-widest hover:bg-slate-50 transition-all flex items-center gap-2 whitespace-nowrap"
-                      title="Download Document"
                     >
                       <Download size={14} className="text-secondary" />
                       Download
@@ -537,77 +658,9 @@ const ProjectOverview = ({
               </div>
             </div>
           </div>
-
-          {/* Client Follow-up History */}
-          <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm animate-fade-in-up">
-            <div className="bg-slate-50/50 px-5 py-3.5 border-b border-slate-100 flex items-center justify-between">
-              <h3 className="text-xs sm:text-sm font-bold text-[#18254D] tracking-widest flex items-center gap-3">
-                <MessageSquare size={18} className="text-secondary" />
-                Follow-ups
-              </h3>
-            </div>
-            <div className="p-5 space-y-4">
-              {followUps?.filter((f) => f.projectId === project.id).length >
-              0 ? (
-                followUps
-                  .filter((f) => f.projectId === project.id)
-                  .map((f) => (
-                    <div
-                      key={f.id}
-                      className="flex gap-4 p-4 bg-slate-50 rounded-xl border border-slate-100 group hover:border-secondary transition-all"
-                    >
-                      <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center text-secondary border border-slate-100 shadow-sm shrink-0">
-                        <Clock size={20} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-2">
-                          <p className="text-xs sm:text-sm font-bold text-primary truncate pr-2">
-                            {f.title}
-                          </p>
-                          <span className="text-[13px] md:text-[14px] font-bold text-slate-400 tracking-widest shrink-0">
-                            {new Date(f.dueDate).toLocaleDateString([], {
-                              month: "short",
-                              day: "numeric",
-                            })}
-                          </span>
-                        </div>
-                        <p className="text-[10px] sm:text-xs text-slate-500 line-clamp-2 mb-3 leading-relaxed italic">
-                          "{f.follow_brief}"
-                        </p>
-                        <div className="flex flex-wrap items-center gap-3">
-                          <span
-                            className={`px-2 py-0.5 text-[12px] md:text-[13px] font-bold tracking-widest rounded-md border whitespace-nowrap ${
-                              f.status === "completed"
-                                ? "bg-success/10 text-success border-success/20"
-                                : "bg-warning/10 text-warning border-warning/20"
-                            }`}
-                          >
-                            {f.status}
-                          </span>
-                          <span className="text-[13px] md:text-[14px] font-bold text-slate-400 tracking-widest whitespace-nowrap">
-                            Mode: {f.followup_mode}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  ))
-              ) : (
-                <div className="text-center py-8">
-                  <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-3 text-slate-300">
-                    <MessageSquare size={24} />
-                  </div>
-                  <p className="text-[10px] sm:text-xs font-bold text-slate-400 tracking-widest">
-                    No follow-up messages linked to this project
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
         </div>
 
-        {/* Sidebar */}
         <div className="space-y-5">
-          {/* Financials */}
           <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm group hover:border-success/30 transition-all animate-fade-in-right">
             <div className="flex items-center justify-between mb-4">
               <div className="w-10 h-10 bg-success/10 text-success rounded-2xl flex items-center justify-center">
@@ -643,7 +696,6 @@ const ProjectOverview = ({
             )}
           </div>
 
-          {/* Timeline Card */}
           <div className="bg-[#18254D] rounded-2xl p-5 text-white shadow-xl animate-fade-in-right relative overflow-hidden group">
             <div className="absolute -right-4 -top-4 w-24 h-24 bg-white/5 rounded-full blur-2xl group-hover:bg-secondary/10 transition-all duration-700" />
             <div className="flex items-center gap-3 mb-6 relative z-10">
@@ -715,7 +767,6 @@ const ProjectOverview = ({
             </div>
           </div>
 
-          {/* Client Card */}
           <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm animate-slide-up">
             <h3 className="text-[11px] sm:text-[12px] font-bold text-slate-400 tracking-widest border-b border-slate-50 pb-3">
               Client Details

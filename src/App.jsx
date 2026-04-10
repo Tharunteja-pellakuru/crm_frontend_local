@@ -93,7 +93,10 @@ function ProjectOverviewWrapper({
   projects,
   clients,
   followUps,
+  activities,
   onUpdateProject,
+  onAddActivity,
+  onAddFollowUp,
   loading,
 }) {
   const { id } = useParams();
@@ -120,7 +123,10 @@ function ProjectOverviewWrapper({
       client={clients.find((c) => c.id === project.clientId)}
       onBack={() => navigate("/projects")}
       onUpdateProject={onUpdateProject}
+      onAddActivity={onAddActivity}
+      onAddFollowUp={onAddFollowUp}
       followUps={followUps}
+      activities={activities}
     />
   );
 }
@@ -1158,7 +1164,7 @@ function AppRoutes() {
       const formData = new FormData();
       formData.append("project_name", data.name);
       formData.append("project_description", data.description || "");
-      formData.append("project_category", data.projectCategory || 1);
+      formData.append("project_category", CATEGORY_MAP[data.projectCategory] || "Tech");
       formData.append("project_status", data.projectStatus || "Planning");
       formData.append("project_priority", data.projectPriority || "High");
       formData.append("project_budget", parseInt(data.budget) || 0);
@@ -1223,7 +1229,7 @@ function AppRoutes() {
       const formData = new FormData();
       formData.append("project_name", updated.name);
       formData.append("project_description", updated.description);
-      formData.append("project_category", updated.category);
+      formData.append("project_category", CATEGORY_MAP[updated.category] || updated.category || "Tech");
       formData.append("project_status", updated.status);
       formData.append("project_priority", updated.priority);
       formData.append("project_budget", updated.budget);
@@ -1831,7 +1837,10 @@ function AppRoutes() {
               projects={projects}
               clients={clients}
               followUps={followUps}
+              activities={activities}
               onUpdateProject={handleUpdateProject}
+              onAddActivity={handleAddActivity}
+              onAddFollowUp={handleAddFollowUp}
               loading={projectsLoading || clientsLoading}
             />
           }

@@ -679,13 +679,14 @@ const Settings = ({
       if (response.ok) {
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
+        
+        // Use window.location.href for a more direct download invocation
+        window.location.href = url;
+
+        // Significantly longer delay for cleanup to ensure download starts
+        setTimeout(() => {
+          window.URL.revokeObjectURL(url);
+        }, 1000);
 
         const typeLabels = {
           enquiries: "Enquiries",
