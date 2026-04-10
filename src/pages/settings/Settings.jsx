@@ -53,6 +53,7 @@ const Settings = ({
   const [activeTab, setActiveTab] = useState("profile");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [exportingType, setExportingType] = useState(null);
+  const [showFollowupExportModal, setShowFollowupExportModal] = useState(false);
 
   const [profile, setProfile] = useState(
     JSON.parse(localStorage.getItem("user")) || null,
@@ -697,7 +698,7 @@ const Settings = ({
           "all-crm-data": "All CRM Data",
         };
 
-        const label = typeLabels[exportType] || "File";
+        const label = typeLabels[exportType.split("?")[0]] || "File";
         const successMessage = `${label} Downloaded Successfully!`;
 
         hotToast.success(successMessage);
@@ -1988,9 +1989,7 @@ const Settings = ({
                       All follow-up activities with lead and project details.
                     </p>
                     <button
-                      onClick={() =>
-                        handleExport("followups", "followups_export.xlsx")
-                      }
+                      onClick={() => setShowFollowupExportModal(true)}
                       disabled={exportingType === "followups"}
                       className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#18254D] text-white rounded-xl hover:bg-[#1e2e5e] transition-all active:scale-95 text-sm font-bold shadow-lg shadow-slate-900/20 mt-auto disabled:opacity-70 disabled:cursor-not-allowed"
                     >
@@ -2195,6 +2194,89 @@ const Settings = ({
           </div>
         </div>
       )}
+
+      {/* Follow-up Export Selection Modal */}
+      {showFollowupExportModal &&
+        createPortal(
+          <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
+            <div
+              className="absolute inset-0 bg-[#18254D]/40 backdrop-blur-sm animate-fade-in"
+              onClick={() => setShowFollowupExportModal(false)}
+            />
+            <div className="bg-white rounded-3xl shadow-2xl border border-slate-100 w-full max-w-sm overflow-hidden animate-pop relative z-10">
+              <div className="p-6 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
+                <h3 className="text-sm font-bold text-[#18254D] tracking-tight">
+                  Follow-up Export Options
+                </h3>
+                <button
+                  onClick={() => setShowFollowupExportModal(false)}
+                  className="p-1.5 hover:bg-slate-200 rounded-xl text-slate-400 transition-all"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+              <div className="p-5 space-y-4">
+                <button
+                  onClick={() => {
+                    handleExport("followups?type=new", "new_followups.xlsx");
+                    setShowFollowupExportModal(false);
+                  }}
+                  disabled={exportingType === "followups"}
+                  className="w-full flex items-center justify-between p-4 bg-slate-50 rounded-2xl hover:bg-[#18254D] hover:text-white transition-all group border border-slate-100"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-white rounded-xl group-hover:bg-white/10 shadow-sm border border-slate-100">
+                      <UserPlus
+                        size={18}
+                        className="text-primary group-hover:text-white"
+                      />
+                    </div>
+                    <div className="text-left">
+                      <p className="text-xs font-bold tracking-tight">
+                        New Follow-ups
+                      </p>
+                      <p className="text-[12px] opacity-60 font-medium">
+                        Focused on leads and prospects
+                      </p>
+                    </div>
+                  </div>
+                  <ChevronRight size={16} />
+                </button>
+
+                <button
+                  onClick={() => {
+                    handleExport(
+                      "followups?type=reference",
+                      "reference_followups.xlsx",
+                    );
+                    setShowFollowupExportModal(false);
+                  }}
+                  disabled={exportingType === "followups"}
+                  className="w-full flex items-center justify-between p-4 bg-slate-50 rounded-2xl hover:bg-[#18254D] hover:text-white transition-all group border border-slate-100"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-white rounded-xl group-hover:bg-white/10 shadow-sm border border-slate-100">
+                      <Briefcase
+                        size={18}
+                        className="text-primary group-hover:text-white"
+                      />
+                    </div>
+                    <div className="text-left">
+                      <p className="text-xs font-bold tracking-tight">
+                        Reference Follow-ups
+                      </p>
+                      <p className="text-[12px] opacity-60 font-medium">
+                        Focused on active clients & projects
+                      </p>
+                    </div>
+                  </div>
+                  <ChevronRight size={16} />
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body,
+        )}
     </div>
   );
 };
