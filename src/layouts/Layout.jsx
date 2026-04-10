@@ -39,18 +39,10 @@ const Layout = ({
           enquiryCount={enquiries.filter(e => e.status === "new" || e.status === "read").length}
           followUpCount={followUps.filter(f => f.status === "pending").length}
           clientFollowUpCount={
-            followUps.filter(
-              (f) =>
-                f.status === "pending" &&
-                clients.find((c) => c.id == f.clientId || (c.lead_id && c.lead_id == f.clientId))?.status === "Active",
-            ).length
+            followUps.filter((f) => f.status === "pending" && !!f.projectId).length
           }
           leadFollowUpCount={
-            followUps.filter(
-              (f) =>
-                f.status === "pending" &&
-                clients.find((c) => c.id == f.clientId || (c.lead_id && c.lead_id == f.clientId))?.status === "Lead",
-            ).length
+            followUps.filter((f) => f.status === "pending" && !!f.leadId && !f.projectId).length
           }
           onCloseMobile={() => setIsMobileSidebarOpen(false)}
         />

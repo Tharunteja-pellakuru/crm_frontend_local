@@ -311,6 +311,7 @@ function AppRoutes() {
           state: c.client_state,
           currency: c.client_currency,
           lead_id: c.lead_id, // Added lead_id to client object
+          isConverted: !!c.lead_id,
           avatar: `https://picsum.photos/100/100?random=${c.client_id}`,
           joinedDate: c.created_at?.split("T")[0] || new Date().toISOString().split("T")[0],
           lastContact: c.updated_at?.split("T")[0] || new Date().toISOString().split("T")[0],

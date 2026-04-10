@@ -172,6 +172,8 @@ const LeadList = ({
     isOnboardClientStatusDropdownOpen,
     setIsOnboardClientStatusDropdownOpen,
   ] = useState(false);
+  const [isOnboardCategoryDropdownOpen, setIsOnboardCategoryDropdownOpen] =
+    useState(false);
   const [showFollowUpModal, setShowFollowUpModal] = useState(false);
   const [followUpLeadId, setFollowUpLeadId] = useState(null);
   const [isAddCategoryDropdownOpen, setIsAddCategoryDropdownOpen] =
@@ -346,7 +348,7 @@ const LeadList = ({
       },
       onboardingDate: { required: true, label: "Onboarding Date" },
       deadline: { required: true, label: "Deadline Date" },
-      scopeDocument: { required: false, label: "Scope Document" },
+      scopeDocument: { required: true, label: "Scope Document" },
     });
 
     if (!isValid) return;
@@ -370,13 +372,17 @@ const LeadList = ({
           projectName: "",
           projectStatus: "In Progress",
           projectCategory: 1,
-          projectPriority: "Medium",
+          projectPriority: "High",
           projectDescription: "",
           country: "",
           state: "",
           currency: "",
           organisationName: "",
           clientStatus: "Active",
+          onboardingDate: new Date().toISOString().split("T")[0],
+          deadline: "",
+          scopeDocument: null,
+          website: "",
         });
         toast.success("Lead onboarded successfully!");
       }
@@ -1000,6 +1006,10 @@ const LeadList = ({
                                       name: lead.name,
                                       email: lead.email,
                                       phone: lead.phone,
+                                      organisationName: lead.company || "",
+                                      country: lead.country || "",
+                                      state: lead.state || "",
+                                      website: lead.website || "",
                                       clientType: "New",
                                       status: "Active",
                                       projectName: "",
@@ -1930,26 +1940,65 @@ const LeadList = ({
                     <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
                       PROJECT CATEGORY <span className="text-error">*</span>
                     </label>
-                    <div className="flex gap-2">
-                      {[1, 2, 3].map((catId) => (
-                        <button
-                          key={catId}
-                          type="button"
-                          onClick={() =>
-                            setOnboardingData({
-                              ...onboardingData,
-                              projectCategory: catId,
-                            })
-                          }
-                          className={`flex-1 flex items-center justify-center p-2.5 border-2 rounded-xl transition-all font-bold  text-[12px] tracking-widest ${
-                            onboardingData.projectCategory === catId
-                              ? "border-primary bg-primary/5 text-primary shadow-sm"
-                              : "border-slate-100 text-slate-400 hover:border-slate-200"
+                    <div className="relative">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setIsOnboardCategoryDropdownOpen(
+                            !isOnboardCategoryDropdownOpen,
+                          )
+                        }
+                        className="w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold shadow-sm hover:border-secondary transition-all"
+                      >
+                        <span className="text-primary truncate">
+                          {CATEGORY_MAP[onboardingData.projectCategory] ||
+                            "Select Category"}
+                        </span>
+                        <ChevronDown
+                          size={16}
+                          className={`text-slate-400 transition-transform ${
+                            isOnboardCategoryDropdownOpen ? "rotate-180" : ""
                           }`}
-                        >
-                          {CATEGORY_MAP[catId]}
-                        </button>
-                      ))}
+                        />
+                      </button>
+
+                      {isOnboardCategoryDropdownOpen && (
+                        <>
+                          <div
+                            className="fixed inset-0 z-[80]"
+                            onClick={() =>
+                              setIsOnboardCategoryDropdownOpen(false)
+                            }
+                          />
+                          <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top">
+                            <div className="bg-[#18254D] px-4 py-3 border-b border-white/10">
+                              <p className="text-[14px] font-bold text-white/50  tracking-widest">
+                                Select Category
+                              </p>
+                            </div>
+                            {[1, 2, 3].map((catId) => (
+                              <button
+                                key={catId}
+                                type="button"
+                                onClick={() => {
+                                  setOnboardingData({
+                                    ...onboardingData,
+                                    projectCategory: catId,
+                                  });
+                                  setIsOnboardCategoryDropdownOpen(false);
+                                }}
+                                className={`w-full text-left px-4 py-2.5 text-[12px] font-bold  tracking-widest transition-colors ${
+                                  onboardingData.projectCategory === catId
+                                    ? "bg-slate-100 text-secondary"
+                                    : "text-[#18254D] hover:bg-slate-50"
+                                }`}
+                              >
+                                {CATEGORY_MAP[catId]}
+                              </button>
+                            ))}
+                          </div>
+                        </>
+                      )}
                     </div>
                   </div>
 
@@ -2152,6 +2201,7 @@ const LeadList = ({
                     </label>
                     <div className="relative group">
                       <input
+                        required
                         type="file"
                         accept="application/pdf"
                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"

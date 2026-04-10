@@ -133,11 +133,15 @@ const FollowUpList = ({
   const baseFiltered = followUps.filter((f) => {
     const client = getClientById(f.clientId, f.leadId, f.projectId);
     if (typeFilter !== "All") {
-      if (!client) return false;
-      // Reference Follow-ups -> Active Clients (or converted leads now active)
-      if (typeFilter === "Active" && client.status !== "Active") return false;
-      // New Reference Follow-ups -> Leads
-      if (typeFilter === "Lead" && client.status !== "Lead") return false;
+      // New reference Follow-ups -> Leads focus (specifically lead-level history)
+      if (typeFilter === "Lead") {
+        if (!f.leadId || f.projectId) return false;
+      }
+      
+      // Reference Follow-ups -> Active/Project focus
+      if (typeFilter === "Active") {
+        if (!f.projectId) return false;
+      }
     }
 
     // Category filter (Tech/Media)

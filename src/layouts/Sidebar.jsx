@@ -33,7 +33,7 @@ function Sidebar({
       id: "followups",
       label: "Follow-ups",
       icon: BellRing,
-      badge: clientFollowUpCount,
+      badge: followUpCount,
       subItems: [
         {
           id: "followups-clients",
