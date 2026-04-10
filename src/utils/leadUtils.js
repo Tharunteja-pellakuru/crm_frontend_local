@@ -94,11 +94,6 @@ export const extractCountryAndPhone = (rawPhone = "", rawCountry = "", countries
     
     if (cleanPhone.startsWith(code)) {
       phoneWithoutCode = cleanPhone.substring(code.length);
-    } else if (cleanPhone.startsWith(plainCode)) {
-      phoneWithoutCode = cleanPhone.substring(plainCode.length);
-    } else if (cleanPhone.startsWith("+") && cleanPhone.replace("+", "").startsWith(plainCode)) {
-       // already handled by startsWith(code) but being safe
-       phoneWithoutCode = cleanPhone.substring(code.length);
     }
 
     cleanPhone = phoneWithoutCode.trim();

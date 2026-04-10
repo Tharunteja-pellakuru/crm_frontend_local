@@ -461,21 +461,8 @@ const LeadList = ({
       const plainCountryCode = countryCode.replace("+", "");
       const cleanPhone = phone.replace("+", "").replace(/\s/g, "");
 
-      if (cleanPhone.startsWith(plainCountryCode)) {
-        // Remove country code from display phone if it's already there
-        // This handles "+91987...", "91987...", "+91 987...", etc.
-        if (phone.startsWith(countryCode)) {
-          phone = phone.slice(countryCode.length).trim();
-        } else if (phone.startsWith(plainCountryCode)) {
-          phone = phone.slice(plainCountryCode.length).trim();
-        } else if (
-          phone.startsWith("+") &&
-          phone.slice(1).trim().startsWith(plainCountryCode)
-        ) {
-          // Handles "+ 91 987..."
-          const afterPlus = phone.slice(1).trim();
-          phone = afterPlus.slice(plainCountryCode.length).trim();
-        }
+      if (phone.startsWith(countryCode)) {
+        phone = phone.slice(countryCode.length).trim();
       }
     }
 

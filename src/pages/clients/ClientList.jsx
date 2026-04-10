@@ -493,18 +493,8 @@ const ClientList = ({
       const plainCountryCode = countryCode.replace("+", "");
       const cleanPhone = phone.replace("+", "").replace(/\s/g, "");
 
-      if (cleanPhone.startsWith(plainCountryCode)) {
-        if (phone.startsWith(countryCode)) {
-          phone = phone.slice(countryCode.length).trim();
-        } else if (phone.startsWith(plainCountryCode)) {
-          phone = phone.slice(plainCountryCode.length).trim();
-        } else if (
-          phone.startsWith("+") &&
-          phone.slice(1).trim().startsWith(plainCountryCode)
-        ) {
-          const afterPlus = phone.slice(1).trim();
-          phone = afterPlus.slice(plainCountryCode.length).trim();
-        }
+      if (phone.startsWith(countryCode)) {
+        phone = phone.slice(countryCode.length).trim();
       }
     }
 
