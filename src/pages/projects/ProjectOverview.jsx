@@ -88,7 +88,6 @@ const ProjectOverview = ({
           ...formData,
         });
         setIsEditing(false);
-        toast.success("Project updated successfully!");
       }
     } catch (error) {
       console.error("Failed to update project:", error);

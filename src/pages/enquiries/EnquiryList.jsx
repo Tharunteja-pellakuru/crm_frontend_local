@@ -440,7 +440,6 @@ const EnquiryList = ({
       setSelectedEnquiry(null);
       // toast is now handled in App.jsx handlers
     } catch (err) {
-      console.log("Lead Creation Failed", err);
       toast.error("Lead Creation Failed. Please try again.");
     } finally {
       setIsSubmitting(false);
@@ -468,7 +467,6 @@ const EnquiryList = ({
       setHoldReason("");
     } catch (err) {
       console.error("Hold failed:", err);
-      toast.error("Failed to put on hold.");
     } finally {
       setIsSubmitting(false);
     }

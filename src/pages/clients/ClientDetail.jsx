@@ -160,7 +160,6 @@ const ClientDetail = ({
           followup_date: combinedDateTime,
           followup_status: formattedStatus,
         });
-        toast.success("Follow-up added successfully!");
       }
       setShowAddFollowUpModal(false);
       setFollowUpFormData({
@@ -437,7 +436,6 @@ const ClientDetail = ({
 
                           await onUpdateClient(client.lead_id || client.id, formDataToSubmit);
 
-                          toast.success("Details updated successfully!");
                           console.log("=== END DEBUG ===");
                           setShowEditModal(false);
                         } catch (error) {

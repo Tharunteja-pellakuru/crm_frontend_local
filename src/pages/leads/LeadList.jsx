@@ -311,7 +311,6 @@ const LeadList = ({
         if (result.success) {
           setShowEditConvertedModal(false);
           setEditingConvertedLeadId(null);
-          toast.success("Converted lead updated successfully!");
         } else {
           toast.error("Failed to update converted lead.");
         }
@@ -384,7 +383,6 @@ const LeadList = ({
           scopeDocument: null,
           website: "",
         });
-        toast.success("Lead onboarded successfully!");
       }
     } catch (error) {
       toast.error("Failed to onboard lead.");

@@ -278,7 +278,6 @@ const ClientList = ({
         deadline: "",
         scopeDocument: "",
       });
-      toast.success("Client onboarded successfully!");
     } catch (err) {
       console.error("Onboarding failed:", err);
       toast.error("Failed to onboard client.");

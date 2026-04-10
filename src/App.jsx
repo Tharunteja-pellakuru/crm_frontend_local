@@ -794,6 +794,7 @@ function AppRoutes() {
         ),
       );
 
+      toast.success("Lead updated successfully!");
       return { success: true };
     } catch (error) {
       console.error("Update error:", error);
@@ -858,6 +859,7 @@ function AppRoutes() {
 
         // Also update clients array to keep them in sync
         setClients((prev) => prev.map((c) => (c.lead_id == id ? dismissedLead : c)));
+        toast.success("Lead dismissed successfully.");
       } else {
         const errorData = await res.json();
         console.error("Failed to dismiss lead:", errorData);
@@ -921,6 +923,7 @@ function AppRoutes() {
         // Update local state after successful API call
         setLeads((prev) => prev.map((l) => (l.lead_id == id ? restoredLead : l)));
         setClients((prev) => prev.map((c) => (c.lead_id == id ? restoredLead : c)));
+        toast.success("Lead restored successfully.");
       } else {
         const errorData = await res.json();
         console.error("Failed to restore lead:", errorData);
@@ -1033,7 +1036,6 @@ function AppRoutes() {
         setLeads((prev) => prev.map((l) => (l.lead_id == id ? leadToUpdate : l)));
         setClients((prev) => prev.map((c) => (c.lead_id == id ? leadToUpdate : c)));
         const errorData = await res.json();
-        toast.error(errorData.message || "Failed to update lead");
         throw new Error(errorData.message || "Failed to update lead");
       }
 
@@ -1071,6 +1073,7 @@ function AppRoutes() {
       setLeads((prev) => prev.map((l) => (l.lead_id == id ? finalLead : l)));
       setClients((prev) => prev.map((c) => (c.lead_id == id ? finalLead : c)));
 
+      toast.success("Lead updated successfully!");
       return finalLead;
     } catch (error) {
       console.error("Error updating lead:", error);

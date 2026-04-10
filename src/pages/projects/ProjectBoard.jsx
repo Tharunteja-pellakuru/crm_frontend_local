@@ -532,7 +532,6 @@ const ProjectBoard = ({
           deadline: formData.deadline,
           scopeDocument: formData.scopeDocument,
         });
-        toast.success("Project added successfully!");
       }
 
       setShowAddModal(false);
