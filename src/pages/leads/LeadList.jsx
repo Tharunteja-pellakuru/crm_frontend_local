@@ -922,7 +922,7 @@ const LeadList = ({
                   const status = getStatusBadge(lead);
                   return (
                       <tr
-                        key={lead.lead_id || `lead-${index}`}
+                        key={lead.lead_id ? `lead-row-${lead.lead_id}` : `lead-row-idx-${index}`}
                         onClick={() =>
                           lead.status !== "Dismissed" && onSelectLead(lead)
                         }
@@ -1087,11 +1087,11 @@ const LeadList = ({
 
         {/* Mobile Card List View */}
         <div className="lg:hidden grid grid-cols-1 md:grid-cols-2 gap-4">
-          {currentLeads.map((lead) => {
+          {currentLeads.map((lead, index) => {
             const status = getStatusBadge(lead);
             return (
               <div
-                key={lead.lead_id}
+                key={lead.lead_id ? `lead-mobile-${lead.lead_id}` : `lead-mobile-idx-${index}`}
                 onClick={() =>
                   lead.status !== "Dismissed" && onSelectLead(lead)
                 }
@@ -1270,7 +1270,7 @@ const LeadList = ({
                   if (pageNum === 2 || pageNum === totalPages - 1) {
                     return (
                       <span
-                        key={pageNum}
+                        key={`ellipsis-${pageNum}-${index}`}
                         className="text-slate-300 px-1 font-bold"
                       >
                         .
@@ -2429,7 +2429,7 @@ const LeadList = ({
                             </div>
                             {[1, 2, 3].map((catId) => (
                               <button
-                                key={catId}
+                                key={`edit-cat-${catId}`}
                                 type="button"
                                 onClick={() => {
                                   setEditConvertedData({
@@ -2490,7 +2490,7 @@ const LeadList = ({
                             </div>
                             {["Hot", "Warm", "Cold", "Converted"].map((status) => (
                               <button
-                                key={status}
+                                key={`edit-status-${status}`}
                                 type="button"
                                 onClick={() => {
                                   setEditConvertedData({

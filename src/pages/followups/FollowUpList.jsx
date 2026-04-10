@@ -278,7 +278,6 @@ const FollowUpList = ({
             completed_at: combinedCompletionStr,
             followup_status: formattedStatus,
           });
-          toast.success("Follow-up updated successfully!");
         }
       } else {
         if (onAddFollowUp) {
@@ -289,7 +288,7 @@ const FollowUpList = ({
             followup_date: combinedDateTime,
             followup_status: formattedStatus,
           });
-          toast.success("Follow-up added successfully!");
+          setCurrentPage(1);
         }
       }
       setShowAddModal(false);
@@ -1213,7 +1212,7 @@ const FollowUpList = ({
                                   })
                                   .map((c) => (
                                     <button
-                                      key={c.id}
+                                      key={`client-opt-${c.id}`}
                                       type="button"
                                       onClick={() => {
                                         setFormData({
@@ -1352,7 +1351,7 @@ const FollowUpList = ({
                                   (_, i) => i + 1,
                                 ).map((h) => (
                                   <button
-                                    key={h}
+                                    key={`hour-${h}`}
                                     type="button"
                                     onClick={() => {
                                       setFormData({
@@ -1399,7 +1398,7 @@ const FollowUpList = ({
                                 {Array.from({ length: 60 }, (_, i) => i).map(
                                   (m) => (
                                     <button
-                                      key={m}
+                                      key={`min-${m}`}
                                       type="button"
                                       onClick={() => {
                                         setFormData({
@@ -1448,7 +1447,7 @@ const FollowUpList = ({
                               <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top">
                                 {["AM", "PM"].map((p) => (
                                   <button
-                                    key={p}
+                                    key={`period-${p}`}
                                     type="button"
                                     onClick={() => {
                                       setFormData({
@@ -1501,7 +1500,7 @@ const FollowUpList = ({
                           <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top">
                             {["Low", "Medium", "High"].map((p) => (
                               <button
-                                key={p}
+                                key={`priority-${p}`}
                                 type="button"
                                 onClick={() => {
                                   setFormData({ ...formData, priority: p });
@@ -1553,7 +1552,7 @@ const FollowUpList = ({
                             {["Call", "Email", "Meeting", "Whatsapp"].map(
                               (mode) => (
                                 <button
-                                  key={mode}
+                                  key={`mode-${mode}`}
                                   type="button"
                                   onClick={() => {
                                     setFormData({

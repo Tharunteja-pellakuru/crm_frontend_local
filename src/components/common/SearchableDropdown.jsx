@@ -114,7 +114,7 @@ const SearchableDropdown = ({
 
                   return (
                     <button
-                      key={index}
+                      key={optionValue}
                       type="button"
                       onClick={() => handleSelect(option)}
                       className={`w-full text-left px-4 py-2.5 text-[13px] font-bold tracking-widest transition-colors flex items-center justify-between ${

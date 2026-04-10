@@ -282,7 +282,7 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
                       ) : (
                         newEnquiries.map((e) => (
                           <div
-                            key={e.id}
+                            key={`notif-enq-${e.id}`}
                             className="p-4 bg-white border border-slate-100 rounded-2xl hover:bg-slate-50 hover:border-blue-100 transition-all cursor-pointer group shadow-sm"
                             onClick={() => {
                               onNavigate("enquiries");
@@ -457,7 +457,7 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
                     );
                     return (
                       <div
-                        key={f.id}
+                        key={`dash-task-today-${f.id}`}
                         onClick={() => {
                           if (!client) return;
                           const route = client.status?.toLowerCase() === "lead" ? "followups-leads" : "followups-clients";
@@ -523,7 +523,7 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
                     );
                     return (
                       <div
-                        key={f.id}
+                        key={`dash-task-missed-${f.id}`}
                         onClick={() => {
                           if (!client) return;
                           const route = client.status?.toLowerCase() === "lead" ? "followups-leads" : "followups-clients";
@@ -604,7 +604,7 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
                         <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top no-scrollbar">
                           {availableYears.map((y) => (
                             <button
-                              key={y}
+                              key={`dash-year-${y}`}
                               onClick={() => {
                                 setSelectedYear(y);
                                 setIsYearDropdownOpen(false);
@@ -664,7 +664,7 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
                             "Dec",
                           ].map((m) => (
                             <button
-                              key={m}
+                              key={`dash-month-${m}`}
                               onClick={() => {
                                 setSelectedMonth(m);
                                 setIsMonthDropdownOpen(false);

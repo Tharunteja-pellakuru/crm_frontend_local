@@ -817,9 +817,9 @@ const EnquiryList = ({
             </p>
           </div>
         ) : (
-          paginatedEnquiries.map((enquiry, idx) => (
+          paginatedEnquiries.map((enquiry) => (
             <div
-              key={`${enquiry.id}-${idx}`}
+              key={`enq-card-${enquiry.id}`}
               className="group relative bg-white rounded-[1.5rem] border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-500 overflow-hidden p-4 w-full flex flex-col gap-4"
             >
               {/* Card Header: Identity and Badge */}
@@ -1340,7 +1340,7 @@ const EnquiryList = ({
                           </div>
                           {[1, 2, 3].map((catId) => (
                             <button
-                              key={catId}
+                              key={`enq-cat-${catId}`}
                               type="button"
                               onClick={() => {
                                 setPromoteFormData({
@@ -1403,7 +1403,7 @@ const EnquiryList = ({
                           </div>
                           {["Hot", "Warm", "Cold"].map((status) => (
                             <button
-                              key={status}
+                              key={`enq-status-${status}`}
                               type="button"
                               onClick={() => {
                                 setPromoteFormData({
@@ -1501,7 +1501,7 @@ const EnquiryList = ({
                 if (pageNum === 2 || pageNum === totalPages - 1) {
                   return (
                     <span
-                      key={pageNum}
+                      key={`ellipsis-${pageNum}-${i}`}
                       className="text-slate-300 px-1 font-bold"
                     >
                       .

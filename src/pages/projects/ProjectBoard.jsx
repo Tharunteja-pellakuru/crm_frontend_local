@@ -652,7 +652,7 @@ const ProjectBoard = ({
                       </div>
                       {[3, 1, 2].map((catId) => (
                         <button
-                          key={catId}
+                          key={`proj-cat-opt-${catId}`}
                           onClick={() => handleCategoryChange(catId)}
                           className={`w-full text-left px-5 py-3.5 text-[12px] font-bold  tracking-widest transition-colors ${
                             selectedCategory === catId
@@ -957,7 +957,7 @@ const ProjectBoard = ({
                           )
                           .map((client) => (
                             <button
-                              key={client.id}
+                              key={`proj-client-sel-${client.id}`}
                               type="button"
                               onClick={() => {
                                 setSelectedClientId(client.id);
@@ -1104,7 +1104,7 @@ const ProjectBoard = ({
                   <div className="flex gap-2">
                     {[1, 2, 3].map((catId) => (
                       <button
-                        key={catId}
+                        key={`proj-new-cat-${catId}`}
                         type="button"
                         onClick={() =>
                           setFormData({
@@ -1160,7 +1160,7 @@ const ProjectBoard = ({
                           </div>
                           {["In Progress", "Hold", "Completed"].map((status) => (
                             <button
-                              key={status}
+                              key={`proj-new-status-${status}`}
                               type="button"
                               onClick={() => {
                                 setFormData({
@@ -1220,7 +1220,7 @@ const ProjectBoard = ({
                           </div>
                           {["High", "Medium", "Low"].map((level) => (
                             <button
-                              key={level}
+                              key={`proj-new-priority-${level}`}
                               type="button"
                               onClick={() => {
                                 setFormData({

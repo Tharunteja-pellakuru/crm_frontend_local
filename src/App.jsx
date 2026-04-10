@@ -1293,13 +1293,7 @@ function AppRoutes() {
 
       if (res.ok) {
         const result = await res.json();
-        const newFollowup = {
-          ...result.followup,
-          id: result.followup.id,
-          status: result.followup.followup_status?.toLowerCase() || "pending",
-          dueDate: result.followup.followup_date,
-        };
-        setFollowUps((prev) => [...prev, newFollowup]);
+        setFollowUps((prev) => [result.followup, ...prev]);
         toast.success("Follow-up added successfully!");
       } else {
         console.error("Failed to add follow-up:", await res.json());

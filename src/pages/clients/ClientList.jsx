@@ -761,7 +761,7 @@ const ClientList = ({
                   const status = getStatusBadge(client);
                   return (
                     <tr
-                      key={client.id}
+                      key={client.id || `client-table-${index}`}
                       onClick={() => onSelectClient(client)}
                       className="group hover:bg-slate-50/50 cursor-pointer transition-all"
                     >
@@ -945,7 +945,7 @@ const ClientList = ({
             const status = getStatusBadge(client);
             return (
               <div
-                key={client.id}
+                key={client.id || `client-mobile-${index}`}
                 onClick={() => onSelectClient(client)}
                 className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all active:scale-[0.98]"
               >
@@ -1105,7 +1105,7 @@ const ClientList = ({
                   if (pageNum === 2 || pageNum === totalPages - 1) {
                     return (
                       <span
-                        key={pageNum}
+                        key={`ellipsis-${pageNum}-${i}`}
                         className="text-slate-300 px-1 font-bold"
                       >
                         .
@@ -1252,7 +1252,7 @@ const ClientList = ({
                     <div className="flex gap-2">
                       {[1, 2, 3].map((catId) => (
                         <button
-                          key={catId}
+                          key={`cat-${catId}`}
                           type="button"
                           onClick={() =>
                             setFormData({ ...formData, projectCategory: catId })
@@ -1276,7 +1276,7 @@ const ClientList = ({
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       {["Hot", "Warm", "Cold"].map((type) => (
                         <button
-                          key={type}
+                          key={`status-type-${type}`}
                           type="button"
                           onClick={() =>
                             setFormData({
