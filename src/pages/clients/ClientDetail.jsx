@@ -243,13 +243,21 @@ const ClientDetail = ({
   };
 
   const clientProjects = projects.filter((p) => p.clientId == client.id);
+  const clientProjectIds = clientProjects.map((p) => p.id);
+
   const clientActivities = activities.filter(
     (a) =>
       a.clientId == client.id ||
-      (client.lead_id && a.clientId == client.lead_id),
+      (client.lead_id && a.clientId == client.lead_id) ||
+      clientProjectIds.includes(a.projectId || a.project_id)
   );
-  const completedFollowUps = clientFollowUps.filter(
-    (f) => f.status === "completed",
+
+  const completedFollowUps = [
+    ...clientFollowUps,
+    ...followUps.filter((f) => clientProjectIds.includes(f.projectId || f.project_id))
+  ].filter((f, index, self) => 
+    f.status === "completed" && 
+    index === self.findIndex((t) => t.id === f.id)
   );
 
   const handleLogInteraction = (e) => {
