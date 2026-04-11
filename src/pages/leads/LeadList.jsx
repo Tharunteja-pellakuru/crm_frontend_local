@@ -2486,7 +2486,7 @@ const LeadList = ({
                                 Select Status
                               </p>
                             </div>
-                            {["Hot", "Warm", "Cold", "Converted"].map((status) => (
+                            {["Converted"].map((status) => (
                               <button
                                 key={`edit-status-${status}`}
                                 type="button"

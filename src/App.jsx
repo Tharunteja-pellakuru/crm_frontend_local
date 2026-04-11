@@ -120,7 +120,7 @@ function ProjectOverviewWrapper({
   return (
     <ProjectOverview
       project={project}
-      client={clients.find((c) => c.id === project.clientId)}
+      client={clients.find((c) => c.id == project.clientId || c.client_id == project.clientId)}
       onBack={() => navigate("/projects")}
       onUpdateProject={onUpdateProject}
       onAddActivity={onAddActivity}

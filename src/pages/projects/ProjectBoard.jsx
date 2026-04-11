@@ -128,7 +128,7 @@ const ProjectCard = ({
   onDelete,
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const client = clients.find((c) => c.id === project.clientId);
+  const client = clients.find((c) => c.id == project.clientId || c.client_id == project.clientId);
 
   const getPriorityStyles = (priority) => {
     switch (priority?.toLowerCase()) {
@@ -479,7 +479,7 @@ const ProjectBoard = ({
       p.name?.toLowerCase().includes(query) ||
       p.description?.toLowerCase().includes(query) ||
       clients
-        .find((c) => c.id === p.clientId)
+        .find((c) => c.id == p.clientId || c.client_id == p.clientId)
         ?.company?.toLowerCase()
         .includes(query);
     return matchesStatus && matchesCategory && matchesSearch;
