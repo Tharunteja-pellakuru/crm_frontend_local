@@ -1066,15 +1066,12 @@ const LeadList = ({
                 {filteredLeads.length === 0 && (
                   <tr>
                     <td colSpan={6} className="px-10 py-32 text-center">
-                      <div className="w-14 h-14 bg-slate-50 text-slate-200 p-4 rounded-xl mb-4 shadow-inner flex items-center justify-center mx-auto">
-                        <Search size={32} />
+                      <div className=" text-slate-300 p-4 rounded-xl mb-4  flex items-center justify-center mx-auto">
+                        <UserX size={32} strokeWidth={1.5} />
                       </div>
-                      <p className="text-[13px] font-bold text-primary  tracking-[0.4em]">
-                        Zero Results
-                      </p>
-                      <p className="text-sm font-medium text-slate-400 mt-2">
-                        No matching records detected in this segment.
-                      </p>
+                      <p className="text-[13px] font-bold text-primary  tracking-wider">
+                No Active Leads
+              </p>
                     </td>
                   </tr>
                 )}

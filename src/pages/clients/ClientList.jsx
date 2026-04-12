@@ -21,6 +21,7 @@ import {
   Trash2,
   ChevronDown,
   UserCheck,
+  Users,
   Upload,
   Paperclip,
   UserX,
@@ -863,7 +864,7 @@ const ClientList = ({
                               <UserCheck size={18} />
                             </button>
                           )}
-                          {/* {onDeleteClient &&
+                          {onDeleteClient &&
                             (title !== "Leads" || leadView === "Dismissed") && (
                               <button
                                 onClick={(e) => {
@@ -871,10 +872,11 @@ const ClientList = ({
                                   onDeleteClient(client.id);
                                 }}
                                 className="p-2.5 bg-white border border-slate-200 rounded-lg text-slate-300 hover:text-error hover:border-error hover:bg-error/5 transition-all active:scale-90 shadow-sm"
+                                title="Delete"
                               >
                                 <Trash2 size={18} />
                               </button>
-                            )} */}
+                            )}
                           {onDismissLead &&
                             (client.status === "Lead" || client.isConverted) &&
                             client.status !== "Dismissed" && (
@@ -921,15 +923,12 @@ const ClientList = ({
                 {filteredClients.length === 0 && (
                   <tr>
                     <td colSpan={5} className="px-10 py-32 text-center">
-                      <div className="w-14 h-14 bg-slate-50 text-slate-200 p-4 rounded-xl mb-4 shadow-inner flex items-center justify-center mx-auto">
-                        <Search size={32} />
+                      <div className=" text-slate-300 p-4 rounded-xl mb-4  flex items-center justify-center mx-auto">
+                        <Users size={32} strokeWidth={1.5} />
                       </div>
-                      <p className="text-[13px] font-bold text-primary  tracking-[0.4em]">
-                        Zero Results
-                      </p>
-                      <p className="text-sm font-medium text-slate-400 mt-2">
-                        No matching records detected in this segment.
-                      </p>
+                      <p className="text-[13px] font-bold text-primary  tracking-wider">
+                No Active Clients
+              </p>
                     </td>
                   </tr>
                 )}
@@ -1044,7 +1043,7 @@ const ClientList = ({
                         <UserCheck size={16} />
                       </button>
                     )}
-                    {/* {onDeleteClient &&
+                    {onDeleteClient &&
                       (title !== "Leads" || leadView === "Dismissed") && (
                         <button
                           onClick={(e) => {
@@ -1052,10 +1051,11 @@ const ClientList = ({
                             onDeleteClient(client.id);
                           }}
                           className="p-2 bg-rose-50 text-rose-600 border border-rose-100 rounded-lg hover:bg-rose-100 transition-all active:scale-90"
+                          title="Delete"
                         >
                           <Trash2 size={16} />
                         </button>
-                      )} */}
+                      )}
                     <button
                       onClick={(e) => {
                         e.stopPropagation();

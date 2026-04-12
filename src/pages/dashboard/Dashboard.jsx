@@ -204,9 +204,9 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
   }
 
   return (
-    <div className="w-full relative">
-      <div className="space-y-4 md:space-y-5 relative z-0">
-        <div className="flex flex-row flex-wrap justify-between items-center gap-4 animate-fade-in relative z-50" style={{ animationDelay: '100ms' }}>
+    <div className="w-full relative flex flex-col lg:h-[calc(100vh-150px)]">
+      <div className="flex-1 min-h-0 flex flex-col space-y-4 md:space-y-5 relative z-0">
+        <div className="flex flex-row flex-wrap justify-between items-center gap-4 animate-fade-in relative z-50 shrink-0" style={{ animationDelay: '100ms' }}>
           <div className="max-w-2xl shrink-0">
             <h2 className="text-base md:text-lg lg:text-xl font-bold text-[#18254D] tracking-tight mb-1">
               Welcome back, {currentUser?.full_name?.split(' ')[0] || 'Admin'}
@@ -359,7 +359,7 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 shrink-0">
           <StatCard
             title="New Enquiries"
             value={newEnquiriesCount.toString()}
@@ -398,9 +398,8 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
           />
         </div>
 
-        <div className="flex flex-col gap-4 md:gap-5 animate-fade-in-up" style={{ animationDelay: '350ms' }}>
-          <div className="flex flex-col lg:flex-row gap-4 md:gap-5">
-            <div className="w-full lg:w-[35%] xl:w-[30%] bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col h-[420px]">
+        <div className="flex-1 min-h-0 flex flex-col lg:flex-row gap-4 md:gap-5 animate-fade-in-up" style={{ animationDelay: '350ms' }}>
+            <div className="w-full lg:w-[35%] xl:w-[30%] bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col min-h-[420px] lg:min-h-0 lg:h-full">
             <div className="flex flex-row justify-between items-center gap-2 mb-6 flex-nowrap">
               <div className="flex items-center gap-1 p-0.5 bg-slate-50 rounded-xl border border-slate-100 shrink-0">
                 <button
@@ -572,7 +571,7 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
               )}
             </div>
           </div>
-          <div className="w-full lg:w-[65%] xl:w-[70%] bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col">
+          <div className="w-full lg:w-[65%] xl:w-[70%] bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col min-h-[400px] lg:min-h-0 lg:h-full overflow-hidden">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
               <div>
                 <h3 className="text-base font-bold text-primary tracking-tight">
@@ -685,8 +684,8 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
                 </div>
               </div>
             </div>
-            <div className="h-48 md:h-56 w-full min-w-0">
-              <ResponsiveContainer width="100%" height="100%">
+            <div className="flex-1 min-h-[150px] w-full mt-2" style={{ minHeight: "150px", minWidth: 0 }}>
+              <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                 <ComposedChart data={chartData}>
                   <CartesianGrid
                     strokeDasharray="3 3"
@@ -745,7 +744,6 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
               </ResponsiveContainer>
             </div>
           </div>
-        </div>
       </div>
 
         {/* View All Follow-ups Selection Modal */}

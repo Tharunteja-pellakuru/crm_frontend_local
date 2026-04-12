@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Leaf } from "lucide-react";
 import logoImg from "../../assets/Logo.png";
 
@@ -6,7 +7,7 @@ function Logo({ className = "", size = 48, showText = true }) {
   const [imgError, setImgError] = useState(false);
 
   return (
-    <div className={`flex items-center gap-3 ${className}`}>
+    <Link to="/dashboard" className={`flex items-center gap-3 cursor-pointer ${className}`}>
       {!imgError ? (
         <img
           src={logoImg}
@@ -39,7 +40,7 @@ function Logo({ className = "", size = 48, showText = true }) {
           </span>
         </div>
       )}
-    </div>
+    </Link>
   );
 }
 
