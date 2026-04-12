@@ -1446,14 +1446,16 @@ const ClientList = ({
                       label="CLIENT COUNTRY"
                       options={countries.map((c) => ({
                         name: c.name,
-                        code: c.name,
+                        value: c.name,
+                        code: c.code,
                       }))}
                       value={formData.country}
                       onChange={(val) => {
-                        const countryCurrency = countryToCurrency[val];
+                        const countryObj = countries.find(c => c.name === val || c.code === val);
+                        const countryCurrency = countryToCurrency[val] || (countryObj ? countryToCurrency[countryObj.name] : null);
                         setFormData({
                           ...formData,
-                          country: val,
+                          country: countryObj ? countryObj.name : val,
                           currency: countryCurrency
                             ? countryCurrency.code
                             : formData.currency,
@@ -2142,14 +2144,16 @@ const ClientList = ({
                   label="CLIENT COUNTRY"
                   options={countries.map((c) => ({
                     name: c.name,
-                    code: c.name,
+                    value: c.name,
+                    code: c.code,
                   }))}
                   value={onboardingData.country}
                   onChange={(val) => {
-                    const countryCurrency = countryToCurrency[val];
+                    const countryObj = countries.find(c => c.name === val || c.code === val);
+                    const countryCurrency = countryToCurrency[val] || (countryObj ? countryToCurrency[countryObj.name] : null);
                     setOnboardingData({
                       ...onboardingData,
-                      country: val,
+                      country: countryObj ? countryObj.name : val,
                       currency: countryCurrency
                         ? countryCurrency.code
                         : onboardingData.currency,
@@ -2607,14 +2611,16 @@ const ClientList = ({
                   label="CLIENT COUNTRY"
                   options={countries.map((c) => ({
                     name: c.name,
-                    code: c.name,
+                    value: c.name,
+                    code: c.code,
                   }))}
                   value={editFormData.country}
                   onChange={(val) => {
-                    const countryCurrency = countryToCurrency[val];
+                    const countryObj = countries.find(c => c.name === val || c.code === val);
+                    const countryCurrency = countryToCurrency[val] || (countryObj ? countryToCurrency[countryObj.name] : null);
                     setEditFormData({
                       ...editFormData,
-                      country: val,
+                      country: countryObj ? countryObj.name : val,
                       currency: countryCurrency
                         ? countryCurrency.code
                         : editFormData.currency,

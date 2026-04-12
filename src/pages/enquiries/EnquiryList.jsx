@@ -1245,11 +1245,12 @@ const EnquiryList = ({
                       }
                       options={countries.map((c) => ({
                         name: `${c.name} (${c.code})`,
+                        value: c.name,
                         code: c.code,
                       }))}
-                      value={promoteFormData.countryCode || promoteFormData.country}
+                      value={promoteFormData.country}
                       onChange={(val) => {
-                        const selectedCountry = countries.find(c => c.code === val || c.name === val);
+                        const selectedCountry = countries.find(c => c.name === val || c.code === val);
                         setPromoteFormData({ 
                           ...promoteFormData, 
                           country: selectedCountry ? selectedCountry.name : val,

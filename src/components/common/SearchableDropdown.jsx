@@ -22,11 +22,11 @@ const SearchableDropdown = ({
   });
 
   const selectedOption = options.find(
-    (opt) => (opt.name || opt.label) === value || opt.code === value,
+    (opt) => (opt.name || opt.label || opt.value || opt.id) === value || opt.code === value,
   );
 
   const displayValue = selectedOption
-    ? selectedOption.code || selectedOption.name || selectedOption.label
+    ? selectedOption.name || selectedOption.label || selectedOption.value || selectedOption.code
     : value || placeholder;
 
   useEffect(() => {
@@ -43,7 +43,7 @@ const SearchableDropdown = ({
     const optionValue =
       typeof option === "string"
         ? option
-        : option.code || option.id || option.name || option.value;
+        : option.id || option.value || option.name || option.code;
     onChange(optionValue);
     setIsOpen(false);
     setSearchTerm("");
@@ -105,7 +105,7 @@ const SearchableDropdown = ({
                   const optionValue =
                     typeof option === "string"
                       ? option
-                      : option.id || option.code || option.name || option.value;
+                      : option.id || option.value || option.name || option.code;
                   const optionLabel =
                     typeof option === "string"
                       ? option

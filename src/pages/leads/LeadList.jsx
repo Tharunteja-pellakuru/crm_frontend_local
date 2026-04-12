@@ -242,6 +242,7 @@ const LeadList = ({
     projectCategory: 1,
     projectPriority: "Medium",
     projectDescription: "",
+    country: "",
     countryCode: "",
   });
 
@@ -656,6 +657,7 @@ const LeadList = ({
           projectCategory: 1, // Changed to numeric ID
           projectPriority: "Medium",
           projectDescription: "",
+          country: "",
           countryCode: "",
         });
         toast.success("Lead added successfully!");
@@ -1382,14 +1384,16 @@ const LeadList = ({
                     }
                     options={countries.map((c) => ({
                       name: `${c.name} (${c.code})`,
+                      value: c.name,
                       code: c.code,
                     }))}
-                    value={formData.countryCode}
+                    value={formData.country}
                     onChange={(val) => {
-                      const selectedCountry = countries.find(c => c.code === val || c.name === val);
+                      const selectedCountry = countries.find(c => c.name === val || c.code === val);
                       setFormData({ 
                         ...formData, 
-                        countryCode: selectedCountry ? selectedCountry.code : val
+                        country: selectedCountry ? selectedCountry.name : val,
+                        countryCode: selectedCountry ? selectedCountry.code : ""
                       });
                     }}
                     placeholder="Select Country Code"
@@ -1755,14 +1759,16 @@ const LeadList = ({
                     required
                     options={countries.map((c) => ({
                       name: c.name,
-                      code: c.name,
+                      value: c.name,
+                      code: c.code,
                     }))}
                     value={onboardingData.country}
                     onChange={(val) => {
-                      const countryCurrency = countryToCurrency[val];
+                      const selectedCountry = countries.find(c => c.name === val || c.code === val);
+                      const countryCurrency = countryToCurrency[val] || (selectedCountry ? countryToCurrency[selectedCountry.name] : null);
                       setOnboardingData({
                         ...onboardingData,
-                        country: val,
+                        country: selectedCountry ? selectedCountry.name : val,
                         currency: countryCurrency
                           ? countryCurrency.code
                           : onboardingData.currency,
@@ -2332,15 +2338,16 @@ const LeadList = ({
                     label="COUNTRY CODE"
                     options={countries.map((c) => ({
                       name: `${c.name} (${c.code})`,
+                      value: c.name,
                       code: c.code,
                     }))}
-                    value={editConvertedData.countryCode}
+                    value={editConvertedData.country}
                     onChange={(val) => {
-                      const countryObj = countries.find((c) => c.code === val);
+                      const countryObj = countries.find((c) => c.name === val || c.code === val);
                       setEditConvertedData({
                         ...editConvertedData,
-                        countryCode: val,
-                        country: countryObj ? countryObj.name : editConvertedData.country,
+                        country: countryObj ? countryObj.name : val,
+                        countryCode: countryObj ? countryObj.code : val,
                       });
                     }}
                     placeholder="Select Code"
