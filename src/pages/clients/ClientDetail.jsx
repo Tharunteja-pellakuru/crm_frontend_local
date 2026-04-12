@@ -188,20 +188,20 @@ const ClientDetail = ({
       const countryName = client.country || "";
 
       setEditFormData({
-        name: client.name || "",
-        email: client.email || "",
-        phone: phone,
-        countryCode: dialCode.replace("+", ""),
-        leadType: client.leadType || "Hot",
-        notes: client.notes || "",
-        website: client.website || "",
+        name: (client.name || client.client_name || "").trim(),
+        email: (client.email || "").trim(),
+        phone: phone.trim(),
+        countryCode: dialCode.replace("+", "").trim(),
+        leadType: client.leadType || client.status || "Hot",
+        notes: (client.notes || client.message || "").trim(),
+        website: (client.website || client.website_url || "").trim(),
         projectCategory:
-          client.projectCategory || REVERSE_CATEGORY_MAP[client.industry] || 1,
-        country: countryName,
-        state: client.state || "",
-        currency: client.currency || "",
-        organisationName: client.organisationName || "",
-        clientStatus: client.clientStatus || "Active",
+          client.projectCategory || client.project_category || REVERSE_CATEGORY_MAP[client.industry] || 1,
+        country: countryName.trim(),
+        state: (client.state || client.client_state || client.clientState || "").trim(),
+        currency: (client.currency || client.client_currency || "INR").trim(),
+        organisationName: (client.organisationName || client.organisation_name || client.organisation || client.company || "").trim(),
+        clientStatus: client.clientStatus || client.client_status || client.status || "Active",
       });
     }
   }, [showEditModal, client]);

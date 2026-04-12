@@ -1245,6 +1245,7 @@ const EnquiryList = ({
                       }
                       options={countries.map((c) => ({
                         name: `${c.name} (${c.code})`,
+                        label: c.code,
                         value: c.name,
                         code: c.code,
                       }))}

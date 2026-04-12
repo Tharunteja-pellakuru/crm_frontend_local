@@ -37,6 +37,8 @@ import {
   CATEGORY_MAP,
   REVERSE_CATEGORY_MAP,
 } from "./constants/categoryConstants";
+import { countries } from "./utils/countries";
+import { extractCountryAndPhone } from "./utils/leadUtils";
 
 // Simple wrapper for client detail pages
 function ClientDetailWrapper({
@@ -206,36 +208,45 @@ function AppRoutes() {
         console.log("Raw leads data fetched:", leadsArray);
 
         // Transform API data to match component expected format
-        const transformedLeads = leadsArray.map((lead) => ({
-          id: lead.lead_id?.toString() || lead.uuid,
-          lead_id: lead.lead_id?.toString() || lead.uuid,
-          name: lead.full_name || "Unknown",
-          company:
-            lead.website_url?.replace(/^https?:\/\//, "").split("/")[0] || "",
-          email: lead.email || "",
-          phone: lead.phone_number || "",
-          country_code: lead.country_code || "",
-          status: lead.lead_status === "Dismissed" ? "Dismissed" : (lead.lead_status === "Converted" ? "Active" : "Lead"),
-          isConverted: lead.lead_status === "Converted",
-          leadType: lead.lead_status || "Warm",
-          projectCategory: typeof lead.lead_category === 'string' 
-            ? (REVERSE_CATEGORY_MAP[lead.lead_category] || 1) 
-            : (lead.lead_category || 1),
-          industry: typeof lead.lead_category === 'string' 
-            ? (REVERSE_CATEGORY_MAP[lead.lead_category] || 1) 
-            : (lead.lead_category || 1),
-          website: lead.website_url || "",
-          country: lead.country || "",
-          notes: lead.message || "",
-          joinedDate: lead.created_at
-            ? lead.created_at.split("T")[0]
-            : new Date().toISOString().split("T")[0],
-          lastContact: lead.updated_at
-            ? lead.updated_at.split("T")[0]
-            : new Date().toISOString().split("T")[0],
-          avatar: `https://picsum.photos/100/100?random=${lead.lead_id || Math.floor(Math.random() * 100)}`,
-          enquiry_id: lead.enquiry_id,
-        }));
+        const transformedLeads = leadsArray.map((lead) => {
+          const { countryCode: autoCode, countryName: autoName } = extractCountryAndPhone(
+            lead.phone_number,
+            lead.client_country || lead.country,
+            countries
+          );
+          
+          return {
+            id: lead.lead_id?.toString() || lead.uuid,
+            lead_id: lead.lead_id?.toString() || lead.uuid,
+            name: lead.full_name || "Unknown",
+            company: lead.client_organisation || lead.organisation_name || lead.company || lead.website_url?.replace(/^https?:\/\//, "").split("/")[0] || "",
+            organisation_name: lead.client_organisation || lead.organisation_name || lead.company || "",
+            email: lead.email || "",
+            phone: lead.phone_number || "",
+            country_code: lead.country_code || autoCode || "",
+            status: lead.lead_status === "Dismissed" ? "Dismissed" : (lead.lead_status === "Converted" ? "Active" : "Lead"),
+            isConverted: lead.lead_status === "Converted",
+            leadType: lead.lead_status || "Warm",
+            projectCategory: typeof lead.lead_category === 'string' 
+              ? (REVERSE_CATEGORY_MAP[lead.lead_category] || 1) 
+              : (lead.lead_category || 1),
+            industry: typeof lead.lead_category === 'string' 
+              ? (REVERSE_CATEGORY_MAP[lead.lead_category] || 1) 
+              : (lead.lead_category || 1),
+            website: lead.website_url || "",
+            country: lead.client_country || lead.country || autoName || "",
+            state: lead.client_state || lead.state || "",
+            notes: lead.message || "",
+            joinedDate: lead.created_at
+              ? lead.created_at.split("T")[0]
+              : new Date().toISOString().split("T")[0],
+            lastContact: lead.updated_at
+              ? lead.updated_at.split("T")[0]
+              : new Date().toISOString().split("T")[0],
+            avatar: `https://picsum.photos/100/100?random=${lead.lead_id || Math.floor(Math.random() * 100)}`,
+            enquiry_id: lead.enquiry_id,
+          };
+        });
 
         setLeads(transformedLeads);
 
@@ -303,20 +314,20 @@ function AppRoutes() {
         const transformedClients = data.map((c) => ({
           id: c.id?.toString() || c.client_id?.toString(),
           name: c.name || c.client_name,
-          company: c.organisation_name,
-          organisation_name: c.organisation_name || "",
+          company: c.organisation_name || c.organisation || c.company || "",
+          organisation_name: c.organisation_name || c.organisation || c.company || "",
           email: c.email || "", 
           phone: c.phone || "",
           country_code: c.country_code || "",
           status: c.status || c.client_status || "Active",
-          projectCategory: c.projectCategory || 1,
+          projectCategory: c.projectCategory || c.project_category || 1,
           briefMessage: c.brief_message || "",
           notes: c.brief_message || "",
-          website: c.website || "",
-          country: c.client_country,
-          state: c.client_state,
-          currency: c.client_currency,
-          lead_id: c.lead_id, // Added lead_id to client object
+          website: c.website || c.website_url || "",
+          country: c.client_country || c.country || "India",
+          state: c.client_state || c.state || "",
+          currency: c.client_currency || c.currency || "INR",
+          lead_id: c.lead_id,
           isConverted: !!c.lead_id,
           avatar: `https://picsum.photos/100/100?random=${c.client_id}`,
           joinedDate: c.created_at?.split("T")[0] || new Date().toISOString().split("T")[0],

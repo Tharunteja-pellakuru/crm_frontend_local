@@ -253,7 +253,7 @@ const LeadList = ({
       extractCountryAndPhone(lead.phone, lead.country, countries);
 
     const dialCode = lead.country_code || extractedDialCode || "";
-    const name = lead.country || extractedCountryName || "";
+    const name = lead.client_country || lead.country || extractedCountryName || "";
     const phone = extractedPhone || lead.phone || "";
 
     let finalDialCode = dialCode || "";
@@ -268,9 +268,9 @@ const LeadList = ({
       email: lead.email,
       phone: phone,
       countryCode: finalDialCode,
-      organisationName: lead.company || "",
+      organisationName: lead.client_organisation || lead.organisation_name || lead.company || "",
       country: name,
-      state: lead.state || "",
+      state: lead.client_state || lead.state || "",
       currency: lead.currency || "",
       clientStatus: lead.status || "Active",
       projectName: lead.projectName || "",
@@ -1384,6 +1384,7 @@ const LeadList = ({
                     }
                     options={countries.map((c) => ({
                       name: `${c.name} (${c.code})`,
+                      label: c.code,
                       value: c.name,
                       code: c.code,
                     }))}
@@ -2336,18 +2337,22 @@ const LeadList = ({
                   </div>
                   <SearchableDropdown
                     label="COUNTRY CODE"
-                    options={countries.map((c) => ({
-                      name: `${c.name} (${c.code})`,
-                      value: c.name,
-                      code: c.code,
-                    }))}
-                    value={editConvertedData.country}
+                    options={Array.from(new Set(countries.map(c => c.name))).map(name => {
+                      const c = countries.find(country => country.name === name);
+                      return {
+                        name: `${c.name} (${c.code})`,
+                        label: c.code,
+                        value: c.code,
+                        code: c.code,
+                      };
+                    })}
+                    value={editConvertedData.countryCode}
                     onChange={(val) => {
-                      const countryObj = countries.find((c) => c.name === val || c.code === val);
+                      const countryObj = countries.find((c) => c.code === val || c.name === val);
                       setEditConvertedData({
                         ...editConvertedData,
-                        country: countryObj ? countryObj.name : val,
                         countryCode: countryObj ? countryObj.code : val,
+                        country: countryObj ? countryObj.name : editConvertedData.country,
                       });
                     }}
                     placeholder="Select Code"

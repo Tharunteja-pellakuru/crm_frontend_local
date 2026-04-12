@@ -209,15 +209,15 @@ const ClientList = ({
   const handleEditClick = (client) => {
     setEditingClient(client);
     setEditFormData({
-      name: client.name || "",
-      organisationName: client.organisation_name || client.company || "",
-      email: client.email || "",
-      phone: client.phone || "",
-      country: client.country || "India",
-      state: client.state || "",
-      currency: client.currency || "INR",
-      clientStatus: client.status || "Active",
-      projectCategory: client.projectCategory || 1,
+      name: (client.name || client.client_name || "").trim(),
+      organisationName: (client.organisation_name || client.organisation || client.company || client.organisationName || "").trim(),
+      email: (client.email || "").trim(),
+      phone: (client.phone || "").trim(),
+      country: (client.country || client.client_country || "India").trim(),
+      state: (client.state || client.client_state || client.clientState || "").trim(),
+      currency: (client.currency || client.client_currency || "INR").trim(),
+      clientStatus: client.status || client.client_status || client.clientStatus || "Active",
+      projectCategory: client.projectCategory || client.project_category || 1,
       country_code: client.country_code || "",
     });
     setShowEditModal(true);

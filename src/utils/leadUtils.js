@@ -69,14 +69,23 @@ export const extractCountryAndPhone = (rawPhone = "", rawCountry = "", countries
 
   // 2. Try to match by phone number prefix if country wasn't found or was ambiguous
   if (!detectedCountryCode && phone) {
-    const sortedCountries = [...countries].sort((a, b) => b.code.length - a.code.length);
+    // 2a. Check with + prefix first (most reliable)
+    let match = countries.find(c => phone.startsWith(c.code));
     
-    // Check with + prefix first
-    let match = sortedCountries.find(c => phone.startsWith(c.code));
-    
-    // If not found and phone doesn't start with +, try prepending + for matching
+    // 2b. If not found and phone doesn't start with +, try prepending + for matching
+    // BUT only accept it if it's a common pattern (e.g. mobile number length)
     if (!match && !phone.startsWith("+")) {
-      match = sortedCountries.find(c => `+${phone}`.startsWith(c.code));
+      // Sort to check longest codes first (like +1-242 before +1)
+      const sortedCountries = [...countries].sort((a, b) => b.code.length - a.code.length);
+      match = sortedCountries.find(c => {
+        const potentialPhone = `+${phone}`;
+        if (potentialPhone.startsWith(c.code)) {
+          const remaining = potentialPhone.substring(c.code.length).replace(/\D/g, "");
+          // Most global mobile numbers are 10 digits after the country code
+          return remaining.length === 10;
+        }
+        return false;
+      });
     }
 
     if (match) {

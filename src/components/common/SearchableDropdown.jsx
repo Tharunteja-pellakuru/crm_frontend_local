@@ -16,17 +16,37 @@ const SearchableDropdown = ({
   const dropdownRef = useRef(null);
 
   const filteredOptions = options.filter((option) => {
-    const optionLabel =
-      typeof option === "string" ? option : option.name || option.label || "";
-    return optionLabel.toLowerCase().includes(searchTerm.toLowerCase());
+    if (!searchTerm) return true;
+    const term = searchTerm.toLowerCase();
+    
+    if (typeof option === "string") {
+      return option.toLowerCase().includes(term);
+    }
+    
+    return (
+      (option.name || "").toLowerCase().includes(term) ||
+      (option.label || "").toLowerCase().includes(term) ||
+      (option.code || "").toLowerCase().includes(term) ||
+      (option.value || "").toLowerCase().includes(term)
+    );
   });
 
-  const selectedOption = options.find(
-    (opt) => (opt.name || opt.label || opt.value || opt.id) === value || opt.code === value,
-  );
+  const selectedOption = options.find((opt) => {
+    if (typeof opt === "string") return opt === value;
+    return (
+      opt.name === value ||
+      opt.label === value ||
+      opt.value === value ||
+      opt.id === value ||
+      opt.code === value ||
+      (opt.code &&
+        value &&
+        opt.code.replace("+", "") === String(value).replace("+", ""))
+    );
+  });
 
   const displayValue = selectedOption
-    ? selectedOption.name || selectedOption.label || selectedOption.value || selectedOption.code
+    ? (typeof selectedOption === "string" ? selectedOption : (selectedOption.label || selectedOption.name || selectedOption.value || selectedOption.code))
     : value || placeholder;
 
   useEffect(() => {
@@ -105,7 +125,7 @@ const SearchableDropdown = ({
                   const optionValue =
                     typeof option === "string"
                       ? option
-                      : option.id || option.value || option.name || option.code;
+                      : option.value || option.code || option.id || option.name;
                   const optionLabel =
                     typeof option === "string"
                       ? option
@@ -114,7 +134,7 @@ const SearchableDropdown = ({
 
                   return (
                     <button
-                      key={optionValue}
+                      key={`${optionValue}-${index}`}
                       type="button"
                       onClick={() => handleSelect(option)}
                       className={`w-full text-left px-4 py-2.5 text-[13px] font-bold tracking-widest transition-colors flex items-center justify-between ${
