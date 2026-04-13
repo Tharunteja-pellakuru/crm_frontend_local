@@ -158,6 +158,17 @@ function AppRoutes() {
   const [followUpsLoading, setFollowUpsLoading] = useState(true);
 
   // --- Reusable refresh helpers ---
+  // Extracts only the +XX dial code from any string (e.g. "India (+91)" → "+91", "91" → "+91")
+  const sanitizeDialCode = (raw) => {
+    if (!raw) return "";
+    const str = String(raw).trim();
+    if (/^\+\d{1,4}$/.test(str)) return str;          // already clean: "+91"
+    const match = str.match(/(\+\d{1,4})/);
+    if (match) return match[1];                        // extract from "India (+91)"
+    if (/^\d{1,4}$/.test(str)) return `+${str}`;     // bare digits: "91" → "+91"
+    return "";
+  };
+
   const refreshLeads = async () => {
     try {
       const res = await fetch(`${BASE_URL}/api/get-leads`, { headers: getAuthHeaders() });
@@ -1168,10 +1179,11 @@ function AppRoutes() {
           editData.currency !== undefined && editData.currency !== null
             ? editData.currency
             : leadToUpdate.currency || "",
-        country_code:
+        country_code: sanitizeDialCode(
           editData.countryCode !== undefined && editData.countryCode !== null
             ? editData.countryCode
-            : leadToUpdate.country_code || "",
+            : leadToUpdate.country_code || ""
+        ),
         organisationName:
           editData.organisationName !== undefined &&
           editData.organisationName !== null
@@ -1198,7 +1210,7 @@ function AppRoutes() {
           lead_status: optimisticLead.leadType,
           website_url: optimisticLead.website,
           country: optimisticLead.country,
-          country_code: optimisticLead.country_code,
+          country_code: sanitizeDialCode(optimisticLead.country_code),
           message: optimisticLead.notes,
           lead_category: optimisticLead.projectCategory,
         }),
