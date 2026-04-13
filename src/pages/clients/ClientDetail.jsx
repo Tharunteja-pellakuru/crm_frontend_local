@@ -337,8 +337,8 @@ const ClientDetail = ({
                       {client.projectName || client.company || "Global Project"}
                     </span>
                   )}
-                  <span className="px-1.5 md:px-3 py-0.5 md:py-1 bg-secondary/10 text-secondary rounded-md md:rounded-lg text-[9px] md:text-[14px] font-bold tracking-widest border border-secondary/20 whitespace-nowrap">
-                    {client.status}
+                  <span className={`px-1.5 md:px-2 py-0.5 md:py-0.5 rounded-md text-[9px] md:text-[10px] font-bold tracking-widest border whitespace-nowrap leading-none ${client.status === "Active" ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-secondary/10 text-secondary border-secondary/20"}`}>
+                    {(client.status || "Active").toUpperCase()}
                   </span>
                 </div>
               </div>

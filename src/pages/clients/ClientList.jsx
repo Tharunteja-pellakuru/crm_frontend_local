@@ -378,7 +378,7 @@ const ClientList = ({
       case "Active":
         return {
           label: "Active",
-          className: "bg-success/10 text-success border-success/20",
+          className: "bg-emerald-50 text-emerald-600 border-emerald-100",
           icon: null,
         };
       case "Pending":
@@ -821,9 +821,9 @@ const ClientList = ({
                           ) : (
                             <div className="flex flex-col items-center w-full">
                               <span
-                                className={`px-3 py-1 rounded-lg text-[12px] font-bold  tracking-widest ${client.status === "Active" ? "bg-success/10 text-success border border-success/20" : "bg-slate-100 text-slate-400 border border-slate-200"}`}
+                                className={`px-2 py-0.5 rounded-md text-[10px] font-bold tracking-widest leading-none ${client.status === "Active" ? "bg-emerald-50 text-emerald-600 border border-emerald-100" : "bg-slate-100 text-slate-400 border border-slate-200"}`}
                               >
-                                {client.status || "Active"}
+                                {(client.status || "Active").toUpperCase()}
                               </span>
                             </div>
                           )}
@@ -969,10 +969,10 @@ const ClientList = ({
                     </div>
                   </div>
                   <span
-                    className={`px-3 py-1 rounded-lg text-[14px] font-bold border flex items-center gap-1.5 shadow-sm ${status.className}`}
+                    className={`px-2 py-0.5 rounded-md text-[10px] font-bold border flex items-center gap-1 shadow-sm leading-none ${status.className}`}
                   >
                     {status.icon}
-                    {status.label}
+                    {status.label.toUpperCase()}
                   </span>
                 </div>
 
