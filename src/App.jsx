@@ -523,6 +523,7 @@ function AppRoutes() {
               result.lead?.lead_id?.toString() ||
               result.lead?.uuid ||
               `new-${Date.now()}`,
+            lead_id: result.lead?.lead_id?.toString() || result.lead?.uuid,
             name: result.lead?.full_name || data.name,
             company: result.lead?.website_url
               ? result.lead.website_url
