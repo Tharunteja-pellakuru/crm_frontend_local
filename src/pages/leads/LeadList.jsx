@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { createPortal } from "react-dom";
 import {
@@ -161,7 +162,14 @@ const LeadList = ({
   const [onboardingLeadId, setOnboardingLeadId] = useState(null);
   const [isNameDropdownOpen, setIsNameDropdownOpen] = useState(false);
   const [nameSearch, setNameSearch] = useState("");
-  const [leadView, setLeadView] = useState("Pending");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const leadView = searchParams.get("view") || "Pending";
+
+  const setLeadView = (view) => {
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set("view", view);
+    setSearchParams(newParams, { replace: true });
+  };
   const [clientSearchQuery, setClientSearchQuery] = useState("");
   const [isPriorityDropdownOpen, setIsPriorityDropdownOpen] = useState(false);
   const [isOnboardStatusDropdownOpen, setIsOnboardStatusDropdownOpen] =

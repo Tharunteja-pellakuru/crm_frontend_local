@@ -947,8 +947,7 @@ const ProjectBoard = ({
                         {clients
                           .filter(
                             (c) =>
-                              c.status !== "Lead" &&
-                              c.status !== "Dismissed" &&
+                              c.status === "Active" &&
                               (!clientSearch ||
                                 c.name?.toLowerCase().includes(clientSearch.toLowerCase()) ||
                                 c.company?.toLowerCase().includes(clientSearch.toLowerCase()) ||
@@ -991,8 +990,7 @@ const ProjectBoard = ({
                           ))}
                         {clients.filter(
                           (c) =>
-                            c.status !== "Lead" &&
-                            c.status !== "Dismissed" &&
+                            c.status === "Active" &&
                             (!clientSearch ||
                               c.name?.toLowerCase().includes(clientSearch.toLowerCase()) ||
                               c.company?.toLowerCase().includes(clientSearch.toLowerCase()) ||
@@ -1011,6 +1009,14 @@ const ProjectBoard = ({
               {/* AUTO-FILLED CLIENT INFO (read-only) */}
               {selectedClientId && (
                 <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1 col-span-2">
+                    <label className="text-[14px] font-bold text-slate-400 tracking-widest ml-1">
+                      ORGANISATION NAME
+                    </label>
+                    <p className="px-3.5 py-2 bg-slate-50 border border-slate-100 rounded-xl text-[13px] font-medium text-[#18254D] truncate">
+                      {formData.organisationName || "—"}
+                    </p>
+                  </div>
                   <div className="space-y-1">
                     <label className="text-[14px] font-bold text-slate-400 tracking-widest ml-1">
                       EMAIL
@@ -1037,10 +1043,26 @@ const ProjectBoard = ({
                   </div>
                   <div className="space-y-1">
                     <label className="text-[14px] font-bold text-slate-400 tracking-widest ml-1">
+                      STATE
+                    </label>
+                    <p className="px-3.5 py-2 bg-slate-50 border border-slate-100 rounded-xl text-[13px] font-medium text-[#18254D] truncate">
+                      {formData.state || "—"}
+                    </p>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[14px] font-bold text-slate-400 tracking-widest ml-1">
                       CURRENCY
                     </label>
                     <p className="px-3.5 py-2 bg-slate-50 border border-slate-100 rounded-xl text-[13px] font-medium text-[#18254D] truncate">
                       {formData.currency || "—"}
+                    </p>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[14px] font-bold text-slate-400 tracking-widest ml-1">
+                      CLIENT STATUS
+                    </label>
+                    <p className="px-3.5 py-2 bg-slate-100 border border-slate-200 rounded-xl text-[13px] font-bold text-secondary truncate">
+                      {formData.clientStatus || "—"}
                     </p>
                   </div>
                 </div>

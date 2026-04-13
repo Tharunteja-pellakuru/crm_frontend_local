@@ -450,8 +450,32 @@ function AppRoutes() {
     navigate(`/${route}/${client.lead_id || client.id}`, { state: { tab } });
   }
 
-  function handleDeleteClient(id) {
-    setClients((prev) => prev.filter((c) => c.id !== id));
+  async function handleDeleteClient(id) {
+    try {
+      console.log("Deleting client:", id);
+
+      const res = await fetch(`${BASE_URL}/api/delete-client/${id}`, {
+        method: "DELETE",
+        headers: getAuthHeaders(),
+      });
+
+      if (res.ok) {
+        toast.success("Client deleted successfully!");
+        
+        // Remove from clients list
+        setClients((prev) => prev.filter((c) => c.id != id));
+
+        // Also remove any projects associated with this client
+        setProjects((prev) => prev.filter((p) => p.clientId != id));
+      } else {
+        const errorData = await res.json();
+        console.error("Failed to delete client:", errorData);
+        toast.error(errorData.message || "Failed to delete client. Please try again.");
+      }
+    } catch (e) {
+      console.error("Error deleting client:", e);
+      toast.error("An error occurred while deleting client.");
+    }
   }
 
   async function handleDeleteLead(id) {
