@@ -157,6 +157,85 @@ function AppRoutes() {
   const [projectsLoading, setProjectsLoading] = useState(true);
   const [followUpsLoading, setFollowUpsLoading] = useState(true);
 
+  // --- Reusable refresh helpers ---
+  const refreshLeads = async () => {
+    try {
+      const res = await fetch(`${BASE_URL}/api/get-leads`, { headers: getAuthHeaders() });
+      if (!res.ok) return;
+      const data = await res.json();
+      const leadsArray = Array.isArray(data) ? data : data.leads || [];
+      const transformedLeads = leadsArray.map((lead) => {
+        const { countryCode: autoCode, countryName: autoName } = extractCountryAndPhone(
+          lead.phone_number, lead.client_country || lead.country, countries
+        );
+        return {
+          id: lead.lead_id?.toString() || lead.uuid,
+          lead_id: lead.lead_id?.toString() || lead.uuid,
+          name: lead.full_name || "Unknown",
+          company: lead.client_organisation || lead.organisation_name || lead.company || lead.website_url?.replace(/^https?:\/\//, "").split("/")[0] || "",
+          organisation_name: lead.client_organisation || lead.organisation_name || lead.company || "",
+          email: lead.email || "",
+          phone: lead.phone_number || "",
+          country_code: lead.country_code || autoCode || "",
+          status: lead.lead_status === "Dismissed" ? "Dismissed" : (lead.lead_status === "Converted" ? "Converted" : "Lead"),
+          isConverted: lead.lead_status === "Converted",
+          leadType: lead.lead_status || "Warm",
+          projectCategory: typeof lead.lead_category === 'string'
+            ? (REVERSE_CATEGORY_MAP[lead.lead_category] || parseInt(lead.lead_category, 10) || 1)
+            : (lead.lead_category || 1),
+          industry: typeof lead.lead_category === 'string'
+            ? (REVERSE_CATEGORY_MAP[lead.lead_category] || parseInt(lead.lead_category, 10) || 1)
+            : (lead.lead_category || 1),
+          website: lead.website_url || "",
+          country: lead.client_country || lead.country || autoName || "",
+          state: lead.client_state || lead.state || "",
+          notes: lead.message || "",
+          joinedDate: lead.created_at ? lead.created_at.split("T")[0] : new Date().toISOString().split("T")[0],
+          lastContact: lead.updated_at ? lead.updated_at.split("T")[0] : new Date().toISOString().split("T")[0],
+          avatar: `https://picsum.photos/100/100?random=${lead.lead_id || Math.floor(Math.random() * 100)}`,
+          enquiry_id: lead.enquiry_id,
+        };
+      });
+      setLeads(transformedLeads);
+      const pendingLeads = transformedLeads.filter((l) => l.status === "Lead" || l.status === "Dismissed");
+      setClients((prev) => {
+        const nonLeads = prev.filter((c) => c.status !== "Lead" && c.status !== "Dismissed");
+        return [...nonLeads, ...pendingLeads];
+      });
+    } catch (e) {
+      console.error("[REFRESH] Failed to refresh leads:", e);
+    }
+  };
+
+  const refreshProjects = async () => {
+    try {
+      const res = await fetch(`${BASE_URL}/api/get-projects`, { headers: getAuthHeaders() });
+      if (!res.ok) return;
+      const data = await res.json();
+      const transformedProjects = data.map((p) => ({
+        id: p.project_id.toString(),
+        clientId: p.client_id.toString(),
+        name: p.project_name,
+        description: p.project_description,
+        status: p.project_status,
+        budget: p.project_budget,
+        deadline: p.deadline_date?.split("T")[0],
+        onboardingDate: p.onboarding_date?.split("T")[0],
+        priority: p.project_priority,
+        category: typeof p.project_category === 'string'
+          ? (REVERSE_CATEGORY_MAP[p.project_category] || parseInt(p.project_category, 10) || 1)
+          : (p.project_category || 1),
+        scopeDocument: p.scope_document,
+        updatedAt: p.updated_at?.split("T")[0],
+        progress: 0,
+      }));
+      setProjects(transformedProjects);
+    } catch (e) {
+      console.error("[REFRESH] Failed to refresh projects:", e);
+    }
+  };
+  // --- End refresh helpers ---
+
   // Fetch AI models on mount
   useEffect(() => {
     if (!isLoggedIn) return;
@@ -853,6 +932,10 @@ function AppRoutes() {
         })
       );
 
+      // Re-fetch both leads and projects from server to ensure full UI sync
+      await refreshLeads();
+      await refreshProjects();
+
       // Sync Clients state (if this is a converted lead, it exists in both lists)
       setClients((prev) =>
         prev.map((c) =>
@@ -1395,6 +1478,9 @@ function AppRoutes() {
           );
         }
 
+        // Re-fetch both leads and projects from server to ensure full UI sync
+        await refreshLeads();
+        await refreshProjects();
         toast.success("Project updated successfully!");
       } else {
         const errorData = await res.json();
