@@ -224,7 +224,7 @@ function AppRoutes() {
             email: lead.email || "",
             phone: lead.phone_number || "",
             country_code: lead.country_code || autoCode || "",
-            status: lead.lead_status === "Dismissed" ? "Dismissed" : (lead.lead_status === "Converted" ? "Active" : "Lead"),
+            status: lead.lead_status === "Dismissed" ? "Dismissed" : (lead.lead_status === "Converted" ? "Converted" : "Lead"),
             isConverted: lead.lead_status === "Converted",
             leadType: lead.lead_status || "Warm",
             projectCategory: typeof lead.lead_category === 'string' 
@@ -750,7 +750,7 @@ function AppRoutes() {
       // Update leads state to mark as converted
       setLeads((prev) =>
         prev.map((c) =>
-          c.lead_id == id ? { ...transformedClient, lead_id: c.lead_id, status: "Active" } : c,
+          c.lead_id == id ? { ...transformedClient, lead_id: c.lead_id, status: "Converted" } : c,
         ),
       );
 
@@ -822,7 +822,7 @@ function AppRoutes() {
                 industry: updatedCategory,
                 leadType: visualLeadType,
                 isConverted: true,
-                status: "Lead",
+                status: "Converted",
               }
             : l,
         ),

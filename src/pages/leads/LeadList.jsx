@@ -570,9 +570,10 @@ const LeadList = ({
           className: "bg-info/10 text-info border-info/20",
           icon: null,
         };
+      case "Converted":
       case "Active":
         return {
-          label: "Active",
+          label: "Converted",
           className: "bg-success/10 text-success border-success/20",
           icon: null,
         };

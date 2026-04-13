@@ -337,9 +337,6 @@ const ClientDetail = ({
                       {client.projectName || client.company || "Global Project"}
                     </span>
                   )}
-                  <span className="px-1.5 md:px-3 py-0.5 md:py-1 bg-secondary/10 text-secondary rounded-md md:rounded-lg text-[9px] md:text-[14px] font-bold tracking-widest border border-secondary/20 whitespace-nowrap">
-                    {client.status}
-                  </span>
                 </div>
               </div>
             </div>
@@ -1188,24 +1185,31 @@ const ClientDetail = ({
                           <span className="text-xs font-bold leading-none">
                             {commonCurrencies.find(
                               (c) => c.code === client.currency,
-                            )?.symbol || "$"}
+                            )?.symbol || "₹"}
                           </span>
                         </div>
                         <h3 className="text-[14px] font-bold text-slate-400  tracking-widest mb-1">
                           Billing Currency
                         </h3>
                         <p className="text-lg font-bold text-primary tracking-tight ">
-                          {client.currency || ""}
+                          {(() => {
+                            const currencyObj = commonCurrencies.find(
+                              (c) => c.code === client.currency,
+                            );
+                            return currencyObj 
+                              ? `${currencyObj.code} (${currencyObj.symbol})` 
+                              : (client.currency || "INR (₹)");
+                          })()}
                         </p>
                       </div>
-                      <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 group relative overflow-hidden hover:shadow-md hover:border-secondary/30 transition-all">
-                        <div className="w-8 h-8 bg-blue-500/10 text-blue-600 rounded-xl flex items-center justify-center mb-3 group-hover:bg-blue-600 group-hover:text-white transition-all border border-blue-500/20">
+                      <div className="bg-white p-4 rounded-2xl shadow-sm border border-emerald-100 group relative overflow-hidden hover:shadow-md hover:border-emerald-300/30 transition-all">
+                        <div className="w-8 h-8 bg-emerald-500/10 text-emerald-600 rounded-xl flex items-center justify-center mb-3 group-hover:bg-emerald-600 group-hover:text-white transition-all border border-emerald-500/20">
                           <CheckCircle2 size={16} strokeWidth={2.5} />
                         </div>
                         <h3 className="text-[14px] font-bold text-slate-400  tracking-widest mb-1">
                           Client Status
                         </h3>
-                        <p className="text-lg font-bold text-primary tracking-tight ">
+                        <p className="text-lg font-bold text-emerald-600 tracking-tight ">
                           {client.clientStatus || "Active"}
                         </p>
                       </div>
@@ -1735,9 +1739,14 @@ const ClientDetail = ({
                       </div>
                       <div className="text-right shrink-0">
                         <p className="text-[12px] font-bold text-primary">
-                          {commonCurrencies.find(
-                            (c) => c.code === client.currency,
-                          )?.symbol || "$"}{" "}
+                          {(() => {
+                            const currencyObj = commonCurrencies.find(
+                              (c) => c.code === client.currency,
+                            );
+                            return currencyObj 
+                              ? `${currencyObj.code} (${currencyObj.symbol})` 
+                              : (client.currency || "$");
+                          })()}{" "}
                           {(project.budget / 1000).toFixed(0)}k
                         </p>
                         <p className="text-[13px] font-bold text-slate-400  tracking-widest mt-1">
