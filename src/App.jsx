@@ -405,6 +405,7 @@ function AppRoutes() {
             ? (REVERSE_CATEGORY_MAP[p.project_category] || 1)
             : (p.project_category || 1),
           scopeDocument: p.scope_document,
+          updatedAt: p.updated_at?.split("T")[0],
           progress: 0, // Calculate or add to table if needed
         }));
         setProjects(transformedProjects);

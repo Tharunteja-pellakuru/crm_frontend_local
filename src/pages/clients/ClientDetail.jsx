@@ -19,7 +19,7 @@ import {
   Zap,
   Target,
   Pencil,
-  Flame,
+  Flame,    
   Sun,
   Snowflake,
   Search,
@@ -188,27 +188,27 @@ const ClientDetail = ({
       const countryName = client.country || "";
 
       setEditFormData({
-        name: (client.name || client.client_name || "").trim(),
-        email: (client.email || "").trim(),
-        phone: phone.trim(),
-        countryCode: dialCode.replace("+", "").trim(),
-        leadType: client.leadType || client.status || "Hot",
-        notes: (client.notes || client.message || "").trim(),
-        website: (client.website || client.website_url || "").trim(),
+        name: client.name || "",
+        email: client.email || "",
+        phone: phone,
+        countryCode: dialCode.replace("+", ""),
+        leadType: client.leadType || "Hot",
+        notes: client.notes || "",
+        website: client.website || "",
         projectCategory:
-          client.projectCategory || client.project_category || REVERSE_CATEGORY_MAP[client.industry] || 1,
-        country: countryName.trim(),
-        state: (client.state || client.client_state || client.clientState || "").trim(),
-        currency: (client.currency || client.client_currency || "INR").trim(),
-        organisationName: (client.organisationName || client.organisation_name || client.organisation || client.company || "").trim(),
-        clientStatus: client.clientStatus || client.client_status || client.status || "Active",
+          client.projectCategory || REVERSE_CATEGORY_MAP[client.industry] || 1,
+        country: countryName,
+        state: client.state || "",
+        currency: client.currency || "",
+        organisationName: client.organisationName || "",
+        clientStatus: client.clientStatus || "Active",
       });
     }
   }, [showEditModal, client]);
 
   const [isLogging, setIsLogging] = useState(false);
   const [logData, setLogData] = useState({
-    type: "call",
+    type: "call", 
     description: "",
     projectId: "",
     date: new Date().toISOString().split("T")[0],
@@ -337,8 +337,8 @@ const ClientDetail = ({
                       {client.projectName || client.company || "Global Project"}
                     </span>
                   )}
-                  <span className={`px-1.5 md:px-2 py-0.5 md:py-0.5 rounded-md text-[9px] md:text-[10px] font-bold tracking-widest border whitespace-nowrap leading-none ${client.status === "Active" ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-secondary/10 text-secondary border-secondary/20"}`}>
-                    {(client.status || "Active").toUpperCase()}
+                  <span className="px-1.5 md:px-3 py-0.5 md:py-1 bg-secondary/10 text-secondary rounded-md md:rounded-lg text-[9px] md:text-[14px] font-bold tracking-widest border border-secondary/20 whitespace-nowrap">
+                    {client.status}
                   </span>
                 </div>
               </div>

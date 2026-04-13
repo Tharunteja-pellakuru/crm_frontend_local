@@ -734,32 +734,59 @@ const ProjectBoard = ({
             </span>
           </div>
 
-          {/* Project Cards Grid */}
+          {/* Project Cards Grid — Month-wise grouping for all tabs */}
           {filteredProjects.length > 0 ? (
-            activeStage === "Live" || activeStage === "Completed" ? (
-              <div className="space-y-10">
-                {Object.entries(
-                  filteredProjects.reduce((groups, project) => {
-                    const date = project.deadline
-                      ? new Date(project.deadline)
+            <div className="space-y-10">
+              {(() => {
+                // Determine which date field to use for grouping based on the active tab
+                const getGroupDate = (project) => {
+                  if (activeStage === "In Progress") {
+                    // Group by onboarding month
+                    return project.onboardingDate
+                      ? new Date(project.onboardingDate)
                       : new Date();
-                    const month = date.toLocaleString("default", {
-                      month: "long",
-                      year: "numeric",
-                    });
-                    if (!groups[month]) groups[month] = [];
-                    groups[month].push(project);
-                    return groups;
-                  }, {}),
-                ).map(([month, monthProjects]) => (
+                  } else {
+                    // Completed → completion month, Hold → hold month
+                    // Both use updatedAt (the date the status was last changed)
+                    return project.updatedAt
+                      ? new Date(project.updatedAt)
+                      : project.onboardingDate
+                        ? new Date(project.onboardingDate)
+                        : new Date();
+                  }
+                };
+
+                // Build month groups
+                const groups = filteredProjects.reduce((acc, project) => {
+                  const date = getGroupDate(project);
+                  const monthKey = date.toLocaleString("default", {
+                    month: "long",
+                    year: "numeric",
+                  });
+                  if (!acc[monthKey]) acc[monthKey] = { date, projects: [] };
+                  acc[monthKey].projects.push(project);
+                  return acc;
+                }, {});
+
+                // Sort months in reverse chronological order (newest first)
+                const sortedMonths = Object.entries(groups).sort(
+                  ([, a], [, b]) => b.date - a.date
+                );
+
+                // Get the label for the month section based on active tab
+                const getMonthLabel = () => {
+                  if (activeStage === "In Progress") return "Onboarded";
+                  if (activeStage === "Completed") return "Completed";
+                  if (activeStage === "Hold") return "On Hold since";
+                  return "";
+                };
+
+                return sortedMonths.map(([month, { projects: monthProjects }]) => (
                   <div key={month} className="space-y-5">
                     <div className="flex items-center gap-4">
                       <div className="h-px flex-1 bg-slate-100" />
                       <h4 className="text-[13px] font-bold text-slate-400 tracking-[0.3em] uppercase bg-slate-50 px-4 py-1.5 rounded-full border border-slate-100 shadow-sm flex items-center gap-2">
-                        <span>{month}</span>
-                        <span className="text-[14px] text-secondary font-black bg-secondary/10 px-2 py-0.5 rounded-md border border-secondary/20 tracking-normal">
-                          {monthProjects.length}
-                        </span>
+                        <span>{getMonthLabel()} — {month}</span>
                       </h4>
                       <div className="h-px flex-1 bg-slate-100" />
                     </div>
@@ -780,25 +807,13 @@ const ProjectBoard = ({
                       ))}
                     </div>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-                {filteredProjects.map((project) => (
-                  <ProjectCard
-                    key={project.id}
-                    project={project}
-                    clients={clients}
-                    onEdit={handleEditProject}
-                    onUpdateProject={onUpdateProject}
-                    availableStatuses={getAvailableStatuses(project.status)}
-                    onSelectProject={onSelectProject}
-                    onDelete={setProjectToDelete}
-                  />
-                ))}
+                ));
+              })()}
+              {/* Add Project Button */}
+              <div className="flex justify-center">
                 <button
                   onClick={() => setShowAddModal(true)}
-                  className="py-6 border-2 border-dashed border-slate-100 rounded-2xl text-slate-300 text-[12px] font-bold  tracking-widest hover:border-secondary hover:text-secondary hover:bg-secondary/[0.02] transition-all group flex flex-col items-center justify-center gap-2 min-h-[100px]"
+                  className="w-full max-w-sm py-6 border-2 border-dashed border-slate-100 rounded-2xl text-slate-300 text-[12px] font-bold  tracking-widest hover:border-secondary hover:text-secondary hover:bg-secondary/[0.02] transition-all group flex flex-col items-center justify-center gap-2 min-h-[100px]"
                 >
                   <Plus
                     size={16}
@@ -808,7 +823,7 @@ const ProjectBoard = ({
                   Initiate Project
                 </button>
               </div>
-            )
+            </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-10">
               <button
