@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
+import { useScrollLock } from "../../hooks/useScrollLock";
 import { toast as hotToast } from "react-hot-toast";
 import {
   User,
@@ -136,6 +137,9 @@ const Settings = ({
   });
 
   const [activeDropdown, setActiveDropdown] = useState(null);
+
+  // Lock scroll when any modal is open
+  useScrollLock(showFollowupExportModal || showAddModelForm || !!editingModelId || showAddAdminForm || !!editingAdminId || showPasswordForm || confirmModal.show);
 
   const CustomDropdown = ({
     label,

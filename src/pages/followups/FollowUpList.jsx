@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { toast } from "react-hot-toast";
 import { createPortal } from "react-dom";
+import { useScrollLock } from "../../hooks/useScrollLock";
 import DatePicker from "../../components/ui/DatePicker";
 import {
   Clock,
@@ -101,6 +102,9 @@ const FollowUpList = ({
   const [isCompHourOpen, setIsCompHourOpen] = useState(false);
   const [isCompMinOpen, setIsCompMinOpen] = useState(false);
   const [isCompPeriodOpen, setIsCompPeriodOpen] = useState(false);
+
+  // Lock scroll when any modal is open
+  useScrollLock(showAddModal || showCompletionModal);
 
   const getClientById = (id, leadId, projectId) => {
     if (!id && !leadId && !projectId) return null;

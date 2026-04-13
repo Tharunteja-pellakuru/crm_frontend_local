@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { toast } from "react-hot-toast";
 import { createPortal } from "react-dom";
+import { useScrollLock } from "../../hooks/useScrollLock";
 import {
   Mail,
   Phone,
@@ -141,6 +142,9 @@ const EnquiryList = ({
   });
   const [showDeleteAllModal, setShowDeleteAllModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Lock scroll when any modal is open
+  useScrollLock(leadModalOpen || holdModalOpen || showSimulateForm || showDeleteAllModal);
 
   // Auto-select default model for AI Analysis
   useEffect(() => {

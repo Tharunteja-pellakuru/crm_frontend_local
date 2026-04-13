@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { toast } from "react-hot-toast";
 import { createPortal } from "react-dom";
+import { useScrollLock } from "../../hooks/useScrollLock";
 // MOCK_PROJECTS and MOCK_CLIENTS are now passed as props
 import {
   Calendar,
@@ -437,6 +438,9 @@ const ProjectBoard = ({
 
   const [isSubmitting, setIsSubmitting] = useState(false); // Added isSubmitting state
   const [showAddModal, setShowAddModal] = useState(false);
+
+  // Lock scroll when any modal is open
+  useScrollLock(showAddModal || !!projectToDelete);
   const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
   const [isPriorityDropdownOpen, setIsPriorityDropdownOpen] = useState(false);
   const [isClientStatusDropdownOpen, setIsClientStatusDropdownOpen] = useState(false);
@@ -975,7 +979,7 @@ const ProjectBoard = ({
                               onClick={() => {
                                 setSelectedClientId(client.id);
                                 setClientSearch(client.name);
-                                setIsClientDropdownOpen(false);
+                                setIsClientDropdownOpen(false); 
                                 setFormData((prev) => ({
                                   ...prev,
                                   name: client.name,
@@ -986,15 +990,16 @@ const ProjectBoard = ({
                                   currency: client.currency || "INR",
                                   organisationName: client.company || "",
                                   clientStatus: client.status || "Active",
+                                  projectCategory: client.projectCategory || 1,
                                 }));
                               }}
-                              className={`w-full text-left px-4 py-2.5 transition-colors border-b border-slate-50 last:border-0 ${
+                              className={`w-full text-left px-5 py-3 transition-colors ${
                                 selectedClientId === client.id
-                                  ? "bg-slate-100"
+                                  ? "bg-slate-100 border-l-4 border-secondary"
                                   : "hover:bg-slate-50"
                               }`}
                             >
-                              <p className="text-[13px] font-bold text-[#18254D]">
+                              <p className="text-[14px] font-bold text-[#18254D]">
                                 {client.name}
                               </p>
                               <p className="text-[14px] text-slate-400 font-medium mt-0.5">
@@ -1134,25 +1139,20 @@ const ProjectBoard = ({
 
                 {/* PROJECT CATEGORY */}
                 <div className="space-y-1.5 md:col-span-2">
-                  <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                    PROJECT CATEGORY
+                  <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1 flex items-center justify-between">
+                    <span>PROJECT CATEGORY <span className="text-error">*</span></span>
+                    <span className="text-[10px] text-slate-400 font-medium italic">Linked to Client's Lead category</span>
                   </label>
                   <div className="flex gap-2">
                     {[1, 2, 3].map((catId) => (
                       <button
                         key={`proj-new-cat-${catId}`}
                         type="button"
-                        onClick={() =>
-                          setFormData({
-                            ...formData,
-                            projectCategory: catId,
-                            projectStatus: "In Progress",
-                          })
-                        }
-                        className={`flex-1 flex items-center justify-center p-2.5 border-2 rounded-xl transition-all font-bold  text-[12px] tracking-widest ${
+                        disabled={true}
+                        className={`flex-1 py-2.5 rounded-xl text-[12px] font-bold tracking-widest border transition-all cursor-not-allowed ${
                           formData.projectCategory === catId
-                            ? "border-primary bg-primary/5 text-primary shadow-sm"
-                            : "border-slate-100 text-slate-400 hover:border-slate-200"
+                            ? "bg-[#18254D] text-white border-[#18254D] shadow-lg shadow-primary/20"
+                            : "bg-slate-50 text-slate-400 border-slate-200 opacity-50"
                         }`}
                       >
                         {CATEGORY_MAP[catId]}

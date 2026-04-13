@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
+import { useScrollLock } from "../../hooks/useScrollLock";
 import { Area, Line, ComposedChart, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { Users, UserPlus, Clock, CheckCircle2, ChevronRight, ChevronDown, Filter, Calendar, TrendingUp, X, Bell, Info, Inbox, Activity } from "lucide-react";
 
@@ -60,6 +61,9 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
   const [activeTaskTab, setActiveTaskTab] = useState("Pending");
   const [currentUser, setCurrentUser] = useState(null);
   const dropdownRef = useRef(null);
+
+  // Lock scroll when any modal is open
+  useScrollLock(showNotifications || showViewAllModal);
 
   // Load user from localStorage and sync year with data
   useEffect(() => {

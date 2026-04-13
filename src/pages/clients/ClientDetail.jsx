@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { toast } from "react-hot-toast";
 import { createPortal } from "react-dom";
+import { useScrollLock } from "../../hooks/useScrollLock";
 import {
   ArrowLeft,
   Mail,
@@ -130,6 +131,9 @@ const ClientDetail = ({
   const [isFollowPriorityOpen, setIsFollowPriorityOpen] = useState(false);
   const [isFollowStatusOpen, setIsFollowStatusOpen] = useState(false);
   const [isFollowProjectOpen, setIsFollowProjectOpen] = useState(false);
+
+  // Lock scroll when any modal is open
+  useScrollLock(showEditModal || showAddFollowUpModal || isLogging);
 
   const handleAddFollowUpSubmit = async (e) => {
     e.preventDefault();

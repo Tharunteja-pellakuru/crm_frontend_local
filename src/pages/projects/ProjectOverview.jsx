@@ -390,32 +390,23 @@ const ProjectOverview = ({
                 </div>
               )}
 
-              {isEditing ? (
-                <CustomDropdown
-                  label="Project Category"
-                  value={formData.category}
-                  field="category"
-                  options={[1, 2, 3]}
-                  icon={Tag}
-                />
-              ) : (
-                <div className="space-y-2">
-                  <label className="text-[11px] sm:text-[12px] font-bold text-primary tracking-widest ml-1 opacity-50">
-                    Project Category
-                  </label>
-                  <div className="flex flex-wrap items-center gap-3 px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-50 border border-slate-100 rounded-xl text-xs sm:text-sm font-bold text-[#18254D]">
-                    <Tag size={16} className="text-secondary shrink-0" />
-                    <span className="truncate">
-                      {CATEGORY_MAP[formData.category] || formData.category}
-                    </span>
-                    <span
-                      className={`sm:ml-auto px-2 py-0.5 text-[11px] md:text-[13px] border rounded-md whitespace-nowrap ${getCategoryColor(formData.category)}`}
-                    >
-                      {CATEGORY_MAP[formData.category] || formData.category}
-                    </span>
-                  </div>
+              <div className="space-y-2">
+                <label className="text-[11px] sm:text-[12px] font-bold text-primary tracking-widest ml-1 opacity-50 flex items-center justify-between">
+                  <span>Project Category</span>
+                  {isEditing && <span className="text-[10px] text-slate-400 font-medium italic">Linked to Lead category</span>}
+                </label>
+                <div className="flex flex-wrap items-center gap-3 px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-50 border border-slate-100 rounded-xl text-xs sm:text-sm font-bold text-[#18254D] opacity-70">
+                  <Tag size={16} className="text-secondary shrink-0" />
+                  <span className="truncate">
+                    {CATEGORY_MAP[formData.category] || formData.category}
+                  </span>
+                  <span
+                    className={`sm:ml-auto px-2 py-0.5 text-[11px] md:text-[13px] border rounded-md whitespace-nowrap ${getCategoryColor(formData.category)}`}
+                  >
+                    {CATEGORY_MAP[formData.category] || formData.category}
+                  </span>
                 </div>
-              )}
+              </div>
 
               <div className="space-y-2 md:col-span-2">
                 <label className="text-[12px] font-bold text-primary  tracking-widest ml-1 opacity-50">

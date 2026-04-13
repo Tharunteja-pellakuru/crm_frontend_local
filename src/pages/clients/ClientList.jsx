@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { toast } from "react-hot-toast";
 import { createPortal } from "react-dom";
+import { useScrollLock } from "../../hooks/useScrollLock";
 import {
   Search,
   Filter,
@@ -168,6 +169,9 @@ const ClientList = ({
     projectDescription: "",
     projectBudget: "",
   });
+
+  // Lock scroll when any modal is open
+  useScrollLock(showAddModal || showOnboardModal || showEditModal || showFollowUpModal);
 
   const [formData, setFormData] = useState({
     name: "",
