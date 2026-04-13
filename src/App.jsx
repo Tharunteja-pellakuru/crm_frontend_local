@@ -228,10 +228,10 @@ function AppRoutes() {
             isConverted: lead.lead_status === "Converted",
             leadType: lead.lead_status || "Warm",
             projectCategory: typeof lead.lead_category === 'string' 
-              ? (REVERSE_CATEGORY_MAP[lead.lead_category] || 1) 
+              ? (REVERSE_CATEGORY_MAP[lead.lead_category] || parseInt(lead.lead_category, 10) || 1) 
               : (lead.lead_category || 1),
             industry: typeof lead.lead_category === 'string' 
-              ? (REVERSE_CATEGORY_MAP[lead.lead_category] || 1) 
+              ? (REVERSE_CATEGORY_MAP[lead.lead_category] || parseInt(lead.lead_category, 10) || 1) 
               : (lead.lead_category || 1),
             website: lead.website_url || "",
             country: lead.client_country || lead.country || autoName || "",
@@ -320,7 +320,9 @@ function AppRoutes() {
           phone: c.phone || "",
           country_code: c.country_code || "",
           status: c.status || c.client_status || "Active",
-          projectCategory: c.projectCategory || c.project_category || 1,
+          projectCategory: typeof (c.projectCategory || c.project_category) === 'string'
+              ? (REVERSE_CATEGORY_MAP[c.projectCategory || c.project_category] || parseInt((c.projectCategory || c.project_category), 10) || 1)
+              : (c.projectCategory || c.project_category || 1),
           briefMessage: c.brief_message || "",
           notes: c.brief_message || "",
           website: c.website || c.website_url || "",
@@ -401,9 +403,9 @@ function AppRoutes() {
           deadline: p.deadline_date?.split("T")[0],
           onboardingDate: p.onboarding_date?.split("T")[0],
           priority: p.project_priority,
-          category: typeof p.project_category === 'string' 
-            ? (REVERSE_CATEGORY_MAP[p.project_category] || 1)
-            : (p.project_category || 1),
+          category: typeof p.project_category === 'string'
+              ? (REVERSE_CATEGORY_MAP[p.project_category] || parseInt(p.project_category, 10) || 1)
+              : (p.project_category || 1),
           scopeDocument: p.scope_document,
           updatedAt: p.updated_at?.split("T")[0],
           progress: 0, // Calculate or add to table if needed
@@ -660,7 +662,7 @@ function AppRoutes() {
       if (data.projectName) {
         formData.append("project_name", data.projectName);
         formData.append("project_description", data.projectDescription || "");
-        formData.append("project_category", CATEGORY_MAP[data.projectCategory] || "Tech");
+        formData.append("project_category", data.projectCategory || 1);
         formData.append("project_status", data.projectStatus || "In Progress");
         formData.append("project_priority", data.projectPriority || "High");
         formData.append("project_budget", parseInt(data.projectBudget) || 0);
@@ -735,8 +737,8 @@ function AppRoutes() {
               deadline: p.deadline_date?.split("T")[0],
               onboardingDate: p.onboarding_date?.split("T")[0],
               priority: p.project_priority,
-              category: typeof p.project_category === 'string' 
-                ? (REVERSE_CATEGORY_MAP[p.project_category] || 1)
+              category: typeof p.project_category === 'string'
+                ? (REVERSE_CATEGORY_MAP[p.project_category] || parseInt(p.project_category, 10) || 1)
                 : (p.project_category || 1),
               scopeDocument: p.scope_document,
               progress: 0,
@@ -772,6 +774,8 @@ function AppRoutes() {
       if (!existingLead) throw new Error("Lead not found");
 
       // 2. Update Lead Details (Name, Email, Phone, Category, Country)
+      // IMPORTANT: lead_status must ALWAYS stay "Converted" for converted leads.
+      // The leadType (Hot/Warm/Cold) is a visual sub-label stored in frontend state only.
       const leadPayload = {
         full_name: data.name || existingLead.name,
         email: data.email || existingLead.email,
@@ -779,7 +783,7 @@ function AppRoutes() {
         lead_category: data.projectCategory || existingLead.projectCategory || 1,
         country: data.country || existingLead.country || "",
         country_code: data.countryCode || existingLead.countryCode || "",
-        lead_status: data.leadType || (existingLead.isConverted ? "Converted" : (existingLead.status || "Lead")),
+        lead_status: "Converted",
         website_url: data.website || existingLead.website || "",
         message: data.projectDescription || data.notes || existingLead.notes || "",
       };
@@ -800,7 +804,10 @@ function AppRoutes() {
 
       if (!revisedLead) throw new Error("No lead data returned from server");
 
-      // 3. Update local states
+      // 3. Update local states — map backend column names to frontend property names
+      const visualLeadType = data.leadType || existingLead.leadType || "Converted";
+      const updatedCategory = parseInt(revisedLead.lead_category || data.projectCategory || existingLead.projectCategory || 1, 10);
+
       // Update Leads
       setLeads((prev) =>
         prev.map((l) =>
@@ -808,13 +815,42 @@ function AppRoutes() {
             ? { 
                 ...l, 
                 ...revisedLead,
-                // Ensure name mapping is consistent if backend uses full_name
                 name: revisedLead.full_name || l.name,
                 phone: revisedLead.phone_number || l.phone,
                 notes: revisedLead.message || l.notes,
+                projectCategory: updatedCategory,
+                industry: updatedCategory,
+                leadType: visualLeadType,
+                isConverted: true,
+                status: "Lead",
               }
             : l,
         ),
+      );
+
+      // Also update Clients
+      setClients((prev) =>
+        prev.map((c) =>
+          c.lead_id == id
+            ? {
+                ...c,
+                organisation_name: data.organisationName || c.organisation_name,
+                projectCategory: updatedCategory,
+                industry: updatedCategory,
+              }
+            : c,
+        ),
+      );
+
+      // Also update Projects
+      setProjects((prev) =>
+        prev.map((p) => {
+          const associatedClient = clients.find(cl => cl.id == p.clientId);
+          if (associatedClient && associatedClient.lead_id == id) {
+             return { ...p, category: updatedCategory };
+          }
+          return p;
+        })
       );
 
       // Sync Clients state (if this is a converted lead, it exists in both lists)
@@ -826,10 +862,27 @@ function AppRoutes() {
                 ...revisedLead,
                 name: revisedLead.full_name || c.name,
                 phone: revisedLead.phone_number || c.phone,
+                projectCategory: updatedCategory,
+                industry: updatedCategory,
+                leadType: visualLeadType,
               }
             : c,
         ),
       );
+
+      // Sync category to projects state: lead -> client -> project(s)
+      if (updatedCategory) {
+        const associatedClient = clients.find((c) => c.lead_id == id);
+        if (associatedClient) {
+          setProjects((prev) =>
+            prev.map((p) =>
+              p.clientId == associatedClient.id
+                ? { ...p, category: updatedCategory }
+                : p,
+            ),
+          );
+        }
+      }
 
       toast.success("Lead updated successfully!");
       return { success: true };
@@ -1110,6 +1163,21 @@ function AppRoutes() {
       setLeads((prev) => prev.map((l) => (l.lead_id == id ? finalLead : l)));
       setClients((prev) => prev.map((c) => (c.lead_id == id ? finalLead : c)));
 
+      // Sync category to projects state: lead -> client -> project(s)
+      const newCategoryNum = finalLead.projectCategory;
+      if (newCategoryNum) {
+        const associatedClient = clients.find((c) => c.lead_id == id);
+        if (associatedClient) {
+          setProjects((prev) =>
+            prev.map((p) =>
+              p.clientId == associatedClient.id
+                ? { ...p, category: newCategoryNum }
+                : p,
+            ),
+          );
+        }
+      }
+
       toast.success("Lead updated successfully!");
       return finalLead;
     } catch (error) {
@@ -1204,7 +1272,7 @@ function AppRoutes() {
       const formData = new FormData();
       formData.append("project_name", data.name);
       formData.append("project_description", data.description || "");
-      formData.append("project_category", CATEGORY_MAP[data.projectCategory] || "Tech");
+      formData.append("project_category", data.projectCategory || 1);
       formData.append("project_status", data.projectStatus || "Planning");
       formData.append("project_priority", data.projectPriority || "High");
       formData.append("project_budget", parseInt(data.budget) || 0);
@@ -1269,7 +1337,7 @@ function AppRoutes() {
       const formData = new FormData();
       formData.append("project_name", updated.name);
       formData.append("project_description", updated.description);
-      formData.append("project_category", CATEGORY_MAP[updated.category] || updated.category || "Tech");
+      formData.append("project_category", updated.category || 1);
       formData.append("project_status", updated.status);
       formData.append("project_priority", updated.priority);
       formData.append("project_budget", updated.budget);
@@ -1297,9 +1365,7 @@ function AppRoutes() {
           name: updated.name,
           description: updated.description,
           status: updated.status,
-          category: typeof updated.category === 'string' 
-            ? (REVERSE_CATEGORY_MAP[updated.category] || 1)
-            : (updated.category || 1),
+          category: updated.category || 1,
           priority: updated.priority,
           budget: updated.budget,
           onboardingDate: updated.onboardingDate,
@@ -1307,6 +1373,28 @@ function AppRoutes() {
           scopeDocument: result.project?.scope_document || updated.scopeDocument
         };
         setProjects((prev) => prev.map((p) => (p.id == updated.id ? updatedProject : p)));
+
+        // Sync category to leads and clients state: project -> client -> lead
+        const newCategoryNum = parseInt(updatedProject.category || 1, 10);
+        const associatedClient = clients.find((c) => c.id == updated.clientId);
+        if (associatedClient && associatedClient.lead_id) {
+          const leadId = associatedClient.lead_id;
+          setLeads((prev) =>
+            prev.map((l) =>
+              l.lead_id == leadId
+                ? { ...l, projectCategory: newCategoryNum, industry: newCategoryNum }
+                : l,
+            ),
+          );
+          setClients((prev) =>
+            prev.map((c) =>
+              c.lead_id == leadId
+                ? { ...c, projectCategory: newCategoryNum, industry: newCategoryNum }
+                : c,
+            ),
+          );
+        }
+
         toast.success("Project updated successfully!");
       } else {
         const errorData = await res.json();

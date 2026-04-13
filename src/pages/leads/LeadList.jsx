@@ -2320,12 +2320,16 @@ const LeadList = ({
                     </label>
                     <input
                       required
-                      readOnly
-                      disabled
                       type="text"
                       placeholder="e.g. Rahul Sharma"
-                      className="w-full px-3.5 py-2.5 bg-slate-100 text-slate-500 cursor-not-allowed border border-slate-200 rounded-xl focus:outline-none text-sm font-medium"
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
                       value={editConvertedData.name}
+                      onChange={(e) =>
+                        setEditConvertedData({
+                          ...editConvertedData,
+                          name: e.target.value,
+                        })
+                      }
                     />
                   </div>
 
@@ -2335,12 +2339,16 @@ const LeadList = ({
                     </label>
                     <input
                       required
-                      readOnly
-                      disabled
                       type="email"
                       placeholder="rahul.sharma@example.com"
-                      className="w-full px-3.5 py-2.5 bg-slate-100 text-slate-500 cursor-not-allowed border border-slate-200 rounded-xl focus:outline-none text-sm font-medium"
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
                       value={editConvertedData.email}
+                      onChange={(e) =>
+                        setEditConvertedData({
+                          ...editConvertedData,
+                          email: e.target.value,
+                        })
+                      }
                     />
                   </div>
                   <SearchableDropdown
@@ -2503,7 +2511,7 @@ const LeadList = ({
                                 Select Status
                               </p>
                             </div>
-                            {["Converted"].map((status) => (
+                            {["Hot", "Warm", "Cold", "Converted"].map((status) => (
                               <button
                                 key={`edit-status-${status}`}
                                 type="button"
