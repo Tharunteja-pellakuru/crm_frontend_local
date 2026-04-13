@@ -245,6 +245,48 @@ function AppRoutes() {
       console.error("[REFRESH] Failed to refresh projects:", e);
     }
   };
+
+  const refreshClients = async () => {
+    try {
+      const res = await fetch(`${BASE_URL}/api/get-clients`, {
+        headers: getAuthHeaders(),
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      const transformedClients = data.map((c) => ({
+        id: c.id?.toString() || c.client_id?.toString(),
+        name: c.name || c.client_name,
+        company: c.organisation_name || c.organisation || c.company || "",
+        organisation_name: c.organisation_name || c.organisation || c.company || "",
+        email: c.email || "",
+        phone: c.phone || "",
+        country_code: c.country_code || "",
+        status: c.status || c.client_status || "Active",
+        projectCategory: typeof (c.projectCategory || c.project_category) === 'string'
+            ? (REVERSE_CATEGORY_MAP[c.projectCategory || c.project_category] || parseInt((c.projectCategory || c.project_category), 10) || 1)
+            : (c.projectCategory || c.project_category || 1),
+        briefMessage: c.brief_message || "",
+        notes: c.brief_message || "",
+        website: c.website || c.website_url || "",
+        country: c.client_country || c.country || "India",
+        state: c.client_state || c.state || "",
+        currency: c.client_currency || c.currency || "INR",
+        lead_id: c.lead_id,
+        isConverted: !!c.lead_id,
+        avatar: `https://picsum.photos/100/100?random=${c.client_id || c.id}`,
+        joinedDate: c.created_at?.split("T")[0] || new Date().toISOString().split("T")[0],
+        lastContact: c.updated_at?.split("T")[0] || new Date().toISOString().split("T")[0],
+      }));
+      setClients((prev) => {
+        const leads = prev.filter(
+          (c) => c.status === "Lead" || c.status === "Dismissed",
+        );
+        return [...transformedClients, ...leads];
+      });
+    } catch (e) {
+      console.error("[REFRESH] Failed to refresh clients:", e);
+    }
+  };
   // --- End refresh helpers ---
 
   // Fetch AI models on mount
@@ -395,49 +437,7 @@ function AppRoutes() {
     }
 
     setClientsLoading(true);
-    fetch(`${BASE_URL}/api/get-clients`, {
-      headers: getAuthHeaders(),
-    })
-      .then((res) => (res.ok ? res.json() : []))
-      .then((data) => {
-        console.log("Raw clients data fetched:", data);
-        const transformedClients = data.map((c) => ({
-          id: c.id?.toString() || c.client_id?.toString(),
-          name: c.name || c.client_name,
-          company: c.organisation_name || c.organisation || c.company || "",
-          organisation_name: c.organisation_name || c.organisation || c.company || "",
-          email: c.email || "", 
-          phone: c.phone || "",
-          country_code: c.country_code || "",
-          status: c.status || c.client_status || "Active",
-          projectCategory: typeof (c.projectCategory || c.project_category) === 'string'
-              ? (REVERSE_CATEGORY_MAP[c.projectCategory || c.project_category] || parseInt((c.projectCategory || c.project_category), 10) || 1)
-              : (c.projectCategory || c.project_category || 1),
-          briefMessage: c.brief_message || "",
-          notes: c.brief_message || "",
-          website: c.website || c.website_url || "",
-          country: c.client_country || c.country || "India",
-          state: c.client_state || c.state || "",
-          currency: c.client_currency || c.currency || "INR",
-          lead_id: c.lead_id,
-          isConverted: !!c.lead_id,
-          avatar: `https://picsum.photos/100/100?random=${c.client_id}`,
-          joinedDate: c.created_at?.split("T")[0] || new Date().toISOString().split("T")[0],
-          lastContact: c.updated_at?.split("T")[0] || new Date().toISOString().split("T")[0],
-        }));
-        setClients((prev) => {
-          const leads = prev.filter(
-            (c) => c.status === "Lead" || c.status === "Dismissed",
-          );
-          return [...transformedClients, ...leads];
-        });
-        setClientsLoading(false);
-      })
-      .catch(() => {
-        console.log("Failed to fetch clients");
-        setClients([]);
-        setClientsLoading(false);
-      });
+    refreshClients().finally(() => setClientsLoading(false));
   }, [isLoggedIn]);
 
   // Fetch enquiries from API
@@ -1490,9 +1490,10 @@ function AppRoutes() {
           );
         }
 
-        // Re-fetch both leads and projects from server to ensure full UI sync
+        // Re-fetch everything from server to ensure full UI sync
         await refreshLeads();
         await refreshProjects();
+        await refreshClients();
         toast.success("Project updated successfully!");
       } else {
         const errorData = await res.json();
