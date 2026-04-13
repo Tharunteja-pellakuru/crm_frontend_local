@@ -138,8 +138,6 @@ const Settings = ({
 
   const [activeDropdown, setActiveDropdown] = useState(null);
 
-  // Lock scroll when any modal is open
-  useScrollLock(showFollowupExportModal || showAddModelForm || !!editingModelId || showAddAdminForm || !!editingAdminId || showPasswordForm || confirmModal.show);
 
   const CustomDropdown = ({
     label,
@@ -294,6 +292,9 @@ const Settings = ({
       onConfirm,
     });
   };
+
+  // Lock scroll when any modal is open
+  useScrollLock(showFollowupExportModal || showAddModelForm || !!editingModelId || showAddAdminForm || !!editingAdminId || showPasswordForm || confirmModal.show);
 
   const hideConfirmModal = () => {
     setConfirmModal({

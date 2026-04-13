@@ -170,8 +170,6 @@ const ClientList = ({
     projectBudget: "",
   });
 
-  // Lock scroll when any modal is open
-  useScrollLock(showAddModal || showOnboardModal || showEditModal || showFollowUpModal);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -209,6 +207,9 @@ const ClientList = ({
     projectCategory: 1,
     country_code: "",
   });
+
+  // Lock scroll when any modal is open
+  useScrollLock(showAddModal || showOnboardModal || showEditModal || showFollowUpModal);
 
   const handleEditClick = (client) => {
     setEditingClient(client);
