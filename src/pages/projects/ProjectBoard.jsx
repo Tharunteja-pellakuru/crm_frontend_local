@@ -1061,7 +1061,7 @@ const ProjectBoard = ({
                     <label className="text-[14px] font-bold text-slate-400 tracking-widest ml-1">
                       CLIENT STATUS
                     </label>
-                    <p className="px-3.5 py-2 bg-slate-100 border border-slate-200 rounded-xl text-[13px] font-bold text-secondary truncate">
+                    <p className="px-3.5 py-2 bg-slate-100 border border-slate-200 rounded-xl text-[13px] font-medium text-secondary truncate">
                       {formData.clientStatus || "—"}
                     </p>
                   </div>
