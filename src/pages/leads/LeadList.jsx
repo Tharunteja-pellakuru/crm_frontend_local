@@ -1015,12 +1015,15 @@ const LeadList = ({
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     setOnboardingLeadId(lead.lead_id);
+                                    const initialCountry = lead.country || "";
+                                    const countryCurrency = countryToCurrency[initialCountry]?.code || "";
+                                    
                                     setOnboardingData({
                                       name: lead.name,
                                       email: lead.email,
                                       phone: lead.phone,
                                       organisationName: lead.company || "",
-                                      country: lead.country || "",
+                                      country: initialCountry,
                                       state: lead.state || "",
                                       website: lead.website || "",
                                       clientType: "New",
@@ -1036,6 +1039,7 @@ const LeadList = ({
                                       scopeDocument: "",
                                       projectStatus: "In Progress",
                                       clientStatus: "Active",
+                                      currency: lead.currency || countryCurrency || "",
                                     });
                                     setShowOnboardModal(true);
                                   }}
@@ -1192,6 +1196,9 @@ const LeadList = ({
                             onClick={(e) => {
                               e.stopPropagation();
                               setOnboardingLeadId(lead.lead_id);
+                              const initialCountry = lead.country || "";
+                              const countryCurrency = countryToCurrency[initialCountry]?.code || "";
+                              
                               setOnboardingData({
                                 name: lead.name,
                                 email: lead.email,
@@ -1208,6 +1215,9 @@ const LeadList = ({
                                 projectStatus: "Planning",
                                 projectCategory: lead.projectCategory || 1,
                                 clientStatus: "Active",
+                                currency: lead.currency || countryCurrency || "",
+                                country: initialCountry,
+                                state: lead.state || "",
                               });
                               setShowOnboardModal(true);
                             }}

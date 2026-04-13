@@ -63,7 +63,7 @@ const SearchableDropdown = ({
     const optionValue =
       typeof option === "string"
         ? option
-        : option.id || option.value || option.name || option.code;
+        : option.id || option.value || option.code || option.name || option.label;
     onChange(optionValue);
     setIsOpen(false);
     setSearchTerm("");
@@ -125,11 +125,11 @@ const SearchableDropdown = ({
                   const optionValue =
                     typeof option === "string"
                       ? option
-                      : option.value || option.code || option.id || option.name;
+                      : option.id || option.value || option.code || option.name || option.label;
                   const optionLabel =
                     typeof option === "string"
                       ? option
-                      : (option.name || option.label || option.code);
+                      : (option.label || option.name || option.code);
                   const isSelected = optionValue === value;
 
                   return (
