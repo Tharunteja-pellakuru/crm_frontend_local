@@ -1513,7 +1513,7 @@ const ClientList = ({
                         CLIENT STATUS
                       </label>
                       <select
-                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-bold"
+                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
                         value={formData.clientStatus || "Active"}
                         onChange={(e) =>
                           setFormData({
@@ -2211,7 +2211,7 @@ const ClientList = ({
                     CLIENT STATUS
                   </label>
                   <select
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-bold"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
                     value={onboardingData.clientStatus}
                     onChange={(e) =>
                       setOnboardingData({
@@ -2687,7 +2687,7 @@ const ClientList = ({
                       onClick={() =>
                         setIsEditStatusDropdownOpen(!isEditStatusDropdownOpen)
                       }
-                      className="w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold shadow-sm hover:border-secondary transition-all"
+                      className="w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium shadow-sm hover:border-secondary transition-all"
                     >
                       <span className="text-primary truncate">
                         {editFormData.clientStatus || "Select Status"}
@@ -2708,7 +2708,7 @@ const ClientList = ({
                         />
                         <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[120] animate-fade-in-up origin-top">
                           <div className="bg-[#18254D] px-4 py-3 border-b border-white/10">
-                            <p className="text-[14px] font-bold text-white/50  tracking-widest">
+                            <p className="text-[14px] font-medium text-white/50  tracking-widest">
                               Select Status
                             </p>
                           </div>
@@ -2724,7 +2724,7 @@ const ClientList = ({
                                   });
                                   setIsEditStatusDropdownOpen(false);
                                 }}
-                                className={`w-full text-left px-4 py-3 text-[12px] font-bold  tracking-widest transition-colors ${
+                                className={`w-full text-left px-4 py-3 text-[12px] font-medium  tracking-widest transition-colors ${
                                   editFormData.clientStatus === status
                                     ? "bg-slate-100 text-secondary"
                                     : "text-[#18254D] hover:bg-slate-50"
