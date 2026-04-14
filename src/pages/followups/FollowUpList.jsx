@@ -980,7 +980,7 @@ const FollowUpList = ({
       {showAddModal &&
         createPortal(
           <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[99999] flex items-center justify-center p-4 overflow-y-auto custom-scrollbar">
-            <div className="bg-white w-full max-w-xl rounded-xl shadow-2xl border border-slate-200 animate-fade-in my-auto">
+            <div className="bg-white w-full max-w-lg rounded-xl shadow-2xl border border-slate-200 animate-fade-in my-auto max-h-[90vh] flex flex-col">
               <div className="bg-primary p-4 text-white relative rounded-t-xl">
                 <button
                   onClick={() => {
@@ -1012,8 +1012,8 @@ const FollowUpList = ({
                     : "Create a new follow-up task"}
                 </p>
               </div>
-              <form onSubmit={handleSubmit} className="p-5 space-y-3">
-                <div className="space-y-3">
+              <form onSubmit={handleSubmit} className="p-4 space-y-2 overflow-y-auto no-scrollbar">
+                <div className="space-y-2">
                   {typeFilter === "Active" ? (
                     <div className="space-y-1.5">
                       <label className="text-[14px] font-bold text-primary tracking-widest ml-1">
@@ -1884,10 +1884,10 @@ const FollowUpList = ({
                     </div>
                   </div>
                 </div>
-                <div className="pt-2">
+                <div className="pt-1 shrink-0">
                   <button
                     type="submit"
-                    className="w-full py-3 bg-[#18254D] text-white rounded-xl text-[13px] font-bold  tracking-[0.25em] shadow-xl active:scale-[0.97] transition-all hover:bg-[#1e2e5e] hover:shadow-2xl flex items-center justify-center gap-3"
+                    className="w-full py-2.5 bg-[#18254D] text-white rounded-xl text-[13px] font-bold tracking-[0.2em] shadow-lg active:scale-[0.97] transition-all hover:bg-[#1e2e5e] flex items-center justify-center gap-2"
                   >
                     {formData.id ? "Save Changes" : "Create Follow-up"}
                   </button>

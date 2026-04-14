@@ -33,10 +33,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import DatePicker from "../../components/ui/DatePicker";
-import {
-  CATEGORY_MAP,
-  REVERSE_CATEGORY_MAP,
-} from "../../constants/categoryConstants";
+// CATEGORY_MAP removed - category now managed at Project level only
 import { countries } from "../../utils/countries";
 import SearchableDropdown from "../../components/common/SearchableDropdown";
 import { validateForm, EMAIL_PATTERN } from "../../utils/validation";
@@ -121,15 +118,12 @@ const EnquiryList = ({
     phone: "",
     website: "",
     leadType: "Hot",
-    leadCategory: 1,
     country: "",
     countryCode: "",
     notes: "",
   });
   const [showSimulateForm, setShowSimulateForm] = useState(false);
   const [isEnquiryStatusDropdownOpen, setIsEnquiryStatusDropdownOpen] =
-    useState(false);
-  const [isEnquiryCategoryDropdownOpen, setIsEnquiryCategoryDropdownOpen] =
     useState(false);
   const [holdModalOpen, setHoldModalOpen] = useState(false);
   const [holdReason, setHoldReason] = useState("");
@@ -391,7 +385,6 @@ const EnquiryList = ({
       phone: enquiry.phone,
       website: enquiry.website,
       leadType: "Hot",
-      leadCategory: 1,
       country: enquiry.countryName || enquiry.country || "",
       countryCode: enquiry.countryCode || "",
       notes: enquiry.message,
@@ -423,9 +416,8 @@ const EnquiryList = ({
         pattern: /^\d+$/,
         errorMessage: "Phone Number must be at least 10 digits.",
       },
-      country: { required: true, label: "Country Code" },
+      countryCode: { required: true, label: "Country Code" },
       leadType: { required: true, label: "Lead Status" },
-      leadCategory: { required: true, label: "Lead Category" },
     });
 
     if (!isValid) return;
@@ -1249,17 +1241,16 @@ const EnquiryList = ({
                       }
                       options={countries.map((c) => ({
                         name: `${c.name} (${c.code})`,
-                        label: c.code,
-                        value: c.name,
+                        value: c.code,
                         code: c.code,
                       }))}
-                      value={promoteFormData.country}
+                      value={promoteFormData.countryCode}
                       onChange={(val) => {
-                        const selectedCountry = countries.find(c => c.name === val || c.code === val);
+                        const selectedCountry = countries.find(c => c.code === val);
                         setPromoteFormData({ 
                           ...promoteFormData, 
-                          country: selectedCountry ? selectedCountry.name : val,
-                          countryCode: selectedCountry ? selectedCountry.code : ""
+                          country: selectedCountry ? selectedCountry.name : "",
+                          countryCode: selectedCountry ? selectedCountry.code : val
                         });
                       }}
                       placeholder="Search country..."
@@ -1299,72 +1290,6 @@ const EnquiryList = ({
                         })
                       }
                     />
-                  </div>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-[14px] font-bold text-primary tracking-widest ml-1 uppercase">
-                    Lead Category <span className="text-rose-500">*</span>
-                  </label>
-                  <div className="relative">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setIsEnquiryCategoryDropdownOpen(
-                          !isEnquiryCategoryDropdownOpen,
-                        )
-                      }
-                      className="w-full h-[46px] flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold shadow-sm hover:border-secondary transition-all"
-                    >
-                      <span className="text-primary truncate">
-                        {CATEGORY_MAP[promoteFormData.leadCategory] ||
-                          "Select Category"}
-                      </span>
-                      <ChevronDown
-                        size={16}
-                        className={`text-slate-400 transition-transform ${
-                          isEnquiryCategoryDropdownOpen ? "rotate-180" : ""
-                        }`}
-                      />
-                    </button>
-
-                    {isEnquiryCategoryDropdownOpen && (
-                      <>
-                        <div
-                          className="fixed inset-0 z-[80]"
-                          onClick={() =>
-                            setIsEnquiryCategoryDropdownOpen(false)
-                          }
-                        />
-                        <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top">
-                          <div className="bg-[#18254D] px-4 py-3 border-b border-white/10">
-                            <p className="text-[14px] font-bold text-white/50  tracking-widest">
-                              Select Category
-                            </p>
-                          </div>
-                          {[1, 2, 3].map((catId) => (
-                            <button
-                              key={`enq-cat-${catId}`}
-                              type="button"
-                              onClick={() => {
-                                setPromoteFormData({
-                                  ...promoteFormData,
-                                  leadCategory: catId,
-                                });
-                                setIsEnquiryCategoryDropdownOpen(false);
-                              }}
-                              className={`w-full text-left px-4 py-2.5 text-[12px] font-bold  tracking-widest transition-colors ${
-                                promoteFormData.leadCategory === catId
-                                  ? "bg-slate-100 text-secondary"
-                                  : "text-[#18254D] hover:bg-slate-50"
-                              }`}
-                            >
-                              {CATEGORY_MAP[catId]}
-                            </button>
-                          ))}
-                        </div>
-                      </>
-                    )}
                   </div>
                 </div>
 

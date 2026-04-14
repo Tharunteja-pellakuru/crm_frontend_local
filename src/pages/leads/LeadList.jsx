@@ -68,19 +68,15 @@ const LeadList = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("All");
   const [leadTypeFilter, setLeadTypeFilter] = useState("All");
-  const [categoryFilter, setCategoryFilter] = useState("All");
   const [isTierDropdownOpen, setIsTierDropdownOpen] = useState(false);
   const [isAddStatusDropdownOpen, setIsAddStatusDropdownOpen] = useState(false);
-  const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
   const [isEditCategoryDropdownOpen, setIsEditCategoryDropdownOpen] =
     useState(false);
   const [isEditStatusDropdownOpen, setIsEditStatusDropdownOpen] =
     useState(false);
 
   const tierButtonRef = useRef(null);
-  const categoryButtonRef = useRef(null);
   const [tierDropdownStyle, setTierDropdownStyle] = useState({});
-  const [categoryDropdownStyle, setCategoryDropdownStyle] = useState({});
 
   useEffect(() => {
     if (isTierDropdownOpen && tierButtonRef.current) {
@@ -96,23 +92,9 @@ const LeadList = ({
   }, [isTierDropdownOpen]);
 
   useEffect(() => {
-    if (isCategoryDropdownOpen && categoryButtonRef.current) {
-      const rect = categoryButtonRef.current.getBoundingClientRect();
-      setCategoryDropdownStyle({
-        position: "fixed",
-        top: `${rect.bottom + 8}px`,
-        left: `${rect.left}px`,
-        width: `${rect.width}px`,
-        zIndex: 9999,
-      });
-    }
-  }, [isCategoryDropdownOpen]);
-
-  useEffect(() => {
     const handleScrollResize = (e) => {
       if (
         isTierDropdownOpen ||
-        isCategoryDropdownOpen ||
         isEditCategoryDropdownOpen ||
         isEditStatusDropdownOpen
       ) {
@@ -120,7 +102,6 @@ const LeadList = ({
           e.type === "scroll" &&
           e.target.closest &&
           (e.target.closest(".tier-dropdown") ||
-            e.target.closest(".category-dropdown") ||
             e.target.closest(".edit-category-dropdown") ||
             e.target.closest(".edit-status-dropdown") ||
             e.target.closest(".country-dropdown"))
@@ -128,14 +109,12 @@ const LeadList = ({
           return;
         }
         setIsTierDropdownOpen(false);
-        setIsCategoryDropdownOpen(false);
         setIsEditCategoryDropdownOpen(false);
         setIsEditStatusDropdownOpen(false);
       }
     };
     if (
       isTierDropdownOpen ||
-      isCategoryDropdownOpen ||
       isEditCategoryDropdownOpen ||
       isEditStatusDropdownOpen
     ) {
@@ -148,7 +127,6 @@ const LeadList = ({
     };
   }, [
     isTierDropdownOpen,
-    isCategoryDropdownOpen,
     isEditCategoryDropdownOpen,
     isEditStatusDropdownOpen,
   ]);
@@ -185,8 +163,6 @@ const LeadList = ({
     useState(false);
   const [showFollowUpModal, setShowFollowUpModal] = useState(false);
   const [followUpLeadId, setFollowUpLeadId] = useState(null);
-  const [isAddCategoryDropdownOpen, setIsAddCategoryDropdownOpen] =
-    useState(false);
   const [showEditConvertedModal, setShowEditConvertedModal] = useState(false);
   const [editingConvertedLeadId, setEditingConvertedLeadId] = useState(null);
   const [editConvertedData, setEditConvertedData] = useState({
@@ -415,7 +391,6 @@ const LeadList = ({
 
     let matchesStatus = filterStatus === "All" || lead.status === filterStatus;
     let matchesLeadType = true;
-    let matchesCategory = true;
 
     // Sub-filter by Lead View (Pending, Converted, Dismissed)
     if (leadView === "Pending") {
@@ -433,11 +408,6 @@ const LeadList = ({
     matchesLeadType =
       leadTypeFilter === "All" || lead.leadType === leadTypeFilter;
 
-    // Filter by category (Tech/Media/Both)
-    matchesCategory =
-      categoryFilter === "All" ||
-      (lead.projectCategory || 1) === categoryFilter;
-
     // Date Range Filter
     if (startDate || endDate) {
       const joinedDate = new Date(lead.joinedDate);
@@ -449,7 +419,7 @@ const LeadList = ({
       }
     }
 
-    return matchesSearch && matchesStatus && matchesLeadType && matchesCategory;
+    return matchesSearch && matchesStatus && matchesLeadType;
   });
 
   const totalPages = Math.ceil(filteredLeads.length / RECORDS_PER_PAGE);
@@ -641,7 +611,6 @@ const LeadList = ({
       },
       countryCode: { required: true, label: "Country Code" },
       leadType: { required: true, label: "Lead Status" },
-      projectCategory: { required: true, label: "Lead Category" },
     });
 
     if (!isValid) return;
@@ -796,66 +765,6 @@ const LeadList = ({
               </div>
             )}
 
-            {/* Category Dropdown */}
-            <div className="col-span-1 xl:flex-1 relative z-50">
-              <button
-                ref={categoryButtonRef}
-                onClick={() =>
-                  setIsCategoryDropdownOpen(!isCategoryDropdownOpen)
-                }
-                className="w-full h-[38px] flex items-center justify-between gap-3 px-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-[12px] font-bold  tracking-widest text-[#18254D] hover:bg-white hover:border-slate-200 transition-all shadow-sm shadow-slate-200/50 group"
-              >
-                <span>
-                  {categoryFilter === "All"
-                    ? "All Categories"
-                    : CATEGORY_MAP[categoryFilter]}
-                </span>
-                <ChevronDown
-                  size={16}
-                  strokeWidth={2.5}
-                  className={`transition-transform duration-300 ${isCategoryDropdownOpen ? "rotate-180" : ""}`}
-                />
-              </button>
-
-              {isCategoryDropdownOpen &&
-                createPortal(
-                  <>
-                    <div
-                      className="fixed inset-0 z-[9998]"
-                      onClick={() => setIsCategoryDropdownOpen(false)}
-                    />
-                    <div
-                      className="category-dropdown bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[9999] animate-fade-in-up origin-top"
-                      style={categoryDropdownStyle}
-                    >
-                      {["All", 1, 2, 3].map((catId) => (
-                        <button
-                          key={catId}
-                          onClick={() => {
-                            setCategoryFilter(catId);
-                            setIsCategoryDropdownOpen(false);
-                          }}
-                          className={`w-full text-left px-4 py-2.5 text-[12px] font-bold  tracking-wider transition-colors ${
-                            catId === "All"
-                              ? categoryFilter === "All"
-                                ? "bg-[#18254D] text-white"
-                                : "text-[#18254D] hover:bg-slate-50"
-                              : categoryFilter === catId
-                                ? "bg-secondary/10 text-secondary border-l-4 border-secondary"
-                                : "text-[#18254D] hover:bg-slate-50"
-                          }`}
-                        >
-                          {catId === "All"
-                            ? "All Categories"
-                            : CATEGORY_MAP[catId]}
-                        </button>
-                      ))}
-                    </div>
-                  </>,
-                  document.body,
-                )}
-            </div>
-
             {/* Date Filters */}
             <div className="col-span-1 xl:flex-1 relative z-50">
               <DatePicker
@@ -920,9 +829,6 @@ const LeadList = ({
                     Contact Details
                   </th>
                   <th className="px-6 py-4 text-left text-[12px] font-bold text-slate-400  tracking-widest border-b border-slate-100">
-                    Lead Category
-                  </th>
-                  <th className="px-6 py-4 text-left text-[12px] font-bold text-slate-400  tracking-widest border-b border-slate-100">
                     Lead Status
                   </th>
                   <th className="px-6 py-4 text-right text-[12px] font-bold text-slate-400  tracking-widest border-b border-slate-100">
@@ -963,18 +869,6 @@ const LeadList = ({
                       </td>
                       <td className="px-6 py-4">
                         {renderContactDetails(lead)}
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          <div
-                            className={`w-2 h-2 rounded-full ${lead.projectCategory === 1 ? "bg-secondary" : lead.projectCategory === 2 ? "bg-blue-400" : lead.projectCategory === 3 ? "bg-purple-400" : "bg-slate-300"}`}
-                          />
-                          <span className="text-sm font-bold text-primary">
-                            {CATEGORY_MAP[lead.projectCategory] ||
-                              lead.industry ||
-                              "Other"}
-                          </span>
-                        </div>
                       </td>
                       <td className="px-6 py-4">
                         {lead.status === "Lead" ? (
@@ -1123,15 +1017,6 @@ const LeadList = ({
                     <div className="min-w-0">
                       <div className="font-bold text-sm text-primary truncate">
                         {lead.name}
-                      </div>
-                      <div className="flex items-center gap-1.5 mt-0.5">
-                        <span
-                          className={`px-2 py-0.5 text-[13px] font-bold tracking-widest border rounded-md ${lead.projectCategory === 1 ? "bg-secondary/10 text-secondary border-secondary/30" : lead.projectCategory === 2 ? "bg-warning/10 text-warning border-warning/30" : "bg-purple-500/10 text-purple-500 border-purple-500/30"}`}
-                        >
-                          {CATEGORY_MAP[lead.projectCategory] ||
-                            lead.projectCategory ||
-                            "Tech"}
-                        </span>
                       </div>
                     </div>
                   </div>
@@ -1407,17 +1292,16 @@ const LeadList = ({
                     }
                     options={countries.map((c) => ({
                       name: `${c.name} (${c.code})`,
-                      label: c.code,
-                      value: c.name,
+                      value: c.code,
                       code: c.code,
                     }))}
-                    value={formData.country}
+                    value={formData.countryCode}
                     onChange={(val) => {
-                      const selectedCountry = countries.find(c => c.name === val || c.code === val);
+                      const selectedCountry = countries.find(c => c.code === val);
                       setFormData({ 
                         ...formData, 
-                        country: selectedCountry ? selectedCountry.name : val,
-                        countryCode: selectedCountry ? selectedCountry.code : ""
+                        country: selectedCountry ? selectedCountry.name : "",
+                        countryCode: selectedCountry ? selectedCountry.code : val
                       });
                     }}
                     placeholder="Select Country Code"
@@ -1455,70 +1339,6 @@ const LeadList = ({
                         setFormData({ ...formData, website: e.target.value })
                       }
                     />
-                  </div>
-
-                  <div className="md:col-span-2 space-y-2">
-                    <label className="text-[12px] font-bold text-[#18254D] tracking-widest ml-1 uppercase">
-                      LEAD CATEGORY <span className="text-rose-500">*</span>
-                    </label>
-                    <div className="relative">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setIsAddCategoryDropdownOpen(
-                            !isAddCategoryDropdownOpen,
-                          )
-                        }
-                        className="w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold shadow-sm hover:border-secondary transition-all"
-                      >
-                        <span className="text-primary truncate">
-                          {CATEGORY_MAP[formData.projectCategory] ||
-                            "Select Category"}
-                        </span>
-                        <ChevronDown
-                          size={16}
-                          className={`text-slate-400 transition-transform ${
-                            isAddCategoryDropdownOpen ? "rotate-180" : ""
-                          }`}
-                        />
-                      </button>
-
-                      {isAddCategoryDropdownOpen && (
-                        <>
-                          <div
-                            className="fixed inset-0 z-[80]"
-                            onClick={() => setIsAddCategoryDropdownOpen(false)}
-                          />
-                          <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top">
-                            <div className="bg-[#18254D] px-4 py-3 border-b border-white/10">
-                              <p className="text-[14px] font-bold text-white/50  tracking-widest">
-                                Select Category
-                              </p>
-                            </div>
-                            {[1, 2, 3].map((catId) => (
-                              <button
-                                key={catId}
-                                type="button"
-                                onClick={() => {
-                                  setFormData({
-                                    ...formData,
-                                    projectCategory: catId,
-                                  });
-                                  setIsAddCategoryDropdownOpen(false);
-                                }}
-                                className={`w-full text-left px-4 py-2.5 text-[12px] font-bold  tracking-widest transition-colors ${
-                                  formData.projectCategory === catId
-                                    ? "bg-slate-100 text-secondary"
-                                    : "text-[#18254D] hover:bg-slate-50"
-                                }`}
-                              >
-                                {CATEGORY_MAP[catId]}
-                              </button>
-                            ))}
-                          </div>
-                        </>
-                      )}
-                    </div>
                   </div>
 
                   <div className="md:col-span-2 space-y-2">
@@ -2575,8 +2395,8 @@ const LeadList = ({
 
       {showFollowUpModal &&
         createPortal(
-          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[99999] flex items-start justify-center p-4 sm:p-6 overflow-y-auto no-scrollbar">
-            <div className="bg-white w-full max-w-xl rounded-xl shadow-2xl border border-slate-200 overflow-hidden animate-fade-in my-auto flex flex-col max-h-[90vh]">
+          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[99999] flex items-center justify-center p-4 overflow-y-auto no-scrollbar">
+            <div className="bg-white w-full max-w-md rounded-xl shadow-2xl border border-slate-200 overflow-hidden animate-fade-in flex flex-col max-h-[85vh]">
               <div className="bg-primary p-4 text-white relative">
                 <button
                   onClick={() => setShowFollowUpModal(false)}
@@ -2625,7 +2445,7 @@ const LeadList = ({
                     }
                   }
                 }}
-                className="p-5 space-y-4 overflow-y-auto no-scrollbar"
+                className="p-4 space-y-3 overflow-y-auto no-scrollbar"
               >
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-2">
@@ -2697,7 +2517,7 @@ const LeadList = ({
                   <textarea
                     required
                     placeholder="e.g. Discussed budget constraints and finalized timeline..."
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 focus:outline-none text-sm font-medium min-h-[100px] resize-none"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 focus:outline-none text-sm font-medium min-h-[80px] resize-none"
                     value={followUpData.description}
                     onChange={(e) =>
                       setFollowUpData({
@@ -2708,12 +2528,12 @@ const LeadList = ({
                   />
                 </div>
 
-                <div className="pt-2 shrink-0">
+                <div className="pt-1 shrink-0">
                   <button
                     type="submit"
-                    className="w-full py-3 bg-primary text-white rounded-2xl hover:bg-slate-800 text-[13px] font-bold  tracking-[0.3em] transition-all shadow-lg active:scale-95 flex items-center justify-center gap-3"
+                    className="w-full py-2.5 bg-primary text-white rounded-xl hover:bg-slate-800 text-[13px] font-bold tracking-[0.2em] transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2"
                   >
-                    <MessageSquare size={18} />
+                    <MessageSquare size={16} />
                     Save & View Conversations
                   </button>
                 </div>

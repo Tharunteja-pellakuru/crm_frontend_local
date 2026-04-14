@@ -636,8 +636,6 @@ function AppRoutes() {
           country: data.country || "",
           country_code: data.countryCode || "",
           enquiry_id: data.enquiry_id || null,
-          lead_category:
-            data.projectCategory || data.leadCategory || REVERSE_CATEGORY_MAP[data.industry] || 1,
         };
 
         const res = await fetch(`${BASE_URL}/api/add-lead`, {
@@ -665,9 +663,8 @@ function AppRoutes() {
             status: "Lead",
             isConverted: result.lead?.lead_status === "Converted",
             leadType: result.lead?.lead_status || data.leadType || "Warm",
-            projectCategory:
-              result.lead?.lead_category || data.projectCategory || 1,
-            industry: result.lead?.lead_category || data.projectCategory || 1,
+            projectCategory: data.projectCategory || 1,
+            industry: data.projectCategory || 1,
             country: result.lead?.country || data.country || "",
             country_code: result.lead?.country_code || data.countryCode || "",
             state: result.lead?.state || data.state || "",
@@ -876,14 +873,13 @@ function AppRoutes() {
       const existingLead = leads.find((l) => l.lead_id == id || l.id == id);
       if (!existingLead) throw new Error("Lead not found");
 
-      // 2. Update Lead Details (Name, Email, Phone, Category, Country)
+      // 2. Update Lead Details (Name, Email, Phone, Country)
       // IMPORTANT: lead_status must ALWAYS stay "Converted" for converted leads.
       // The leadType (Hot/Warm/Cold) is a visual sub-label stored in frontend state only.
       const leadPayload = {
         full_name: data.name || existingLead.name,
         email: data.email || existingLead.email,
         phone_number: data.phone || existingLead.phone,
-        lead_category: data.projectCategory || existingLead.projectCategory || 1,
         country: data.country || existingLead.country || "",
         country_code: data.countryCode || existingLead.countryCode || "",
         lead_status: data.leadType || existingLead.leadType || "Converted",
@@ -909,7 +905,7 @@ function AppRoutes() {
 
       // 3. Update local states — map backend column names to frontend property names
       const visualLeadType = data.leadType || existingLead.leadType || "Converted";
-      const updatedCategory = parseInt(revisedLead.lead_category || data.projectCategory || existingLead.projectCategory || 1, 10);
+      const updatedCategory = data.projectCategory || existingLead.projectCategory || 1;
 
       // Update Leads
       setLeads((prev) =>
@@ -1019,7 +1015,6 @@ function AppRoutes() {
           lead_status: "Dismissed",
           message: leadToUpdate.notes,
           website_url: leadToUpdate.website || "",
-          lead_category: leadToUpdate.projectCategory || 1,
           country_code: leadToUpdate.country_code || "",
         }),
       });
@@ -1041,8 +1036,8 @@ function AppRoutes() {
           phone: result.lead?.phone_number || leadToUpdate.phone,
           status: "Dismissed",
           leadType: result.lead?.lead_status || "Dismissed",
-          projectCategory: result.lead?.lead_category || leadToUpdate.projectCategory,
-          industry: result.lead?.lead_category || leadToUpdate.industry || 1,
+          projectCategory: leadToUpdate.projectCategory,
+          industry: leadToUpdate.industry || 1,
           website: result.lead?.website_url || leadToUpdate.website,
           notes: result.lead?.message || leadToUpdate.notes,
           country: result.lead?.country || leadToUpdate.country || "",
@@ -1088,7 +1083,6 @@ function AppRoutes() {
           lead_status: "Warm",
           message: leadToUpdate.notes,
           website_url: leadToUpdate.website || "",
-          lead_category: leadToUpdate.projectCategory || 1,
           country_code: leadToUpdate.country_code || "",
         }),
       });
@@ -1108,8 +1102,8 @@ function AppRoutes() {
           phone: result.lead?.phone_number || leadToUpdate.phone,
           status: "Lead",
           leadType: result.lead?.lead_status || "Warm",
-          projectCategory: result.lead?.lead_category || leadToUpdate.projectCategory,
-          industry: result.lead?.lead_category || leadToUpdate.industry || 1,
+          projectCategory: leadToUpdate.projectCategory,
+          industry: leadToUpdate.industry || 1,
           website: result.lead?.website_url || leadToUpdate.website,
           notes: result.lead?.message || leadToUpdate.notes,
           country: result.lead?.country || leadToUpdate.country || "",
@@ -1225,7 +1219,6 @@ function AppRoutes() {
           country: optimisticLead.country,
           country_code: sanitizeDialCode(optimisticLead.country_code),
           message: optimisticLead.notes,
-          lead_category: optimisticLead.projectCategory,
         }),
       });
 
@@ -1248,8 +1241,8 @@ function AppRoutes() {
         phone: updatedLeadData.lead?.phone_number || optimisticLead.phone,
         leadType: updatedLeadData.lead?.lead_status || optimisticLead.leadType,
         isConverted: updatedLeadData.lead?.lead_status === "Converted",
-        projectCategory: updatedLeadData.lead?.lead_category || optimisticLead.projectCategory,
-        industry: updatedLeadData.lead?.lead_category || optimisticLead.industry,
+        projectCategory: optimisticLead.projectCategory,
+        industry: optimisticLead.industry,
         website: updatedLeadData.lead?.website_url || optimisticLead.website,
         notes: updatedLeadData.lead?.message || optimisticLead.notes,
         joinedDate: updatedLeadData.lead?.created_at
@@ -1344,13 +1337,12 @@ function AppRoutes() {
 
       if (!clientRes.ok) throw new Error("Failed to update client details");
 
-      // 4. Update Lead Table (email, phone, category, notes if any)
+      // 4. Update Lead Table (email, phone, notes if any)
       // Only call if these fields are provided or we want to keep them in sync
       const leadPayload = {
         full_name: data.name || updatedClient.name,
         phone_number: data.phone || updatedClient.phone,
         email: data.email || updatedClient.email,
-        lead_category: data.projectCategory || updatedClient.projectCategory,
         country: data.country || updatedClient.country,
         lead_status: "Converted", // Keep status as converted
       };
