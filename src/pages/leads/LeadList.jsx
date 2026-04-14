@@ -958,16 +958,32 @@ const LeadList = ({
                                   </button>
                                 )}
                               {onRestoreLead && lead.status === "Dismissed" && (
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    onRestoreLead(lead.lead_id);
-                                  }}
-                                  className="p-2.5 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-blue-500 hover:border-blue-500 hover:bg-blue-50 transition-all active:scale-90 shadow-sm"
-                                  title="Restore Lead"
-                                >
-                                  <RotateCcw size={18} />
-                                </button>
+                                <div className="flex gap-2">
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      onRestoreLead(lead.lead_id);
+                                    }}
+                                    className="p-2.5 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-blue-500 hover:border-blue-500 hover:bg-blue-50 transition-all active:scale-90 shadow-sm"
+                                    title="Restore Lead"
+                                  >
+                                    <RotateCcw size={18} />
+                                  </button>
+                                  {onDeleteLead && (
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        if (window.confirm("Are you sure you want to permanently delete this lead? This action cannot be undone.")) {
+                                          onDeleteLead(lead.lead_id);
+                                        }
+                                      }}
+                                      className="p-2.5 bg-rose-50/50 border border-rose-200/50 rounded-lg text-rose-500/70 hover:text-rose-600 hover:border-rose-500 hover:bg-rose-50 transition-all active:scale-90 shadow-sm"
+                                      title="Delete Lead"
+                                    >
+                                      <Trash2 size={18} />
+                                    </button>
+                                  )}
+                                </div>
                               )}
                             </>
                           )}
@@ -1125,15 +1141,31 @@ const LeadList = ({
                             </button>
                           )}
                         {onRestoreLead && lead.status === "Dismissed" && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onRestoreLead(lead.lead_id);
-                            }}
-                            className="p-2 bg-blue-50 text-blue-600 border border-blue-100 rounded-lg hover:bg-blue-100 transition-all active:scale-90"
-                          >
-                            <RotateCcw size={16} />
-                          </button>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onRestoreLead(lead.lead_id);
+                              }}
+                              className="p-2 bg-blue-50 text-blue-600 border border-blue-100 rounded-lg hover:bg-blue-100 transition-all active:scale-90"
+                            >
+                              <RotateCcw size={16} />
+                            </button>
+                            {onDeleteLead && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (window.confirm("Are you sure you want to permanently delete this lead? This action cannot be undone.")) {
+                                    onDeleteLead(lead.lead_id);
+                                  }
+                                }}
+                                className="p-2 bg-rose-50 text-rose-600 border border-rose-100 rounded-lg hover:bg-rose-100 transition-all active:scale-90"
+                                title="Delete Lead"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            )}
+                          </div>
                         )}
                       </>
                     )}
