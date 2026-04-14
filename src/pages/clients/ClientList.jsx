@@ -67,46 +67,7 @@ const ClientList = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("All");
   const [leadTypeFilter, setLeadTypeFilter] = useState("All");
-  const [isTierDropdownOpen, setIsTierDropdownOpen] = useState(false);
-
-  const tierButtonRef = useRef(null);
-  const [tierDropdownStyle, setTierDropdownStyle] = useState({});
-
-  useEffect(() => {
-    if (isTierDropdownOpen && tierButtonRef.current) {
-      const rect = tierButtonRef.current.getBoundingClientRect();
-      setTierDropdownStyle({
-        position: "fixed",
-        top: `${rect.bottom + 8}px`,
-        left: `${rect.left}px`,
-        width: `${rect.width}px`,
-        zIndex: 9999,
-      });
-    }
-  }, [isTierDropdownOpen]);
-
-  useEffect(() => {
-    const handleScrollResize = (e) => {
-      if (isTierDropdownOpen) {
-        if (
-          e.type === "scroll" &&
-          e.target.closest &&
-          e.target.closest(".tier-dropdown")
-        ) {
-          return;
-        }
-        setIsTierDropdownOpen(false);
-      }
-    };
-    if (isTierDropdownOpen) {
-      window.addEventListener("scroll", handleScrollResize, true);
-      window.addEventListener("resize", handleScrollResize, true);
-    }
-    return () => {
-      window.removeEventListener("scroll", handleScrollResize, true);
-      window.removeEventListener("resize", handleScrollResize, true);
-    };
-  }, [isTierDropdownOpen]);
+  const [isFilterPopupOpen, setIsFilterPopupOpen] = useState(false);
 
   const [startDate, setStartDate] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -191,6 +152,69 @@ const ClientList = ({
 
   // Lock scroll when any modal is open
   useScrollLock(showAddModal || showOnboardModal || showEditModal || showFollowUpModal);
+
+  const filterButtonRef = useRef(null);
+  const [filterPopupStyle, setFilterPopupStyle] = useState({});
+
+  useEffect(() => {
+    if (isFilterPopupOpen && filterButtonRef.current) {
+      const rect = filterButtonRef.current.getBoundingClientRect();
+      const windowWidth = window.innerWidth;
+      const windowHeight = window.innerHeight;
+      const isMobile = windowWidth < 1024;
+      
+      const style = {
+        position: "fixed",
+        zIndex: 99999,
+        display: "flex",
+        flexDirection: "column",
+      };
+
+      if (isMobile) {
+        // Mobile styles: Centering handled by the Flexbox wrapper in JSX
+        const popupWidth = Math.min(windowWidth - 32, 400);
+        style.width = `${popupWidth}px`;
+        style.maxHeight = "calc(100dvh - 32px)";
+        style.borderRadius = "24px";
+      } else {
+        const popupWidth = 384; 
+        let left = rect.right - popupWidth;
+        if (left < 16) left = 16;
+        if (left + popupWidth > windowWidth - 16) left = windowWidth - popupWidth - 16;
+
+        const spaceBelow = windowHeight - rect.bottom - 24;
+        const spaceAbove = rect.top - 24;
+        
+        style.left = `${left}px`;
+        style.width = `${popupWidth}px`;
+
+        if (spaceBelow < 400 && spaceAbove > spaceBelow) {
+          style.bottom = `${windowHeight - rect.top + 8}px`;
+          style.maxHeight = `calc(${spaceAbove}px - 16px)`;
+          style.transformOrigin = "bottom right";
+        } else {
+          style.top = `${rect.bottom + 8}px`;
+          style.maxHeight = `calc(${spaceBelow}px - 16px)`;
+          style.transformOrigin = "top right";
+        }
+      }
+      setFilterPopupStyle(style);
+    }
+  }, [isFilterPopupOpen]);
+
+  useEffect(() => {
+    const handleScrollResize = () => {
+      if (isFilterPopupOpen) setIsFilterPopupOpen(false);
+    };
+    if (isFilterPopupOpen) {
+      window.addEventListener("scroll", handleScrollResize, true);
+      window.addEventListener("resize", handleScrollResize);
+    }
+    return () => {
+      window.removeEventListener("scroll", handleScrollResize, true);
+      window.removeEventListener("resize", handleScrollResize);
+    };
+  }, [isFilterPopupOpen]);
 
   const handleEditClick = (client) => {
     setEditingClient(client);
@@ -281,6 +305,7 @@ const ClientList = ({
     let matchesStatus =
       filterStatus === "All" || client.status === filterStatus;
     let matchesLeadType = true;
+    if (title === "Leads") {
       // Sub-filter by Lead View (Pending, Converted, Dismissed)
       if (leadView === "Pending") {
         if (client.status !== "Lead" || client.isConverted) return false;
@@ -523,90 +548,123 @@ const ClientList = ({
           </div>
         </div>
 
-        {/* Control Bar */}
-        <div className="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm">
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:flex gap-2 w-full items-center">
+        {/* Control Bar: Filters */}
+        <div className="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm relative z-[60]">
+          <div className="flex flex-col md:flex-row md:justify-between gap-4 w-full items-center">
             {/* 1. Search Bar */}
-            <div className="relative md:col-span-2 xl:flex-[1.5]">
+            <div className="relative w-full md:w-64 flex-none transition-all duration-300">
               <Search
                 size={16}
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-[#18254D]/40"
               />
               <input
                 type="text"
-                placeholder={`Search Clients...`}
+                placeholder={`Search ${title.toLowerCase()}...`}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full h-[38px] pl-11 pr-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium focus:outline-none focus:ring-4 focus:ring-secondary/10 focus:border-secondary transition-all"
+                className="w-full h-[38px] pl-11 pr-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium text-[#18254D] focus:outline-none focus:ring-4 focus:ring-[#18254D]/10 focus:border-[#18254D]/20 transition-all placeholder:text-[#18254D]/30"
               />
             </div>
 
-            {title === "Leads" && (
-              <div className="col-span-1 md:col-span-2 xl:flex-1 relative z-50">
-                <button
-                  ref={tierButtonRef}
-                  onClick={() => setIsTierDropdownOpen(!isTierDropdownOpen)}
-                  className="w-full h-[38px] flex items-center justify-between gap-3 px-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-[12px] font-bold  tracking-widest text-[#18254D] hover:bg-white hover:border-slate-200 transition-all shadow-sm shadow-slate-200/50 group"
-                >
-                  <span>
-                    {leadTypeFilter === "All"
-                      ? "All Lead Status"
-                      : leadTypeFilter}
+            {/* 2. Filters Button */}
+            <div className="relative w-full md:w-auto flex-none" ref={filterButtonRef}>
+              <button
+                onClick={() => setIsFilterPopupOpen(!isFilterPopupOpen)}
+                className={`w-full md:w-auto h-[38px] flex items-center justify-center gap-2.5 px-6 py-2 rounded-xl text-[12px] font-bold tracking-widest transition-all shadow-sm active:scale-95 group border ${
+                  startDate || endDate
+                    ? "bg-secondary/5 border-secondary text-secondary"
+                    : "bg-slate-50 border-slate-100 text-[#18254D] hover:bg-white hover:border-slate-200 shadow-slate-200/50"
+                }`}
+              >
+                <Filter
+                  size={14}
+                  className={startDate || endDate ? "text-secondary" : "text-slate-400"}
+                />
+                <span>FILTERS</span>
+                {(startDate || endDate) && (
+                  <span className="flex items-center justify-center w-5 h-5 bg-secondary text-white text-[10px] font-black rounded-full ml-1 shadow-sm">
+                    {[!!startDate, !!endDate].filter(Boolean).length}
                   </span>
-                  <ChevronDown
-                    size={16}
-                    strokeWidth={2.5}
-                    className={`transition-transform duration-300 ${isTierDropdownOpen ? "rotate-180" : ""}`}
-                  />
-                </button>
+                )}
+                <ChevronDown
+                  size={14}
+                  className={`transition-transform duration-300 ${isFilterPopupOpen ? "rotate-180" : ""}`}
+                />
+              </button>
 
-                {isTierDropdownOpen &&
-                  createPortal(
-                    <>
+              {/* Filters Popup - Portaled for perfect layering */}
+              {isFilterPopupOpen &&
+                createPortal(
+                  <>
+                    <div
+                      className="fixed inset-0 z-[99998] bg-slate-900/20 backdrop-blur-[2px] animate-fade-in"
+                      onClick={() => setIsFilterPopupOpen(false)}
+                    />
+                    <div
+                      className={`${window.innerWidth < 1024 ? "fixed inset-0 flex items-center justify-center p-4 z-[99999] pointer-events-none" : ""}`}
+                    >
                       <div
-                        className="fixed inset-0 z-[9998]"
-                        onClick={() => setIsTierDropdownOpen(false)}
-                      />
-                      <div
-                        className="tier-dropdown bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[9999] animate-fade-in-up origin-top"
-                        style={tierDropdownStyle}
+                        className="bg-white border border-slate-200 shadow-[0_20px_50px_rgba(0,0,0,0.15)] overflow-hidden animate-fade-in-up ring-1 ring-black/5 rounded-3xl pointer-events-auto"
+                        style={filterPopupStyle}
                       >
-                        {["All", "Hot", "Warm", "Cold"].map((tier) => (
+                      {/* Sticky Header */}
+                      <div className="flex-none p-4 border-b border-slate-50 flex items-center justify-between bg-white relative z-10">
+                        <div className="flex items-center gap-2">
+                          <Filter size={14} className="text-secondary" />
+                          <h3 className="text-[11px] font-black text-[#18254D] tracking-[0.2em] uppercase">
+                            Filter {title}
+                          </h3>
+                        </div>
+                        {(startDate || endDate) && (
                           <button
-                            key={tier}
                             onClick={() => {
-                              setLeadTypeFilter(tier);
-                              setIsTierDropdownOpen(false);
+                              setStartDate("");
+                              setEndDate("");
+                              setIsFilterPopupOpen(false);
                             }}
-                            className={`w-full text-left px-5 py-4 text-[12px] font-bold  tracking-wider transition-colors ${
-                              tier === "All"
-                                ? "bg-[#18254D] text-white"
-                                : leadTypeFilter === tier
-                                  ? "bg-secondary/10 text-secondary border-l-4 border-secondary"
-                                  : "text-[#18254D] hover:bg-slate-50"
-                            }`}
+                            className="text-[10px] font-black text-rose-500 hover:text-rose-600 tracking-widest uppercase transition-colors"
                           >
-                            {tier === "All" ? "All Tiers" : tier}
+                            Clear All
                           </button>
-                        ))}
+                        )}
                       </div>
-                    </>,
-                    document.body,
-                  )}
-              </div>
-            )}
 
-            {/* Date Filters */}
-            <div className="col-span-1 md:col-span-1 xl:flex-1 relative z-50">
-              <DatePicker
-                label="From"
-                value={startDate}
-                onChange={setStartDate}
-              />
-            </div>
+                      {/* Scrollable Body */}
+                      <div className="flex-1 p-5 space-y-4 overflow-y-auto custom-scrollbar">
+                        {/* Date Range Section */}
+                        <div className="space-y-3">
+                          <label className="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase ml-1">
+                            Joined Date Range
+                          </label>
+                          <div className="grid grid-cols-2 gap-3">
+                            <DatePicker
+                              label="From"
+                              value={startDate}
+                              onChange={setStartDate}
+                            />
+                            <DatePicker
+                              label="To"
+                              value={endDate}
+                              onChange={setEndDate}
+                            />
+                          </div>
+                        </div>
+                      </div>
 
-            <div className="col-span-1 md:col-span-1 xl:flex-1 relative z-50">
-              <DatePicker label="To" value={endDate} onChange={setEndDate} />
+                      {/* Sticky Footer */}
+                      <div className="flex-none p-4 bg-white border-t border-slate-50 relative z-10 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
+                        <button
+                          onClick={() => setIsFilterPopupOpen(false)}
+                          className="w-full py-2.5 bg-[#18254D] text-white rounded-2xl text-[11px] font-black tracking-[0.2em] uppercase hover:bg-slate-800 transition-all shadow-lg active:scale-95"
+                        >
+                          Apply Filters
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </>,
+                  document.body,
+                )}
             </div>
           </div>
         </div>
@@ -990,8 +1048,11 @@ const ClientList = ({
 
           {filteredClients.length === 0 && (
             <div className="col-span-full text-center py-10 bg-slate-50 rounded-2xl border border-dashed border-slate-300">
-              <p className="text-sm font-bold text-slate-400">
-                No "clients" found matching your filters.
+              <div className=" text-slate-300 p-4 rounded-xl mb-4  flex items-center justify-center mx-auto">
+                        <Users size={32} strokeWidth={1.5} />
+                      </div>
+                      <p className="text-[13px] font-bold text-primary  tracking-wider">
+                No Active Clients
               </p>
             </div>
           )}

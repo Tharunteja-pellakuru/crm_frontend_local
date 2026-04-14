@@ -20,6 +20,7 @@ import {
   Monitor,
   Film,
   Search,
+  Filter,
   AlertTriangle,
   Loader2,
 } from "lucide-react";
@@ -379,47 +380,8 @@ const ProjectBoard = ({
 }) => {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [projectToDelete, setProjectToDelete] = useState(null);
-  const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-
-  const categoryButtonRef = useRef(null);
-  const [categoryDropdownStyle, setCategoryDropdownStyle] = useState({});
-
-  useEffect(() => {
-    if (isCategoryDropdownOpen && categoryButtonRef.current) {
-      const rect = categoryButtonRef.current.getBoundingClientRect();
-      setCategoryDropdownStyle({
-        position: "fixed",
-        top: `${rect.bottom + 8}px`,
-        left: `${rect.left}px`,
-        width: `${rect.width}px`,
-        zIndex: 9999,
-      });
-    }
-  }, [isCategoryDropdownOpen]);
-
-  useEffect(() => {
-    const handleScrollResize = (e) => {
-      if (isCategoryDropdownOpen) {
-        if (
-          e.type === "scroll" &&
-          e.target.closest &&
-          e.target.closest(".category-dropdown")
-        ) {
-          return;
-        }
-        setIsCategoryDropdownOpen(false);
-      }
-    };
-    if (isCategoryDropdownOpen) {
-      window.addEventListener("scroll", handleScrollResize, true);
-      window.addEventListener("resize", handleScrollResize, true);
-    }
-    return () => {
-      window.removeEventListener("scroll", handleScrollResize, true);
-      window.removeEventListener("resize", handleScrollResize, true);
-    };
-  }, [isCategoryDropdownOpen]);
+  const [isFilterPopupOpen, setIsFilterPopupOpen] = useState(false);
   const COLUMNS =
     selectedCategory === 1
       ? TECH_COLUMNS
@@ -447,6 +409,69 @@ const ProjectBoard = ({
   const [selectedClientId, setSelectedClientId] = useState(null);
   const [clientSearch, setClientSearch] = useState("");
   const [isClientDropdownOpen, setIsClientDropdownOpen] = useState(false);
+  const filterButtonRef = useRef(null);
+  const [filterPopupStyle, setFilterPopupStyle] = useState({});
+
+  useEffect(() => {
+    if (isFilterPopupOpen && filterButtonRef.current) {
+      const rect = filterButtonRef.current.getBoundingClientRect();
+      const windowWidth = window.innerWidth;
+      const windowHeight = window.innerHeight;
+      const isMobile = windowWidth < 1024;
+      
+      const style = {
+        position: "fixed",
+        zIndex: 99999,
+        display: "flex",
+        flexDirection: "column",
+      };
+
+      if (isMobile) {
+        // Mobile styles: Centering handled by the Flexbox wrapper in JSX
+        const popupWidth = Math.min(windowWidth - 32, 400);
+        style.width = `${popupWidth}px`;
+        style.maxHeight = "calc(100dvh - 32px)";
+        style.borderRadius = "24px";
+      } else {
+        const popupWidth = 384; 
+        let left = rect.right - popupWidth;
+        if (left < 16) left = 16;
+        if (left + popupWidth > windowWidth - 16) left = windowWidth - popupWidth - 16;
+
+        const spaceBelow = windowHeight - rect.bottom - 24;
+        const spaceAbove = rect.top - 24;
+        
+        style.left = `${left}px`;
+        style.width = `${popupWidth}px`;
+
+        if (spaceBelow < 400 && spaceAbove > spaceBelow) {
+          style.bottom = `${windowHeight - rect.top + 8}px`;
+          style.maxHeight = `calc(${spaceAbove}px - 16px)`;
+          style.transformOrigin = "bottom right";
+        } else {
+          style.top = `${rect.bottom + 8}px`;
+          style.maxHeight = `calc(${spaceBelow}px - 16px)`;
+          style.transformOrigin = "top right";
+        }
+      }
+      setFilterPopupStyle(style);
+    }
+  }, [isFilterPopupOpen]);
+
+  useEffect(() => {
+    const handleScrollResize = () => {
+      if (isFilterPopupOpen) setIsFilterPopupOpen(false);
+    };
+    if (isFilterPopupOpen) {
+      window.addEventListener("scroll", handleScrollResize, true);
+      window.addEventListener("resize", handleScrollResize);
+    }
+    return () => {
+      window.removeEventListener("scroll", handleScrollResize, true);
+      window.removeEventListener("resize", handleScrollResize);
+    };
+  }, [isFilterPopupOpen]);
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -598,78 +623,119 @@ const ProjectBoard = ({
         </div>
 
         {/* Control Bar */}
-        <div className="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm">
-          <div className="flex flex-col md:flex-row md:justify-between gap-2 w-full items-center">
+        <div className="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm relative z-[60]">
+          <div className="flex flex-col md:flex-row md:justify-between gap-4 w-full items-center">
             {/* 1. Search Bar */}
-            <div className="relative w-full md:w-80 flex-none transition-all duration-300">
+            <div className="relative w-full md:w-64 flex-none transition-all duration-300">
               <Search
                 size={16}
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-[#18254D]/40"
               />
               <input
                 type="text"
                 placeholder="Search projects..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-[38px] pl-11 pr-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium focus:outline-none focus:ring-4 focus:ring-secondary/10 focus:border-secondary transition-all"
+                className="w-full h-[38px] pl-11 pr-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium text-[#18254D] focus:outline-none focus:ring-4 focus:ring-[#18254D]/10 focus:border-[#18254D]/20 transition-all placeholder:text-[#18254D]/30"
               />
             </div>
 
-            {/* Category Dropdown */}
-            <div className="relative w-full md:w-60 flex-none transition-all duration-300">
+            {/* 2. Filters Button */}
+            <div className="relative w-full md:w-auto flex-none" ref={filterButtonRef}>
               <button
-                ref={categoryButtonRef}
-                onClick={() =>
-                  setIsCategoryDropdownOpen(!isCategoryDropdownOpen)
-                }
-                className="w-full h-[38px] flex items-center justify-between gap-3 px-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-[12px] font-bold  tracking-widest text-primary hover:bg-white hover:border-slate-200 transition-all shadow-sm shadow-slate-200/50 group"
+                onClick={() => setIsFilterPopupOpen(!isFilterPopupOpen)}
+                className={`w-full md:w-auto h-[38px] flex items-center justify-center gap-2.5 px-6 py-2 rounded-xl text-[12px] font-bold tracking-widest transition-all shadow-sm active:scale-95 group border ${
+                  selectedCategory !== "All"
+                    ? "bg-secondary/5 border-secondary text-secondary"
+                    : "bg-slate-50 border-slate-100 text-[#18254D] hover:bg-white hover:border-slate-200 shadow-slate-200/50"
+                }`}
               >
-                <span>
-                  {selectedCategory === "All"
-                    ? "Select Category"
-                    : `${CATEGORY_MAP[selectedCategory]} Projects`}
-                </span>
+                <Filter
+                  size={14}
+                  className={selectedCategory !== "All" ? "text-secondary" : "text-slate-400"}
+                />
+                <span>FILTERS</span>
+                {selectedCategory !== "All" && (
+                  <span className="flex items-center justify-center w-5 h-5 bg-secondary text-white text-[10px] font-black rounded-full ml-1 shadow-sm">
+                    1
+                  </span>
+                )}
                 <ChevronDown
-                  size={16}
-                  strokeWidth={2.5}
-                  className={`text-slate-400 transition-transform duration-300 ${isCategoryDropdownOpen ? "rotate-180" : ""}`}
+                  size={14}
+                  className={`transition-transform duration-300 ${isFilterPopupOpen ? "rotate-180" : ""}`}
                 />
               </button>
 
-              {isCategoryDropdownOpen &&
+              {/* Filters Popup - Portaled for perfect layering */}
+              {isFilterPopupOpen &&
                 createPortal(
                   <>
                     <div
-                      className="fixed inset-0 z-[9998]"
-                      onClick={() => setIsCategoryDropdownOpen(false)}
+                      className="fixed inset-0 z-[99998] bg-slate-900/20 backdrop-blur-[2px] animate-fade-in"
+                      onClick={() => setIsFilterPopupOpen(false)}
                     />
                     <div
-                      className="category-dropdown bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[9999] animate-fade-in-up origin-top"
-                      style={categoryDropdownStyle}
+                      className={`${window.innerWidth < 1024 ? "fixed inset-0 flex items-center justify-center p-4 z-[99999] pointer-events-none" : ""}`}
                     >
-                    
-                      {['All', 1, 2, 3].map((catId) => (
+                      <div
+                        className="bg-white border border-slate-200 shadow-[0_20px_50px_rgba(0,0,0,0.15)] overflow-hidden animate-fade-in-up ring-1 ring-black/5 rounded-3xl pointer-events-auto"
+                        style={filterPopupStyle}
+                      >
+                      {/* Sticky Header */}
+                      <div className="flex-none p-4 border-b border-slate-50 flex items-center justify-between bg-white relative z-10">
+                        <div className="flex items-center gap-2">
+                          <Filter size={14} className="text-secondary" />
+                          <h3 className="text-[11px] font-black text-[#18254D] tracking-[0.2em] uppercase">
+                            Filter Projects
+                          </h3>
+                        </div>
+                        {selectedCategory !== "All" && (
+                          <button
+                            onClick={() => {
+                              handleCategoryChange("All");
+                              setIsFilterPopupOpen(false);
+                            }}
+                            className="text-[10px] font-black text-rose-500 hover:text-rose-600 tracking-widest uppercase transition-colors"
+                          >
+                            Clear All
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Scrollable Body */}
+                      <div className="flex-1 p-5 space-y-4 overflow-y-auto custom-scrollbar">
+                        {/* Category Section */}
+                        <div className="space-y-3">
+                          <label className="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase ml-1">
+                            Project Category
+                          </label>
+                          <SearchableDropdown
+                            placeholder="Select Category..."
+                            options={[
+                              { label: "ALL", value: "All" },
+                              { label: "TECH", value: 1 },
+                              { label: "SOCIAL MEDIA", value: 2 },
+                            ]}
+                            value={selectedCategory}
+                            onChange={(val) => {
+                              handleCategoryChange(val);
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Sticky Footer */}
+                      <div className="flex-none p-4 bg-white border-t border-slate-50 relative z-10 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
                         <button
-                          key={`proj-cat-opt-${catId}`}
-                          onClick={() => handleCategoryChange(catId)}
-                          className={`w-full text-left px-5 py-3.5 text-[12px] font-bold tracking-widest transition-colors flex items-center justify-between ${
-                            catId === 'All'
-                              ? selectedCategory === 'All'
-                                ? "bg-secondary/10 text-secondary border-l-4 border-secondary"
-                                : "text-[#18254D] hover:bg-slate-50"
-                              : selectedCategory === catId
-                                ? "bg-secondary/10 text-secondary border-l-4 border-secondary"
-                                : "text-[#18254D] hover:bg-slate-50"
-                          }`}
+                          onClick={() => setIsFilterPopupOpen(false)}
+                          className="w-full py-2.5 bg-[#18254D] text-white rounded-2xl text-[11px] font-black tracking-[0.2em] uppercase hover:bg-slate-800 transition-all shadow-lg active:scale-95"
                         >
-                          <span>{catId === 'All' ? 'Select Category' : `${CATEGORY_MAP[catId]} Projects`}</span>
-                          {(catId === 'All' ? selectedCategory === 'All' : selectedCategory === catId) && (
-                            <span className="text-[12px] font-bold text-secondary">Selected</span>
-                          )}
+                          Apply Filters
                         </button>
-                      ))}
+                      </div>
                     </div>
-                  </>,
+                  </div>
+                </>,
                   document.body,
                 )}
             </div>

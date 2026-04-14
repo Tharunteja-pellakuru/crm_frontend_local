@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Search, ChevronDown, Check, X } from "lucide-react";
 
 const SearchableDropdown = ({
@@ -14,6 +15,40 @@ const SearchableDropdown = ({
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const dropdownRef = useRef(null);
+  const menuRef = useRef(null);
+  const [portalStyle, setPortalStyle] = useState({});
+
+  useEffect(() => {
+    if (isOpen && dropdownRef.current) {
+      const updatePosition = () => {
+        if (!dropdownRef.current) return;
+        const rect = dropdownRef.current.getBoundingClientRect();
+        const windowHeight = window.innerHeight;
+        const dropdownHeight = 300; // Expected max height
+        const spaceBelow = windowHeight - rect.bottom;
+        const shouldOpenUp = spaceBelow < dropdownHeight && rect.top > dropdownHeight;
+
+        setPortalStyle({
+          position: "fixed",
+          top: shouldOpenUp ? "auto" : `${rect.bottom + 8}px`,
+          bottom: shouldOpenUp ? `${windowHeight - rect.top + 8}px` : "auto",
+          left: `${rect.left}px`,
+          width: `${rect.width}px`,
+          zIndex: 100001,
+          transformOrigin: shouldOpenUp ? "bottom" : "top",
+        });
+      };
+
+      updatePosition();
+      window.addEventListener("scroll", () => setIsOpen(false), true);
+      window.addEventListener("resize", () => setIsOpen(false));
+
+      return () => {
+        window.removeEventListener("scroll", () => setIsOpen(false), true);
+        window.removeEventListener("resize", () => setIsOpen(false));
+      };
+    }
+  }, [isOpen]);
 
   const filteredOptions = options.filter((option) => {
     if (!searchTerm) return true;
@@ -51,7 +86,10 @@ const SearchableDropdown = ({
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+      const isInsideTrigger = dropdownRef.current && dropdownRef.current.contains(event.target);
+      const isInsideMenu = menuRef.current && menuRef.current.contains(event.target);
+      
+      if (!isInsideTrigger && !isInsideMenu) {
         setIsOpen(false);
       }
     };
@@ -80,7 +118,7 @@ const SearchableDropdown = ({
         <button
           type="button"
           onClick={() => !disabled && setIsOpen(!isOpen)}
-          className={`w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border ${isOpen ? "border-secondary ring-4 ring-secondary/10" : "border-slate-200"} rounded-xl text-sm font-medium transition-all ${disabled ? "opacity-50 cursor-not-allowed" : "hover:border-secondary"}`}
+          className={`w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border ${isOpen ? "border-secondary ring-4 ring-secondary/10" : "border-slate-200"} rounded-2xl text-sm font-medium transition-all ${disabled ? "opacity-50 cursor-not-allowed" : "hover:border-secondary"}`}
           disabled={disabled}
         >
           <span className={displayValue ? "text-primary" : "text-slate-400"}>
@@ -92,9 +130,13 @@ const SearchableDropdown = ({
           />
         </button>
 
-        {isOpen && (
-          <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[100] animate-fade-in-up origin-top">
-            <div className="p-3 bg-slate-50 border-b border-slate-100">
+        {isOpen && createPortal(
+          <div 
+            ref={menuRef}
+            className="fixed bg-white border border-slate-200 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] overflow-hidden animate-fade-in-up"
+            style={portalStyle}
+          >
+            <div className="p-3 bg-slate-50 border-b border-slate-50">
               <div className="relative">
                 <Search
                   className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
@@ -103,7 +145,7 @@ const SearchableDropdown = ({
                 <input
                   autoFocus
                   type="text"
-                  className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:border-secondary"
+                  className="w-full pl-9 pr-4 py-2 bg-white border border-slate-100 rounded-2xl text-xs font-medium focus:outline-none focus:border-secondary"
                   placeholder="Type to search..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -162,7 +204,8 @@ const SearchableDropdown = ({
                 </div>
               )}
             </div>
-          </div>
+          </div>,
+          document.body
         )}
       </div>
     </div>

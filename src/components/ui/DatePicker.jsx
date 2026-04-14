@@ -15,41 +15,46 @@ const DatePicker = ({ label, value, onChange, placeholder, disabled = false }) =
 
   useEffect(() => {
     if (isOpen && triggerRef.current) {
-      const rect = triggerRef.current.getBoundingClientRect();
-      const dropdownHeight = 320; // Approximate height of dropdown
-      const spaceBelow = window.innerHeight - rect.bottom;
-      const spaceAbove = rect.top;
-      
-      // Position above if not enough space below, but enough space above
-      const positionAbove = spaceBelow < dropdownHeight && spaceAbove > dropdownHeight;
-      
-      setDropdownStyle({
-        position: 'fixed',
-        top: positionAbove ? `${rect.top - dropdownHeight - 8}px` : `${rect.bottom + 8}px`,
-        left: `${rect.left}px`,
-        width: `${Math.max(rect.width, 240)}px`,
-        zIndex: 999999
-      });
-    }
-  }, [isOpen]);
+      const updatePosition = () => {
+        if (!triggerRef.current) return;
+        const rect = triggerRef.current.getBoundingClientRect();
+        const windowWidth = window.innerWidth;
+        const windowHeight = window.innerHeight;
+        const dropdownWidth = 280; // Standard calendar width
+        const dropdownHeight = 350; // Total height with padding/footer
+        
+        // Vertical Collision
+        const spaceBelow = windowHeight - rect.bottom - 12;
+        const spaceAbove = rect.top - 12;
+        const shouldOpenUp = spaceBelow < dropdownHeight && spaceAbove > spaceBelow;
 
-  useEffect(() => {
-    const handleScrollResize = (e) => {
-      if (isOpen) {
-        if (e.type === 'scroll' && e.target.closest && e.target.closest('.datepicker-dropdown')) {
-          return;
+        // Horizontal Collision
+        let left = rect.left;
+        if (left + dropdownWidth > windowWidth - 16) {
+          left = rect.right - dropdownWidth;
         }
-        setIsOpen(false);
-      }
-    };
-    if (isOpen) {
-      window.addEventListener("scroll", handleScrollResize, true);
-      window.addEventListener("resize", handleScrollResize, true);
+        if (left < 16) left = 16;
+
+        setDropdownStyle({
+          position: "fixed",
+          top: shouldOpenUp ? "auto" : `${rect.bottom + 8}px`,
+          bottom: shouldOpenUp ? `${windowHeight - rect.top + 8}px` : "auto",
+          left: `${left}px`,
+          width: `${dropdownWidth}px`,
+          zIndex: 1000001,
+          transformOrigin: shouldOpenUp ? "bottom" : "top",
+        });
+      };
+
+      updatePosition();
+      window.addEventListener("scroll", () => setIsOpen(false), true);
+      window.addEventListener("resize", () => setIsOpen(false));
+
+      return () => {
+        window.removeEventListener("scroll", () => setIsOpen(false), true);
+        window.removeEventListener("resize", () => setIsOpen(false));
+      };
     }
-    return () => {
-      window.removeEventListener("scroll", handleScrollResize, true);
-      window.removeEventListener("resize", handleScrollResize, true);
-    };
   }, [isOpen]);
 
   const [currentMonth, setCurrentMonth] = useState(() => {
@@ -227,24 +232,21 @@ const DatePicker = ({ label, value, onChange, placeholder, disabled = false }) =
         type="button"
         disabled={disabled}
         onClick={() => !disabled && setIsOpen(!isOpen)}
-        className={`datepicker-trigger w-full h-[38px] grid ${label ? "grid-cols-[auto_1fr_auto]" : "grid-cols-[1fr_auto]"} items-center gap-2 px-3 ${disabled ? "bg-slate-100 opacity-60 cursor-not-allowed" : "bg-slate-50 hover:bg-white hover:border-slate-200 cursor-pointer"} border border-slate-100 rounded-xl text-[12px] font-bold text-[#18254D] focus:outline-none focus:ring-4 focus:ring-[#18254D]/10 transition-all shadow-sm shadow-slate-200/50`}
+        className={`datepicker-trigger w-full h-[38px] flex items-center justify-between gap-2 px-3 ${disabled ? "bg-slate-100 opacity-60 cursor-not-allowed" : "bg-slate-50 hover:bg-white hover:border-slate-200 cursor-pointer"} border border-slate-100 rounded-xl text-[12px] font-bold text-[#18254D] focus:outline-none focus:ring-4 focus:ring-[#18254D]/10 transition-all shadow-sm shadow-slate-200/50`}
       >
-        {label && (
-          <div className="flex items-center justify-start shrink-0 pr-1">
-            <span className="uppercase tracking-tighter text-[#18254D]/80 whitespace-nowrap overflow-visible">
-              {label}:
+        <div className="flex items-center gap-1.5 min-w-0 overflow-hidden">
+          {label && (
+            <span className="uppercase tracking-tight text-[10px] text-[#18254D]/40 whitespace-nowrap shrink-0">
+              {label}
             </span>
-          </div>
-        )}
-        <div
-          className={`flex items-center ${label ? "justify-center" : "justify-start"} min-w-0`}
-        >
-          <span className="whitespace-nowrap overflow-visible">
+          )}
+          <span className="truncate text-left">
             {value ? formatDate(value) : placeholder || "dd-mm-yyyy"}
           </span>
         </div>
-        <div className="flex items-center justify-end gap-1.5 shrink-0 min-w-[35px]">
-          <Calendar size={13} className="text-[#18254D]/60" />
+        
+        <div className="flex items-center gap-1.5 shrink-0">
+          <Calendar size={13} className="text-[#18254D]/40" />
           {value && !disabled && (
             <div
               onClick={handleClear}
@@ -263,7 +265,7 @@ const DatePicker = ({ label, value, onChange, placeholder, disabled = false }) =
             onClick={() => setIsOpen(false)}
           />
           <div 
-            className="datepicker-dropdown bg-white border border-slate-100 rounded-2xl shadow-2xl z-[999999] overflow-hidden animate-fade-in-up origin-top p-3"
+            className="datepicker-dropdown bg-white border border-slate-200 shadow-[0_20px_50px_rgba(0,0,0,0.15)] rounded-3xl z-[999999] overflow-hidden animate-fade-in-up origin-top p-4"
             style={dropdownStyle}
           >
             <div className="flex items-center justify-between mb-3 px-1">

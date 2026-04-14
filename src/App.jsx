@@ -1973,6 +1973,7 @@ function AppRoutes() {
               onAddLead={handleAddClient}
               onUpdateConvertedLead={handleUpdateConvertedLead}
               onAddActivity={handleAddActivity}
+              onEditLead={handleEditLead}
               allLeads={leads}
             />
           }

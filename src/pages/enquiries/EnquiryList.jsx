@@ -31,6 +31,7 @@ import {
   ChevronRight,
   UserCheck,
   AlertTriangle,
+  Filter,
 } from "lucide-react";
 import DatePicker from "../../components/ui/DatePicker";
 // CATEGORY_MAP removed - category now managed at Project level only
@@ -110,6 +111,73 @@ const EnquiryList = ({
   const [leadModalOpen, setLeadModalOpen] = useState(false);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [isFilterPopupOpen, setIsFilterPopupOpen] = useState(false);
+  const filterButtonRef = useRef(null);
+  const [filterPopupStyle, setFilterPopupStyle] = useState({});
+
+  useEffect(() => {
+    if (isFilterPopupOpen && filterButtonRef.current) {
+      const rect = filterButtonRef.current.getBoundingClientRect();
+      const windowWidth = window.innerWidth;
+      const windowHeight = window.innerHeight;
+      const isMobile = windowWidth < 1024;
+      
+      const style = {
+        position: "fixed",
+        zIndex: 99999,
+        display: "flex",
+        flexDirection: "column",
+      };
+
+      if (isMobile) {
+        // Mobile styles: Centering handled by the Flexbox wrapper in JSX
+        const popupWidth = Math.min(windowWidth - 32, 400);
+        style.width = `${popupWidth}px`;
+        style.maxHeight = "calc(100dvh - 32px)";
+        style.borderRadius = "24px";
+      } else {
+        // Desktop: Button-relative design
+        const popupWidth = 384; // w-96
+        let left = rect.right - popupWidth;
+        if (left < 16) left = 16;
+        if (left + popupWidth > windowWidth - 16) left = windowWidth - popupWidth - 16;
+
+        const spaceBelow = windowHeight - rect.bottom - 24;
+        const spaceAbove = rect.top - 24;
+        
+        style.left = `${left}px`;
+        style.width = `${popupWidth}px`;
+
+        if (spaceBelow < 400 && spaceAbove > spaceBelow) {
+          // Open Upwards
+          style.bottom = `${windowHeight - rect.top + 8}px`;
+          style.maxHeight = `calc(${spaceAbove}px - 16px)`;
+          style.transformOrigin = "bottom right";
+        } else {
+          // Open Downwards
+          style.top = `${rect.bottom + 8}px`;
+          style.maxHeight = `calc(${spaceBelow}px - 16px)`;
+          style.transformOrigin = "top right";
+        }
+      }
+
+      setFilterPopupStyle(style);
+    }
+  }, [isFilterPopupOpen, aiAnalysisEnabled]); // Recalculate if content expands (AI enabled)
+
+  useEffect(() => {
+    const handleScrollResize = () => {
+      if (isFilterPopupOpen) setIsFilterPopupOpen(false);
+    };
+    if (isFilterPopupOpen) {
+      window.addEventListener("scroll", handleScrollResize, true);
+      window.addEventListener("resize", handleScrollResize);
+    }
+    return () => {
+      window.removeEventListener("scroll", handleScrollResize, true);
+      window.removeEventListener("resize", handleScrollResize);
+    };
+  }, [isFilterPopupOpen]);
 
   const [selectedEnquiry, setSelectedEnquiry] = useState(null);
   const [promoteFormData, setPromoteFormData] = useState({
@@ -551,156 +619,213 @@ const EnquiryList = ({
           </div>
         </div>
 
-        <div className="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm relative z-[60]">
-          <div className="flex flex-row flex-wrap gap-2 md:gap-3 w-full items-center">
+        <div className="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm relative z-[80]">
+          <div className="flex flex-col md:flex-row md:justify-between gap-4 w-full items-center">
             {/* 1. Search Bar */}
-            <div className="relative w-full sm:w-auto sm:flex-[1.5] min-w-[100%] border border-slate-200 rounded-xl sm:min-w-[200px] order-1">
+            <div className="relative w-full md:w-64 flex-none border border-slate-200 rounded-xl overflow-hidden group transition-all focus-within:ring-4 focus-within:ring-[#18254D]/5 focus-within:border-[#18254D]/20">
               <Search
                 size={16}
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-[#18254D]/40"
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-[#18254D]/40 group-focus-within:text-primary transition-colors"
+                strokeWidth={2.5}
               />
               <input
                 type="text"
                 placeholder="Search enquiries..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full h-[38px] pl-11 pr-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium text-[#18254D] focus:outline-none focus:ring-4 focus:ring-[#18254D]/10 focus:border-[#18254D]/20 transition-all placeholder:text-[#18254D]/30"
+                className="w-full h-[38px] pl-11 pr-4 bg-slate-50 border border-transparent rounded-xl text-sm font-bold text-primary placeholder:text-slate-400/80 focus:outline-none transition-all"
               />
             </div>
 
-            {/* 2. From Date Picker */}
-            <div className="flex-1 sm:flex-none border border-slate-200 rounded-xl w-[auto] md:flex-1 min-w-[175px] relative z-50 order-2">
-              <DatePicker
-                label="From"
-                value={startDate}
-                onChange={setStartDate}
-              />
-            </div>
-
-            {/* 3. To Date Picker */}
-            <div className="flex-1 sm:flex-none border border-slate-200 rounded-xl w-[auto] md:flex-1 min-w-[160px] relative z-50 order-3">
-              <DatePicker label="To" value={endDate} onChange={setEndDate} />
-            </div>
-
-            {/* AI Controls - Integrated into same row */}
-            {activeTab === "new" && (
-              <React.Fragment>
-                {/* AI Analysis Toggle */}
-                <div className="flex-1 sm:flex-none w-[auto] md:flex-1 min-w-[140px] flex items-center justify-between px-3 h-[34px] bg-slate-50 border border-slate-200 rounded-xl shadow-sm order-4">
-                  <span className={`text-[12px] font-bold text-primary`}>
-                    AI Analysis
+            {/* 2. Filters Button */}
+            <div className="relative w-full md:w-auto flex-none" ref={filterButtonRef}>
+              <button
+                onClick={() => setIsFilterPopupOpen(!isFilterPopupOpen)}
+                className={`w-full md:w-auto h-[38px] flex items-center justify-center gap-2.5 px-6 py-2 rounded-xl text-[12px] font-bold tracking-widest transition-all shadow-sm active:scale-95 group border ${
+                  startDate || endDate || aiAnalysisEnabled
+                    ? "bg-secondary/5 border-secondary text-secondary"
+                    : "bg-slate-50 border-slate-100 text-[#18254D] hover:bg-white hover:border-slate-200 shadow-slate-200/50"
+                }`}
+              >
+                <Filter
+                  size={14}
+                  className={startDate || endDate || aiAnalysisEnabled ? "text-secondary" : "text-slate-400"}
+                />
+                <span>FILTERS</span>
+                {(startDate || endDate || aiAnalysisEnabled) && (
+                  <span className="flex items-center justify-center w-5 h-5 bg-secondary text-white text-[10px] font-black rounded-full ml-1 shadow-sm">
+                    {[!!startDate, !!endDate, aiAnalysisEnabled].filter(Boolean).length}
                   </span>
-
-                  <button
-                    onClick={() => {
-                      const nextValue = !aiAnalysisEnabled;
-                      setAiAnalysisEnabled(nextValue);
-                      if (!nextValue) {
-                        setHideIrrelevant(false);
-                      }
-                    }}
-                    className={`relative inline-flex h-5 w-9 shrink-0 rounded-full transition-colors duration-300 ease-in-out ${
-                      aiAnalysisEnabled ? "bg-[#18254D]" : "bg-slate-300"
-                    }`}
-                  >
-                    <span
-                      className={`inline-block h-3.5 w-3.5 bg-white rounded-full transform transition-transform duration-300 ease-in-out ${
-                        aiAnalysisEnabled
-                          ? "translate-x-[18px]"
-                          : "translate-x-0.5"
-                      } mt-[3px] ml-0.5`}
-                    />
-                  </button>
-                </div>
-
-                {/* Filter Spam Toggle */}
-                <div
-                  className={`flex-1 sm:flex-none w-[auto] md:flex-1 min-w-[140px] flex items-center justify-between px-3 h-[34px] bg-slate-50 border border-slate-200 rounded-xl shadow-sm transition-all order-5 ${!aiAnalysisEnabled ? "opacity-50 pointer-events-none" : ""}`}
-                >
-                  <span
-                    className={`text-[12px] font-bold ${hideIrrelevant ? "text-primary" : "text-slate-400"}`}
-                  >
-                    Filter Spam
-                  </span>
-
-                  <button
-                    onClick={() =>
-                      aiAnalysisEnabled && setHideIrrelevant(!hideIrrelevant)
-                    }
-                    disabled={!aiAnalysisEnabled}
-                    className={`relative inline-flex h-5 w-9 shrink-0 rounded-full transition-colors duration-300 ease-in-out ${
-                      hideIrrelevant ? "bg-emerald-600" : "bg-slate-300"
-                    }`}
-                  >
-                    <span
-                      className={`inline-block h-3.5 w-3.5 bg-white rounded-full transform transition-transform duration-300 ease-in-out ${
-                        hideIrrelevant
-                          ? "translate-x-[18px]"
-                          : "translate-x-0.5"
-                      } mt-[3px] ml-0.5`}
-                    />
-                  </button>
-                </div>
-
-                {/* AI Model Settings */}
-                {aiAnalysisEnabled && aiModels.length > 0 && (
-                  <div
-                    className="flex-1 sm:flex-none w-[auto] relative md:flex-1 min-w-[160px] z-50 order-6"
-                    ref={aiModelRef}
-                  >
-                    <button
-                      onClick={() =>
-                        setIsModelDropdownOpen(!isModelDropdownOpen)
-                      }
-                      className="w-full h-[34px] flex items-center justify-between gap-3 px-3 bg-white border border-slate-200 rounded-xl text-[12px] font-bold tracking-widest text-[#18254D] hover:bg-slate-50 transition-all shadow-sm active:scale-95 group"
-                    >
-                      <span className="truncate text-[12px] uppercase tracking-tight">
-                        {aiModels.find((m) => m.aimodel_id === selectedAiModel)?.name ||
-                          "AI Model"}
-                      </span>
-                      <ChevronDown
-                        size={14}
-                        className={`transition-transform duration-300 ${isModelDropdownOpen ? "rotate-180" : ""}`}
-                      />
-                    </button>
-                    {isModelDropdownOpen &&
-                      createPortal(
-                        <>
-                          <div
-                            className="fixed inset-0 z-[9998]"
-                            onClick={() => setIsModelDropdownOpen(false)}
-                          />
-                          <div
-                            className="ai-model-dropdown bg-white border border-slate-200 rounded-xl shadow-xl z-[9999] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200"
-                            style={modelDropdownStyle}
-                          >
-                            <div className="max-h-60 overflow-y-auto py-1 no-scrollbar">
-                              {aiModels.map((model) => (
-                                <button
-                                  key={model.modelId}
-                                  onClick={() => {
-                                    setSelectedAiModel(model.aimodel_id);
-                                    setIsModelDropdownOpen(false);
-                                  }}
-                                  className={`w-full text-left px-4 py-2.5 hover:bg-slate-50 transition-colors flex flex-col gap-0.5 ${selectedAiModel === model.aimodel_id ? "bg-slate-50" : ""}`}
-                                >
-                                  <span className="text-[12px] font-bold text-primary">
-                                    {model.name}
-                                  </span>
-                                  <span className="text-[13px] text-slate-400 truncate">
-                                    {model.description}
-                                  </span>
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        </>,
-                        document.body,
-                      )}
-                  </div>
                 )}
-              </React.Fragment>
-            )}
+                <ChevronDown
+                  size={14}
+                  className={`transition-transform duration-300 ${isFilterPopupOpen ? "rotate-180" : ""}`}
+                />
+              </button>
+
+              {isFilterPopupOpen &&
+                createPortal(
+                  <>
+                    <div
+                      className="fixed inset-0 z-[99998] bg-slate-900/20 backdrop-blur-[2px] animate-fade-in"
+                      onClick={() => setIsFilterPopupOpen(false)}
+                    />
+                    <div
+                      className={`${window.innerWidth < 1024 ? "fixed inset-0 flex items-center justify-center p-4 z-[99999] pointer-events-none" : ""}`}
+                    >
+                      <div
+                        className="bg-white border border-slate-200 shadow-[0_20px_50px_rgba(0,0,0,0.15)] overflow-hidden animate-fade-in-up ring-1 ring-black/5 rounded-3xl pointer-events-auto"
+                        style={filterPopupStyle}
+                      >
+                      {/* Sticky Header */}
+                      <div className="flex-none p-4 border-b border-slate-50 flex items-center justify-between bg-white relative z-10">
+                        <div className="flex items-center gap-2">
+                          <Filter size={14} className="text-secondary" />
+                          <h3 className="text-[11px] font-black text-[#18254D] tracking-[0.2em] uppercase">
+                            Filter Enquiries
+                          </h3>
+                        </div>
+                        {(startDate || endDate || aiAnalysisEnabled) && (
+                          <button
+                            onClick={() => {
+                              setStartDate("");
+                              setEndDate("");
+                              setAiAnalysisEnabled(false);
+                              setHideIrrelevant(false);
+                              setIsFilterPopupOpen(false);
+                            }}
+                            className="text-[10px] font-black text-rose-500 hover:text-rose-600 tracking-widest uppercase transition-colors"
+                          >
+                            Clear All
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Scrollable Body */}
+                      <div className="flex-1 p-5 space-y-4 overflow-y-auto custom-scrollbar">
+                        {/* AI Settings Section */}
+                        <div className="space-y-3">
+                          <label className="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase ml-1">
+                            AI Analysis Control
+                          </label>
+                          <div className="space-y-2">
+                            {/* Toggle AI Analysis */}
+                            <div className="flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-2xl hover:border-slate-200 transition-colors">
+                              <div className="flex flex-col">
+                                <span className="text-[11px] font-bold text-primary">
+                                  Enable AI Analysis
+                                </span>
+                                <span className="text-[9px] text-slate-400">
+                                  Qualify enquiries automatically
+                                </span>
+                              </div>
+                              <button
+                                onClick={() => {
+                                  const nextValue = !aiAnalysisEnabled;
+                                  setAiAnalysisEnabled(nextValue);
+                                  if (!nextValue) setHideIrrelevant(false);
+                                }}
+                                className={`relative inline-flex h-5 w-9 shrink-0 rounded-full transition-colors duration-300 ease-in-out ${
+                                  aiAnalysisEnabled
+                                    ? "bg-secondary"
+                                    : "bg-slate-300"
+                                }`}
+                              >
+                                <span
+                                  className={`inline-block h-3.5 w-3.5 bg-white rounded-full transform transition-transform duration-300 ease-in-out ${aiAnalysisEnabled ? "translate-x-[18px]" : "translate-x-0.5"} mt-[3px] ml-0.5`}
+                                />
+                              </button>
+                            </div>
+
+                            {/* Toggle Filter Spam */}
+                            <div
+                              className={`flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-2xl transition-all hover:border-slate-200 ${!aiAnalysisEnabled ? "opacity-30 grayscale pointer-events-none" : ""}`}
+                            >
+                              <div className="flex flex-col">
+                                <span className="text-[11px] font-bold text-primary">
+                                  Auto-Filter Spam
+                                </span>
+                                <span className="text-[9px] text-slate-400">
+                                  Hide irrelevant enquiries
+                                </span>
+                              </div>
+                              <button
+                                onClick={() =>
+                                  setHideIrrelevant(!hideIrrelevant)
+                                }
+                                className={`relative inline-flex h-5 w-9 shrink-0 rounded-full transition-colors duration-300 ease-in-out ${
+                                  hideIrrelevant
+                                    ? "bg-emerald-600"
+                                    : "bg-slate-300"
+                                }`}
+                              >
+                                <span
+                                  className={`inline-block h-3.5 w-3.5 bg-white rounded-full transform transition-transform duration-300 ease-in-out ${hideIrrelevant ? "translate-x-[18px]" : "translate-x-0.5"} mt-[3px] ml-0.5`}
+                                />
+                              </button>
+                            </div>
+
+                            {/* AI Model Selection Dropdown */}
+                            {aiAnalysisEnabled && aiModels.length > 0 && (
+                              <div className="space-y-2 mt-2">
+                                <SearchableDropdown
+                                  label="Model Selection"
+                                  placeholder="Select AI Model..."
+                                  options={aiModels.map(m => ({
+                                    ...m,
+                                    label: m.name,
+                                    value: m.aimodel_id
+                                  }))}
+                                  value={selectedAiModel}
+                                  onChange={setSelectedAiModel}
+                                />
+                                <div className="px-3 py-2 bg-slate-50 border border-slate-100 rounded-2xl">
+                                  <p className="text-[10px] text-slate-400 leading-relaxed italic">
+                                    {aiModels.find(m => m.aimodel_id === selectedAiModel)?.description || "Select a model to see its description."}
+                                  </p>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="h-px bg-slate-100/50" />
+
+                        {/* Date Range Section */}
+                        <div className="space-y-3">
+                          <label className="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase ml-1">
+                            Date Range
+                          </label>
+                          <div className="grid grid-cols-2 gap-3">
+                            <DatePicker
+                              label="From"
+                              value={startDate}
+                              onChange={setStartDate}
+                            />
+                            <DatePicker
+                              label="To"
+                              value={endDate}
+                              onChange={setEndDate}
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Sticky Footer */}
+                      <div className="flex-none p-4 bg-white border-t border-slate-50 relative z-10 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
+                        <button
+                          onClick={() => setIsFilterPopupOpen(false)}
+                          className="w-full py-2.5 bg-[#18254D] text-white rounded-2xl text-[11px] font-black tracking-[0.2em] uppercase hover:bg-slate-800 transition-all shadow-lg active:scale-95"
+                        >
+                          Apply Filters
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </>,
+                  document.body,
+                )}
+            </div>
           </div>
         </div>
         {/* Error Message Row */}

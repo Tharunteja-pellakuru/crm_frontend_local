@@ -345,26 +345,13 @@ const ClientDetail = ({
               </div>
             </div>
           </div>
-          {isLead && (
-            <div className="flex shrink-0">
-              <button
-                onClick={() => {
-                  setShowEditModal(true);
-                }}
-                className="flex items-center justify-center p-2 md:p-3.5 bg-slate-50 text-primary border border-slate-200 rounded-lg md:rounded-xl hover:bg-white hover:border-primary transition-all shadow-sm"
-                title="Edit Lead Details"
-              >
-                <Pencil className="w-4 h-4 md:w-[18px] md:h-[18px]" />
-              </button>
-            </div>
-          )}
         </div>
         <div className="flex-1 flex flex-col md:flex-row md:overflow-hidden">
           {/* Edit Lead Modal */}
           {showEditModal &&
             createPortal(
-              <div className="fixed inset-0 z-[99999] flex items-start justify-center p-4 bg-slate-900/60 backdrop-blur-xl animate-fade-in overflow-y-auto py-10 no-scrollbar">
-                <div className="bg-white rounded-xl shadow-2xl w-full max-w-xl overflow-hidden animate-zoom-in my-auto border border-slate-200 flex flex-col max-h-[90vh]">
+              <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xl animate-fade-in">
+                <div className="bg-white rounded-xl shadow-2xl w-full max-w-xl overflow-hidden animate-zoom-in border border-slate-200 flex flex-col max-h-[90vh]">
                   <div className="bg-primary p-4 text-white relative shrink-0">
                     <button
                       onClick={() => setShowEditModal(false)}
@@ -455,7 +442,7 @@ const ClientDetail = ({
                         }
                       }
                     }}
-                    className="p-5 space-y-4 overflow-y-auto no-scrollbar"
+                    className="flex-1 min-h-0 p-5 space-y-4 overflow-y-auto no-scrollbar"
                   >
                     <div className="space-y-2">
                       <label className="text-[12px] font-bold text-primary  tracking-widest ml-1 uppercase">
@@ -643,71 +630,6 @@ const ClientDetail = ({
                       </>
                     )}
 
-                    <div className="space-y-2">
-                      <label className="text-[12px] font-bold text-primary  tracking-widest ml-1 uppercase">
-                        {isLead ? "Lead" : "Client"} Category
-                      </label>
-                      <div className="relative">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setIsEditCategoryDropdownOpen(
-                              !isEditCategoryDropdownOpen,
-                            )
-                          }
-                          className="w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold shadow-sm hover:border-secondary transition-all"
-                        >
-                          <span className="text-primary truncate">
-                            {CATEGORY_MAP[editFormData.projectCategory] ||
-                              "Select Category"}
-                          </span>
-                          <ChevronDown
-                            size={16}
-                            className={`text-slate-400 transition-transform ${
-                              isEditCategoryDropdownOpen ? "rotate-180" : ""
-                            }`}
-                          />
-                        </button>
-
-                        {isEditCategoryDropdownOpen && (
-                          <>
-                            <div
-                              className="fixed inset-0 z-[80]"
-                              onClick={() =>
-                                setIsEditCategoryDropdownOpen(false)
-                              }
-                            />
-                            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top">
-                              <div className="bg-[#18254D] px-4 py-3 border-b border-white/10">
-                                <p className="text-[14px] font-bold text-white/50  tracking-widest">
-                                  Select Category
-                                </p>
-                              </div>
-                              {[1, 2, 3].map((catId) => (
-                                <button
-                                  key={catId}
-                                  type="button"
-                                  onClick={() => {
-                                    setEditFormData({
-                                      ...editFormData,
-                                      projectCategory: catId,
-                                    });
-                                    setIsEditCategoryDropdownOpen(false);
-                                  }}
-                                  className={`w-full text-left px-4 py-2.5 text-[12px] font-bold  tracking-widest transition-colors ${
-                                    editFormData.projectCategory === catId
-                                      ? "bg-slate-100 text-secondary"
-                                      : "text-[#18254D] hover:bg-slate-50"
-                                  }`}
-                                >
-                                  {CATEGORY_MAP[catId]}
-                                </button>
-                              ))}
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    </div>
 
                     <div className="space-y-2">
                       <label className="text-[12px] font-bold text-primary  tracking-widest ml-1 uppercase">
@@ -735,62 +657,56 @@ const ClientDetail = ({
                         </button>
 
                         {isEditStatusDropdownOpen && (
-                          <>
-                            <div
-                              className="fixed inset-0 z-[80]"
-                              onClick={() => setIsEditStatusDropdownOpen(false)}
-                            />
-                            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top">
-                              <div className="bg-[#18254D] px-4 py-3 border-b border-white/10">
-                                <p className="text-[14px] font-bold text-white/50  tracking-widest">
-                                  Select Status
-                                </p>
-                              </div>
-                              {(client.isConverted
-                                ? ["Hot", "Warm", "Cold", "Converted"]
-                                : ["Hot", "Warm", "Cold"]
-                              ).map((status) => (
-                                <button
-                                  key={status}
-                                  type="button"
-                                  onClick={() => {
-                                    setEditFormData({
-                                      ...editFormData,
-                                      leadType: status,
-                                    });
-                                    setIsEditStatusDropdownOpen(false);
-                                  }}
-                                  className={`w-full text-left px-4 py-2.5 text-[12px] font-bold  tracking-widest transition-colors ${
-                                    editFormData.leadType === status
-                                      ? "bg-slate-100 text-secondary"
-                                      : "text-[#18254D] hover:bg-slate-50"
-                                  }`}
-                                >
-                                  <div className="flex items-center gap-2">
-                                    {status === "Hot" && (
-                                      <Flame size={12} className="text-error" />
-                                    )}
-                                    {status === "Warm" && (
-                                      <Sun size={12} className="text-warning" />
-                                    )}
-                                    {status === "Cold" && (
-                                      <Snowflake
-                                        size={12}
-                                        className="text-info"
-                                      />
-                                    )}
-                                    {status === "Converted" && (
-                                      <UserCheck
-                                        size={12}
-                                        className="text-success"
-                                      />
-                                    )}
-                                    <span>{status}</span>
-                                  </div>
-                                </button>
-                              ))}
+                          <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top">
+                            <div className="bg-[#18254D] px-4 py-3 border-b border-white/10">
+                              <p className="text-[14px] font-bold text-white/50  tracking-widest">
+                                Select Status
+                              </p>
                             </div>
-                          </>
+                            {(client.isConverted
+                              ? ["Hot", "Warm", "Cold", "Converted"]
+                              : ["Hot", "Warm", "Cold"]
+                            ).map((status) => (
+                              <button
+                                key={status}
+                                type="button"
+                                onClick={() => {
+                                  setEditFormData({
+                                    ...editFormData,
+                                    leadType: status,
+                                  });
+                                  setIsEditStatusDropdownOpen(false);
+                                }}
+                                className={`w-full text-left px-4 py-2.5 text-[12px] font-bold  tracking-widest transition-colors ${
+                                  editFormData.leadType === status
+                                    ? "bg-slate-100 text-secondary"
+                                    : "text-[#18254D] hover:bg-slate-50"
+                                }`}
+                              >
+                                <div className="flex items-center gap-2">
+                                  {status === "Hot" && (
+                                    <Flame size={12} className="text-error" />
+                                  )}
+                                  {status === "Warm" && (
+                                    <Sun size={12} className="text-warning" />
+                                  )}
+                                  {status === "Cold" && (
+                                    <Snowflake
+                                      size={12}
+                                      className="text-info"
+                                    />
+                                  )}
+                                  {status === "Converted" && (
+                                    <UserCheck
+                                      size={12}
+                                      className="text-success"
+                                    />
+                                  )}
+                                  <span>{status}</span>
+                                </div>
+                              </button>
+                            ))}
+                          </div>
                         )}
                       </div>
                     </div>
@@ -1080,23 +996,26 @@ const ClientDetail = ({
 
           <div className="flex-1 flex flex-col md:overflow-hidden bg-white">
             <div className="bg-white p-2 border-b border-slate-100">
-              <div className="flex bg-slate-100/50 p-1 rounded-2xl border border-slate-200 shadow-sm overflow-x-auto no-scrollbar h-[40px] md:h-[42px] items-center gap-1">
-                {[
-                  { id: "overview", label: "Overview" },
-                  {
-                    id: "activity",
-                    label: "Conversations",
-                  },
-                  ...(!isLead ? [{ id: "projects", label: "Projects" }] : []),
-                ].map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`flex-1 px-3 md:px-5 h-full rounded-xl text-[11px] md:text-[12px] font-bold  tracking-wider transition-all flex items-center justify-center min-w-[80px] md:min-w-[100px] border border-transparent whitespace-nowrap ${activeTab === tab.id ? "bg-white text-primary shadow-md border-slate-100" : "text-slate-400 hover:text-slate-600 hover:bg-white/50"}`}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
+              <div className="flex items-center gap-2">
+                <div className="flex flex-1 bg-slate-100/50 p-1 rounded-2xl border border-slate-200 shadow-sm overflow-x-auto no-scrollbar h-[40px] md:h-[42px] items-center gap-1">
+                  {[
+                    { id: "overview", label: "Overview" },
+                    {
+                      id: "activity",
+                      label: "Conversations",
+                    },
+                    ...(!isLead ? [{ id: "projects", label: "Projects" }] : []),
+                  ].map((tab) => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`flex-1 px-3 md:px-5 h-full rounded-xl text-[11px] md:text-[12px] font-bold  tracking-wider transition-all flex items-center justify-center min-w-[80px] md:min-w-[100px] border border-transparent whitespace-nowrap ${activeTab === tab.id ? "bg-white text-primary shadow-md border-slate-100" : "text-slate-400 hover:text-slate-600 hover:bg-white/50"}`}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+
               </div>
             </div>
 
@@ -1122,19 +1041,6 @@ const ClientDetail = ({
                           }`}
                         >
                           {client.leadType || "Warm"}
-                        </p>
-                      </div>
-                      <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 group relative overflow-hidden hover:shadow-md hover:border-secondary/30 transition-all">
-                        <div className="w-8 h-8 bg-primary/10 text-primary rounded-xl flex items-center justify-center mb-3 group-hover:bg-primary group-hover:text-white transition-all border border-primary/20">
-                          <Tag size={16} strokeWidth={2.5} />
-                        </div>
-                        <h3 className="text-[14px] font-bold text-slate-400  tracking-widest mb-1">
-                          Lead Category
-                        </h3>
-                        <p className="text-lg font-bold text-primary tracking-tight">
-                          {CATEGORY_MAP[client.projectCategory] ||
-                            client.industry ||
-                            "Tech"}
                         </p>
                       </div>
                     </>

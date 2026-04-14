@@ -31,11 +31,9 @@ import {
   MessageSquare,
   Clock,
   Calendar,
-  Zap,
-  Check,
-  Pencil,
   AlertTriangle,
   User,
+  Pencil,
 } from "lucide-react";
 import DatePicker from "../../components/ui/DatePicker";
 import { countries } from "../../utils/countries";
@@ -64,11 +62,78 @@ const LeadList = ({
   onRestoreLead,
   onAddActivity,
   onUpdateConvertedLead,
+  onEditLead,
   allLeads = [],
 }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("All");
   const [leadTypeFilter, setLeadTypeFilter] = useState("All");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [isFilterPopupOpen, setIsFilterPopupOpen] = useState(false);
+  const filterButtonRef = useRef(null);
+  const [filterPopupStyle, setFilterPopupStyle] = useState({});
+
+  useEffect(() => {
+    if (isFilterPopupOpen && filterButtonRef.current) {
+      const rect = filterButtonRef.current.getBoundingClientRect();
+      const windowWidth = window.innerWidth;
+      const windowHeight = window.innerHeight;
+      const isMobile = windowWidth < 1024;
+      
+      const style = {
+        position: "fixed",
+        zIndex: 99999,
+        display: "flex",
+        flexDirection: "column",
+      };
+
+      if (isMobile) {
+        // Mobile styles: Centering handled by the Flexbox wrapper in JSX
+        const popupWidth = Math.min(windowWidth - 32, 400);
+        style.width = `${popupWidth}px`;
+        style.maxHeight = "calc(100dvh - 32px)";
+        style.borderRadius = "24px";
+      } else {
+        const popupWidth = 384; 
+        let left = rect.right - popupWidth;
+        if (left < 16) left = 16;
+        if (left + popupWidth > windowWidth - 16) left = windowWidth - popupWidth - 16;
+
+        const spaceBelow = windowHeight - rect.bottom - 24;
+        const spaceAbove = rect.top - 24;
+        
+        style.left = `${left}px`;
+        style.width = `${popupWidth}px`;
+
+        if (spaceBelow < 400 && spaceAbove > spaceBelow) {
+          style.bottom = `${windowHeight - rect.top + 8}px`;
+          style.maxHeight = `calc(${spaceAbove}px - 16px)`;
+          style.transformOrigin = "bottom right";
+        } else {
+          style.top = `${rect.bottom + 8}px`;
+          style.maxHeight = `calc(${spaceBelow}px - 16px)`;
+          style.transformOrigin = "top right";
+        }
+      }
+      setFilterPopupStyle(style);
+    }
+  }, [isFilterPopupOpen]);
+
+  useEffect(() => {
+    const handleScrollResize = () => {
+      if (isFilterPopupOpen) setIsFilterPopupOpen(false);
+    };
+    if (isFilterPopupOpen) {
+      window.addEventListener("scroll", handleScrollResize, true);
+      window.addEventListener("resize", handleScrollResize);
+    }
+    return () => {
+      window.removeEventListener("scroll", handleScrollResize, true);
+      window.removeEventListener("resize", handleScrollResize);
+    };
+  }, [isFilterPopupOpen]);
+
   const [isTierDropdownOpen, setIsTierDropdownOpen] = useState(false);
   const [isAddStatusDropdownOpen, setIsAddStatusDropdownOpen] = useState(false);
   const [isEditCategoryDropdownOpen, setIsEditCategoryDropdownOpen] =
@@ -132,10 +197,8 @@ const LeadList = ({
     isEditStatusDropdownOpen,
   ]);
 
-  const [startDate, setStartDate] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const RECORDS_PER_PAGE = 10;
-  const [endDate, setEndDate] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showOnboardModal, setShowOnboardModal] = useState(false);
@@ -166,6 +229,21 @@ const LeadList = ({
   const [followUpLeadId, setFollowUpLeadId] = useState(null);
   const [showEditConvertedModal, setShowEditConvertedModal] = useState(false);
   const [editingConvertedLeadId, setEditingConvertedLeadId] = useState(null);
+  
+  // Edit Lead Modal states
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingLead, setEditingLead] = useState(null);
+  const [editFormData, setEditFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    countryCode: "",
+    leadType: "Hot",
+    notes: "",
+    website: "",
+  });
+  const [isEditLeadStatusDropdownOpen, setIsEditLeadStatusDropdownOpen] = useState(false);
+  
   const [editConvertedData, setEditConvertedData] = useState({
     name: "",
     email: "",
@@ -217,8 +295,9 @@ const LeadList = ({
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [leadToDelete, setLeadToDelete] = useState(null);
 
+
   // Lock scroll when any modal is open
-  useScrollLock(showAddModal || showOnboardModal || showFollowUpModal || showEditConvertedModal || showDeleteModal);
+  useScrollLock(showAddModal || showOnboardModal || showFollowUpModal || showEditConvertedModal || showDeleteModal || showEditModal);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -697,10 +776,11 @@ const LeadList = ({
         </div>
 
         {/* Control Bar */}
-        <div className="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm">
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:flex gap-2 w-full items-center">
+        {/* Control Bar */}
+        <div className="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm relative z-[60]">
+          <div className="flex flex-col md:flex-row md:justify-between gap-2 w-full items-center">
             {/* 1. Search Bar */}
-            <div className="relative md:col-span-2 xl:flex-[1.5]">
+            <div className="relative w-full md:w-64 flex-none transition-all duration-300">
               <Search
                 size={16}
                 className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
@@ -714,72 +794,130 @@ const LeadList = ({
               />
             </div>
 
-            {leadView !== "Converted" && leadView !== "Dismissed" && (
-              <div className="col-span-1 xl:flex-1 relative z-50">
-                <button
-                  ref={tierButtonRef}
-                  onClick={() => setIsTierDropdownOpen(!isTierDropdownOpen)}
-                  className="w-full h-[38px] flex items-center justify-between gap-3 px-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-[12px] font-bold  tracking-widest text-[#18254D] hover:bg-white hover:border-slate-200 transition-all shadow-sm shadow-slate-200/50 group"
-                >
-                  <span>
-                    {leadTypeFilter === "All"
-                      ? "All Lead Status"
-                      : leadTypeFilter}
+            {/* 2. Filters Button */}
+            <div className="relative w-full md:w-auto flex-none" ref={filterButtonRef}>
+              <button
+                onClick={() => setIsFilterPopupOpen(!isFilterPopupOpen)}
+                className={`w-full md:w-auto h-[38px] flex items-center justify-center gap-2.5 px-6 py-2 rounded-xl text-[12px] font-bold tracking-widest transition-all shadow-sm active:scale-95 group border ${
+                  leadTypeFilter !== "All" || startDate || endDate
+                    ? "bg-secondary/5 border-secondary text-secondary"
+                    : "bg-slate-50 border-slate-100 text-[#18254D] hover:bg-white hover:border-slate-200 shadow-slate-200/50"
+                }`}
+              >
+                <Filter
+                  size={14}
+                  className={
+                    leadTypeFilter !== "All" || startDate || endDate
+                      ? "text-secondary"
+                      : "text-slate-400"
+                  }
+                />
+                <span>FILTERS</span>
+                {(leadTypeFilter !== "All" || startDate || endDate) && (
+                  <span className="flex items-center justify-center w-5 h-5 bg-secondary text-white text-[10px] font-black rounded-full ml-1 shadow-sm">
+                    {[leadTypeFilter !== "All", !!startDate, !!endDate].filter(Boolean).length}
                   </span>
-                  <ChevronDown
-                    size={16}
-                    strokeWidth={2.5}
-                    className={`transition-transform duration-300 ${isTierDropdownOpen ? "rotate-180" : ""}`}
-                  />
-                </button>
+                )}
+                <ChevronDown
+                  size={14}
+                  className={`transition-transform duration-300 ${isFilterPopupOpen ? "rotate-180" : ""}`}
+                />
+              </button>
 
-                {isTierDropdownOpen &&
-                  createPortal(
-                    <>
+              {/* Filters Popup - Portaled for perfect layering */}
+              {isFilterPopupOpen &&
+                createPortal(
+                  <>
+                    <div
+                      className="fixed inset-0 z-[99998] bg-slate-900/20 backdrop-blur-[2px] animate-fade-in"
+                      onClick={() => setIsFilterPopupOpen(false)}
+                    />
+                    <div
+                      className={`${window.innerWidth < 1024 ? "fixed inset-0 flex items-center justify-center p-4 z-[99999] pointer-events-none" : ""}`}
+                    >
                       <div
-                        className="fixed inset-0 z-[9998]"
-                        onClick={() => setIsTierDropdownOpen(false)}
-                      />
-                      <div
-                        className="tier-dropdown bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[9999] animate-fade-in-up origin-top"
-                        style={tierDropdownStyle}
+                        className="bg-white border border-slate-200 shadow-[0_20px_50px_rgba(0,0,0,0.15)] overflow-hidden animate-fade-in-up ring-1 ring-black/5 rounded-3xl pointer-events-auto"
+                        style={filterPopupStyle}
                       >
-                        {["All", "Hot", "Warm", "Cold"].map((tier) => (
+                      {/* Sticky Header */}
+                      <div className="flex-none p-4 border-b border-slate-50 flex items-center justify-between bg-white relative z-10">
+                        <div className="flex items-center gap-2">
+                          <Filter size={14} className="text-secondary" />
+                          <h3 className="text-[11px] font-black text-[#18254D] tracking-[0.2em] uppercase">
+                            Filter Leads
+                          </h3>
+                        </div>
+                        {(leadTypeFilter !== "All" || startDate || endDate) && (
                           <button
-                            key={tier}
                             onClick={() => {
-                              setLeadTypeFilter(tier);
-                              setIsTierDropdownOpen(false);
+                              setLeadTypeFilter("All");
+                              setStartDate("");
+                              setEndDate("");
+                              setIsFilterPopupOpen(false);
                             }}
-                            className={`w-full text-left px-5 py-4 text-[12px] font-bold  tracking-wider transition-colors ${
-                              tier === "All"
-                                ? "bg-[#18254D] text-white"
-                                : leadTypeFilter === tier
-                                  ? "bg-secondary/10 text-secondary border-l-4 border-secondary"
-                                  : "text-[#18254D] hover:bg-slate-50"
-                            }`}
+                            className="text-[10px] font-black text-rose-500 hover:text-rose-600 tracking-widest uppercase transition-colors"
                           >
-                            {tier === "All" ? "All Tiers" : tier}
+                            Clear All
                           </button>
-                        ))}
+                        )}
                       </div>
-                    </>,
-                    document.body,
-                  )}
-              </div>
-            )}
 
-            {/* Date Filters */}
-            <div className="col-span-1 xl:flex-1 relative z-50">
-              <DatePicker
-                label="From"
-                value={startDate}
-                onChange={setStartDate}
-              />
-            </div>
+                      {/* Scrollable Body */}
+                      <div className="flex-1 p-5 space-y-4 overflow-y-auto custom-scrollbar">
+                        {/* Lead Status Section */}
+                        <div className="space-y-3">
+                          <label className="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase ml-1">
+                            Lead Status
+                          </label>
+                          <SearchableDropdown
+                            placeholder="Select Lead Status..."
+                            options={[
+                              { label: "ALL", value: "All" },
+                              { label: "HOT", value: "Hot" },
+                              { label: "WARM", value: "Warm" },
+                              { label: "COLD", value: "Cold" },
+                            ]}
+                            value={leadTypeFilter}
+                            onChange={setLeadTypeFilter}
+                          />
+                        </div>
 
-            <div className="col-span-1 lg:flex-1 lg:min-w-[130px] relative z-50">
-              <DatePicker label="To" value={endDate} onChange={setEndDate} />
+                        <div className="h-px bg-slate-100/50" />
+
+                        {/* Date Range Section */}
+                        <div className="space-y-3">
+                          <label className="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase ml-1">
+                            Date Range
+                          </label>
+                          <div className="grid grid-cols-2 gap-3">
+                            <DatePicker
+                              label="From"
+                              value={startDate}
+                              onChange={setStartDate}
+                            />
+                            <DatePicker
+                              label="To"
+                              value={endDate}
+                              onChange={setEndDate}
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Sticky Footer */}
+                      <div className="flex-none p-4 bg-white border-t border-slate-50 relative z-10 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
+                        <button
+                          onClick={() => setIsFilterPopupOpen(false)}
+                          className="w-full py-2.5 bg-[#18254D] text-white rounded-2xl text-[11px] font-black tracking-[0.2em] uppercase hover:bg-slate-800 transition-all shadow-lg active:scale-95"
+                        >
+                          Apply Filters
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </>,
+                  document.body,
+                )}
             </div>
           </div>
         </div>
@@ -899,10 +1037,34 @@ const LeadList = ({
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleEditConvertedClick(lead);
+                                // Open regular Lead Edit Modal for converted leads
+                                setEditingLead(lead);
+                                
+                                // Extract country code and phone
+                                const { phone: extractedPhone, countryCode: extractedDialCode } = 
+                                  extractCountryAndPhone(lead.phone, lead.country, countries);
+                                
+                                const dialCode = lead.country_code || extractedDialCode || "";
+                                const phone = extractedPhone || lead.phone || "";
+                                
+                                let finalDialCode = dialCode || "";
+                                if (finalDialCode && !finalDialCode.startsWith("+") && /^\d+$/.test(finalDialCode)) {
+                                  finalDialCode = `+${finalDialCode}`;
+                                }
+                                
+                                setEditFormData({
+                                  name: lead.name || "",
+                                  email: lead.email || "",
+                                  phone: phone,
+                                  countryCode: finalDialCode,
+                                  leadType: lead.leadType || "Hot",
+                                  notes: lead.notes || "",
+                                  website: lead.website || "",
+                                });
+                                setShowEditModal(true);
                               }}
                               className="p-2.5 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-blue-500 hover:border-blue-500 hover:bg-blue-50 transition-all active:scale-90 shadow-sm"
-                              title="Edit Details"
+                              title="Edit Lead"
                             >
                               <Pencil size={18} />
                             </button>
@@ -945,6 +1107,42 @@ const LeadList = ({
                                   title="Convert to Client"
                                 >
                                   <UserCheck size={18} />
+                                </button>
+                              )}
+                              {lead.status === "Lead" && onEditLead && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    // Open edit modal instead of navigating
+                                    setEditingLead(lead);
+                                    
+                                    // Extract country code and phone
+                                    const { phone: extractedPhone, countryCode: extractedDialCode } = 
+                                      extractCountryAndPhone(lead.phone, lead.country, countries);
+                                    
+                                    const dialCode = lead.country_code || extractedDialCode || "";
+                                    const phone = extractedPhone || lead.phone || "";
+                                    
+                                    let finalDialCode = dialCode || "";
+                                    if (finalDialCode && !finalDialCode.startsWith("+") && /^\d+$/.test(finalDialCode)) {
+                                      finalDialCode = `+${finalDialCode}`;
+                                    }
+                                    
+                                    setEditFormData({
+                                      name: lead.name || "",
+                                      email: lead.email || "",
+                                      phone: phone,
+                                      countryCode: finalDialCode,
+                                      leadType: lead.leadType || "Hot",
+                                      notes: lead.notes || "",
+                                      website: lead.website || "",
+                                    });
+                                    setShowEditModal(true);
+                                  }}
+                                  className="p-2.5 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-blue-500 hover:border-blue-500 hover:bg-blue-50 transition-all active:scale-90 shadow-sm"
+                                  title="Edit Lead"
+                                >
+                                  <Pencil size={18} />
                                 </button>
                               )}
                               {onDismissLead &&
@@ -1087,9 +1285,34 @@ const LeadList = ({
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleEditConvertedClick(lead);
+                          // Open regular Lead Edit Modal for converted leads
+                          setEditingLead(lead);
+                          
+                          // Extract country code and phone
+                          const { phone: extractedPhone, countryCode: extractedDialCode } = 
+                            extractCountryAndPhone(lead.phone, lead.country, countries);
+                          
+                          const dialCode = lead.country_code || extractedDialCode || "";
+                          const phone = extractedPhone || lead.phone || "";
+                          
+                          let finalDialCode = dialCode || "";
+                          if (finalDialCode && !finalDialCode.startsWith("+") && /^\d+$/.test(finalDialCode)) {
+                            finalDialCode = `+${finalDialCode}`;
+                          }
+                          
+                          setEditFormData({
+                            name: lead.name || "",
+                            email: lead.email || "",
+                            phone: phone,
+                            countryCode: finalDialCode,
+                            leadType: lead.leadType || "Hot",
+                            notes: lead.notes || "",
+                            website: lead.website || "",
+                          });
+                          setShowEditModal(true);
                         }}
                         className="p-2 bg-blue-50 text-blue-600 border border-blue-100 rounded-lg hover:bg-blue-100 transition-all active:scale-90"
+                        title="Edit Lead"
                       >
                         <Pencil size={16} />
                       </button>
@@ -1179,9 +1402,8 @@ const LeadList = ({
 
           {filteredLeads.length === 0 && (
             <div className="col-span-full text-center py-10 bg-slate-50 rounded-2xl border border-dashed border-slate-300">
-              <p className="text-sm font-bold text-slate-400">
-                No leads found matching your filters.
-              </p>
+              <div className=" text-slate-300 p-4 rounded-xl mb-4  flex items-center justify-center mx-auto"> <UserX size={32} strokeWidth={1.5} /> </div> <p className="text-[13px] font-bold text-primary  tracking-wider"> No Active Leads </p>
+
             </div>
           )}
         </div>
@@ -2235,69 +2457,6 @@ const LeadList = ({
                     />
                   </div>
 
-                  <div className="md:col-span-2 space-y-2">
-                    <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1 uppercase">
-                      LEAD CATEGORY
-                    </label>
-                    <div className="relative">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setIsEditCategoryDropdownOpen(
-                            !isEditCategoryDropdownOpen,
-                          )
-                        }
-                        className="w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold shadow-sm hover:border-secondary transition-all"
-                      >
-                        <span className="text-primary truncate">
-                          {CATEGORY_MAP[editConvertedData.projectCategory] ||
-                            "Select Category"}
-                        </span>
-                        <ChevronDown
-                          size={16}
-                          className={`text-slate-400 transition-transform ${
-                            isEditCategoryDropdownOpen ? "rotate-180" : ""
-                          }`}
-                        />
-                      </button>
-
-                      {isEditCategoryDropdownOpen && (
-                        <>
-                          <div
-                            className="fixed inset-0 z-[80]"
-                            onClick={() => setIsEditCategoryDropdownOpen(false)}
-                          />
-                          <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top edit-category-dropdown">
-                            <div className="bg-[#18254D] px-4 py-3 border-b border-white/10">
-                              <p className="text-[14px] font-bold text-white/50  tracking-widest">
-                                Select Category
-                              </p>
-                            </div>
-                            {[1, 2, 3].map((catId) => (
-                              <button
-                                key={`edit-cat-${catId}`}
-                                type="button"
-                                onClick={() => {
-                                  setEditConvertedData({
-                                    ...editConvertedData,
-                                    projectCategory: catId,
-                                  });
-                                  setIsEditCategoryDropdownOpen(false);
-                                }}
-                                className={`w-full text-left px-4 py-2.5 text-[12px] font-bold  tracking-widest transition-colors ${
-                                  editConvertedData.projectCategory === catId
-                                    ? "bg-slate-100 text-secondary"
-                                    : "text-[#18254D] hover:bg-slate-50"
-                                }`}
-                              >
-                                {CATEGORY_MAP[catId]}
-                              </button>
-                            ))}
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  </div>
 
                   <div className="md:col-span-2 space-y-2">
                     <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1 uppercase">
@@ -2618,6 +2777,306 @@ const LeadList = ({
                   Delete Lead
                 </button>
               </div>
+            </div>
+          </div>,
+          document.body
+        )}
+
+      {/* Edit Lead Modal */}
+      {showEditModal && editingLead &&
+        createPortal(
+          <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xl animate-fade-in">
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-xl overflow-hidden animate-zoom-in border border-slate-200 flex flex-col max-h-[90vh]">
+              <div className="bg-primary p-4 text-white relative shrink-0">
+                <button
+                  onClick={() => setShowEditModal(false)}
+                  className="absolute top-4 right-4 p-1.5 hover:bg-white/10 rounded-xl transition-colors"
+                >
+                  <X size={18} strokeWidth={3} />
+                </button>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-secondary/10 rounded-xl flex items-center justify-center shadow-lg border border-secondary/20">
+                    <Pencil
+                      size={18}
+                      className="text-secondary"
+                      strokeWidth={2.5}
+                    />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold tracking-tighter leading-none">
+                      Edit Lead Details
+                    </h3>
+                    <p className="text-secondary text-[14px] font-bold tracking-widest mt-0.5">
+                      Update primary contact information
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <form
+                onSubmit={async (e) => {
+                  e.preventDefault();
+
+                  const isValid = validateForm(editFormData, {
+                    name: {
+                      required: true,
+                      minLength: 2,
+                      label: "Full Name",
+                    },
+                    email: {
+                      required: true,
+                      pattern: /^\S+@\S+\.\S+$/,
+                      label: "Email",
+                    },
+                    phone: {
+                      required: true,
+                      minLength: 10,
+                      label: "Phone Number",
+                    },
+                  });
+
+                  if (!isValid) return;
+
+                  if (onEditLead && editingLead) {
+                    try {
+                      const formDataToSubmit = {
+                        name: editFormData.name,
+                        email: editFormData.email,
+                        phone: editFormData.phone,
+                        countryCode: editFormData.countryCode,
+                        leadType: editFormData.leadType,
+                        notes: editFormData.notes,
+                        website: editFormData.website,
+                      };
+
+                      await onEditLead(editingLead.lead_id, formDataToSubmit);
+                      setShowEditModal(false);
+                      setEditingLead(null);
+                    } catch (error) {
+                      console.error("Failed to update lead:", error);
+                      toast.error("Failed to update lead. Please try again.");
+                    }
+                  }
+                }}
+                className="flex-1 min-h-0 p-5 space-y-4 overflow-y-auto no-scrollbar"
+              >
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-[12px] font-bold text-primary tracking-widest ml-1 uppercase">
+                      FULL NAME <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                      required
+                      type="text"
+                      placeholder="e.g. John Marks"
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
+                      value={editFormData.name}
+                      onChange={(e) =>
+                        setEditFormData({
+                          ...editFormData,
+                          name: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[12px] font-bold text-primary tracking-widest ml-1 uppercase">
+                      EMAIL ID <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                      required
+                      type="email"
+                      placeholder="johnmarks@gmail.com"
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
+                      value={editFormData.email}
+                      onChange={(e) =>
+                        setEditFormData({
+                          ...editFormData,
+                          email: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-[12px] font-bold text-primary tracking-widest ml-1 uppercase">
+                      COUNTRY CODE <span className="text-rose-500">*</span>
+                    </label>
+                    <SearchableDropdown
+                      options={countries.map((c) => ({
+                        name: `${c.name} (${c.code})`,
+                        code: c.code,
+                      }))}
+                      value={editFormData.countryCode}
+                      onChange={(val) => {
+                        setEditFormData({
+                          ...editFormData,
+                          countryCode: val,
+                        });
+                      }}
+                      placeholder="Search country..."
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[12px] font-bold text-primary tracking-widest ml-1 uppercase">
+                      PHONE NUMBER <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                      required
+                      type="tel"
+                      placeholder="9977553311"
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
+                      value={editFormData.phone}
+                      onChange={(e) =>
+                        setEditFormData({
+                          ...editFormData,
+                          phone: e.target.value.replace(/\D/g, ""),
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[12px] font-bold text-primary tracking-widest ml-1 uppercase">
+                    WEBSITE URL (OPTIONAL)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="https://example.com"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
+                    value={editFormData.website}
+                    onChange={(e) =>
+                      setEditFormData({
+                        ...editFormData,
+                        website: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[12px] font-bold text-primary tracking-widest ml-1 uppercase">
+                    LEAD STATUS {editingLead?.status !== "Converted" && <span className="text-rose-500">*</span>}
+                  </label>
+                  <div className="relative">
+                    {editingLead?.status === "Converted" ? (
+                      // Read-only display for converted leads
+                      <div className="w-full px-3.5 py-2.5 bg-slate-100 border border-slate-200 rounded-xl flex items-center justify-between cursor-not-allowed opacity-70">
+                        <span className="text-sm font-medium text-primary">
+                          {editFormData.leadType || "Converted"}
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Locked</span>
+                      </div>
+                    ) : (
+                      // Editable dropdown for non-converted leads
+                      <>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setIsEditLeadStatusDropdownOpen(!isEditLeadStatusDropdownOpen)
+                          }
+                          className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between hover:border-slate-300 transition-colors"
+                        >
+                          <span
+                            className={`text-sm font-medium ${
+                              editFormData.leadType
+                                ? "text-primary"
+                                : "text-slate-400"
+                            }`}
+                          >
+                            {editFormData.leadType || "Select Lead Status"}
+                          </span>
+                          <ChevronDown size={16} className="text-slate-400" />
+                        </button>
+                        {isEditLeadStatusDropdownOpen && (
+                          <>
+                            <div
+                              className="fixed inset-0 z-[80]"
+                              onClick={() => setIsEditLeadStatusDropdownOpen(false)}
+                            />
+                            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top">
+                              <div className="bg-primary px-4 py-3 border-b border-white/10">
+                                <p className="text-[14px] font-bold text-white/50 tracking-widest">
+                                  Select Status
+                                </p>
+                              </div>
+                              {["Hot", "Warm", "Cold"].map((status) => (
+                                <button
+                                  key={`edit-lead-status-${status}`}
+                                  type="button"
+                                  onClick={() => {
+                                    setEditFormData({
+                                      ...editFormData,
+                                      leadType: status,
+                                    });
+                                    setIsEditLeadStatusDropdownOpen(false);
+                                  }}
+                                  className="w-full px-4 py-3 text-left hover:bg-slate-50 transition-colors flex items-center gap-3"
+                                >
+                                  <span
+                                    className={`w-2 h-2 rounded-full ${
+                                      status === "Hot"
+                                        ? "bg-rose-500"
+                                        : status === "Warm"
+                                        ? "bg-amber-500"
+                                        : "bg-blue-500"
+                                    }`}
+                                  />
+                                  <span className="text-sm font-medium text-primary">
+                                    {status}
+                                  </span>
+                                </button>
+                              ))}
+                            </div>
+                          </>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[12px] font-bold text-primary tracking-widest ml-1 uppercase">
+                    ENQUIRY MESSAGE / NOTE
+                  </label>
+                  <textarea
+                    rows={3}
+                    placeholder="i need a Seo. for my website"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium resize-none"
+                    value={editFormData.notes}
+                    onChange={(e) =>
+                      setEditFormData({
+                        ...editFormData,
+                        notes: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+
+                <div className="flex gap-3 pt-4 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowEditModal(false);
+                      setEditingLead(null);
+                    }}
+                    className="flex-1 px-4 py-2.5 bg-white border border-slate-200 text-slate-600 rounded-xl text-xs font-bold tracking-widest hover:bg-slate-50 transition-all active:scale-95 uppercase"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 px-4 py-2.5 bg-primary text-white rounded-xl text-xs font-bold tracking-widest hover:bg-slate-800 shadow-lg shadow-slate-200 transition-all active:scale-95 uppercase"
+                  >
+                    Save Changes
+                  </button>
+                </div>
+              </form>
             </div>
           </div>,
           document.body

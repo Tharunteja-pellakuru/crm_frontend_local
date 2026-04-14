@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { toast } from "react-hot-toast";
 import { createPortal } from "react-dom";
 import { useScrollLock } from "../../hooks/useScrollLock";
@@ -15,6 +15,7 @@ import {
   ChevronDown,
   UserPlus,
   Search,
+  Filter,
   Edit2,
   Trash2,
   Calendar,
@@ -22,6 +23,7 @@ import {
   ChevronRight,
   Loader2,
 } from "lucide-react";
+import SearchableDropdown from "../../components/common/SearchableDropdown";
 import {
   CATEGORY_MAP,
   REVERSE_CATEGORY_MAP,
@@ -45,6 +47,7 @@ const FollowUpList = ({
   const [activeFilter, setActiveFilter] = useState("All");
   const [showAddModal, setShowAddModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [isFilterPopupOpen, setIsFilterPopupOpen] = useState(false);
   const [isClientDropdownOpen, setIsClientDropdownOpen] = useState(false);
   const [isPriorityDropdownOpen, setIsPriorityDropdownOpen] = useState(false);
   const [isHourDropdownOpen, setIsHourDropdownOpen] = useState(false);
@@ -76,6 +79,7 @@ const FollowUpList = ({
   const [currentPage, setCurrentPage] = useState(1);
   const RECORDS_PER_PAGE = 10;
   const [endDate, setEndDate] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("All");
   const [isModeDropdownOpen, setIsModeDropdownOpen] = useState(false);
   const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
   const [showCompletionModal, setShowCompletionModal] = useState(false);
@@ -100,6 +104,68 @@ const FollowUpList = ({
   const [isCompHourOpen, setIsCompHourOpen] = useState(false);
   const [isCompMinOpen, setIsCompMinOpen] = useState(false);
   const [isCompPeriodOpen, setIsCompPeriodOpen] = useState(false);
+  const filterButtonRef = useRef(null);
+  const [filterPopupStyle, setFilterPopupStyle] = useState({});
+
+  useEffect(() => {
+    if (isFilterPopupOpen && filterButtonRef.current) {
+      const rect = filterButtonRef.current.getBoundingClientRect();
+      const windowWidth = window.innerWidth;
+      const windowHeight = window.innerHeight;
+      const isMobile = windowWidth < 1024;
+      
+      const style = {
+        position: "fixed",
+        zIndex: 99999,
+        display: "flex",
+        flexDirection: "column",
+      };
+
+      if (isMobile) {
+        // Mobile styles: Centering handled by the Flexbox wrapper in JSX
+        const popupWidth = Math.min(windowWidth - 32, 400);
+        style.width = `${popupWidth}px`;
+        style.maxHeight = "calc(100dvh - 32px)";
+        style.borderRadius = "24px";
+      } else {
+        const popupWidth = 384; 
+        let left = rect.right - popupWidth;
+        if (left < 16) left = 16;
+        if (left + popupWidth > windowWidth - 16) left = windowWidth - popupWidth - 16;
+
+        const spaceBelow = windowHeight - rect.bottom - 24;
+        const spaceAbove = rect.top - 24;
+        
+        style.left = `${left}px`;
+        style.width = `${popupWidth}px`;
+
+        if (spaceBelow < 400 && spaceAbove > spaceBelow) {
+          style.bottom = `${windowHeight - rect.top + 8}px`;
+          style.maxHeight = `calc(${spaceAbove}px - 16px)`;
+          style.transformOrigin = "bottom right";
+        } else {
+          style.top = `${rect.bottom + 8}px`;
+          style.maxHeight = `calc(${spaceBelow}px - 16px)`;
+          style.transformOrigin = "top right";
+        }
+      }
+      setFilterPopupStyle(style);
+    }
+  }, [isFilterPopupOpen]);
+
+  useEffect(() => {
+    const handleScrollResize = () => {
+      if (isFilterPopupOpen) setIsFilterPopupOpen(false);
+    };
+    if (isFilterPopupOpen) {
+      window.addEventListener("scroll", handleScrollResize, true);
+      window.addEventListener("resize", handleScrollResize);
+    }
+    return () => {
+      window.removeEventListener("scroll", handleScrollResize, true);
+      window.removeEventListener("resize", handleScrollResize);
+    };
+  }, [isFilterPopupOpen]);
 
   // Lock scroll when any modal is open
   useScrollLock(showAddModal || showCompletionModal);
@@ -160,6 +226,13 @@ const FollowUpList = ({
       const datePart = f.dueDate.split("T")[0];
       if (startDate && datePart < startDate) return false;
       if (endDate && datePart > endDate) return false;
+    }
+
+    // Category Filter
+    if (categoryFilter !== "All") {
+      const categoryNum = parseInt(REVERSE_CATEGORY_MAP[categoryFilter]);
+      const entityCategory = client?.category || client?.projectCategory || client?.leadCategory || 1;
+      if (entityCategory !== categoryNum) return false;
     }
 
     return true;
@@ -388,10 +461,10 @@ const FollowUpList = ({
         </div>
 
         {/* Control Bar: Filters */}
-        <div className="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 w-full">
+        <div className="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm relative z-[60]">
+          <div className="flex flex-col md:flex-row md:justify-between gap-4 w-full items-center">
             {/* 1. Search Bar */}
-            <div className="relative w-full border border-slate-200 rounded-xl">
+            <div className="relative w-full md:w-64 flex-none transition-all duration-300">
               <Search
                 size={16}
                 className="absolute left-4 top-1/2 -translate-y-1/2 text-[#18254D]/40"
@@ -401,19 +474,135 @@ const FollowUpList = ({
                 placeholder="Search follow-ups..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-11 pr-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium text-[#18254D] focus:outline-none focus:ring-4 focus:ring-[#18254D]/10 focus:border-[#18254D]/20 transition-all placeholder:text-[#18254D]/30"
+                className="w-full h-[38px] pl-11 pr-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium text-[#18254D] focus:outline-none focus:ring-4 focus:ring-[#18254D]/10 focus:border-[#18254D]/20 transition-all placeholder:text-[#18254D]/30"
               />
             </div>
 
-            {/* 2. From Date */}
-            <DatePicker
-              label="From"
-              value={startDate}
-              onChange={setStartDate}
-            />
+            {/* 2. Filters Button */}
+            <div className="relative w-full md:w-auto flex-none" ref={filterButtonRef}>
+              <button
+                onClick={() => setIsFilterPopupOpen(!isFilterPopupOpen)}
+                className={`w-full md:w-auto h-[38px] flex items-center justify-center gap-2.5 px-6 py-2 rounded-xl text-[12px] font-bold tracking-widest transition-all shadow-sm active:scale-95 group border ${
+                  startDate || endDate || (typeFilter === "Active" && categoryFilter !== "All")
+                    ? "bg-secondary/5 border-secondary text-secondary"
+                    : "bg-slate-50 border-slate-100 text-[#18254D] hover:bg-white hover:border-slate-200 shadow-slate-200/50"
+                }`}
+              >
+                <Filter
+                  size={14}
+                  className={(startDate || endDate || (typeFilter === "Active" && categoryFilter !== "All")) ? "text-secondary" : "text-slate-400"}
+                />
+                <span>FILTERS</span>
+                {(startDate || endDate || (typeFilter === "Active" && categoryFilter !== "All")) && (
+                  <span className="flex items-center justify-center w-5 h-5 bg-secondary text-white text-[10px] font-black rounded-full ml-1 shadow-sm">
+                    {[
+                      !!startDate,
+                      !!endDate,
+                      (typeFilter === "Active" && categoryFilter !== "All")
+                    ].filter(Boolean).length}
+                  </span>
+                )}
+                <ChevronDown
+                  size={14}
+                  className={`transition-transform duration-300 ${isFilterPopupOpen ? "rotate-180" : ""}`}
+                />
+              </button>
 
-            {/* 3. To Date */}
-            <DatePicker label="To" value={endDate} onChange={setEndDate} />
+              {/* Filters Popup - Portaled for perfect layering */}
+              {isFilterPopupOpen &&
+                createPortal(
+                  <>
+                    <div
+                      className="fixed inset-0 z-[99998] bg-slate-900/20 backdrop-blur-[2px] animate-fade-in"
+                      onClick={() => setIsFilterPopupOpen(false)}
+                    />
+                    <div
+                      className={`${window.innerWidth < 1024 ? "fixed inset-0 flex items-center justify-center p-4 z-[99999] pointer-events-none" : ""}`}
+                    >
+                      <div
+                        className="bg-white border border-slate-200 shadow-[0_20px_50px_rgba(0,0,0,0.15)] overflow-hidden animate-fade-in-up ring-1 ring-black/5 rounded-3xl pointer-events-auto"
+                        style={filterPopupStyle}
+                      >
+                      {/* Sticky Header */}
+                      <div className="flex-none p-4 border-b border-slate-50 flex items-center justify-between bg-white relative z-10">
+                        <div className="flex items-center gap-2">
+                          <Filter size={14} className="text-secondary" />
+                          <h3 className="text-[11px] font-black text-[#18254D] tracking-[0.2em] uppercase">
+                            Filter Follow-ups
+                          </h3>
+                        </div>
+                        {(startDate || endDate || (typeFilter === "Active" && categoryFilter !== "All")) && (
+                          <button
+                            onClick={() => {
+                              setStartDate("");
+                              setEndDate("");
+                              setCategoryFilter("All");
+                              setIsFilterPopupOpen(false);
+                            }}
+                            className="text-[10px] font-black text-rose-500 hover:text-rose-600 tracking-widest uppercase transition-colors"
+                          >
+                            Clear All
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Scrollable Body */}
+                      <div className="flex-1 p-5 space-y-4 overflow-y-auto custom-scrollbar">
+                        {/* Category Filter (ONLY visible for Active/Project view) */}
+                        {typeFilter === "Active" && (
+                          <div className="space-y-3">
+                            <label className="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase ml-1">
+                              Project Category
+                            </label>
+                            <SearchableDropdown
+                              placeholder="Select Category..."
+                              options={["All", "Tech", "Social Media"].map(cat => ({
+                                label: cat.toUpperCase(),
+                                value: cat
+                              }))}
+                              value={categoryFilter}
+                              onChange={setCategoryFilter}
+                            />
+                          </div>
+                        )}
+
+                        <div className="h-px bg-slate-100/50" />
+
+                        {/* Date Range Section */}
+                        <div className="space-y-3">
+                          <label className="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase ml-1">
+                            Follow-up Date Range
+                          </label>
+                          <div className="grid grid-cols-2 gap-3">
+                            <DatePicker
+                              label="From"
+                              value={startDate}
+                              onChange={setStartDate}
+                            />
+                            <DatePicker
+                              label="To"
+                              value={endDate}
+                              onChange={setEndDate}
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Sticky Footer */}
+                      <div className="flex-none p-4 bg-white border-t border-slate-50 relative z-10 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
+                        <button
+                          onClick={() => setIsFilterPopupOpen(false)}
+                          className="w-full py-2.5 bg-[#18254D] text-white rounded-2xl text-[11px] font-black tracking-[0.2em] uppercase hover:bg-slate-800 transition-all shadow-lg active:scale-95"
+                        >
+                          Apply Filters
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </>,
+                  document.body,
+                )}
+            </div>
           </div>
         </div>
         <div className="flex justify-center my-4 w-full px-1 sm:px-0">
