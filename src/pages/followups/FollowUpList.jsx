@@ -1940,20 +1940,7 @@ const FollowUpList = ({
                                 Select Status
                               </p>
                             </div>
-                            {["pending", "completed", "reschedule", "cancelled"]
-                              .filter((status) => {
-                                if (formData.id) {
-                                  const originalFollowup = followUps.find(
-                                    (f) => f.id == formData.id,
-                                  );
-                                  if (
-                                    originalFollowup?.status === "completed"
-                                  ) {
-                                    return status === "completed";
-                                  }
-                                }
-                                return true;
-                              })
+                            {["pending", "completed"]
                               .map((status) => (
                                 <button
                                   key={status}
