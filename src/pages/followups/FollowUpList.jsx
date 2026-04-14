@@ -427,7 +427,7 @@ const FollowUpList = ({
                 className="w-full h-full flex items-center justify-between gap-3 px-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-[12px] font-bold  tracking-widest text-[#18254D] hover:bg-white hover:border-slate-200 transition-all shadow-sm shadow-slate-200/50 group"
               >
                 <span className="truncate">
-                  {categoryFilter === "All" ? "All Categories" : categoryFilter}
+                  {categoryFilter === "All" ? "Select Category" : categoryFilter}
                 </span>
                 <ChevronDown
                   size={16}
@@ -443,7 +443,7 @@ const FollowUpList = ({
                     onClick={() => setIsCategoryDropdownOpen(false)}
                   />
                   <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top">
-                    {["All", "Tech", "Social Media"].map((cat) => (
+                    {["All", "Tech", "Social Media", "Both"].map((cat) => (
                       <button
                         key={cat}
                         onClick={() => {
@@ -454,7 +454,7 @@ const FollowUpList = ({
                           cat === "All"
                             ? "bg-[#18254D] text-white"
                             : categoryFilter === cat
-                              ? "bg-slate-100 text-[#18254D]"
+                              ? "bg-secondary/10 text-secondary border-l-4 border-secondary"
                               : "text-[#18254D] hover:bg-slate-50"
                         }`}
                       >

@@ -377,7 +377,7 @@ const ProjectBoard = ({
   onUpdateProject,
   onDeleteProject,
 }) => {
-  const [selectedCategory, setSelectedCategory] = useState(3);
+  const [selectedCategory, setSelectedCategory] = useState("All");
   const [projectToDelete, setProjectToDelete] = useState(null);
   const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -476,7 +476,7 @@ const ProjectBoard = ({
   const filteredProjects = projects.filter((p) => {
     const matchesStatus = p.status === activeStage;
     const matchesCategory =
-      selectedCategory === 3 ? true : (p.category || 1) === selectedCategory;
+      selectedCategory === "All" ? true : (p.category || 1) === selectedCategory;
     const query = searchQuery.toLowerCase();
     const matchesSearch =
       !query ||
@@ -625,10 +625,9 @@ const ProjectBoard = ({
                 className="w-full h-[38px] flex items-center justify-between gap-3 px-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-[12px] font-bold  tracking-widest text-primary hover:bg-white hover:border-slate-200 transition-all shadow-sm shadow-slate-200/50 group"
               >
                 <span>
-                  {selectedCategory === 3
-                    ? "All"
-                    : CATEGORY_MAP[selectedCategory]}{" "}
-                  Projects
+                  {selectedCategory === "All"
+                    ? "Select Category"
+                    : `${CATEGORY_MAP[selectedCategory]} Projects`}
                 </span>
                 <ChevronDown
                   size={16}
@@ -648,22 +647,25 @@ const ProjectBoard = ({
                       className="category-dropdown bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[9999] animate-fade-in-up origin-top"
                       style={categoryDropdownStyle}
                     >
-                      <div className="bg-[#18254D] px-4 py-3 border-b border-white/10">
-                        <p className="text-[14px] font-black text-white/50  tracking-widest">
-                          Select Project Category
-                        </p>
-                      </div>
-                      {[3, 1, 2].map((catId) => (
+                    
+                      {['All', 1, 2, 3].map((catId) => (
                         <button
                           key={`proj-cat-opt-${catId}`}
                           onClick={() => handleCategoryChange(catId)}
-                          className={`w-full text-left px-5 py-3.5 text-[12px] font-bold  tracking-widest transition-colors ${
-                            selectedCategory === catId
-                              ? "bg-slate-100 text-secondary"
-                              : "text-[#18254D] hover:bg-slate-50"
+                          className={`w-full text-left px-5 py-3.5 text-[12px] font-bold tracking-widest transition-colors flex items-center justify-between ${
+                            catId === 'All'
+                              ? selectedCategory === 'All'
+                                ? "bg-secondary/10 text-secondary border-l-4 border-secondary"
+                                : "text-[#18254D] hover:bg-slate-50"
+                              : selectedCategory === catId
+                                ? "bg-secondary/10 text-secondary border-l-4 border-secondary"
+                                : "text-[#18254D] hover:bg-slate-50"
                           }`}
                         >
-                          {catId === 3 ? "All" : CATEGORY_MAP[catId]} Projects
+                          <span>{catId === 'All' ? 'Select Category' : `${CATEGORY_MAP[catId]} Projects`}</span>
+                          {(catId === 'All' ? selectedCategory === 'All' : selectedCategory === catId) && (
+                            <span className="text-[12px] font-bold text-secondary">Selected</span>
+                          )}
                         </button>
                       ))}
                     </div>

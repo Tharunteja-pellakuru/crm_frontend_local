@@ -611,7 +611,7 @@ const ClientList = ({
                               tier === "All"
                                 ? "bg-[#18254D] text-white"
                                 : leadTypeFilter === tier
-                                  ? "bg-slate-100 text-[#18254D]"
+                                  ? "bg-secondary/10 text-secondary border-l-4 border-secondary"
                                   : "text-[#18254D] hover:bg-slate-50"
                             }`}
                           >
@@ -657,7 +657,7 @@ const ClientList = ({
                       className="category-dropdown bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[9999] animate-fade-in-up origin-top"
                       style={categoryDropdownStyle}
                     >
-                      {["All", 1, 2].map((catId) => (
+                      {["All", 1, 2, 3].map((catId) => (
                         <button
                           key={catId}
                           onClick={() => {
@@ -670,7 +670,7 @@ const ClientList = ({
                                 ? "bg-[#18254D] text-white"
                                 : "text-[#18254D] hover:bg-slate-50"
                               : categoryFilter === catId
-                                ? "bg-slate-100 text-[#18254D]"
+                                ? "bg-secondary/10 text-secondary border-l-4 border-secondary"
                                 : "text-[#18254D] hover:bg-slate-50"
                           }`}
                         >
