@@ -30,6 +30,7 @@ import {
   Globe,
   UserCheck,
   Tag,
+  DollarSign,
 } from "lucide-react";
 import { MOCK_ACTIVITIES } from "../../constants/mockData";
 import {
@@ -1023,144 +1024,58 @@ const ClientDetail = ({
               {activeTab === "overview" && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 animate-fade-in text-start">
                   {isLead ? (
-                    <>
-                      <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 group relative overflow-hidden hover:shadow-md hover:border-secondary/30 transition-all">
-                        <div className="w-8 h-8 bg-secondary/10 text-secondary rounded-xl flex items-center justify-center mb-3 group-hover:bg-secondary group-hover:text-white transition-all border border-secondary/20">
-                          <Zap size={16} strokeWidth={2.5} />
-                        </div>
-                        <h3 className="text-[14px] font-bold text-slate-400  tracking-widest mb-1">
-                          Lead Status
-                        </h3>
-                        <p
-                          className={`text-lg font-bold tracking-tight  ${
-                            client.leadType === "Hot"
-                              ? "text-error"
-                              : client.leadType === "Warm"
-                                ? "text-warning"
-                                : "text-info"
-                          }`}
-                        >
-                          {client.leadType || "Warm"}
-                        </p>
+                    /* Lead Overview - Show only Lead Status */
+                    <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 group relative overflow-hidden hover:shadow-md hover:border-secondary/30 transition-all">
+                      <div className="w-8 h-8 bg-secondary/10 text-secondary rounded-xl flex items-center justify-center mb-3 group-hover:bg-secondary group-hover:text-white transition-all border border-secondary/20">
+                        <Zap size={16} strokeWidth={2.5} />
                       </div>
-                    </>
+                      <h3 className="text-[14px] font-bold text-slate-400  tracking-widest mb-1">
+                        Lead Status
+                      </h3>
+                      <p
+                        className={`text-lg font-bold tracking-tight  ${
+                          client.leadType === "Hot"
+                            ? "text-error"
+                            : client.leadType === "Warm"
+                              ? "text-warning"
+                              : "text-info"
+                        }`}
+                      >
+                        {client.leadType || "Warm"}
+                      </p>
+                    </div>
                   ) : (
+                    /* Client Overview - Show Client Status and Project Billing Currency */
                     <>
-                      <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 group relative overflow-hidden hover:shadow-md hover:border-secondary/30 transition-all">
-                        <div className="w-8 h-8 bg-primary/10 text-primary rounded-xl flex items-center justify-center mb-3 group-hover:bg-primary group-hover:text-white transition-all border border-primary/20">
-                          <Target size={16} strokeWidth={2.5} />
-                        </div>
-                        <h3 className="text-[14px] font-bold text-slate-400  tracking-widest mb-1">
-                          Project Category
-                        </h3>
-                        <p className="text-lg font-bold text-primary tracking-tight ">
-                          {(() => {
-                            const catName =
-                              CATEGORY_MAP[client.projectCategory] ||
-                              client.industry ||
-                              "Tech";
-                            if (
-                              catName === "Other" ||
-                              catName === "others" ||
-                              (catName === "Tech" &&
-                                !CATEGORY_MAP[client.projectCategory])
-                            ) {
-                              console.log(
-                                "Category mismatch for client detail:",
-                                client.name,
-                                {
-                                  projectCategory: client.projectCategory,
-                                  industry: client.industry,
-                                  catName,
-                                },
-                              );
-                            }
-                            return catName;
-                          })()}
-                        </p>
-                      </div>
+                      {/* Client Status Card */}
                       <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 group relative overflow-hidden hover:shadow-md hover:border-secondary/30 transition-all">
                         <div className="w-8 h-8 bg-secondary/10 text-secondary rounded-xl flex items-center justify-center mb-3 group-hover:bg-secondary group-hover:text-white transition-all border border-secondary/20">
-                          <Zap size={16} strokeWidth={2.5} />
+                          <UserCheck size={16} strokeWidth={2.5} />
                         </div>
-                        <h3 className="text-[14px] font-bold text-slate-400  tracking-widest mb-1">
-                          Project Priority
-                        </h3>
-                        <p className="text-lg font-bold text-primary tracking-tight ">
-                          {client.projectPriority || "Medium"}
-                        </p>
-                      </div>
-                      <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 group relative overflow-hidden hover:shadow-md hover:border-secondary/30 transition-all">
-                        <div className="w-8 h-8 bg-green-500/10 text-green-600 rounded-xl flex items-center justify-center mb-3 group-hover:bg-green-600 group-hover:text-white transition-all border border-green-500/20">
-                          <span className="text-xs font-bold leading-none">
-                            {commonCurrencies.find(
-                              (c) => c.code === client.currency,
-                            )?.symbol || "₹"}
-                          </span>
-                        </div>
-                        <h3 className="text-[14px] font-bold text-slate-400  tracking-widest mb-1">
-                          Billing Currency
-                        </h3>
-                        <p className="text-lg font-bold text-primary tracking-tight ">
-                          {(() => {
-                            const currencyObj = commonCurrencies.find(
-                              (c) => c.code === client.currency,
-                            );
-                            return currencyObj 
-                              ? `${currencyObj.code} (${currencyObj.symbol})` 
-                              : (client.currency || "INR (₹)");
-                          })()}
-                        </p>
-                      </div>
-                      <div className="bg-white p-4 rounded-2xl shadow-sm border border-emerald-100 group relative overflow-hidden hover:shadow-md hover:border-emerald-300/30 transition-all">
-                        <div className="w-8 h-8 bg-emerald-500/10 text-emerald-600 rounded-xl flex items-center justify-center mb-3 group-hover:bg-emerald-600 group-hover:text-white transition-all border border-emerald-500/20">
-                          <CheckCircle2 size={16} strokeWidth={2.5} />
-                        </div>
-                        <h3 className="text-[14px] font-bold text-slate-400  tracking-widest mb-1">
+                        <h3 className="text-[14px] font-bold text-slate-400 tracking-widest mb-1">
                           Client Status
                         </h3>
-                        <p className="text-lg font-bold text-emerald-600 tracking-tight ">
-                          {client.clientStatus || "Active"}
+                        <p className={`text-lg font-bold tracking-tight ${
+                          client.clientStatus === "Active" || client.status === "Active"
+                            ? "text-success"
+                            : "text-slate-400"
+                        }`}>
+                          {client.clientStatus || client.status || "Active"}
                         </p>
                       </div>
-                      {/* <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 group relative overflow-hidden md:col-span-2 hover:shadow-md hover:border-secondary/30 transition-all">
-                        <div className="w-8 h-8 bg-primary/10 text-primary rounded-xl flex items-center justify-center mb-3 group-hover:bg-primary group-hover:text-white transition-all border border-primary/20">
-                          <Briefcase size={16} strokeWidth={2.5} />
+
+                      {/* Project Billing Currency Card */}
+                      <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 group relative overflow-hidden hover:shadow-md hover:border-secondary/30 transition-all">
+                        <div className="w-8 h-8 bg-secondary/10 text-secondary rounded-xl flex items-center justify-center mb-3 group-hover:bg-secondary group-hover:text-white transition-all border border-secondary/20">
+                          <DollarSign size={16} strokeWidth={2.5} />
                         </div>
-                        <h3 className="text-[14px] font-bold text-slate-400  tracking-widest mb-3 uppercase">
-                          Recent Projects
+                        <h3 className="text-[14px] font-bold text-slate-400 tracking-widest mb-1">
+                          Project Billing Currency
                         </h3>
-                        <div className="space-y-3">
-                          {clientProjects.length > 0 ? (
-                            clientProjects.map((project) => (
-                              <div
-                                key={project.id}
-                                className="flex items-center justify-between p-3 bg-slate-50/50 rounded-xl border border-slate-100 group-hover:border-secondary/20 transition-all"
-                              >
-                                <div>
-                                  <h4 className="text-sm font-bold text-primary tracking-tight">
-                                    {project.name}
-                                  </h4>
-                                  <p className="text-[14px] font-bold text-slate-400  tracking-widest">
-                                    {project.status} • {project.progress}%
-                                    Complete
-                                  </p>
-                                </div>
-                                <button
-                                  onClick={() => setActiveTab("projects")}
-                                  className="p-2 hover:bg-white rounded-lg text-slate-300 hover:text-secondary transition-all"
-                                >
-                                  <ChevronRight size={16} />
-                                </button>
-                              </div>
-                            ))
-                          ) : (
-                            <p className="text-xs font-medium text-slate-400 italic">
-                              No projects associated with this client.
-                            </p>
-                          )}
-                        </div>
-                      </div> */}
+                        <p className="text-lg font-bold tracking-tight text-primary">
+                          {client.currency || client.client_currency || "N/A"}
+                        </p>
+                      </div>
                     </>
                   )}
                 </div>
