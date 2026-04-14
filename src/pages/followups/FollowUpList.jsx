@@ -1170,7 +1170,7 @@ const FollowUpList = ({
                         {isProjectDropdownOpen && (
                           <>
                             <div
-                              className="fixed inset-0 z-[80]"
+                              className="fixed inset-0 z-[80] pointer-events-none"
                               onClick={() => setIsProjectDropdownOpen(false)}
                             />
                             <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top max-h-80 flex flex-col">
@@ -1295,7 +1295,7 @@ const FollowUpList = ({
                         {isClientDropdownOpen && (
                           <>
                             <div
-                              className="fixed inset-0 z-[80]"
+                              className="fixed inset-0 z-[80] pointer-events-none"
                               onClick={() => setIsClientDropdownOpen(false)}
                             />
                             <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top max-h-80 flex flex-col">
@@ -1474,7 +1474,7 @@ const FollowUpList = ({
                           {isHourDropdownOpen && (
                             <>
                               <div
-                                className="fixed inset-0 z-[80]"
+                                className="fixed inset-0 z-[80] pointer-events-none"
                                 onClick={() => setIsHourDropdownOpen(false)}
                               />
                               <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-y-auto max-h-48 z-[90] animate-fade-in-up origin-top">
@@ -1523,7 +1523,7 @@ const FollowUpList = ({
                           {isMinuteDropdownOpen && (
                             <>
                               <div
-                                className="fixed inset-0 z-[80]"
+                                className="fixed inset-0 z-[80] pointer-events-none"
                                 onClick={() => setIsMinuteDropdownOpen(false)}
                               />
                               <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-y-auto max-h-48 z-[90] animate-fade-in-up origin-top">
@@ -1573,7 +1573,7 @@ const FollowUpList = ({
                           {isPeriodDropdownOpen && (
                             <>
                               <div
-                                className="fixed inset-0 z-[80]"
+                                className="fixed inset-0 z-[80] pointer-events-none"
                                 onClick={() => setIsPeriodDropdownOpen(false)}
                               />
                               <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top">
@@ -1626,7 +1626,7 @@ const FollowUpList = ({
                       {isPriorityDropdownOpen && (
                         <>
                           <div
-                            className="fixed inset-0 z-[80]"
+                            className="fixed inset-0 z-[80] pointer-events-none"
                             onClick={() => setIsPriorityDropdownOpen(false)}
                           />
                           <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top">
@@ -1672,7 +1672,7 @@ const FollowUpList = ({
                       {isModeDropdownOpen && (
                         <>
                           <div
-                            className="fixed inset-0 z-[80]"
+                            className="fixed inset-0 z-[80] pointer-events-none"
                             onClick={() => setIsModeDropdownOpen(false)}
                           />
                           <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top">
@@ -1785,7 +1785,7 @@ const FollowUpList = ({
                               {isCompHourOpen && (
                                 <>
                                   <div
-                                    className="fixed inset-0 z-[80]"
+                                    className="fixed inset-0 z-[80] pointer-events-none"
                                     onClick={() => setIsCompHourOpen(false)}
                                   />
                                   <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-y-auto max-h-48 z-[90] animate-fade-in-up origin-top">
@@ -1829,7 +1829,7 @@ const FollowUpList = ({
                               {isCompMinOpen && (
                                 <>
                                   <div
-                                    className="fixed inset-0 z-[80]"
+                                    className="fixed inset-0 z-[80] pointer-events-none"
                                     onClick={() => setIsCompMinOpen(false)}
                                   />
                                   <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-y-auto max-h-48 z-[90] animate-fade-in-up origin-top">
@@ -1877,7 +1877,7 @@ const FollowUpList = ({
                               {isCompPeriodOpen && (
                                 <>
                                   <div
-                                    className="fixed inset-0 z-[80]"
+                                    className="fixed inset-0 z-[80] pointer-events-none"
                                     onClick={() => setIsCompPeriodOpen(false)}
                                   />
                                   <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top">
@@ -1931,7 +1931,7 @@ const FollowUpList = ({
                       {isStatusDropdownOpen && (
                         <>
                           <div
-                            className="fixed inset-0 z-[80]"
+                            className="fixed inset-0 z-[80] pointer-events-none"
                             onClick={() => setIsStatusDropdownOpen(false)}
                           />
                           <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-down origin-bottom">

@@ -1623,7 +1623,7 @@ const LeadList = ({
                       {isAddStatusDropdownOpen && (
                         <>
                           <div
-                            className="fixed inset-0 z-[80]"
+                            className="fixed inset-0 z-[80] pointer-events-none"
                             onClick={() => setIsAddStatusDropdownOpen(false)}
                           />
                           <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top">
@@ -1953,7 +1953,7 @@ const LeadList = ({
                       {isOnboardClientStatusDropdownOpen && (
                         <>
                           <div
-                            className="fixed inset-0 z-[80]"
+                            className="fixed inset-0 z-[80] pointer-events-none"
                             onClick={() =>
                               setIsOnboardClientStatusDropdownOpen(false)
                             }
@@ -2085,7 +2085,7 @@ const LeadList = ({
                       {isOnboardStatusDropdownOpen && (
                         <>
                           <div
-                            className="fixed inset-0 z-[80]"
+                            className="fixed inset-0 z-[80] pointer-events-none"
                             onClick={() =>
                               setIsOnboardStatusDropdownOpen(false)
                             }
@@ -2153,7 +2153,7 @@ const LeadList = ({
                       {isOnboardPriorityDropdownOpen && (
                         <>
                           <div
-                            className="fixed inset-0 z-[80]"
+                            className="fixed inset-0 z-[80] pointer-events-none"
                             onClick={() =>
                               setIsOnboardPriorityDropdownOpen(false)
                             }
@@ -2484,7 +2484,7 @@ const LeadList = ({
                       {isEditStatusDropdownOpen && (
                         <>
                           <div
-                            className="fixed inset-0 z-[80]"
+                            className="fixed inset-0 z-[80] pointer-events-none"
                             onClick={() => setIsEditStatusDropdownOpen(false)}
                           />
                           <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top edit-status-dropdown">
@@ -2588,9 +2588,9 @@ const LeadList = ({
 
       {showFollowUpModal &&
         createPortal(
-          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[99999] flex items-center justify-center p-4 overflow-y-auto no-scrollbar">
+          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[99999] flex items-center justify-center p-4 overflow-y-auto">
             <div className="bg-white w-full max-w-md rounded-xl shadow-2xl border border-slate-200 overflow-hidden animate-fade-in flex flex-col max-h-[85vh]">
-              <div className="bg-primary p-4 text-white relative">
+              <div className="bg-primary p-4 text-white relative shrink-0">
                 <button
                   onClick={() => setShowFollowUpModal(false)}
                   className="absolute top-4 right-4 p-1.5 hover:bg-white/10 rounded-xl transition-colors"
@@ -2638,7 +2638,7 @@ const LeadList = ({
                     }
                   }
                 }}
-                className="p-4 space-y-3 overflow-y-auto no-scrollbar"
+                className="p-4 space-y-3 overflow-y-auto"
               >
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-2">
@@ -2996,7 +2996,7 @@ const LeadList = ({
                         {isEditLeadStatusDropdownOpen && (
                           <>
                             <div
-                              className="fixed inset-0 z-[80]"
+                              className="fixed inset-0 z-[80] pointer-events-none"
                               onClick={() => setIsEditLeadStatusDropdownOpen(false)}
                             />
                             <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top">
