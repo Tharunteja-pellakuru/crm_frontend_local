@@ -1675,7 +1675,7 @@ const FollowUpList = ({
                             className="fixed inset-0 z-[80] pointer-events-none"
                             onClick={() => setIsModeDropdownOpen(false)}
                           />
-                          <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top">
+                          <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-down origin-bottom">
                             <div className="bg-[#18254D] px-4 py-3 border-b border-white/10">
                               <p className="text-[14px] font-bold text-white  tracking-widest">
                                 Select Mode
