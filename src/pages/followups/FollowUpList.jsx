@@ -934,11 +934,9 @@ const FollowUpList = ({
                       <label className="text-[14px] font-bold text-primary tracking-widest ml-1">
                         Completion Date <span className="text-error">*</span>
                       </label>
-                      <input
-                        type="date"
-                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium shadow-sm focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none"
+                      <DatePicker
                         value={completionDate}
-                        onChange={(e) => setCompletionDate(e.target.value)}
+                        onChange={setCompletionDate}
                       />
                     </div>
                     <div className="space-y-1.5">
