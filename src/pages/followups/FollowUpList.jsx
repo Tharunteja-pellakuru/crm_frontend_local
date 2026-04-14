@@ -334,6 +334,8 @@ const FollowUpList = ({
 
       if (formData.id) {
         if (onEditFollowUp) {
+          // Get current user for updated_by field
+          const user = JSON.parse(localStorage.getItem("user") || "{}");
           await onEditFollowUp({
             ...formData,
             clientId: finalClientId,
@@ -341,6 +343,7 @@ const FollowUpList = ({
             followup_date: combinedDateTime,
             completed_at: combinedCompletionStr,
             followup_status: formattedStatus,
+            updated_by: user.full_name || user.username || "System",
           });
         }
       } else {
