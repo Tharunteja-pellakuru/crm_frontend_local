@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import Sidebar from "./Sidebar";
@@ -9,26 +9,40 @@ const Layout = ({
   onLogout, enquiries, followUps, clients 
 }) => {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [isPageTransitioning, setIsPageTransitioning] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const prevPathRef = useRef(location.pathname);
 
   // Handle active tab from current URL
   // Default to dashboard, or handle nested routes like /followups/clients
   const pathParts = location.pathname.split("/").filter(Boolean);
   const activeTab = pathParts.length > 0 ? pathParts[0] : "dashboard";
 
+  // Page transition effect
+  useEffect(() => {
+    if (prevPathRef.current !== location.pathname) {
+      setIsPageTransitioning(true);
+      const timer = setTimeout(() => {
+        setIsPageTransitioning(false);
+      }, 300);
+      prevPathRef.current = location.pathname;
+      return () => clearTimeout(timer);
+    }
+  }, [location.pathname]);
+
   return (
     <div className="flex min-h-screen bg-background overflow-x-hidden">
       {/* Mobile Backdrop */}
       {isMobileSidebarOpen && (
         <div
-          className="fixed inset-0 bg-primary/30 backdrop-blur-xl z-[105] min-[1201px]:hidden transition-all duration-500"
+          className="fixed inset-0 bg-primary/30 backdrop-blur-xl z-[105] min-[1201px]:hidden animate-fade-in"
           onClick={() => setIsMobileSidebarOpen(false)}
         />
       )}
 
       {/* Sidebar Navigation */}
-      <div className={`fixed inset-y-0 left-0 transform ${isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full"} min-[1201px]:translate-x-0 transition-transform duration-300 z-[110] min-[1201px]:z-20`}>
+      <div className={`fixed inset-y-0 left-0 transform ${isMobileSidebarOpen ? "translate-x-0 animate-slide-left-sidebar" : "-translate-x-full"} min-[1201px]:translate-x-0 transition-transform duration-300 ease-smooth z-[110] min-[1201px]:z-20`}>
         <Sidebar
           activeTab={activeTab}
           setActiveTab={(tab) => {
@@ -49,8 +63,8 @@ const Layout = ({
       </div>
 
       {/* Main Container */}
-      <div className="flex-1 flex flex-col min-[1201px]:ml-72 w-full min-[1201px]:w-[calc(100%-18rem)] transition-all duration-300 min-[1201px]:animate-slide-left">
-        <header className="min-[1201px]:hidden flex items-center justify-between bg-[#18254D] text-white p-5 fixed top-0 left-0 right-0 z-[100] shadow-lg h-24">
+      <div className={`flex-1 flex flex-col min-[1201px]:ml-72 w-full min-[1201px]:w-[calc(100%-18rem)] transition-all duration-300 ease-smooth ${isPageTransitioning ? "opacity-0 translate-y-4" : "opacity-100 translate-y-0"}`}>
+        <header className="min-[1201px]:hidden flex items-center justify-between bg-[#18254D] text-white p-5 fixed top-0 left-0 right-0 z-[100] shadow-lg h-24 animate-fade-in-down">
           <Logo size={200} showText={false} className="!gap-2.5" />
           <button
             onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
@@ -62,7 +76,10 @@ const Layout = ({
 
         {/* Scalable Content Injection */}
         <main className="flex-1 p-3 min-[1201px]:p-6 overflow-x-hidden mt-24 min-[1201px]:mt-2 flex flex-col">
-          <div key={location.pathname} className="max-w-7xl mx-auto pb-8 flex-1 w-full animate-fade-in">
+          <div 
+            key={location.pathname} 
+            className="max-w-7xl mx-auto pb-8 flex-1 w-full animate-fade-in-up"
+          >
             <Outlet />
           </div>
           <Footer />

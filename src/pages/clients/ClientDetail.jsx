@@ -131,6 +131,7 @@ const ClientDetail = ({
   const [isFollowPriorityOpen, setIsFollowPriorityOpen] = useState(false);
   const [isFollowStatusOpen, setIsFollowStatusOpen] = useState(false);
   const [isFollowProjectOpen, setIsFollowProjectOpen] = useState(false);
+  const [isLogging, setIsLogging] = useState(false);
 
   // Lock scroll when any modal is open
   useScrollLock(showEditModal || showAddFollowUpModal || isLogging);
@@ -210,7 +211,6 @@ const ClientDetail = ({
     }
   }, [showEditModal, client]);
 
-  const [isLogging, setIsLogging] = useState(false);
   const [logData, setLogData] = useState({
     type: "call", 
     description: "",

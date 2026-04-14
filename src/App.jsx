@@ -188,9 +188,22 @@ function AppRoutes() {
           email: lead.email || "",
           phone: lead.phone_number || "",
           country_code: lead.country_code || autoCode || "",
-          status: lead.lead_status === "Dismissed" ? "Dismissed" : (lead.lead_status === "Converted" ? "Converted" : "Lead"),
-          isConverted: lead.lead_status === "Converted",
-          leadType: lead.lead_status || "Warm",
+          isConverted: lead.lead_status === "Converted" || !!lead.client_organisation,
+          status:
+            lead.lead_status === "Dismissed"
+              ? "Dismissed"
+              : lead.lead_status === "Converted" || !!lead.client_organisation
+              ? "Converted"
+              : "Lead",
+          leadType: (() => {
+            const isConverted = lead.lead_status === "Converted" || !!lead.client_organisation;
+            if (isConverted) {
+              return lead.lead_status === "Converted"
+                ? (leads.find((l) => l.lead_id == (lead.lead_id?.toString() || lead.uuid))?.leadType || "Converted")
+                : lead.lead_status || "Converted";
+            }
+            return lead.lead_status || "Warm";
+          })(),
           projectCategory: typeof lead.lead_category === 'string'
             ? (REVERSE_CATEGORY_MAP[lead.lead_category] || parseInt(lead.lead_category, 10) || 1)
             : (lead.lead_category || 1),
@@ -873,7 +886,7 @@ function AppRoutes() {
         lead_category: data.projectCategory || existingLead.projectCategory || 1,
         country: data.country || existingLead.country || "",
         country_code: data.countryCode || existingLead.countryCode || "",
-        lead_status: "Converted",
+        lead_status: data.leadType || existingLead.leadType || "Converted",
         website_url: data.website || existingLead.website || "",
         message: data.projectDescription || data.notes || existingLead.notes || "",
       };

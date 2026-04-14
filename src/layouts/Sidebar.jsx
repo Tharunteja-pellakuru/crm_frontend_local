@@ -25,6 +25,7 @@ function Sidebar({
   isCollapsed = false,
 }) {
   const [expandedItems, setExpandedItems] = useState(["followups"]);
+  const [hoveredItem, setHoveredItem] = useState(null);
 
   const menuItems = [
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -67,7 +68,7 @@ function Sidebar({
               setActiveTab("dashboard");
               if (onCloseMobile) onCloseMobile();
             }}
-            className="cursor-pointer transition-transform hover:scale-[1.02] active:scale-95"
+            className="cursor-pointer transition-transform duration-300 hover:scale-[1.02] active:scale-95 animate-fade-in"
           >
             <Logo size={260} showText={false} className="!gap-3" />
           </div>
@@ -78,14 +79,14 @@ function Sidebar({
               setActiveTab("dashboard");
               if (onCloseMobile) onCloseMobile();
             }}
-            className="mx-auto flex items-center justify-center w-full cursor-pointer transition-transform hover:scale-110 active:scale-90"
+            className="mx-auto flex items-center justify-center w-full cursor-pointer transition-transform duration-300 hover:scale-110 active:scale-90"
           >
             <Logo size={44} showText={false} />
           </div>
         )}
         <button
           onClick={onCloseMobile}
-          className="min-[1201px]:hidden text-white/80 hover:text-white p-2 hover:bg-white/10 rounded-xl transition-all"
+          className="min-[1201px]:hidden text-white/80 hover:text-white p-2 hover:bg-white/10 rounded-xl transition-all animate-scale-in"
         >
           <X size={24} strokeWidth={2.5} />
         </button>
@@ -94,12 +95,13 @@ function Sidebar({
       <nav
         className={`flex-1 ${isCollapsed ? "px-2" : "px-3"} py-4 space-y-1 overflow-y-auto no-scrollbar`}
       >
-        {menuItems.map((item) => {
+        {menuItems.map((item, index) => {
           const isActive =
             activeTab === item.id ||
             (item.subItems &&
               item.subItems.some((sub) => activeTab === sub.id));
           const isExpanded = expandedItems.includes(item.id);
+          const isHovered = hoveredItem === item.id;
 
           const toggleExpand = (e) => {
             if (item.subItems) {
@@ -113,7 +115,13 @@ function Sidebar({
           };
 
           return (
-            <div key={item.id} className="space-y-1">
+            <div 
+              key={item.id} 
+              className="space-y-1 animate-fade-in duration-200"
+              style={{ 
+                animationDelay: `${index * 30}ms`,
+              }}
+            >
               <button
                 onClick={() => {
                   if (item.isLogout) {
@@ -130,11 +138,13 @@ function Sidebar({
                     if (onCloseMobile) onCloseMobile();
                   }
                 }}
-                className={`w-full flex items-center ${isCollapsed ? "justify-center px-0 py-3.5" : "justify-between px-5 py-3"} rounded-xl transition-all ${isActive ? "bg-black/20 text-white shadow-sm" : "hover:bg-white/5 hover:text-white"}`}
+                onMouseEnter={() => setHoveredItem(item.id)}
+                onMouseLeave={() => setHoveredItem(null)}
+                className={`w-full flex items-center ${isCollapsed ? "justify-center px-0 py-3.5" : "justify-between px-5 py-3"} rounded-xl transition-all duration-200 ${isActive ? "bg-black/20 text-white shadow-sm" : "hover:bg-white/5 hover:text-white"} ${isHovered && !isActive ? "translate-x-1" : ""}`}
                 title={isCollapsed ? item.label : ""}
               >
                 <div className="flex items-center gap-3">
-                  <span className={isActive ? "text-white" : "text-slate-500"}>
+                  <span className={`${isActive ? "text-white" : "text-slate-500"} transition-all duration-200 ${isHovered && !isActive ? "scale-110" : ""}`}>
                     <item.icon size={20} />
                   </span>
                   {!isCollapsed && (
@@ -148,7 +158,7 @@ function Sidebar({
                     {item.badge !== undefined &&
                       item.badge > 0 &&
                       (!isExpanded || item.id === "followups") && (
-                        <span className="bg-white text-secondary text-sidebar-badge font-bold px-2 h-5 min-w-[1.25rem] rounded-md flex items-center justify-center shadow-lg shadow-black/10">
+                        <span className="bg-white text-secondary text-sidebar-badge font-bold px-2 h-5 min-w-[1.25rem] rounded-md flex items-center justify-center shadow-lg shadow-black/10 animate-bounce-in">
                           {item.badge}
                         </span>
                       )}
@@ -165,14 +175,14 @@ function Sidebar({
                 )}
                 {isCollapsed && item.badge > 0 && !isExpanded && (
                   <div className="absolute top-1 right-1">
-                    <div className="w-2 h-2 bg-secondary rounded-full shadow-sm" />
+                    <div className="w-2 h-2 bg-secondary rounded-full shadow-sm animate-pulse-soft" />
                   </div>
                 )}
               </button>
 
               {item.subItems && isExpanded && !isCollapsed && (
-                <div className="ml-10 space-y-2.5 py-2">
-                  {item.subItems.map((sub) => {
+                <div className="ml-10 space-y-2.5 py-2 animate-fade-in">
+                  {item.subItems.map((sub, subIndex) => {
                     const isSubActive = activeTab === sub.id;
                     return (
                       <button
@@ -181,7 +191,10 @@ function Sidebar({
                           setActiveTab(sub.id);
                           if (onCloseMobile) onCloseMobile();
                         }}
-                        className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-medium transition-all ${isSubActive ? "bg-black/20 text-white shadow-sm" : "text-slate-300 hover:text-white hover:bg-white/5"}`}
+                        className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-medium transition-all duration-200 ${isSubActive ? "bg-black/20 text-white shadow-sm" : "text-slate-300 hover:text-white hover:bg-white/5"}`}
+                        style={{
+                          animationDelay: `${subIndex * 75}ms`,
+                        }}
                       >
                         <span className="text-white">
                           <sub.icon size={16} />

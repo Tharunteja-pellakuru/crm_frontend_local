@@ -2,7 +2,7 @@ function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="w-full text-slate-500 text-sm mt-auto pt-4">
+    <footer className="w-full text-slate-500 text-sm mt-auto pt-4 animate-fade-in duration-300">
       <div className="max-w-7xl mx-auto bg-white border border-slate-200 shadow-sm rounded-2xl px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="font-medium text-center md:text-left text-slate-600">
           © {year} <span className="text-[#18254D] font-semibold">Parivartan CRM</span>. All Rights Reserved.
