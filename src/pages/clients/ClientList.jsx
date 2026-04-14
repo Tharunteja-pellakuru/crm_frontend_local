@@ -67,14 +67,10 @@ const ClientList = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("All");
   const [leadTypeFilter, setLeadTypeFilter] = useState("All");
-  const [categoryFilter, setCategoryFilter] = useState("All");
   const [isTierDropdownOpen, setIsTierDropdownOpen] = useState(false);
-  const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
 
   const tierButtonRef = useRef(null);
-  const categoryButtonRef = useRef(null);
   const [tierDropdownStyle, setTierDropdownStyle] = useState({});
-  const [categoryDropdownStyle, setCategoryDropdownStyle] = useState({});
 
   useEffect(() => {
     if (isTierDropdownOpen && tierButtonRef.current) {
@@ -90,34 +86,19 @@ const ClientList = ({
   }, [isTierDropdownOpen]);
 
   useEffect(() => {
-    if (isCategoryDropdownOpen && categoryButtonRef.current) {
-      const rect = categoryButtonRef.current.getBoundingClientRect();
-      setCategoryDropdownStyle({
-        position: "fixed",
-        top: `${rect.bottom + 8}px`,
-        left: `${rect.left}px`,
-        width: `${rect.width}px`,
-        zIndex: 9999,
-      });
-    }
-  }, [isCategoryDropdownOpen]);
-
-  useEffect(() => {
     const handleScrollResize = (e) => {
-      if (isTierDropdownOpen || isCategoryDropdownOpen) {
+      if (isTierDropdownOpen) {
         if (
           e.type === "scroll" &&
           e.target.closest &&
-          (e.target.closest(".tier-dropdown") ||
-            e.target.closest(".category-dropdown"))
+          e.target.closest(".tier-dropdown")
         ) {
           return;
         }
         setIsTierDropdownOpen(false);
-        setIsCategoryDropdownOpen(false);
       }
     };
-    if (isTierDropdownOpen || isCategoryDropdownOpen) {
+    if (isTierDropdownOpen) {
       window.addEventListener("scroll", handleScrollResize, true);
       window.addEventListener("resize", handleScrollResize, true);
     }
@@ -125,7 +106,7 @@ const ClientList = ({
       window.removeEventListener("scroll", handleScrollResize, true);
       window.removeEventListener("resize", handleScrollResize, true);
     };
-  }, [isTierDropdownOpen, isCategoryDropdownOpen]);
+  }, [isTierDropdownOpen]);
 
   const [startDate, setStartDate] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -300,9 +281,6 @@ const ClientList = ({
     let matchesStatus =
       filterStatus === "All" || client.status === filterStatus;
     let matchesLeadType = true;
-    let matchesCategory = true;
-
-    if (title === "Leads") {
       // Sub-filter by Lead View (Pending, Converted, Dismissed)
       if (leadView === "Pending") {
         if (client.status !== "Lead" || client.isConverted) return false;
@@ -316,13 +294,6 @@ const ClientList = ({
         leadTypeFilter === "All" || client.leadType === leadTypeFilter;
     }
 
-    // Filter by category (Tech/Media/Both)
-    if (categoryFilter !== "All") {
-      matchesCategory =
-        client.projectCategory === categoryFilter ||
-        client.industry === categoryFilter;
-    }
-
     // Date Range Filter
     if (startDate || endDate) {
       const joinedDate = new Date(client.joinedDate);
@@ -334,7 +305,7 @@ const ClientList = ({
       }
     }
 
-    return matchesSearch && matchesStatus && matchesLeadType && matchesCategory;
+    return matchesSearch && matchesStatus && matchesLeadType;
   });
 
   const totalPages = Math.ceil(filteredClients.length / RECORDS_PER_PAGE);
@@ -624,66 +595,6 @@ const ClientList = ({
                   )}
               </div>
             )}
-
-            {/* Category Dropdown */}
-            <div className="col-span-1 md:col-span-2 xl:flex-1 relative z-50">
-              <button
-                ref={categoryButtonRef}
-                onClick={() =>
-                  setIsCategoryDropdownOpen(!isCategoryDropdownOpen)
-                }
-                className="w-full h-[38px] flex items-center justify-between gap-3 px-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-[12px] font-bold  tracking-widest text-[#18254D] hover:bg-white hover:border-slate-200 transition-all shadow-sm shadow-slate-200/50 group"
-              >
-                <span>
-                  {categoryFilter === "All"
-                    ? "All Categories"
-                    : CATEGORY_MAP[categoryFilter] || categoryFilter}
-                </span>
-                <ChevronDown
-                  size={16}
-                  strokeWidth={2.5}
-                  className={`transition-transform duration-300 ${isCategoryDropdownOpen ? "rotate-180" : ""}`}
-                />
-              </button>
-
-              {isCategoryDropdownOpen &&
-                createPortal(
-                  <>
-                    <div
-                      className="fixed inset-0 z-[9998]"
-                      onClick={() => setIsCategoryDropdownOpen(false)}
-                    />
-                    <div
-                      className="category-dropdown bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[9999] animate-fade-in-up origin-top"
-                      style={categoryDropdownStyle}
-                    >
-                      {["All", 1, 2, 3].map((catId) => (
-                        <button
-                          key={catId}
-                          onClick={() => {
-                            setCategoryFilter(catId);
-                            setIsCategoryDropdownOpen(false);
-                          }}
-                          className={`w-full text-left px-4 py-2.5 text-[12px] font-bold  tracking-wider transition-colors ${
-                            catId === "All"
-                              ? categoryFilter === "All"
-                                ? "bg-[#18254D] text-white"
-                                : "text-[#18254D] hover:bg-slate-50"
-                              : categoryFilter === catId
-                                ? "bg-secondary/10 text-secondary border-l-4 border-secondary"
-                                : "text-[#18254D] hover:bg-slate-50"
-                          }`}
-                        >
-                          {catId === "All"
-                            ? "All Categories"
-                            : CATEGORY_MAP[catId]}
-                        </button>
-                      ))}
-                    </div>
-                  </>,
-                  document.body,
-                )}
-            </div>
 
             {/* Date Filters */}
             <div className="col-span-1 md:col-span-1 xl:flex-1 relative z-50">

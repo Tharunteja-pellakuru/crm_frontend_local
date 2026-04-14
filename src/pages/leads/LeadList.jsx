@@ -34,6 +34,7 @@ import {
   Zap,
   Check,
   Pencil,
+  AlertTriangle,
   User,
 } from "lucide-react";
 import DatePicker from "../../components/ui/DatePicker";
@@ -213,8 +214,11 @@ const LeadList = ({
     scopeDocument: null,
   });
 
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [leadToDelete, setLeadToDelete] = useState(null);
+
   // Lock scroll when any modal is open
-  useScrollLock(showAddModal || showOnboardModal || showFollowUpModal || showEditConvertedModal);
+  useScrollLock(showAddModal || showOnboardModal || showFollowUpModal || showEditConvertedModal || showDeleteModal);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -973,9 +977,8 @@ const LeadList = ({
                                     <button
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        if (window.confirm("Are you sure you want to permanently delete this lead? This action cannot be undone.")) {
-                                          onDeleteLead(lead.lead_id);
-                                        }
+                                        setLeadToDelete(lead);
+                                        setShowDeleteModal(true);
                                       }}
                                       className="p-2.5 bg-rose-50/50 border border-rose-200/50 rounded-lg text-rose-500/70 hover:text-rose-600 hover:border-rose-500 hover:bg-rose-50 transition-all active:scale-90 shadow-sm"
                                       title="Delete Lead"
@@ -1155,9 +1158,8 @@ const LeadList = ({
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  if (window.confirm("Are you sure you want to permanently delete this lead? This action cannot be undone.")) {
-                                    onDeleteLead(lead.lead_id);
-                                  }
+                                  setLeadToDelete(lead);
+                                  setShowDeleteModal(true);
                                 }}
                                 className="p-2 bg-rose-50 text-rose-600 border border-rose-100 rounded-lg hover:bg-rose-100 transition-all active:scale-90"
                                 title="Delete Lead"
@@ -2573,6 +2575,52 @@ const LeadList = ({
             </div>
           </div>,
           document.body,
+        )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && leadToDelete &&
+        createPortal(
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[99999] flex items-start justify-center p-4 animate-fade-in overflow-y-auto no-scrollbar py-20">
+            <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 overflow-hidden animate-scale-in my-auto">
+              <div className="p-6 text-center">
+                <div className="w-16 h-16 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-rose-100 shadow-sm">
+                  <AlertTriangle size={32} className="text-rose-500" />
+                </div>
+                <h3 className="text-xl font-bold text-primary mb-2">
+                  Confirm Deletion
+                </h3>
+                <p className="text-slate-500 text-sm font-medium leading-relaxed px-4">
+                  Are you sure you want to delete the lead 
+                  <span className="text-primary font-bold"> "{leadToDelete.name}"</span>? 
+                  This action cannot be undone and all associated data will be removed.
+                </p>
+              </div>
+              <div className="bg-slate-50 p-4 border-t border-slate-100 flex gap-3">
+                <button
+                  onClick={() => {
+                    setShowDeleteModal(false);
+                    setLeadToDelete(null);
+                  }}
+                  className="flex-1 px-4 py-2.5 bg-white border border-slate-200 text-slate-600 rounded-xl text-xs font-bold tracking-widest hover:bg-slate-50 transition-all active:scale-95 uppercase"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    if (onDeleteLead && leadToDelete) {
+                      onDeleteLead(leadToDelete.lead_id);
+                    }
+                    setShowDeleteModal(false);
+                    setLeadToDelete(null);
+                  }}
+                  className="flex-1 px-4 py-2.5 bg-rose-500 text-white rounded-xl text-xs font-bold tracking-widest hover:bg-rose-600 shadow-lg shadow-rose-200 transition-all active:scale-95 uppercase"
+                >
+                  Delete Lead
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body
         )}
     </div>
   );

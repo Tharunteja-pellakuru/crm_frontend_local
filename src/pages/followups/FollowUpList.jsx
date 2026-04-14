@@ -44,9 +44,7 @@ const FollowUpList = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeFilter, setActiveFilter] = useState("All");
   const [showAddModal, setShowAddModal] = useState(false);
-  const [categoryFilter, setCategoryFilter] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
-  const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
   const [isClientDropdownOpen, setIsClientDropdownOpen] = useState(false);
   const [isPriorityDropdownOpen, setIsPriorityDropdownOpen] = useState(false);
   const [isHourDropdownOpen, setIsHourDropdownOpen] = useState(false);
@@ -146,17 +144,6 @@ const FollowUpList = ({
       if (typeFilter === "Active") {
         if (!f.projectId) return false;
       }
-    }
-
-    // Category filter (Tech/Media)
-    if (categoryFilter !== "All") {
-      if (!client) return false;
-      const targetCatId = REVERSE_CATEGORY_MAP[categoryFilter];
-      if (
-        client.projectCategory !== targetCatId &&
-        client.industry !== categoryFilter
-      )
-        return false;
     }
 
     // Search filter
@@ -402,7 +389,7 @@ const FollowUpList = ({
 
         {/* Control Bar: Filters */}
         <div className="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 w-full">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 w-full">
             {/* 1. Search Bar */}
             <div className="relative w-full border border-slate-200 rounded-xl">
               <Search
@@ -418,62 +405,14 @@ const FollowUpList = ({
               />
             </div>
 
-            {/* 2. Category Dropdown */}
-            <div className="relative w-full border border-slate-200 rounded-xl">
-              <button
-                onClick={() =>
-                  setIsCategoryDropdownOpen(!isCategoryDropdownOpen)
-                }
-                className="w-full h-full flex items-center justify-between gap-3 px-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-[12px] font-bold  tracking-widest text-[#18254D] hover:bg-white hover:border-slate-200 transition-all shadow-sm shadow-slate-200/50 group"
-              >
-                <span className="truncate">
-                  {categoryFilter === "All" ? "Select Category" : categoryFilter}
-                </span>
-                <ChevronDown
-                  size={16}
-                  strokeWidth={2.5}
-                  className={`transition-transform duration-300 shrink-0 ${isCategoryDropdownOpen ? "rotate-180" : ""}`}
-                />
-              </button>
-
-              {isCategoryDropdownOpen && (
-                <>
-                  <div
-                    className="fixed inset-0 z-[80]"
-                    onClick={() => setIsCategoryDropdownOpen(false)}
-                  />
-                  <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top">
-                    {["All", "Tech", "Social Media", "Both"].map((cat) => (
-                      <button
-                        key={cat}
-                        onClick={() => {
-                          setCategoryFilter(cat);
-                          setIsCategoryDropdownOpen(false);
-                        }}
-                        className={`w-full text-left px-4 py-2.5 text-[12px] font-bold  tracking-wider transition-colors ${
-                          cat === "All"
-                            ? "bg-[#18254D] text-white"
-                            : categoryFilter === cat
-                              ? "bg-secondary/10 text-secondary border-l-4 border-secondary"
-                              : "text-[#18254D] hover:bg-slate-50"
-                        }`}
-                      >
-                        {cat === "All" ? "All Categories" : cat}
-                      </button>
-                    ))}
-                  </div>
-                </>
-              )}
-            </div>
-
-            {/* 3. From Date */}
+            {/* 2. From Date */}
             <DatePicker
               label="From"
               value={startDate}
               onChange={setStartDate}
             />
 
-            {/* 4. To Date */}
+            {/* 3. To Date */}
             <DatePicker label="To" value={endDate} onChange={setEndDate} />
           </div>
         </div>
