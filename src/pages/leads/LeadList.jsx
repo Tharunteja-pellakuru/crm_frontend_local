@@ -989,8 +989,8 @@ const LeadList = ({
                           )}
                         </div>
                       </td>
-                    </tr>
-                  );
+                    </tr>  
+                    );
                 })}
                 {filteredLeads.length === 0 && (
                   <tr>
