@@ -121,13 +121,28 @@ const SearchableDropdown = ({
           className={`w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border ${isOpen ? "border-secondary ring-4 ring-secondary/10" : "border-slate-200"} rounded-2xl text-sm font-medium transition-all ${disabled ? "opacity-50 cursor-not-allowed" : "hover:border-secondary"}`}
           disabled={disabled}
         >
-          <span className={displayValue ? "text-primary" : "text-slate-400"}>
+          <span className={displayValue && displayValue !== placeholder ? "text-primary" : "text-slate-400"}>
             {displayValue || placeholder}
           </span>
-          <ChevronDown
-            size={16}
-            className={`text-slate-400 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
-          />
+          <div className="flex items-center gap-1">
+            {value && !disabled && (
+              <div
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onChange("");
+                }}
+                className="p-1 hover:bg-slate-200 rounded-full transition-colors cursor-pointer"
+                role="button"
+                tabIndex={0}
+              >
+                <X size={12} className="text-slate-400" />
+              </div>
+            )}
+            <ChevronDown
+              size={16}
+              className={`text-slate-400 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+            />
+          </div>
         </button>
 
         {isOpen && createPortal(

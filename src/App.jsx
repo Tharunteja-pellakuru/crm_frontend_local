@@ -863,8 +863,34 @@ function AppRoutes() {
     }
   }
 
-  function handleUpdateClient(id, data) {
-    setClients((prev) => prev.map((c) => (c.id == id ? { ...c, ...data } : c)));
+  async function handleUpdateClient(id, data) {
+    try {
+      const res = await fetch(`${BASE_URL}/api/update-client/${id}`, {
+        method: "PUT",
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          organisation_name: data.organisationName,
+          client_name: data.name,
+          client_country: data.country,
+          client_state: data.state,
+          client_currency: data.currency,
+          client_status: data.clientStatus,
+        }),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Failed to update client");
+      }
+
+      // Update local state after successful API call
+      setClients((prev) => prev.map((c) => (c.id == id ? { ...c, ...data } : c)));
+      toast.success("Client updated successfully");
+    } catch (error) {
+      console.error("Update client error:", error);
+      toast.error(error.message || "Failed to update client");
+      throw error;
+    }
   }
 
   async function handleUpdateConvertedLead(id, data) {

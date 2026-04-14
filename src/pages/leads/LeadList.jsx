@@ -41,6 +41,7 @@ import {
   indianStates,
   commonCurrencies,
   countryToCurrency,
+  countryToStates,
 } from "../../utils/locationData";
 import { formatBudget, parseBudget } from "../../utils/formatters";
 import SearchableDropdown from "../../components/common/SearchableDropdown";
@@ -1878,11 +1879,11 @@ const LeadList = ({
                     placeholder="Select Country"
                   />
 
-                  {onboardingData.country === "India" ? (
+                  {countryToStates[onboardingData.country] ? (
                     <SearchableDropdown
                       label="CLIENT STATE"
                       required
-                      options={indianStates}
+                      options={countryToStates[onboardingData.country]}
                       value={onboardingData.state}
                       onChange={(val) =>
                         setOnboardingData({ ...onboardingData, state: val })
@@ -1896,7 +1897,7 @@ const LeadList = ({
                       </label>
                       <input
                         type="text"
-                        placeholder="e.g. California"
+                        placeholder="e.g. State/Province"
                         className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
                         value={onboardingData.state}
                         onChange={(e) =>

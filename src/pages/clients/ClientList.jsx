@@ -45,6 +45,7 @@ import {
   indianStates,
   commonCurrencies,
   countryToCurrency,
+  countryToStates,
 } from "../../utils/locationData";
 import SearchableDropdown from "../../components/common/SearchableDropdown";
 import { validateForm } from "../../utils/validation";
@@ -1442,10 +1443,10 @@ const ClientList = ({
                       placeholder="Select Country"
                     />
 
-                    {formData.country === "India" ? (
+                    {countryToStates[formData.country] ? (
                       <SearchableDropdown
                         label="CLIENT STATE"
-                        options={indianStates}
+                        options={countryToStates[formData.country]}
                         value={formData.state}
                         onChange={(val) =>
                           setFormData({ ...formData, state: val })
@@ -1459,7 +1460,7 @@ const ClientList = ({
                         </label>
                         <input
                           type="text"
-                          placeholder="e.g. California"
+                          placeholder="e.g. State/Province"
                           className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
                           value={formData.state || ""}
                           onChange={(e) =>
@@ -2140,10 +2141,10 @@ const ClientList = ({
                   placeholder="Select Country"
                 />
 
-                {onboardingData.country === "India" ? (
+                {countryToStates[onboardingData.country] ? (
                   <SearchableDropdown
                     label="CLIENT STATE"
-                    options={indianStates}
+                    options={countryToStates[onboardingData.country]}
                     value={onboardingData.state}
                     onChange={(val) =>
                       setOnboardingData({ ...onboardingData, state: val })
@@ -2157,7 +2158,7 @@ const ClientList = ({
                     </label>
                     <input
                       type="text"
-                      placeholder="e.g. California"
+                      placeholder="e.g. State/Province"
                       className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
                       value={onboardingData.state}
                       onChange={(e) =>
@@ -2519,8 +2520,9 @@ const ClientList = ({
       )}
 
       {/* Edit Client Modal */}
-      {showEditModal && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[100] flex items-center justify-center p-4 overflow-y-auto">
+      {showEditModal &&
+        createPortal(
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xl z-[100] flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-white w-full max-w-xl rounded-xl shadow-2xl border border-slate-200 animate-fade-in my-auto flex flex-col">
             <div className="bg-primary p-4 text-white relative rounded-t-xl">
               <button
@@ -2607,10 +2609,10 @@ const ClientList = ({
                   placeholder="Select Country"
                 />
 
-                {editFormData.country === "India" ? (
+                {countryToStates[editFormData.country] ? (
                   <SearchableDropdown
                     label="CLIENT STATE"
-                    options={indianStates}
+                    options={countryToStates[editFormData.country]}
                     value={editFormData.state}
                     onChange={(val) =>
                       setEditFormData({
@@ -2628,7 +2630,7 @@ const ClientList = ({
                     <input
                       type="text"
                       className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
-                      placeholder="e.g. California"
+                      placeholder="e.g. State/Province"
                       value={editFormData.state}
                       onChange={(e) =>
                         setEditFormData({
@@ -2743,8 +2745,9 @@ const ClientList = ({
               </div>
             </form>
           </div>
-        </div>
-      )}
+        </div>,
+          document.body
+        )}
 
       {/* Follow Up Modal */}
       {showFollowUpModal && (
