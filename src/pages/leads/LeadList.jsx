@@ -2039,22 +2039,64 @@ const LeadList = ({
                   </div>
 
                   <div className="space-y-1.5 md:col-span-2">
-                    <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1 flex items-center justify-between">
-                      <span>PROJECT CATEGORY <span className="text-error">*</span></span>
-                      <span className="text-[10px] text-slate-400 font-medium italic">Linked to Lead category</span>
+                    <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
+                      PROJECT CATEGORY <span className="text-error">*</span>
                     </label>
                     <div className="relative">
                       <button
                         type="button"
-                        disabled={true}
-                        className="w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold shadow-sm opacity-70 cursor-not-allowed"
+                        onClick={() => setIsOnboardCategoryDropdownOpen(!isOnboardCategoryDropdownOpen)}
+                        className="w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium shadow-sm hover:border-secondary transition-all"
                       >
-                        <span className="text-primary truncate">
-                          {CATEGORY_MAP[onboardingData.projectCategory] ||
-                            "Select Category"}
+                        <span className="text-primary">
+                          {CATEGORY_MAP[onboardingData.projectCategory] || "Select Category"}
                         </span>
-                        <Tag size={16} className="text-slate-400" />
+                        <ChevronDown
+                          size={16}
+                          className={`text-slate-400 transition-transform ${
+                            isOnboardCategoryDropdownOpen ? "rotate-180" : ""
+                          }`}
+                        />
                       </button>
+
+                      {isOnboardCategoryDropdownOpen && (
+                        <>
+                          <div
+                            className="fixed inset-0 z-[80] pointer-events-auto"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setIsOnboardCategoryDropdownOpen(false);
+                            }}
+                          />
+                          <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top">
+                            <div className="bg-[#18254D] px-4 py-3 border-b border-white/10">
+                              <p className="text-[14px] font-bold text-white/50  tracking-widest">
+                                Select Category <span className="text-error">*</span>
+                              </p>
+                            </div>
+                            {[1, 2].map((catId) => (
+                              <button
+                                key={`onboard-cat-${catId}`}
+                                type="button"
+                                onClick={() => {
+                                  setOnboardingData({
+                                    ...onboardingData,
+                                    projectCategory: catId,
+                                  });
+                                  setIsOnboardCategoryDropdownOpen(false);
+                                }}
+                                className={`w-full text-left px-4 py-2.5 text-[12px] font-bold  tracking-widest transition-colors ${
+                                  onboardingData.projectCategory === catId
+                                    ? "bg-slate-100 text-secondary"
+                                    : "text-[#18254D] hover:bg-slate-50"
+                                }`}
+                              >
+                                {CATEGORY_MAP[catId]}
+                              </button>
+                            ))}
+                          </div>
+                        </>
+                      )}
                     </div>
                   </div>
 
