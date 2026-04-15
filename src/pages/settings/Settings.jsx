@@ -120,6 +120,7 @@ const Settings = ({
   };
 
   const [showAddAdminModal, setShowAddAdminModal] = useState(false);
+  const [showAddAdminPassword, setShowAddAdminPassword] = useState(false);
   const [newAdmin, setNewAdmin] = useState({
     name: "",
     email: "",
@@ -862,7 +863,7 @@ const Settings = ({
                         </h3>
                         <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3">
                           <span className="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-50 text-blue-700 border border-blue-100/50 rounded-full text-[12px] font-black tracking-widest uppercase">
-                            <Zap size={12} className="text-blue-500" />
+                            <Briefcase size={12} className="text-blue-500" />
                             {profile.role}
                           </span>
                           <span className="inline-flex items-center gap-2 px-4 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-100/50 rounded-full text-[12px] font-black tracking-widest uppercase">
@@ -1046,8 +1047,8 @@ const Settings = ({
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/10 rounded-xl sm:rounded-2xl flex items-center justify-center">
-                                  <Zap size={20} className="text-white sm:hidden" />
-                                  <Zap size={24} className="text-white hidden sm:block" />
+                                  <Bot size={20} className="text-white sm:hidden" />
+                                  <Bot size={24} className="text-white hidden sm:block" />
                                 </div>
                                 <div>
                                   <h3 className="text-lg sm:text-xl font-black text-white tracking-tight">
@@ -1759,22 +1760,36 @@ const Settings = ({
                             <label className="text-[10px] sm:text-[11px] font-black text-slate-400 tracking-widest uppercase ml-1">
                               Password *
                             </label>
-                            <input
-                              type="password"
-                              value={newAdmin.password}
-                              onChange={(e) => {
-                                setNewAdmin({ ...newAdmin, password: e.target.value });
-                                if (addAdminErrors.password) {
-                                  setAddAdminErrors({ ...addAdminErrors, password: null });
-                                }
-                              }}
-                              placeholder="Set a secure password"
-                              className={`w-full h-[46px] sm:h-[50px] px-4 bg-slate-50 border rounded-xl focus:ring-2 focus:outline-none transition-all text-sm font-bold text-[#18254D] placeholder:font-medium placeholder:text-slate-400 ${
-                                addAdminErrors.password 
-                                  ? "border-red-300 focus:border-red-400 focus:ring-red-200" 
-                                  : "border-slate-200 focus:border-[#18254D] focus:ring-[#18254D]/20"
-                              }`}
-                            />
+                            <div className="relative">
+                              <input
+                                type={showAddAdminPassword ? "text" : "password"} 
+                                value={newAdmin.password}
+                                onChange={(e) => {
+                                  setNewAdmin({ ...newAdmin, password: e.target.value });
+                                  if (addAdminErrors.password) {
+                                    setAddAdminErrors({ ...addAdminErrors, password: null });
+                                  }
+                                }}
+                                placeholder="Set a secure password"
+                                className={`w-full h-[46px] sm:h-[50px] px-4 pr-12 bg-slate-50 border rounded-xl focus:ring-2 focus:outline-none transition-all text-sm font-bold text-[#18254D] placeholder:font-medium placeholder:text-slate-400 ${
+                                  addAdminErrors.password 
+                                    ? "border-red-300 focus:border-red-400 focus:ring-red-200" 
+                                    : "border-slate-200 focus:border-[#18254D] focus:ring-[#18254D]/20"
+                                }`}
+                              />
+                              <button
+                                type="button"
+                                onClick={() => setShowAddAdminPassword(!showAddAdminPassword)}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 hover:text-[#18254D] transition-colors"
+                                tabIndex={-1}
+                              >
+                                {showAddAdminPassword ? (
+                                  <EyeOff size={18} />
+                                ) : (
+                                  <Eye size={18} />
+                                )}
+                              </button>
+                            </div>
                             {addAdminErrors.password ? (
                               <p className="text-[10px] text-red-500 font-medium ml-1">{addAdminErrors.password}</p>
                             ) : (
@@ -2324,7 +2339,7 @@ const Settings = ({
                 <div className="bg-slate-50 border border-slate-200 rounded-[20px] p-6">
                   <div className="flex items-start gap-4">
                     <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center flex-shrink-0">
-                      <Zap size={20} className="text-slate-600" />
+                      <Bot size={20} className="text-slate-600" />
                     </div>
                     <div>
                       <h4 className="text-lg font-bold text-[#18254D] mb-2">
