@@ -295,14 +295,20 @@ const EnquiryList = ({
                 apiKey,
                 providerModelId,
               );
+              console.log("Batch analysis results:", results);
+              console.log("Original batch:", batch.map(b => ({ id: b.id, name: b.name })));
+              
               results.forEach((res) => {
                 const enq = batch.find((b) => b.id === res.id);
                 if (enq) {
+                  console.log("Matched enquiry:", enq.id, "with result:", res);
                   onUpdate({ id: enq.id, aiAnalysis: res });
                   // If Filter Spam is enabled and this is irrelevant, dismiss it immediately
                   if (hideIrrelevantRef.current && !res.isRelevant) {
                     onDismiss(enq.id);
                   }
+                } else {
+                  console.warn("Could not match result to enquiry:", res);
                 }
               });
 
@@ -990,8 +996,8 @@ const EnquiryList = ({
                       )}
                       <span className="text-[13px] font-black uppercase tracking-widest">
                         {enquiry.aiAnalysis.isRelevant
-                          ? "Relevant"
-                          : "Spam/Irr"}
+                          ? (enquiry.aiAnalysis.category || "Relevant")
+                          : "Irrelevant"}
                       </span>
                       {enquiry.aiAnalysis.leadScore !== undefined && (
                         <>
