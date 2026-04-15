@@ -163,7 +163,7 @@ const EnquiryList = ({
 
       setFilterPopupStyle(style);
     }
-  }, [isFilterPopupOpen, aiAnalysisEnabled]); // Recalculate if content expands (AI enabled)
+  }, [isFilterPopupOpen, aiAnalysisEnabled, activeTab]); // Recalculate if content expands (AI enabled) or tab changes
 
   useEffect(() => {
     const handleScrollResize = () => {
@@ -709,93 +709,97 @@ const EnquiryList = ({
 
                       {/* Scrollable Body */}
                       <div className="flex-1 p-5 space-y-4 overflow-y-auto custom-scrollbar">
-                        {/* AI Settings Section */}
-                        <div className="space-y-3">
-                          <label className="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase ml-1">
-                            AI Analysis Control
-                          </label>
-                          <div className="space-y-2">
-                            {/* Toggle AI Analysis */}
-                            <div className="flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-2xl hover:border-slate-200 transition-colors">
-                              <div className="flex flex-col">
-                                <span className="text-[11px] font-bold text-primary">
-                                  Enable AI Analysis
-                                </span>
-                                <span className="text-[9px] text-slate-400">
-                                  Qualify enquiries automatically
-                                </span>
-                              </div>
-                              <button
-                                onClick={() => {
-                                  const nextValue = !aiAnalysisEnabled;
-                                  setAiAnalysisEnabled(nextValue);
-                                  if (!nextValue) setHideIrrelevant(false);
-                                }}
-                                className={`relative inline-flex h-5 w-9 shrink-0 rounded-full transition-colors duration-300 ease-in-out ${
-                                  aiAnalysisEnabled
-                                    ? "bg-secondary"
-                                    : "bg-slate-300"
-                                }`}
-                              >
-                                <span
-                                  className={`inline-block h-3.5 w-3.5 bg-white rounded-full transform transition-transform duration-300 ease-in-out ${aiAnalysisEnabled ? "translate-x-[18px]" : "translate-x-0.5"} mt-[3px] ml-0.5`}
-                                />
-                              </button>
-                            </div>
-
-                            {/* Toggle Filter Spam */}
-                            <div
-                              className={`flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-2xl transition-all hover:border-slate-200 ${!aiAnalysisEnabled ? "opacity-30 grayscale pointer-events-none" : ""}`}
-                            >
-                              <div className="flex flex-col">
-                                <span className="text-[11px] font-bold text-primary">
-                                  Auto-Filter Spam
-                                </span>
-                                <span className="text-[9px] text-slate-400">
-                                  Hide irrelevant enquiries
-                                </span>
-                              </div>
-                              <button
-                                onClick={() =>
-                                  setHideIrrelevant(!hideIrrelevant)
-                                }
-                                className={`relative inline-flex h-5 w-9 shrink-0 rounded-full transition-colors duration-300 ease-in-out ${
-                                  hideIrrelevant
-                                    ? "bg-emerald-600"
-                                    : "bg-slate-300"
-                                }`}
-                              >
-                                <span
-                                  className={`inline-block h-3.5 w-3.5 bg-white rounded-full transform transition-transform duration-300 ease-in-out ${hideIrrelevant ? "translate-x-[18px]" : "translate-x-0.5"} mt-[3px] ml-0.5`}
-                                />
-                              </button>
-                            </div>
-
-                            {/* AI Model Selection Dropdown */}
-                            {aiAnalysisEnabled && aiModels.length > 0 && (
-                              <div className="space-y-2 mt-2">
-                                <SearchableDropdown
-                                  label="Model Selection"
-                                  placeholder="Select AI Model..."
-                                  options={aiModels.map(m => ({
-                                    ...m,
-                                    label: m.name,
-                                    value: m.aimodel_id
-                                  }))}
-                                  value={selectedAiModel}
-                                  onChange={setSelectedAiModel}
-                                />
-                                <div className="px-3 py-2 bg-slate-50 border border-slate-100 rounded-2xl">
-                                  <p className="text-[10px] text-slate-400 leading-relaxed italic">
-                                    {aiModels.find(m => m.aimodel_id === selectedAiModel)?.description || "Select a model to see its description."}
-                                  </p>
+                        {/* AI Settings Section - Only show in Inbox tab */}
+                        {activeTab === "new" && (
+                          <>
+                            <div className="space-y-3">
+                              <label className="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase ml-1">
+                                AI Analysis Control
+                              </label>
+                              <div className="space-y-2">
+                                {/* Toggle AI Analysis */}
+                                <div className="flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-2xl hover:border-slate-200 transition-colors">
+                                  <div className="flex flex-col">
+                                    <span className="text-[11px] font-bold text-primary">
+                                      Enable AI Analysis
+                                    </span>
+                                    <span className="text-[9px] text-slate-400">
+                                      Qualify enquiries automatically
+                                    </span>
+                                  </div>
+                                  <button
+                                    onClick={() => {
+                                      const nextValue = !aiAnalysisEnabled;
+                                      setAiAnalysisEnabled(nextValue);
+                                      if (!nextValue) setHideIrrelevant(false);
+                                    }}
+                                    className={`relative inline-flex h-5 w-9 shrink-0 rounded-full transition-colors duration-300 ease-in-out ${
+                                      aiAnalysisEnabled
+                                        ? "bg-secondary"
+                                        : "bg-slate-300"
+                                    }`}
+                                  >
+                                    <span
+                                      className={`inline-block h-3.5 w-3.5 bg-white rounded-full transform transition-transform duration-300 ease-in-out ${aiAnalysisEnabled ? "translate-x-[18px]" : "translate-x-0.5"} mt-[3px] ml-0.5`}
+                                    />
+                                  </button>
                                 </div>
-                              </div>
-                            )}
-                          </div>
-                        </div>
 
-                        <div className="h-px bg-slate-100/50" />
+                                {/* Toggle Filter Spam */}
+                                <div
+                                  className={`flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-2xl transition-all hover:border-slate-200 ${!aiAnalysisEnabled ? "opacity-30 grayscale pointer-events-none" : ""}`}
+                                >
+                                  <div className="flex flex-col">
+                                    <span className="text-[11px] font-bold text-primary">
+                                      Auto-Filter Spam
+                                    </span>
+                                    <span className="text-[9px] text-slate-400">
+                                      Hide irrelevant enquiries
+                                    </span>
+                                  </div>
+                                  <button
+                                    onClick={() =>
+                                      setHideIrrelevant(!hideIrrelevant)
+                                    }
+                                    className={`relative inline-flex h-5 w-9 shrink-0 rounded-full transition-colors duration-300 ease-in-out ${
+                                      hideIrrelevant
+                                        ? "bg-emerald-600"
+                                        : "bg-slate-300"
+                                    }`}
+                                  >
+                                    <span
+                                      className={`inline-block h-3.5 w-3.5 bg-white rounded-full transform transition-transform duration-300 ease-in-out ${hideIrrelevant ? "translate-x-[18px]" : "translate-x-0.5"} mt-[3px] ml-0.5`}
+                                    />
+                                  </button>
+                                </div>
+
+                                {/* AI Model Selection Dropdown */}
+                                {aiAnalysisEnabled && aiModels.length > 0 && (
+                                  <div className="space-y-2 mt-2">
+                                    <SearchableDropdown
+                                      label="Model Selection"
+                                      placeholder="Select AI Model..."
+                                      options={aiModels.map(m => ({
+                                        ...m,
+                                        label: m.name,
+                                        value: m.aimodel_id
+                                      }))}
+                                      value={selectedAiModel}
+                                      onChange={setSelectedAiModel}
+                                    />
+                                    <div className="px-3 py-2 bg-slate-50 border border-slate-100 rounded-2xl">
+                                      <p className="text-[10px] text-slate-400 leading-relaxed italic">
+                                        {aiModels.find(m => m.aimodel_id === selectedAiModel)?.description || "Select a model to see its description."}
+                                      </p>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="h-px bg-slate-100/50" />
+                          </>
+                        )}
 
                         {/* Date Range Section */}
                         <div className="space-y-3">
