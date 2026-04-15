@@ -388,80 +388,105 @@ const Settings = ({
     setTimeout(() => setIsAiSaved(false), 3000);
   };
 
+  const [addAdminErrors, setAddAdminErrors] = useState({});
+
+  const validateAddAdmin = () => {
+    const errors = {};
+    
+    if (!newAdmin.name.trim()) {
+      errors.name = "Full name is required";
+    } else if (newAdmin.name.trim().length < 2) {
+      errors.name = "Name must be at least 2 characters";
+    }
+    
+    if (!newAdmin.email.trim()) {
+      errors.email = "Email is required";   
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newAdmin.email)) {
+      errors.email = "Please enter a valid email address";
+    }
+    
+    if (!newAdmin.password) {
+      errors.password = "Password is required";
+    } else if (newAdmin.password.length < 8) {
+      errors.password = "Password must be at least 8 characters";
+    }
+    
+    setAddAdminErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleAddAdmin = async () => {
-    if (newAdmin.name && newAdmin.email && newAdmin.password) {
-      setIsSubmitting(true);
-      try {
-        const response = await fetch(`${BASE_URL}/api/admin-users`, {
-          method: "POST",
-          headers: {
-            ...getAuthHeaders(),
-          },
-          body: JSON.stringify({
-            full_name: newAdmin.name,
-            email: newAdmin.email,
-            password: newAdmin.password,
-            role: newAdmin.role,
-            privileges: newAdmin.privileges,
-          }),
-        });
+    if (!validateAddAdmin()) return;
+    
+    setIsSubmitting(true);
+    try {
+      const response = await fetch(`${BASE_URL}/api/admin-users`, {
+        method: "POST",
+        headers: {
+          ...getAuthHeaders(),
+        },
+        body: JSON.stringify({
+          full_name: newAdmin.name,
+          email: newAdmin.email,
+          password: newAdmin.password,
+          role: newAdmin.role,
+          privileges: newAdmin.privileges,
+        }),
+      });
 
-        const contentType = response.headers.get("content-type");
-        let data;
+      const contentType = response.headers.get("content-type");
+      let data;
 
-        if (contentType && contentType.includes("application/json")) {
-          data = await response.json();
-        } else {
-          const text = await response.text();
-          console.error("Server returned non-JSON response:", text);
-          showToastMessage(
-            `Server error: ${response.status}. Check console for details.`,
-            "error",
-          );
-          return;
-        }
-
-        if (response.ok) {
-          // Add the new admin to local state with returned UUID
-          const admin = {
-            id: data.uuid,
-            name: newAdmin.name,
-            email: newAdmin.email,
-            role: newAdmin.role,
-            status: newAdmin.status,
-            privileges: newAdmin.privileges,
-            joinDate: new Date().toISOString().split("T")[0],
-          };
-          setAdmins([...admins, admin]);
-          setNewAdmin({
-            name: "",
-            email: "",
-            password: "",
-            role: "Admin",
-            status: "Active",
-            privileges: 3,
-          });
-          setShowAddAdminModal(false);
-          showToastMessage(
-            "Admin created successfully!",
-            "success",
-          );
-          // Refresh the admin list
-          fetchAdminUsers();
-        } else {
-          showToastMessage(data.message || "Failed to create admin", "error");
-        }
-      } catch (error) {
-        console.error("Add admin error:", error);
+      if (contentType && contentType.includes("application/json")) {
+        data = await response.json();
+      } else {
+        const text = await response.text();
+        console.error("Server returned non-JSON response:", text);
         showToastMessage(
-          "Server error while creating admin. Check console for details.",
+          `Server error: ${response.status}. Check console for details.`,
           "error",
         );
-      } finally {
-        setIsSubmitting(false);
+        return;
       }
-    } else {
-      showToastMessage("Please fill in all required fields", "error");
+
+      if (response.ok) {
+        // Add the new admin to local state with returned UUID
+        const admin = {
+          id: data.uuid,
+          name: newAdmin.name,
+          email: newAdmin.email,
+          role: newAdmin.role,
+          status: newAdmin.status,
+          privileges: newAdmin.privileges,
+          joinDate: new Date().toISOString().split("T")[0],
+        };
+        setAdmins([...admins, admin]);
+        setNewAdmin({
+          name: "",
+          email: "",
+          password: "",
+          role: "Admin",
+          status: "Active",
+          privileges: 3,
+        });
+        setShowAddAdminModal(false);
+        showToastMessage(
+          "Admin created successfully!",
+          "success",
+        );
+        // Refresh the admin list
+        fetchAdminUsers();
+      } else {
+        showToastMessage(data.message || "Failed to create admin", "error");
+      }
+    } catch (error) {
+      console.error("Add admin error:", error);
+      showToastMessage(
+        "Server error while creating admin. Check console for details.",
+        "error",
+      );
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -1140,9 +1165,9 @@ const Settings = ({
                                 }
                               }}
                               disabled={!newModel.name || !newModel.modelId || !newModel.apiKey}
-                              className="flex-1 flex items-center justify-center gap-2 px-6 sm:px-8 py-3 sm:py-3.5 bg-[#1C2A58] text-white rounded-xl hover:bg-[#1e2e5e] active:scale-95 transition-all text-[12px] sm:text-[13px] font-black tracking-widest shadow-lg shadow-[#18254D]/20 disabled:opacity-70 disabled:cursor-not-allowed"
+                              className="flex-1 flex items-center justify-center gap-2 px-6 sm:px-8 py-3 sm:py-3.5 bg-[#1C2B5A] text-white rounded-xl hover:bg-[#1e2e5e] active:scale-95 transition-all text-[12px] sm:text-[13px] font-black tracking-widest shadow-lg shadow-[#18254D]/20 disabled:cursor-not-allowed"
                             >
-                              <Check size={16} strokeWidth={3} className="sm:hidden" />
+                              <Check size={16} strokeWidth={3} className=   "sm:hidden" />
                               <Check size={18} strokeWidth={3} className="hidden sm:block" />
                               ADD MODEL
                             </button>
@@ -1698,12 +1723,22 @@ const Settings = ({
                               <input
                                 type="text"
                                 value={newAdmin.name}
-                                onChange={(e) =>
-                                  setNewAdmin({ ...newAdmin, name: e.target.value })
-                                }
+                                onChange={(e) => {
+                                  setNewAdmin({ ...newAdmin, name: e.target.value });
+                                  if (addAdminErrors.name) {
+                                    setAddAdminErrors({ ...addAdminErrors, name: null });
+                                  }
+                                }}
                                 placeholder="Enter full name"
-                                className="w-full h-[46px] sm:h-[50px] px-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#18254D]/20 focus:border-[#18254D] focus:outline-none transition-all text-sm font-bold text-[#18254D] placeholder:font-medium placeholder:text-slate-400"
+                                className={`w-full h-[46px] sm:h-[50px] px-4 bg-slate-50 border rounded-xl focus:ring-2 focus:outline-none transition-all text-sm font-bold text-[#18254D] placeholder:font-medium placeholder:text-slate-400 ${
+                                  addAdminErrors.name 
+                                    ? "border-red-300 focus:border-red-400 focus:ring-red-200" 
+                                    : "border-slate-200 focus:border-[#18254D] focus:ring-[#18254D]/20"
+                                }`}
                               />
+                              {addAdminErrors.name && (
+                                <p className="text-[10px] text-red-500 font-medium ml-1">{addAdminErrors.name}</p>
+                              )}
                             </div>
                             <div className="space-y-2">
                               <label className="text-[10px] sm:text-[11px] font-black text-slate-400 tracking-widest uppercase ml-1">
@@ -1712,12 +1747,22 @@ const Settings = ({
                               <input
                                 type="email"
                                 value={newAdmin.email}
-                                onChange={(e) =>
-                                  setNewAdmin({ ...newAdmin, email: e.target.value })
-                                }
+                                onChange={(e) => {
+                                  setNewAdmin({ ...newAdmin, email: e.target.value });
+                                  if (addAdminErrors.email) {
+                                    setAddAdminErrors({ ...addAdminErrors, email: null });
+                                  }
+                                }}
                                 placeholder="Enter email address"
-                                className="w-full h-[46px] sm:h-[50px] px-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#18254D]/20 focus:border-[#18254D] focus:outline-none transition-all text-sm font-bold text-[#18254D] placeholder:font-medium placeholder:text-slate-400"
+                                className={`w-full h-[46px] sm:h-[50px] px-4 bg-slate-50 border rounded-xl focus:ring-2 focus:outline-none transition-all text-sm font-bold text-[#18254D] placeholder:font-medium placeholder:text-slate-400 ${
+                                  addAdminErrors.email 
+                                    ? "border-red-300 focus:border-red-400 focus:ring-red-200" 
+                                    : "border-slate-200 focus:border-[#18254D] focus:ring-[#18254D]/20"
+                                }`}
                               />
+                              {addAdminErrors.email && (
+                                <p className="text-[10px] text-red-500 font-medium ml-1">{addAdminErrors.email}</p>
+                              )}
                             </div>
                           </div>
 
@@ -1729,15 +1774,26 @@ const Settings = ({
                             <input
                               type="password"
                               value={newAdmin.password}
-                              onChange={(e) =>
-                                setNewAdmin({ ...newAdmin, password: e.target.value })
-                              }
+                              onChange={(e) => {
+                                setNewAdmin({ ...newAdmin, password: e.target.value });
+                                if (addAdminErrors.password) {
+                                  setAddAdminErrors({ ...addAdminErrors, password: null });
+                                }
+                              }}
                               placeholder="Set a secure password"
-                              className="w-full h-[46px] sm:h-[50px] px-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#18254D]/20 focus:border-[#18254D] focus:outline-none transition-all text-sm font-bold text-[#18254D] placeholder:font-medium placeholder:text-slate-400"
+                              className={`w-full h-[46px] sm:h-[50px] px-4 bg-slate-50 border rounded-xl focus:ring-2 focus:outline-none transition-all text-sm font-bold text-[#18254D] placeholder:font-medium placeholder:text-slate-400 ${
+                                addAdminErrors.password 
+                                  ? "border-red-300 focus:border-red-400 focus:ring-red-200" 
+                                  : "border-slate-200 focus:border-[#18254D] focus:ring-[#18254D]/20"
+                              }`}
                             />
-                            <p className="text-[10px] sm:text-[11px] text-slate-400 font-medium ml-1">
-                              Minimum 8 characters recommended
-                            </p>
+                            {addAdminErrors.password ? (
+                              <p className="text-[10px] text-red-500 font-medium ml-1">{addAdminErrors.password}</p>
+                            ) : (
+                              <p className="text-[10px] sm:text-[11px] text-slate-400 font-medium ml-1">
+                                Minimum 8 characters required
+                              </p>
+                            )}
                           </div>
 
                           {/* Role, Status, Privileges Row */}

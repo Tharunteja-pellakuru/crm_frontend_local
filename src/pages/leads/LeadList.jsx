@@ -2743,8 +2743,8 @@ const LeadList = ({
           <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[99999] flex items-start justify-center p-4 animate-fade-in overflow-y-auto no-scrollbar py-20">
             <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 overflow-hidden animate-scale-in my-auto">
               <div className="p-6 text-center">
-                <div className="w-16 h-16 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-rose-100 shadow-sm">
-                  <AlertTriangle size={32} className="text-rose-500" />
+                <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-Black-100 shadow-sm">
+                  <AlertTriangle size={32} className="text-[#18254E]" />
                 </div>
                 <h3 className="text-xl font-bold text-primary mb-2">
                   Confirm Deletion
@@ -2773,7 +2773,7 @@ const LeadList = ({
                     setShowDeleteModal(false);
                     setLeadToDelete(null);
                   }}
-                  className="flex-1 px-4 py-2.5 bg-rose-500 text-white rounded-xl text-xs font-bold tracking-widest hover:bg-rose-600 shadow-lg shadow-rose-200 transition-all active:scale-95 uppercase"
+                  className="flex-1 px-4 py-2.5 bg-[#18254E] text-white rounded-xl text-xs font-bold tracking-widest hover:bg-rose-600 shadow-lg shadow-rose-200 transition-all active:scale-95 uppercase"
                 >
                   Delete Lead
                 </button>
