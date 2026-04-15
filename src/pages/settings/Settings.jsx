@@ -28,6 +28,8 @@ import {
   BellRing,
   FolderKanban,
   FileText,
+  Eye,
+  EyeOff,
   Users as UsersIcon,
   Calendar,
   Briefcase,
@@ -73,7 +75,7 @@ const Settings = ({
   const [isAiEditing, setIsAiEditing] = useState(false);
 
   // AI Model management state
-  const [showAddModelForm, setShowAddModelForm] = useState(false);
+  const [showAddModelModal, setShowAddModelModal] = useState(false);
   const [newModel, setNewModel] = useState({
     name: "",
     provider: "openai",
@@ -119,10 +121,11 @@ const Settings = ({
     }
   };
 
-  const [showAddAdminForm, setShowAddAdminForm] = useState(false);
+  const [showAddAdminModal, setShowAddAdminModal] = useState(false);
   const [newAdmin, setNewAdmin] = useState({
     name: "",
     email: "",
+    password: "",
     role: "Admin",
     status: "Active",
     privileges: 3,
@@ -209,14 +212,14 @@ const Settings = ({
           createPortal(
             <>
               <div
-                className="fixed inset-0 z-[9998]"
+                className="fixed inset-0 z-[9998] pointer-events-auto"
                 onClick={() => setActiveDropdown(null)}
               />
               <div
                 style={dropdownStyles}
-                className="bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden animate-fade-in origin-top py-1.5 sm:py-2"
+                className="bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden animate-fade-in origin-top py-1.5 sm:py-2 z-[9999] max-h-[300px] overflow-y-auto"
               >
-                <div className="bg-[#18254D] px-3 sm:px-4 py-1.5 sm:py-2 border-b border-white/10 -mt-2 mb-1">
+                <div className="bg-[#18254D] px-3 sm:px-4 py-1.5 sm:py-2 border-b border-white/10 -mt-2 mb-1 sticky top-0 z-10">
                   <p className="text-[10px] sm:text-[12px] font-bold text-white/50 tracking-widest uppercase truncate">
                     Select {label}
                   </p>
@@ -259,6 +262,11 @@ const Settings = ({
     newPassword: "",
     confirmPassword: "",
   });
+  const [showPasswords, setShowPasswords] = useState({
+    current: false,
+    new: false,
+    confirm: false,
+  });
   const [isPasswordSaved, setIsPasswordSaved] = useState(false);
 
   const [showToast, setShowToast] = useState(false);
@@ -294,7 +302,7 @@ const Settings = ({
   };
 
   // Lock scroll when any modal is open
-  useScrollLock(showFollowupExportModal || showAddModelForm || !!editingModelId || showAddAdminForm || !!editingAdminId || showPasswordForm || confirmModal.show);
+  useScrollLock(showFollowupExportModal || showAddModelModal || !!editingModelId || showAddAdminModal || !!editingAdminId || showPasswordForm || confirmModal.show);
 
   const hideConfirmModal = () => {
     setConfirmModal({
@@ -381,12 +389,9 @@ const Settings = ({
   };
 
   const handleAddAdmin = async () => {
-    if (newAdmin.name && newAdmin.email) {
+    if (newAdmin.name && newAdmin.email && newAdmin.password) {
       setIsSubmitting(true);
       try {
-        // Generate a default password (you might want to change this logic)
-        const defaultPassword = "Password@123"; // Or generate random
-
         const response = await fetch(`${BASE_URL}/api/admin-users`, {
           method: "POST",
           headers: {
@@ -395,7 +400,7 @@ const Settings = ({
           body: JSON.stringify({
             full_name: newAdmin.name,
             email: newAdmin.email,
-            password: defaultPassword,
+            password: newAdmin.password,
             role: newAdmin.role,
             privileges: newAdmin.privileges,
           }),
@@ -431,13 +436,14 @@ const Settings = ({
           setNewAdmin({
             name: "",
             email: "",
+            password: "",
             role: "Admin",
             status: "Active",
             privileges: 3,
           });
-          setShowAddAdminForm(false);
+          setShowAddAdminModal(false);
           showToastMessage(
-            `Admin created successfully! Default password: ${defaultPassword}`,
+            "Admin created successfully!",
             "success",
           );
           // Refresh the admin list
@@ -454,6 +460,8 @@ const Settings = ({
       } finally {
         setIsSubmitting(false);
       }
+    } else {
+      showToastMessage("Please fill in all required fields", "error");
     }
   };
 
@@ -509,7 +517,7 @@ const Settings = ({
       email: admin.email,
       role: admin.role,
       status: admin.status,
-      privileges: admin.privileges || 3,
+      privileges: parseInt(admin.privileges) || 3,
     });
   };
 
@@ -1001,7 +1009,7 @@ const Settings = ({
                       </p>
                     </div>
                     <button
-                      onClick={() => setShowAddModelForm(!showAddModelForm)}
+                      onClick={() => setShowAddModelModal(true)}
                       className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white rounded-2xl hover:bg-slate-800 transition-all active:scale-95 text-[13px] font-bold tracking-wider shadow-lg"
                     >
                       <Plus size={16} />
@@ -1009,120 +1017,269 @@ const Settings = ({
                     </button>
                   </div>
 
-                  {/* Add Model Form */}
-                  {showAddModelForm && (
-                    <div className="p-6 bg-violet-50/50 border border-violet-200 rounded-2xl space-y-5 mb-6 animate-fade-in">
-                      <h4 className="font-bold text-slate-900 flex items-center gap-2 tracking-tight">
-                        <Zap size={16} className="text-violet-500" />
-                        Add New AI Model
-                      </h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <div className="space-y-2">
-                          <label className="text-[12px]  font-bold text-slate-500 tracking-widest">
-                            Display Name
-                          </label>
-                          <input
-                            type="text"
-                            value={newModel.name}
-                            onChange={(e) =>
-                              setNewModel({ ...newModel, name: e.target.value })
-                            }
-                            placeholder="e.g., GPT-4o Mini"
-                            className="w-full h-[46px] px-4 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-secondary/30 focus:border-secondary focus:outline-none transition-all text-sm font-bold shadow-sm"
-                          />
-                        </div>
-                        <CustomDropdown
-                          label="Provider"
-                          value={newModel.provider}
-                          field="add_ai_provider"
-                          options={[
-                            { value: "openai", label: "OpenAI (ChatGPT)" },
-                            { value: "gemini", label: "Google Gemini" },
-                            { value: "grok", label: "xAI (Grok)" },
-                            { value: "anthropic", label: "Anthropic (Claude)" },
-                            { value: "mistral", label: "Mistral AI" },
-                            { value: "deepseek", label: "DeepSeek" },
-                            { value: "llama", label: "Meta Llama (Groq)" },
-                            { value: "groq", label: "Groq (Ultra Fast)" },
-                            { value: "other", label: "Other" },
-                          ]}
-                          onChange={(val) =>
-                            setNewModel({ ...newModel, provider: val })
-                          }
+                  {/* Add AI Model Modal */}
+                  {showAddModelModal &&
+                    createPortal(
+                      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                        {/* Backdrop */}
+                        <div
+                          className="absolute inset-0 bg-[#18254D]/60 backdrop-blur-xl"
+                          onClick={() => setShowAddModelModal(false)}
                         />
-                        <div className="space-y-2">
-                          <label className="text-[12px]  font-bold text-slate-500 tracking-widest">
-                            Model ID (exact)
-                          </label>
-                          <input
-                            type="text"
-                            value={newModel.modelId}
-                            onChange={(e) =>
-                              setNewModel({
-                                ...newModel,
-                                modelId: e.target.value,
-                              })
-                            }
-                            placeholder="e.g., gpt-4o-mini, grok-2, claude-3-haiku"
-                            className="w-full h-[46px] px-4 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-secondary/30 focus:border-secondary focus:outline-none transition-all text-sm font-bold shadow-sm"
-                          />
+                        {/* Modal Content */}
+                        <div className="relative w-full max-w-2xl max-h-[85vh] bg-white rounded-3xl shadow-2xl overflow-hidden animate-fade-in flex flex-col">
+                          {/* Header */}
+                          <div className="bg-gradient-to-r from-[#18254D] to-[#1e2e5e] px-6 sm:px-8 py-5 sm:py-6 flex-shrink-0">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/10 rounded-xl sm:rounded-2xl flex items-center justify-center">
+                                  <Zap size={20} className="text-white sm:hidden" />
+                                  <Zap size={24} className="text-white hidden sm:block" />
+                                </div>
+                                <div>
+                                  <h3 className="text-lg sm:text-xl font-black text-white tracking-tight">
+                                    Add AI Model
+                                  </h3>
+                                  <p className="text-xs sm:text-sm text-white/60 font-medium hidden sm:block">
+                                    Configure a new AI model for the system
+                                  </p>
+                                </div>
+                              </div>
+                              <button
+                                onClick={() => setShowAddModelModal(false)}
+                                className="w-9 h-9 sm:w-10 sm:h-10 bg-white/10 hover:bg-white/20 rounded-lg sm:rounded-xl flex items-center justify-center transition-all"
+                              >
+                                <X size={18} className="text-white sm:hidden" />
+                                <X size={20} className="text-white hidden sm:block" />
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Form Content - Scrollable */}
+                          <div className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-5 sm:space-y-6">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+                              <div className="space-y-2">
+                                <label className="text-[10px] sm:text-[11px] font-black text-slate-400 tracking-widest uppercase ml-1">
+                                  Display Name *
+                                </label>
+                                <input
+                                  type="text"
+                                  value={newModel.name}
+                                  onChange={(e) =>
+                                    setNewModel({ ...newModel, name: e.target.value })
+                                  }
+                                  placeholder="e.g., GPT-4o Mini"
+                                  className="w-full h-[46px] sm:h-[50px] px-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 focus:outline-none transition-all text-sm font-bold text-[#18254D] placeholder:font-medium placeholder:text-slate-400"
+                                />
+                              </div>
+                              <CustomDropdown
+                                label="Provider"
+                                value={newModel.provider}
+                                field="add_ai_provider"
+                                icon={Bot}
+                                options={[
+                                  { value: "openai", label: "OpenAI (ChatGPT)" },
+                                  { value: "gemini", label: "Google Gemini" },
+                                  { value: "grok", label: "xAI (Grok)" },
+                                  { value: "anthropic", label: "Anthropic (Claude)" },
+                                  { value: "mistral", label: "Mistral AI" },
+                                  { value: "deepseek", label: "DeepSeek" },
+                                  { value: "llama", label: "Meta Llama (Groq)" },
+                                  { value: "groq", label: "Groq (Ultra Fast)" },
+                                  { value: "other", label: "Other" },
+                                ]}
+                                onChange={(val) =>
+                                  setNewModel({ ...newModel, provider: val })
+                                }
+                              />
+                              <div className="space-y-2">
+                                <label className="text-[10px] sm:text-[11px] font-black text-slate-400 tracking-widest uppercase ml-1">
+                                  Model ID (exact) *
+                                </label>
+                                <input
+                                  type="text"
+                                  value={newModel.modelId}
+                                  onChange={(e) =>
+                                    setNewModel({ ...newModel, modelId: e.target.value })
+                                  }
+                                  placeholder="e.g., gpt-4o-mini, grok-2, claude-3-haiku"
+                                  className="w-full h-[46px] sm:h-[50px] px-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 focus:outline-none transition-all text-sm font-bold text-[#18254D] placeholder:font-medium placeholder:text-slate-400"
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <label className="text-[10px] sm:text-[11px] font-black text-slate-400 tracking-widest uppercase ml-1 flex items-center gap-1.5">
+                                  <Key size={12} />
+                                  API Key *
+                                </label>
+                                <input
+                                  type="password"
+                                  value={newModel.apiKey}
+                                  onChange={(e) =>
+                                    setNewModel({ ...newModel, apiKey: e.target.value })
+                                  }
+                                  placeholder="Enter API key for this model"
+                                  className="w-full h-[46px] sm:h-[50px] px-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 focus:outline-none transition-all text-sm font-bold text-[#18254D] placeholder:font-medium placeholder:text-slate-400"
+                                />
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Footer Actions */}
+                          <div className="px-6 sm:px-8 py-4 sm:py-6 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row gap-3 flex-shrink-0">
+                            <button
+                              onClick={() => {
+                                if (newModel.name && newModel.modelId && newModel.apiKey) {
+                                  onAddAiModel(newModel);
+                                  setNewModel({
+                                    name: "",
+                                    provider: "openai",
+                                    modelId: "",
+                                    apiKey: "",
+                                  });
+                                  setShowAddModelModal(false);
+                                }
+                              }}
+                              disabled={!newModel.name || !newModel.modelId || !newModel.apiKey}
+                              className="flex-1 flex items-center justify-center gap-2 px-6 sm:px-8 py-3 sm:py-3.5 bg-[#1C2A58] text-white rounded-xl hover:bg-[#1e2e5e] active:scale-95 transition-all text-[12px] sm:text-[13px] font-black tracking-widest shadow-lg shadow-[#18254D]/20 disabled:opacity-70 disabled:cursor-not-allowed"
+                            >
+                              <Check size={16} strokeWidth={3} className="sm:hidden" />
+                              <Check size={18} strokeWidth={3} className="hidden sm:block" />
+                              ADD MODEL
+                            </button>
+
+                          </div>
                         </div>
-                        <div className="space-y-2">
-                          <label className="text-[12px]  font-bold text-slate-500 tracking-widest flex items-center gap-1.5">
-                            <Key size={12} className="text-slate-400" />
-                            API Key
-                          </label>
-                          <input
-                            type="password"
-                            value={newModel.apiKey}
-                            onChange={(e) =>
-                              setNewModel({
-                                ...newModel,
-                                apiKey: e.target.value,
-                              })
-                            }
-                            placeholder="Enter API key for this model"
-                            className="w-full h-[46px] px-4 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-secondary/30 focus:border-secondary focus:outline-none transition-all text-sm font-bold shadow-sm"
-                          />
+                      </div>,
+                      document.body
+                    )}
+
+                  {/* Edit AI Model Modal */}
+                  {editingModelId &&
+                    createPortal(
+                      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                        {/* Backdrop */}
+                        <div
+                          className="absolute inset-0 bg-[#18254D]/60 backdrop-blur-xl"
+                          onClick={() => setEditingModelId(null)}
+                        />
+                        {/* Modal Content */}
+                        <div className="relative w-full max-w-2xl max-h-[85vh] bg-white rounded-3xl shadow-2xl overflow-hidden animate-fade-in flex flex-col">
+                          {/* Header */}
+                          <div className="bg-gradient-to-r from-[#18254D] to-[#1e2e5e] px-6 sm:px-8 py-5 sm:py-6 flex-shrink-0">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/10 rounded-xl sm:rounded-2xl flex items-center justify-center">
+                                  <Edit2 size={20} className="text-white sm:hidden" />
+                                  <Edit2 size={24} className="text-white hidden sm:block" />
+                                </div>
+                                <div>
+                                  <h3 className="text-lg sm:text-xl font-black text-white tracking-tight">
+                                    Edit AI Model
+                                  </h3>
+                                  <p className="text-xs sm:text-sm text-white/60 font-medium hidden sm:block">
+                                    Update AI model configuration
+                                  </p>
+                                </div>
+                              </div>
+                              <button
+                                onClick={() => setEditingModelId(null)}
+                                className="w-9 h-9 sm:w-10 sm:h-10 bg-white/10 hover:bg-white/20 rounded-lg sm:rounded-xl flex items-center justify-center transition-all"
+                              >
+                                <X size={18} className="text-white sm:hidden" />
+                                <X size={20} className="text-white hidden sm:block" />
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Form Content - Scrollable */}
+                          <div className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-5 sm:space-y-6">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+                              <div className="space-y-2">
+                                <label className="text-[10px] sm:text-[11px] font-black text-slate-400 tracking-widest uppercase ml-1">
+                                  Display Name *
+                                </label>
+                                <input
+                                  type="text"
+                                  value={editModelData.name || ""}
+                                  onChange={(e) =>
+                                    setEditModelData({ ...editModelData, name: e.target.value })
+                                  }
+                                  placeholder="e.g., GPT-4o Mini"
+                                  className="w-full h-[46px] sm:h-[50px] px-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 focus:outline-none transition-all text-sm font-bold text-[#18254D] placeholder:font-medium placeholder:text-slate-400"
+                                />
+                              </div>
+                              <CustomDropdown
+                                label="Provider"
+                                value={editModelData.provider}
+                                field="edit_ai_provider"
+                                icon={Bot}
+                                options={[
+                                  { value: "openai", label: "OpenAI (ChatGPT)" },
+                                  { value: "gemini", label: "Google Gemini" },
+                                  { value: "grok", label: "xAI (Grok)" },
+                                  { value: "anthropic", label: "Anthropic (Claude)" },
+                                  { value: "mistral", label: "Mistral AI" },
+                                  { value: "deepseek", label: "DeepSeek" },
+                                  { value: "llama", label: "Meta Llama (Groq)" },
+                                  { value: "groq", label: "Groq (Ultra Fast)" },
+                                  { value: "other", label: "Other" },
+                                ]}
+                                onChange={(val) =>
+                                  setEditModelData({ ...editModelData, provider: val })
+                                }
+                              />
+                              <div className="space-y-2">
+                                <label className="text-[10px] sm:text-[11px] font-black text-slate-400 tracking-widest uppercase ml-1">
+                                  Model ID (exact) *
+                                </label>
+                                <input
+                                  type="text"
+                                  value={editModelData.modelId || ""}
+                                  onChange={(e) =>
+                                    setEditModelData({ ...editModelData, modelId: e.target.value })
+                                  }
+                                  placeholder="e.g., gpt-4o-mini, grok-2, claude-3-haiku"
+                                  className="w-full h-[46px] sm:h-[50px] px-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 focus:outline-none transition-all text-sm font-bold text-[#18254D] placeholder:font-medium placeholder:text-slate-400"
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <label className="text-[10px] sm:text-[11px] font-black text-slate-400 tracking-widest uppercase ml-1 flex items-center gap-1.5">
+                                  <Key size={12} />
+                                  API Key *
+                                </label>
+                                <input
+                                  type="password"
+                                  value={editModelData.apiKey || ""}
+                                  onChange={(e) =>
+                                    setEditModelData({ ...editModelData, apiKey: e.target.value })
+                                  }
+                                  placeholder="Enter API key for this model"
+                                  className="w-full h-[46px] sm:h-[50px] px-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 focus:outline-none transition-all text-sm font-bold text-[#18254D] placeholder:font-medium placeholder:text-slate-400"
+                                />
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Footer Actions */}
+                          <div className="px-6 sm:px-8 py-4 sm:py-6 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row gap-3 flex-shrink-0">
+                            <button
+                              onClick={() => {
+                                onUpdateAiModel(editModelData);
+                                setEditingModelId(null);
+                              }}
+                              disabled={!editModelData.name || !editModelData.modelId || !editModelData.apiKey}
+                              className="flex-1 flex items-center justify-center gap-2 px-6 sm:px-8 py-3 sm:py-3.5 bg-[#18254D] text-white rounded-xl hover:bg-[#1e2e5e] active:scale-95 transition-all text-[12px] sm:text-[13px] font-black tracking-widest shadow-lg shadow-[#18254D]/20 disabled:opacity-70 disabled:cursor-not-allowed"
+                            >
+                              <Check size={16} strokeWidth={3} className="sm:hidden" />
+                              <Check size={18} strokeWidth={3} className="hidden sm:block" />
+                              SAVE CHANGES
+                            </button>
+                            
+                          </div>
                         </div>
-                      </div>
-                      <div className="flex gap-3 pt-3">
-                        <button
-                          onClick={() => {
-                            if (
-                              newModel.name &&
-                              newModel.modelId &&
-                              newModel.apiKey
-                            ) {
-                              onAddAiModel(newModel);
-                              setNewModel({
-                                name: "",
-                                provider: "openai",
-                                modelId: "",
-                                apiKey: "",
-                              });
-                              setShowAddModelForm(false);
-                            }
-                          }}
-                          disabled={
-                            !newModel.name ||
-                            !newModel.modelId ||
-                            !newModel.apiKey
-                          }
-                          className="flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white rounded-2xl hover:bg-slate-800 transition-all active:scale-95 text-[13px] font-bold tracking-wider disabled:bg-primary/50 disabled:opacity-70 disabled:cursor-not-allowed"
-                        >
-                          <Check size={16} />
-                          Add Model
-                        </button>
-                        <button
-                          onClick={() => setShowAddModelForm(false)}
-                          className="px-4 py-2.5 bg-slate-200 text-slate-700 rounded-2xl hover:bg-slate-300 transition-all text-[13px] font-bold tracking-wider"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </div>
-                  )}
+                      </div>,
+                      document.body
+                    )}
 
                   {/* Models List */}
                   <div className="space-y-3">
@@ -1196,109 +1353,7 @@ const Settings = ({
                           key={model.aimodel_id}
                           className="p-4 bg-white border border-slate-200 rounded-xl hover:border-violet-200 hover:shadow-md transition-all"
                         >
-                          {editingModelId === model.aimodel_id ? (
-                            <div className="space-y-4">
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                <div className="space-y-2">
-                                  <label className="text-[12px]  font-bold text-slate-500 tracking-widest">
-                                    Display Name
-                                  </label>
-                                  <input
-                                    type="text"
-                                    value={editModelData.name}
-                                    onChange={(e) =>
-                                      setEditModelData({
-                                        ...editModelData,
-                                        name: e.target.value,
-                                      })
-                                    }
-                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-violet-500/30 focus:border-violet-500 focus:outline-none transition-all text-sm font-bold"
-                                  />
-                                </div>
-                                <CustomDropdown
-                                  label="Provider"
-                                  value={editModelData.provider}
-                                  field={`edit_ai_provider_${model.aimodel_id}`}
-                                  options={[
-                                    {
-                                      value: "openai",
-                                      label: "OpenAI (ChatGPT)",
-                                    },
-                                    { value: "gemini", label: "Google Gemini" },
-                                    { value: "grok", label: "xAI (Grok)" },
-                                    {
-                                      value: "anthropic",
-                                      label: "Anthropic (Claude)",
-                                    },
-                                    { value: "mistral", label: "Mistral AI" },
-                                    { value: "deepseek", label: "DeepSeek" },
-                                    { value: "llama", label: "Llama 3 (Groq)" },
-                                    {
-                                      value: "groq",
-                                      label: "Groq (Ultra Fast)",
-                                    },
-                                    { value: "other", label: "Other" },
-                                  ]}
-                                  onChange={(val) =>
-                                    setEditModelData({
-                                      ...editModelData,
-                                      provider: val,
-                                    })
-                                  }
-                                />
-                                <div className="space-y-2">
-                                  <label className="text-[12px]  font-bold text-slate-500 tracking-widest">
-                                    Model ID
-                                  </label>
-                                  <input
-                                    type="text"
-                                    value={editModelData.modelId}
-                                    onChange={(e) =>
-                                      setEditModelData({
-                                        ...editModelData,
-                                        modelId: e.target.value,
-                                      })
-                                    }
-                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-violet-500/30 focus:border-violet-500 focus:outline-none transition-all text-sm font-bold"
-                                  />
-                                </div>
-                                <div className="space-y-2">
-                                  <label className="text-[12px]  font-bold text-slate-500 tracking-widest">
-                                    API Key
-                                  </label>
-                                  <input
-                                    type="password"
-                                    value={editModelData.apiKey}
-                                    onChange={(e) =>
-                                      setEditModelData({
-                                        ...editModelData,
-                                        apiKey: e.target.value,
-                                      })
-                                    }
-                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-violet-500/30 focus:border-violet-500 focus:outline-none transition-all text-sm font-bold"
-                                  />
-                                </div>
-                              </div>
-                              <div className="flex gap-3 pt-4">
-                                <button
-                                  onClick={() => {
-                                    onUpdateAiModel(editModelData);
-                                    setEditingModelId(null);
-                                  }}
-                                  className="px-6 py-2.5 bg-[#18254D] text-white rounded-[20px] hover:bg-[#1e2e5e] transition-all text-[13px] font-black tracking-wider shadow-lg shadow-[#18254D]/10"
-                                >
-                                  Save
-                                </button>
-                                <button
-                                  onClick={() => setEditingModelId(null)}
-                                  className="px-6 py-2.5 bg-slate-100 text-slate-600 rounded-[20px] hover:bg-slate-200 transition-all text-[13px] font-black tracking-wider"
-                                >
-                                  Cancel
-                                </button>
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                               <div className="flex items-center gap-4">
                                 <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center overflow-hidden flex-shrink-0 shadow-sm">
                                   {prov.logo ? (
@@ -1360,7 +1415,6 @@ const Settings = ({
                                 )}
                               </div>
                             </div>
-                          )}
                         </div>
                       );
                     })}
@@ -1408,104 +1462,161 @@ const Settings = ({
                   <h4 className="font-bold text-slate-900 flex items-center gap-2 mb-4 tracking-tight">
                     Change Password
                   </h4>
-                  {!showPasswordForm ? (
-                    <button
-                      onClick={() => setShowPasswordForm(true)}
-                      className="flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white rounded-2xl hover:bg-slate-800 transition-all active:scale-95 text-[13px] font-bold tracking-wider shadow-lg"
-                    >
-                      <Lock size={14} strokeWidth={2.5} />
-                      Update Password
-                    </button>
-                  ) : (
-                    <div className="space-y-6">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                        <div className="space-y-2">
-                          <label className="text-[12px]  font-bold text-slate-500 tracking-widest uppercase">
-                            Current Password
-                          </label>
-                          <input
-                            type="password"
-                            value={passwordData.currentPassword}
-                            onChange={(e) =>
-                              setPasswordData({
-                                ...passwordData,
-                                currentPassword: e.target.value,
-                              })
-                            }
-                            placeholder="Current password"
-                            className="w-full h-[46px] px-4 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-secondary/30 focus:border-secondary focus:outline-none transition-all text-sm font-bold shadow-sm"
-                          />
+                  <button
+                    onClick={() => setShowPasswordForm(true)}
+                    className="flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white rounded-2xl hover:bg-slate-800 transition-all active:scale-95 text-[13px] font-bold tracking-wider shadow-lg"
+                  >
+                    <Lock size={14} strokeWidth={2.5} />
+                    Update Password
+                  </button>
+
+                  {/* Password Update Modal */}
+                  {showPasswordForm &&
+                    createPortal(
+                      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                        {/* Backdrop */}
+                        <div
+                          className="absolute inset-0 bg-[#18254D]/60 backdrop-blur-xl"
+                          onClick={() => setShowPasswordForm(false)}
+                        />
+                        {/* Modal Content */}
+                        <div className="relative w-full max-w-xl max-h-[85vh] bg-white rounded-3xl shadow-2xl overflow-hidden animate-fade-in flex flex-col">
+                          {/* Header */}
+                          <div className="bg-gradient-to-r from-[#18254D] to-[#1e2e5e] px-6 sm:px-8 py-5 sm:py-6 flex-shrink-0">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/10 rounded-xl sm:rounded-2xl flex items-center justify-center">
+                                  <Lock size={20} className="text-white sm:hidden" />
+                                  <Lock size={24} className="text-white hidden sm:block" />
+                                </div>
+                                <div>
+                                  <h3 className="text-lg sm:text-xl font-black text-white tracking-tight">
+                                    Update Password
+                                  </h3>
+                                  <p className="text-xs sm:text-sm text-white/60 font-medium hidden sm:block">
+                                    Change your account password
+                                  </p>
+                                </div>
+                              </div>
+                              <button
+                                onClick={() => setShowPasswordForm(false)}
+                                className="w-9 h-9 sm:w-10 sm:h-10 bg-white/10 hover:bg-white/20 rounded-lg sm:rounded-xl flex items-center justify-center transition-all"
+                              >
+                                <X size={18} className="text-white sm:hidden" />
+                                <X size={20} className="text-white hidden sm:block" />
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Form Content */}
+                          <div className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-5">
+                            <div className="space-y-2">
+                              <label className="text-[10px] sm:text-[11px] font-black text-slate-400 tracking-widest uppercase ml-1">
+                                Current Password
+                              </label>
+                              <div className="relative">
+                                <input
+                                  type={showPasswords.current ? "text" : "password"}
+                                  value={passwordData.currentPassword}
+                                  onChange={(e) =>
+                                    setPasswordData({
+                                      ...passwordData,
+                                      currentPassword: e.target.value,
+                                    })
+                                  }
+                                  placeholder="Enter current password"
+                                  className="w-full h-[46px] sm:h-[50px] px-4 pr-12 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#18254D]/20 focus:border-[#18254D] focus:outline-none transition-all text-sm font-bold text-[#18254D] placeholder:font-medium placeholder:text-slate-400"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => setShowPasswords({ ...showPasswords, current: !showPasswords.current })}
+                                  className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-slate-400 hover:text-[#18254D] transition-colors"
+                                >
+                                  {showPasswords.current ? <EyeOff size={18} /> : <Eye size={18} />}
+                                </button>
+                              </div>
+                            </div>
+                            <div className="space-y-2">
+                              <label className="text-[10px] sm:text-[11px] font-black text-slate-400 tracking-widest uppercase ml-1">
+                                New Password
+                              </label>
+                              <div className="relative">
+                                <input
+                                  type={showPasswords.new ? "text" : "password"}
+                                  value={passwordData.newPassword}
+                                  onChange={(e) =>
+                                    setPasswordData({
+                                      ...passwordData,
+                                      newPassword: e.target.value,
+                                    })
+                                  }
+                                  placeholder="Enter new password"
+                                  className="w-full h-[46px] sm:h-[50px] px-4 pr-12 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#18254D]/20 focus:border-[#18254D] focus:outline-none transition-all text-sm font-bold text-[#18254D] placeholder:font-medium placeholder:text-slate-400"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => setShowPasswords({ ...showPasswords, new: !showPasswords.new })}
+                                  className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-slate-400 hover:text-[#18254D] transition-colors"
+                                >
+                                  {showPasswords.new ? <EyeOff size={18} /> : <Eye size={18} />}
+                                </button>
+                              </div>
+                            </div>
+                            <div className="space-y-2">
+                              <label className="text-[10px] sm:text-[11px] font-black text-slate-400 tracking-widest uppercase ml-1">
+                                Confirm New Password
+                              </label>
+                              <div className="relative">
+                                <input
+                                  type={showPasswords.confirm ? "text" : "password"}
+                                  value={passwordData.confirmPassword}
+                                  onChange={(e) =>
+                                    setPasswordData({
+                                      ...passwordData,
+                                      confirmPassword: e.target.value,
+                                    })
+                                  }
+                                  placeholder="Confirm new password"
+                                  className="w-full h-[46px] sm:h-[50px] px-4 pr-12 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#18254D]/20 focus:border-[#18254D] focus:outline-none transition-all text-sm font-bold text-[#18254D] placeholder:font-medium placeholder:text-slate-400"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => setShowPasswords({ ...showPasswords, confirm: !showPasswords.confirm })}
+                                  className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-slate-400 hover:text-[#18254D] transition-colors"
+                                >
+                                  {showPasswords.confirm ? <EyeOff size={18} /> : <Eye size={18} />}
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Footer Actions */}
+                          <div className="px-6 sm:px-8 py-4 sm:py-6 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row gap-3 flex-shrink-0">
+                            <button
+                              onClick={handleUpdatePassword}
+                              disabled={isSubmitting}
+                              className="flex-1 flex items-center justify-center gap-2 px-6 sm:px-8 py-3 sm:py-3.5 bg-[#18254D] text-white rounded-xl hover:bg-[#1e2e5e] active:scale-95 transition-all text-[12px] sm:text-[13px] font-black tracking-widest shadow-lg shadow-[#18254D]/20 disabled:opacity-70 disabled:cursor-not-allowed"
+                            >
+                              {isSubmitting ? (
+                                <>
+                                  <Loader2 size={16} className="animate-spin sm:hidden" />
+                                  <Loader2 size={18} className="animate-spin hidden sm:block" />
+                                  <span>Updating...</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Save size={16} strokeWidth={3} className="sm:hidden" />
+                                  <Save size={18} strokeWidth={3} className="hidden sm:block" />
+                                  UPDATE PASSWORD
+                                </>
+                              )}
+                            </button>
+                            
+                          </div>
                         </div>
-                        <div className="hidden md:block" /> {/* Spacer */}
-                        <div className="space-y-2">
-                          <label className="text-[12px]  font-bold text-slate-500 tracking-widest uppercase">
-                            New Password
-                          </label>
-                          <input
-                            type="password"
-                            value={passwordData.newPassword}
-                            onChange={(e) =>
-                              setPasswordData({
-                                ...passwordData,
-                                newPassword: e.target.value,
-                              })
-                            }
-                            placeholder="New password"
-                            className="w-full h-[46px] px-4 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-secondary/30 focus:border-secondary focus:outline-none transition-all text-sm font-bold shadow-sm"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <label className="text-[12px]  font-bold text-slate-500 tracking-widest uppercase">
-                            Confirm New Password
-                          </label>
-                          <input
-                            type="password"
-                            value={passwordData.confirmPassword}
-                            onChange={(e) =>
-                              setPasswordData({
-                                ...passwordData,
-                                confirmPassword: e.target.value,
-                              })
-                            }
-                            placeholder="Confirm password"
-                            className="w-full h-[46px] px-4 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-secondary/30 focus:border-secondary focus:outline-none transition-all text-sm font-bold shadow-sm"
-                          />
-                        </div>
-                      </div>
-                      <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t border-slate-100">
-                        <button
-                          onClick={handleUpdatePassword}
-                          disabled={isSubmitting}
-                          className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-[#18254D] text-white rounded-xl hover:bg-[#1e2e5e] transition-all active:scale-95 text-sm font-bold shadow-lg shadow-[#18254D]/20 disabled:opacity-70 disabled:cursor-not-allowed"
-                        >
-                          {isSubmitting ? (
-                            <>
-                              <Loader2 size={16} className="animate-spin" />
-                              <span>Updating...</span>
-                            </>
-                          ) : (
-                            <>
-                              <Save size={18} strokeWidth={2.5} />
-                              Update Password
-                            </>
-                          )}
-                        </button>
-                        <button
-                          onClick={() => {
-                            setShowPasswordForm(false);
-                            setPasswordData({
-                              currentPassword: "",
-                              newPassword: "",
-                              confirmPassword: "",
-                            });
-                          }}
-                          className="flex-1 px-6 py-3 bg-slate-100 text-slate-600 rounded-xl hover:bg-slate-200 transition-all text-sm font-bold active:scale-95"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </div>
-                  )}
+                      </div>,
+                      document.body
+                    )}
                 </div>
               </div>
             )}
@@ -1525,7 +1636,7 @@ const Settings = ({
                   {/* Add Admin Button */}
                   {profile?.role !== "Admin" && (
                     <button
-                      onClick={() => setShowAddAdminForm(!showAddAdminForm)}
+                      onClick={() => setShowAddAdminModal(true)}
                       className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-[#18254D] text-white rounded-2xl hover:bg-[#1e2e5e] transition-all active:scale-95 text-[13px] font-black tracking-widest shadow-xl shadow-[#18254D]/20 group"
                     >
                       <Plus
@@ -1538,105 +1649,302 @@ const Settings = ({
                   )}
                 </div>
 
-                {/* Add Admin Form */}
-                {showAddAdminForm && (
-                  <div className="p-6 bg-slate-50 border border-slate-200/60 rounded-[20px] space-y-5">
-                    <h4 className="font-bold text-slate-900 tracking-tight">
-                      Add New Administrator
-                    </h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                      <div className="space-y-2">
-                        <label className="text-[12px]  font-bold text-slate-500 tracking-widest uppercase">
-                          Full Name
-                        </label>
-                        <input
-                          type="text"
-                          value={newAdmin.name}
-                          onChange={(e) =>
-                            setNewAdmin({ ...newAdmin, name: e.target.value })
-                          }
-                          placeholder="Full name"
-                          className="w-full h-[46px] px-4 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-secondary/30 focus:border-secondary focus:outline-none transition-all text-sm font-bold shadow-sm"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-[12px]  font-bold text-slate-500 tracking-widest uppercase">
-                          Email Address
-                        </label>
-                        <input
-                          type="email"
-                          value={newAdmin.email}
-                          onChange={(e) =>
-                            setNewAdmin({
-                              ...newAdmin,
-                              email: e.target.value,
-                            })
-                          }
-                          placeholder="Email"
-                          className="w-full h-[46px] px-4 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-secondary/30 focus:border-secondary focus:outline-none transition-all text-sm font-bold shadow-sm"
-                        />
-                      </div>
-                      <CustomDropdown
-                        label="Role"
-                        value={newAdmin.role}
-                        field="add_admin_role"
-                        options={["Admin", "Manager"]}
-                        onChange={(val) =>
-                          setNewAdmin({ ...newAdmin, role: val })
-                        }
+                {/* Add Admin Modal */}
+                {showAddAdminModal &&
+                  createPortal(
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                      {/* Backdrop */}
+                      <div
+                        className="absolute inset-0 bg-[#18254D]/60 backdrop-blur-xl"
+                        onClick={() => setShowAddAdminModal(false)}
                       />
-                      <CustomDropdown
-                        label="Status"
-                        value={newAdmin.status}
-                        field="add_admin_status"
-                        options={["Active", "Inactive"]}
-                        onChange={(val) =>
-                          setNewAdmin({ ...newAdmin, status: val })
-                        }
-                      />
-                      <div className="sm:col-span-2 lg:col-span-1">
-                        <CustomDropdown
-                          label="Privileges"
-                          value={newAdmin.privileges}
-                          field="add_admin_privileges"
-                          options={[
-                            { value: 1, label: "Tech" },
-                            { value: 2, label: "Social Media" },
-                            { value: 3, label: "Both" },
-                          ]}
-                          onChange={(val) =>
-                            setNewAdmin({ ...newAdmin, privileges: val })
-                          }
-                        />
+                      {/* Modal Content */}
+                      <div className="relative w-full max-w-2xl max-h-[85vh] bg-white rounded-3xl shadow-2xl overflow-hidden animate-fade-in flex flex-col">
+                        {/* Header */}
+                        <div className="bg-gradient-to-r from-[#18254D] to-[#1e2e5e] px-6 sm:px-8 py-5 sm:py-6 flex-shrink-0">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/10 rounded-xl sm:rounded-2xl flex items-center justify-center">
+                                <UserPlus size={20} className="text-white sm:hidden" />
+                                <UserPlus size={24} className="text-white hidden sm:block" />
+                              </div>
+                              <div>
+                                <h3 className="text-lg sm:text-xl font-black text-white tracking-tight">
+                                  Add New Admin
+                                </h3>
+                                <p className="text-xs sm:text-sm text-white/60 font-medium hidden sm:block">
+                                  Create a new admin account with specific privileges
+                                </p>
+                              </div>
+                            </div>
+                            <button
+                              onClick={() => setShowAddAdminModal(false)}
+                              className="w-9 h-9 sm:w-10 sm:h-10 bg-white/10 hover:bg-white/20 rounded-lg sm:rounded-xl flex items-center justify-center transition-all"
+                            >
+                              <X size={18} className="text-white sm:hidden" />
+                              <X size={20} className="text-white hidden sm:block" />
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Form Content - Scrollable */}
+                        <div className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-5 sm:space-y-6">
+                          {/* Name & Email Row */}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+                            <div className="space-y-2">
+                              <label className="text-[10px] sm:text-[11px] font-black text-slate-400 tracking-widest uppercase ml-1">
+                                Full Name *
+                              </label>
+                              <input
+                                type="text"
+                                value={newAdmin.name}
+                                onChange={(e) =>
+                                  setNewAdmin({ ...newAdmin, name: e.target.value })
+                                }
+                                placeholder="Enter full name"
+                                className="w-full h-[46px] sm:h-[50px] px-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#18254D]/20 focus:border-[#18254D] focus:outline-none transition-all text-sm font-bold text-[#18254D] placeholder:font-medium placeholder:text-slate-400"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <label className="text-[10px] sm:text-[11px] font-black text-slate-400 tracking-widest uppercase ml-1">
+                                Email Address *
+                              </label>
+                              <input
+                                type="email"
+                                value={newAdmin.email}
+                                onChange={(e) =>
+                                  setNewAdmin({ ...newAdmin, email: e.target.value })
+                                }
+                                placeholder="Enter email address"
+                                className="w-full h-[46px] sm:h-[50px] px-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#18254D]/20 focus:border-[#18254D] focus:outline-none transition-all text-sm font-bold text-[#18254D] placeholder:font-medium placeholder:text-slate-400"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Password Field */}
+                          <div className="space-y-2">
+                            <label className="text-[10px] sm:text-[11px] font-black text-slate-400 tracking-widest uppercase ml-1">
+                              Password *
+                            </label>
+                            <input
+                              type="password"
+                              value={newAdmin.password}
+                              onChange={(e) =>
+                                setNewAdmin({ ...newAdmin, password: e.target.value })
+                              }
+                              placeholder="Set a secure password"
+                              className="w-full h-[46px] sm:h-[50px] px-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#18254D]/20 focus:border-[#18254D] focus:outline-none transition-all text-sm font-bold text-[#18254D] placeholder:font-medium placeholder:text-slate-400"
+                            />
+                            <p className="text-[10px] sm:text-[11px] text-slate-400 font-medium ml-1">
+                              Minimum 8 characters recommended
+                            </p>
+                          </div>
+
+                          {/* Role, Status, Privileges Row */}
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5">
+                            <CustomDropdown
+                              label="Role"
+                              value={newAdmin.role}
+                              field="add_admin_role"
+                              icon={Briefcase}
+                              options={["Admin", "Manager"]}
+                              onChange={(val) =>
+                                setNewAdmin({ ...newAdmin, role: val })
+                              }
+                            />
+                            <CustomDropdown
+                              label="Status"
+                              value={newAdmin.status}
+                              field="add_admin_status"
+                              icon={Check}
+                              options={["Active", "Inactive"]}
+                              onChange={(val) =>
+                                setNewAdmin({ ...newAdmin, status: val })
+                              }
+                            />
+                            <CustomDropdown
+                              label="Privileges"
+                              value={newAdmin.privileges}
+                              field="add_admin_privileges"
+                              icon={Key}
+                              options={[
+                                { value: 1, label: "Tech" },
+                                { value: 2, label: "Social Media" },
+                                { value: 3, label: "Both" },
+                              ]}
+                              onChange={(val) =>
+                                setNewAdmin({ ...newAdmin, privileges: val })
+                              }
+                            />
+                          </div>
+                        </div>
+
+                        {/* Footer Actions */}
+                        <div className="px-6 sm:px-8 py-4 sm:py-6 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row gap-3 flex-shrink-0">
+                          <button
+                            onClick={handleAddAdmin}
+                            disabled={isSubmitting}
+                            className="flex-1 flex items-center justify-center gap-2 px-6 sm:px-8 py-3 sm:py-3.5 bg-[#18254D] text-white rounded-xl hover:bg-[#1e2e5e] active:scale-95 transition-all text-[12px] sm:text-[13px] font-black tracking-widest shadow-lg shadow-[#18254D]/20 disabled:opacity-70 disabled:cursor-not-allowed"
+                          >
+                            {isSubmitting ? (
+                              <>
+                                <Loader2 size={16} className="animate-spin sm:hidden" />
+                                <Loader2 size={18} className="animate-spin hidden sm:block" />
+                                <span>CREATING...</span>
+                              </>
+                            ) : (
+                              <>
+                                <Check size={16} strokeWidth={3} className="sm:hidden" />
+                                <Check size={18} strokeWidth={3} className="hidden sm:block" />
+                                CREATE ADMIN
+                              </>
+                            )}
+                          </button>
+                          
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex gap-3 pt-4 border-t border-slate-100">
-                      <button
-                        onClick={handleAddAdmin}
-                        disabled={isSubmitting}
-                        className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-8 py-3 bg-[#18254D] text-white rounded-2xl hover:bg-[#1e2e5e] active:scale-95 transition-all text-[13px] font-black tracking-widest shadow-xl shadow-[#18254D]/20 disabled:opacity-70 disabled:cursor-not-allowed"
-                      >
-                        {isSubmitting ? (
-                          <>
-                            <Loader2 size={18} className="animate-spin" />
-                            <span>CREATING...</span>
-                          </>
-                        ) : (
-                          <>
-                            <Check size={18} strokeWidth={3} />
-                            CREATE ADMIN
-                          </>
-                        )}
-                      </button>
-                      <button
-                        onClick={() => setShowAddAdminForm(false)}
-                        className="flex-1 sm:flex-none px-8 py-3 bg-slate-100 text-slate-600 rounded-2xl hover:bg-slate-200 transition-all text-[13px] font-black tracking-widest uppercase"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                )}
+                    </div>,
+                    document.body
+                  )}
+
+                {/* Edit Admin Modal */}
+                {editingAdminId &&
+                  createPortal(
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                      {/* Backdrop */}
+                      <div
+                        className="absolute inset-0 bg-[#18254D]/60 backdrop-blur-xl"
+                        onClick={handleCancelEditAdmin}
+                      />
+                      {/* Modal Content */}
+                      <div className="relative w-full max-w-2xl max-h-[85vh] bg-white rounded-3xl shadow-2xl overflow-hidden animate-fade-in flex flex-col">
+                        {/* Header */}
+                        <div className="bg-gradient-to-r from-[#18254D] to-[#1e2e5e] px-6 sm:px-8 py-5 sm:py-6 flex-shrink-0">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/10 rounded-xl sm:rounded-2xl flex items-center justify-center">
+                                <Edit2 size={20} className="text-white sm:hidden" />
+                                <Edit2 size={24} className="text-white hidden sm:block" />
+                              </div>
+                              <div>
+                                <h3 className="text-lg sm:text-xl font-black text-white tracking-tight">
+                                  Edit Admins
+                                </h3>
+                                <p className="text-xs sm:text-sm text-white/60 font-medium hidden sm:block">
+                                  Update admin account details and permissions
+                                </p>
+                              </div>
+                            </div>
+                            <button
+                              onClick={handleCancelEditAdmin}
+                              className="w-9 h-9 sm:w-10 sm:h-10 bg-white/10 hover:bg-white/20 rounded-lg sm:rounded-xl flex items-center justify-center transition-all"
+                            >
+                              <X size={18} className="text-white sm:hidden" />
+                              <X size={20} className="text-white hidden sm:block" />
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Form Content - Scrollable */}
+                        <div className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-5 sm:space-y-6">
+                          {/* Name & Email Row */}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+                            <div className="space-y-2">
+                              <label className="text-[10px] sm:text-[11px] font-black text-slate-400 tracking-widest uppercase ml-1">
+                                Full Name *
+                              </label>
+                              <input
+                                type="text"
+                                value={editAdminData.name}
+                                onChange={(e) =>
+                                  setEditAdminData({ ...editAdminData, name: e.target.value })
+                                }
+                                placeholder="Enter full name"
+                                className="w-full h-[46px] sm:h-[50px] px-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#18254D]/20 focus:border-[#18254D] focus:outline-none transition-all text-sm font-bold text-[#18254D] placeholder:font-medium placeholder:text-slate-400"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <label className="text-[10px] sm:text-[11px] font-black text-slate-400 tracking-widest uppercase ml-1">
+                                Email Address *
+                              </label>
+                              <input
+                                type="email"
+                                value={editAdminData.email}
+                                onChange={(e) =>
+                                  setEditAdminData({ ...editAdminData, email: e.target.value })
+                                }
+                                placeholder="Enter email address"
+                                className="w-full h-[46px] sm:h-[50px] px-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#18254D]/20 focus:border-[#18254D] focus:outline-none transition-all text-sm font-bold text-[#18254D] placeholder:font-medium placeholder:text-slate-400"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Role, Status, Privileges Row */}
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5">
+                            <CustomDropdown
+                              label="Role"
+                              value={editAdminData.role}
+                              field="edit_admin_role"
+                              icon={Briefcase}
+                              options={["Admin", "Manager"]}
+                              onChange={(val) =>
+                                setEditAdminData({ ...editAdminData, role: val })
+                              }
+                            />
+                            <CustomDropdown
+                              label="Status"
+                              value={editAdminData.status}
+                              field="edit_admin_status"
+                              icon={Check}
+                              options={["Active", "Inactive"]}
+                              onChange={(val) =>
+                                setEditAdminData({ ...editAdminData, status: val })
+                              }
+                            />
+                            <CustomDropdown
+                              label="Privileges"
+                              value={editAdminData.privileges}
+                              field="edit_admin_privileges"
+                              icon={Key}
+                              options={[
+                                { value: 1, label: "Tech" },
+                                { value: 2, label: "Social Media" },
+                                { value: 3, label: "Both" },
+                              ]}
+                              onChange={(val) =>
+                                setEditAdminData({ ...editAdminData, privileges: val })
+                              }
+                            />
+                          </div>
+                        </div>
+
+                        {/* Footer Actions */}
+                        <div className="px-6 sm:px-8 py-4 sm:py-6 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row gap-3 flex-shrink-0">
+                          <button
+                            onClick={() => handleSaveEditAdmin(editingAdminId)}
+                            disabled={isSubmitting}
+                            className="flex-1 flex items-center justify-center gap-2 px-6 sm:px-8 py-3 sm:py-3.5 bg-[#18254D] text-white rounded-xl hover:bg-[#1e2e5e] active:scale-95 transition-all text-[12px] sm:text-[13px] font-black tracking-widest shadow-lg shadow-[#18254D]/20 disabled:opacity-70 disabled:cursor-not-allowed"
+                          >
+                            {isSubmitting ? (
+                              <>
+                                <Loader2 size={16} className="animate-spin sm:hidden" />
+                                <Loader2 size={18} className="animate-spin hidden sm:block" />
+                                <span>SAVING...</span>
+                              </>
+                            ) : (
+                              <>
+                                <Save size={16} strokeWidth={3} className="sm:hidden" />
+                                <Save size={18} strokeWidth={3} className="hidden sm:block" />
+                                SAVE CHANGES
+                              </>
+                            )}
+                          </button>
+                          
+                        </div>
+                      </div>
+                    </div>,
+                    document.body
+                  )}
 
                 {/* Admins List */}
                 <div className="space-y-4">
@@ -1660,116 +1968,9 @@ const Settings = ({
                       {admins.map((admin) => (
                         <div
                           key={admin.id}
-                          className={`group bg-white border border-slate-200/60 rounded-[28px] hover:border-blue-200 hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-500 flex flex-col ${
-                            editingAdminId === admin.id
-                              ? "relative z-50 overflow-visible ring-2 ring-blue-500 scale-[1.02] shadow-2xl shadow-blue-500/20"
-                              : "overflow-hidden hover:scale-[1.01]"
-                          }`}
+                          className="group bg-white border border-slate-200/60 rounded-[28px] hover:border-blue-200 hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-500 flex flex-col overflow-hidden hover:scale-[1.01]"
                         >
-                          {editingAdminId === admin.id ? (
-                            <div className="p-6 space-y-5">
-                              <div className="space-y-4">
-                                <div className="space-y-1.5">
-                                  <label className="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase ml-1">
-                                    Full Name
-                                  </label>
-                                  <input
-                                    type="text"
-                                    value={editAdminData.name}
-                                    onChange={(e) =>
-                                      setEditAdminData({
-                                        ...editAdminData,
-                                        name: e.target.value,
-                                      })
-                                    }
-                                    className="w-full h-11 px-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:outline-none transition-all text-sm font-bold"
-                                  />
-                                </div>
-                                <div className="space-y-1.5">
-                                  <label className="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase ml-1">
-                                    Email
-                                  </label>
-                                  <input
-                                    type="email"
-                                    value={editAdminData.email}
-                                    onChange={(e) =>
-                                      setEditAdminData({
-                                        ...editAdminData,
-                                        email: e.target.value,
-                                      })
-                                    }
-                                    className="w-full h-11 px-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:outline-none transition-all text-sm font-bold"
-                                  />
-                                </div>
-                                <CustomDropdown
-                                  label="Role"
-                                  value={editAdminData.role}
-                                  field={`edit_admin_role_${admin.id}`}
-                                  options={["Admin", "Manager"]}
-                                  onChange={(val) =>
-                                    setEditAdminData({
-                                      ...editAdminData,
-                                      role: val,
-                                    })
-                                  }
-                                />
-                                <div className="grid grid-cols-2 gap-3">
-                                  <CustomDropdown
-                                    label="Status"
-                                    value={editAdminData.status}
-                                    field={`edit_admin_status_${admin.id}`}
-                                    options={["Active", "Inactive"]}
-                                    onChange={(val) =>
-                                      setEditAdminData({
-                                        ...editAdminData,
-                                        status: val,
-                                      })
-                                    }
-                                  />
-                                  <CustomDropdown
-                                    label="Privileges"
-                                    value={editAdminData.privileges}
-                                    field={`edit_admin_privileges_${admin.id}`}
-                                    options={[
-                                      { value: 1, label: "Tech" },
-                                      { value: 2, label: "Social" },
-                                      { value: 3, label: "Both" },
-                                    ]}
-                                    onChange={(val) =>
-                                      setEditAdminData({
-                                        ...editAdminData,
-                                        privileges: val,
-                                      })
-                                    }
-                                  />
-                                </div>
-                              </div>
-                              <div className="flex gap-2.5 pt-4">
-                                <button
-                                  onClick={() => handleSaveEditAdmin(admin.id)}
-                                  disabled={isSubmitting}
-                                  className="flex-1 py-2.5 bg-[#18254D] text-white rounded-xl hover:bg-[#1e2e5e] transition-all text-xs font-bold shadow-lg shadow-[#18254D]/20 disabled:opacity-70 disabled:cursor-not-allowed"
-                                >
-                                  {isSubmitting ? (
-                                    <Loader2
-                                      size={14}
-                                      className="animate-spin mx-auto"
-                                    />
-                                  ) : (
-                                    "Save"
-                                  )}
-                                </button>
-                                <button
-                                  onClick={handleCancelEditAdmin}
-                                  className="flex-1 py-2.5 bg-slate-100 text-slate-600 rounded-xl hover:bg-slate-200 transition-all text-xs font-bold"
-                                >
-                                  Cancel
-                                </button>
-                              </div>
-                            </div>
-                          ) : (
-                            <>
-                              {/* Card Header / Avatar Area */}
+                          {/* Card Header / Avatar Area */}
                               <div className="p-6 flex flex-col items-center text-center relative overflow-hidden">
                                 <div className="absolute top-4 right-4 z-10">
                                   <div
@@ -1863,8 +2064,6 @@ const Settings = ({
                                   </div>
                                 </div>
                               </div>
-                            </>
-                          )}
                         </div>
                       ))}
                     </div>
@@ -2169,36 +2368,38 @@ const Settings = ({
       {/* Generic Toast Notification replaced by react-hot-toast */}
 
       {/* Confirmation Modal */}
-      {confirmModal.show && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={hideConfirmModal}
-          />
-          <div className="relative bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full animate-pop border border-slate-100">
-            <h3 className="text-lg font-bold text-primary mb-2">
-              {confirmModal.title}
-            </h3>
-            <p className="text-sm text-slate-600 mb-6">
-              {confirmModal.message}
-            </p>
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={hideConfirmModal}
-                className="px-4 py-2.5 rounded-2xl border border-slate-200 text-slate-600 text-[13px] font-bold tracking-wider hover:bg-slate-50 hover:border-slate-300 transition-all"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={confirmModal.onConfirm}
-                className="px-4 py-2.5 rounded-2xl bg-primary text-white text-[13px] font-bold tracking-wider hover:bg-slate-800 transition-all shadow-lg"
-              >
-                Delete
-              </button>
+      {confirmModal.show &&
+        createPortal(
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+            <div
+              className="absolute inset-0 bg-[#18254D]/60 backdrop-blur-xl"
+              onClick={hideConfirmModal}
+            />
+            <div className="relative bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full animate-pop border border-slate-100">
+              <h3 className="text-lg font-bold text-primary mb-2">
+                {confirmModal.title}
+              </h3>
+              <p className="text-sm text-slate-600 mb-6">
+                {confirmModal.message}
+              </p>
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={hideConfirmModal}
+                  className="px-4 py-2.5 rounded-2xl border border-slate-200 text-slate-600 text-[13px] font-bold tracking-wider hover:bg-slate-50 hover:border-slate-300 transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmModal.onConfirm}
+                  className="px-4 py-2.5 rounded-2xl bg-primary text-white text-[13px] font-bold tracking-wider hover:bg-slate-800 transition-all shadow-lg"
+                >
+                  Delete
+                </button>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
 
       {/* Follow-up Export Selection Modal */}
       {showFollowupExportModal &&
