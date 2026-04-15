@@ -1320,9 +1320,17 @@ function AppRoutes() {
       const clientToUpdate = clients.find((c) => c.id == clientId);
       if (!clientToUpdate) throw new Error("Client not found");
 
-      const leadId = clientToUpdate.lead_id || clientToUpdate.id; // Fallback to id if lead_id not present
+      const leadId = clientToUpdate.lead_id || clientToUpdate.id;
 
-      // 2. Optimistic update for both clients and leads states
+      console.log("=== EDIT CLIENT DEBUG ===");
+      console.log("Client ID:", clientId);
+      console.log("Lead ID:", leadId);
+      console.log("Client to update:", clientToUpdate);
+      console.log("Update data:", data);
+      console.log("Clients before update:", clients.length);
+      console.log("Leads before update:", leads.length);
+
+      // 2. Optimistic update for clients state
       const updatedClient = {
         ...clientToUpdate,
         name: data.name || clientToUpdate.name,
@@ -1338,12 +1346,35 @@ function AppRoutes() {
         projectCategory: data.projectCategory || clientToUpdate.projectCategory,
       };
 
-      setClients((prev) =>
-        prev.map((c) => (c.id == clientId ? updatedClient : c)),
-      );
-      setLeads((prev) =>
-        prev.map((l) => (l.lead_id == leadId ? { ...l, ...updatedClient, lead_id: l.lead_id } : l)),
-      );
+      setClients((prev) => {
+        console.log("Previous clients:", prev.length);
+        console.log("Looking for clientId:", clientId, "type:", typeof clientId);
+        
+        // Debug: check if client exists
+        const foundClient = prev.find((c) => {
+          const match = c.id == clientId;
+          if (match) {
+            console.log("Found matching client:", c.id, c.name);
+          }
+          return match;
+        });
+        
+        if (!foundClient) {
+          console.warn("Client not found! This will cause an issue!");
+          console.log("Available client IDs:", prev.map(c => ({ id: c.id, name: c.name })));
+        }
+        
+        const newClients = prev.map((c) => {
+          const isMatch = c.id == clientId;
+          if (isMatch) {
+            console.log("Updating client:", c.id, "-> updated");
+          }
+          return isMatch ? updatedClient : c;
+        });
+        
+        console.log("New clients count:", newClients.length);
+        return newClients;
+      });
 
       // 3. Update Client Table (organisation, name, country, etc.)
       const clientPayload = {
@@ -1384,6 +1415,11 @@ function AppRoutes() {
       }
 
       toast.success("Client updated successfully!");
+      
+      // Refresh data from server to ensure consistency and prevent duplicates
+      await refreshClients();
+      await refreshLeads();
+      
       return { success: true };
     } catch (error) {
       console.error("Error editing client:", error);
