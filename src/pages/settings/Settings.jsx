@@ -18,8 +18,6 @@ import {
   Trash2,
   Edit2,
   Bot,
-  Key,
-  Zap,
   X,
   Loader2,
   Download,
@@ -128,7 +126,6 @@ const Settings = ({
     password: "",
     role: "Admin",
     status: "Active",
-    privileges: 3,
   });
   const [editingAdminId, setEditingAdminId] = useState(null);
   const [editAdminData, setEditAdminData] = useState({
@@ -136,7 +133,6 @@ const Settings = ({
     email: "",
     role: "Admin",
     status: "Active",
-    privileges: 3,
   });
 
   const [activeDropdown, setActiveDropdown] = useState(null);
@@ -320,7 +316,6 @@ const Settings = ({
       formData.append("full_name", profile.full_name || "");
       formData.append("role", profile.role || "");
       formData.append("email", profile.email || "");
-      formData.append("privileges", profile.privileges || 3);
       formData.append(
         "status",
         profile.status !== undefined ? profile.status : 1,
@@ -430,7 +425,6 @@ const Settings = ({
           email: newAdmin.email,
           password: newAdmin.password,
           role: newAdmin.role,
-          privileges: newAdmin.privileges,
         }),
       });
 
@@ -457,7 +451,6 @@ const Settings = ({
           email: newAdmin.email,
           role: newAdmin.role,
           status: newAdmin.status,
-          privileges: newAdmin.privileges,
           joinDate: new Date().toISOString().split("T")[0],
         };
         setAdmins([...admins, admin]);
@@ -467,7 +460,6 @@ const Settings = ({
           password: "",
           role: "Admin",
           status: "Active",
-          privileges: 3,
         });
         setShowAddAdminModal(false);
         showToastMessage(
@@ -542,7 +534,6 @@ const Settings = ({
       email: admin.email,
       role: admin.role,
       status: admin.status,
-      privileges: parseInt(admin.privileges) || 3,
     });
   };
 
@@ -553,7 +544,6 @@ const Settings = ({
       email: "",
       role: "Admin",
       status: "Active",
-      privileges: 3,
     });
   };
 
@@ -570,7 +560,6 @@ const Settings = ({
           email: editAdminData.email,
           role: editAdminData.role,
           status: editAdminData.status === "Active" ? 1 : 0,
-          privileges: editAdminData.privileges,
         }),
       });
 
@@ -587,7 +576,6 @@ const Settings = ({
                   email: editAdminData.email,
                   role: editAdminData.role,
                   status: editAdminData.status,
-                  privileges: editAdminData.privileges,
                 }
               : admin,
           ),
@@ -1172,14 +1160,14 @@ const Settings = ({
                               ADD MODEL
                             </button>
 
-                          </div>
+                           </div>
                         </div>
                       </div>,
                       document.body
                     )}
 
                   {/* Edit AI Model Modal */}
-                  {editingModelId &&
+                   {editingModelId &&
                     createPortal(
                       <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
                         {/* Backdrop */}
@@ -1796,8 +1784,8 @@ const Settings = ({
                             )}
                           </div>
 
-                          {/* Role, Status, Privileges Row */}
-                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5">
+                          {/* Role, Status Row */}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
                             <CustomDropdown
                               label="Role"
                               value={newAdmin.role}
@@ -1816,20 +1804,6 @@ const Settings = ({
                               options={["Active", "Inactive"]}
                               onChange={(val) =>
                                 setNewAdmin({ ...newAdmin, status: val })
-                              }
-                            />
-                            <CustomDropdown
-                              label="Privileges"
-                              value={newAdmin.privileges}
-                              field="add_admin_privileges"
-                              icon={Key}
-                              options={[
-                                { value: 1, label: "Tech" },
-                                { value: 2, label: "Social Media" },
-                                { value: 3, label: "Both" },
-                              ]}
-                              onChange={(val) =>
-                                setNewAdmin({ ...newAdmin, privileges: val })
                               }
                             />
                           </div>
@@ -1935,8 +1909,8 @@ const Settings = ({
                             </div>
                           </div>
 
-                          {/* Role, Status, Privileges Row */}
-                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5">
+                          {/* Role, Status Row */}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
                             <CustomDropdown
                               label="Role"
                               value={editAdminData.role}
@@ -1955,20 +1929,6 @@ const Settings = ({
                               options={["Active", "Inactive"]}
                               onChange={(val) =>
                                 setEditAdminData({ ...editAdminData, status: val })
-                              }
-                            />
-                            <CustomDropdown
-                              label="Privileges"
-                              value={editAdminData.privileges}
-                              field="edit_admin_privileges"
-                              icon={Key}
-                              options={[
-                                { value: 1, label: "Tech" },
-                                { value: 2, label: "Social Media" },
-                                { value: 3, label: "Both" },
-                              ]}
-                              onChange={(val) =>
-                                setEditAdminData({ ...editAdminData, privileges: val })
                               }
                             />
                           </div>
@@ -2086,17 +2046,9 @@ const Settings = ({
                               </div>
 
                               <div className="mt-auto px-6 pb-6 pt-2">
-                                <div className="flex items-center justify-between gap-3 p-1.5 bg-slate-50/50 border border-slate-100 rounded-[20px]">
-                                  <div className="flex items-center gap-2 pl-2">
-                                    <Zap size={14} className="text-amber-500" />
-                                    <span className="text-[11px] font-bold text-slate-500 uppercase tracking-tighter">
-                                      {CATEGORY_MAP[admin.privileges] || "Full"}{" "}
-                                      Access
-                                    </span>
-                                  </div>
-                                  <div className="flex gap-1">
-                                    {admin.role !== "Root Admin" && (
-                                      <>
+                                <div className="flex gap-1">
+                                  {admin.role !== "Root Admin" && (
+                                    <>
                                         <button
                                           onClick={() =>
                                             handleStartEditAdmin(admin)
@@ -2115,9 +2067,8 @@ const Settings = ({
                                         >
                                           <Trash2 size={16} />
                                         </button>
-                                      </>
-                                    )}
-                                  </div>
+                                    </>
+                                  )}
                                 </div>
                               </div>
                         </div>
