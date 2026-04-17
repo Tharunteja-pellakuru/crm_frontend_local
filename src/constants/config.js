@@ -1,4 +1,5 @@
 // Central configuration for API and other constants
+// export const BASE_URL = "https://crm.whysocial.in/superadmin";
 export const BASE_URL = "http://localhost:5001";
 
 // API Endpoints

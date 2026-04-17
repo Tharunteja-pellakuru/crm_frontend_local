@@ -27,6 +27,7 @@ import {
   FolderKanban,
   FileText,
   Eye,
+  Key,
   EyeOff,
   Users as UsersIcon,
   Calendar,
@@ -44,6 +45,7 @@ import deepseekLogo from "../../assets/deepseek_logo.png";
 import llamaLogo from "../../assets/llama_logo.png";
 import groqLogo from "../../assets/groq_logo.png";
 import { CATEGORY_MAP } from "../../constants/categoryConstants";
+
 
 const Settings = ({
   aiModels = [],
@@ -795,187 +797,231 @@ const Settings = ({
           <div className="bg-white rounded-[20px] p-6 md:p-8 lg:p-10 border border-slate-200/60 shadow-sm w-full">
             {/* PROFILE TAB */}
             {activeTab === "profile" && (
-              <div className="space-y-8 animate-fade-in w-full">
-                {/* Profile Header */}
-                <div className="flex flex-col sm:flex-row items-center sm:items-start gap-8 pb-10 border-b border-slate-100">
-                  <div className="relative group shrink-0">
-                    <label
-                      htmlFor="profile-photo-upload"
-                      className={`block relative ${isProfileEditing ? "cursor-pointer" : "cursor-default"}`}
-                    >
-                      <div className="absolute inset-0 bg-blue-500/10 rounded-[32px] blur-3xl opacity-50 group-hover:opacity-80 transition-opacity" />
-                      {profile.image ? (
-                        <img
-                          key={profile.image}
-                          src={profile.image}
-                          alt="Profile"
-                          className="w-32 h-32 rounded-[32px] border-4 border-white object-cover shadow-2xl relative z-10 group-hover:scale-[1.02] transition-transform duration-500"
-                          onError={(e) => {
-                            e.target.style.display = "none";
-                            e.target.nextSibling.style.display = "flex";
-                          }}
-                        />
-                      ) : null}
-                      <div
-                        className={`w-32 h-32 rounded-[32px] bg-gradient-to-br from-[#18254D] to-[#2a3f7a] flex items-center justify-center border-4 border-white shadow-2xl relative z-10 ${profile.image ? "hidden" : "flex"}`}
-                      >
-                        <span className="text-4xl font-black text-white">
-                          {profile.full_name?.charAt(0).toUpperCase() || "U"}
-                        </span>
-                      </div>
-                      {isProfileEditing && (
-                        <div className="absolute inset-0 bg-[#18254D]/40 backdrop-blur-[2px] rounded-[32px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 z-20">
-                          <Camera
-                            className="text-white"
-                            size={32}
-                            strokeWidth={2.5}
-                          />
-                        </div>
-                      )}
-                    </label>
-                    <input
-                      type="file"
-                      id="profile-photo-upload"
-                      accept="image/*"
-                      className="hidden"
-                      disabled={!isProfileEditing}
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          setSelectedImageFile(file);
-                          const reader = new FileReader();
-                          reader.onloadend = () => {
-                            setProfile((prev) => ({
-                              ...prev,
-                              image: reader.result,
-                            }));
-                          };
-                          reader.readAsDataURL(file);
-                        }
-                      }}
-                    />
+              <div className="space-y-0 animate-fade-in w-full">
+                {/* Profile Header Card */}
+                <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#18254D] via-[#1e2e5e] to-[#2a3f7a] p-8 md:p-10 mb-8">
+                  {/* Background Pattern */}
+                  <div className="absolute inset-0 opacity-10">
+                    <div className="absolute top-0 right-0 w-96 h-96 bg-white rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-400 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
                   </div>
-                  <div className="text-center sm:text-left pt-4 flex-1">
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <h3 className="text-3xl font-black text-[#18254D] mb-2 tracking-tight">
-                          {profile.full_name}
-                        </h3>
-                        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3">
-                          <span className="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-50 text-blue-700 border border-blue-100/50 rounded-full text-[12px] font-black tracking-widest uppercase">
-                            <Briefcase size={12} className="text-blue-500" />
-                            {profile.role}
-                          </span>
-                          <span className="inline-flex items-center gap-2 px-4 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-100/50 rounded-full text-[12px] font-black tracking-widest uppercase">
-                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                            Active Member
-                          </span>
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => setIsProfileEditing(!isProfileEditing)}
-                        className={`p-3 rounded-2xl border transition-all duration-300 group ${
-                          isProfileEditing
-                            ? "bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-500/30"
-                            : "bg-white border-slate-200 text-slate-400 hover:text-[#18254D] hover:border-[#18254D]/30 hover:shadow-lg"
-                        }`}
-                        title={isProfileEditing ? "Editing..." : "Edit profile"}
+                  
+                  <div className="relative flex flex-col md:flex-row items-center md:items-start gap-8">
+                    {/* Avatar Section */}
+                    <div className="relative group shrink-0">
+                      <div className="absolute inset-0 bg-white/20 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                      <label
+                        htmlFor="profile-photo-upload"
+                        className={`block relative ${isProfileEditing ? "cursor-pointer" : "cursor-default"}`}
                       >
-                        <Edit2 size={20} />
-                      </button>
+                        <div className="relative">
+                          {profile.image ? (
+                            <img
+                              key={profile.image}
+                              src={BASE_URL + profile.image}
+                              alt="Profile"
+                              className="w-36 h-36 rounded-full border-4 border-white/30 object-cover shadow-2xl relative z-10 group-hover:scale-105 transition-transform duration-500"
+                              onError={(e) => {
+                                e.target.style.display = "none";
+                                e.target.nextSibling.style.display = "flex";
+                              }}
+                            />
+                          ) : null}
+                          <div
+                            className={`w-36 h-36 rounded-full bg-gradient-to-br from-white/20 to-white/5 backdrop-blur-sm flex items-center justify-center border-4 border-white/30 shadow-2xl relative z-10 ${profile.image ? "hidden" : "flex"}`}
+                          >
+                            <span className="text-5xl font-black text-white">
+                              {profile.full_name?.charAt(0).toUpperCase() || "U"}
+                            </span>
+                          </div>
+                          {isProfileEditing && (
+                            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 z-20">
+                              <Camera
+                                className="text-white"
+                                size={36}
+                                strokeWidth={2}
+                              />
+                            </div>
+                          )}
+                          {/* Online Status Indicator */}
+                          <div className="absolute bottom-2 right-2 w-5 h-5 bg-emerald-400 border-4 border-[#18254D] rounded-full z-20"></div>
+                        </div>
+                      </label>
+                      <input
+                        type="file"
+                        id="profile-photo-upload"
+                        accept="image/*"
+                        className="hidden"
+                        disabled={!isProfileEditing}
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            setSelectedImageFile(file);
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                              setProfile((prev) => ({
+                                ...prev,
+                                image: reader.result,
+                              }));
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        }}
+                      />
+                    </div>
+                    
+                    {/* Profile Info */}
+                    <div className="flex-1 text-center md:text-left">
+                      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                        <div className="flex-1">
+                          <h3 className="text-3xl md:text-4xl font-black text-white mb-3 tracking-tight">
+                            {profile.full_name}
+                          </h3>
+                          <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mb-4">
+                            <span className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm text-white border border-white/20 rounded-full text-xs font-bold tracking-wider uppercase">
+                              <Briefcase size={14} className="text-blue-300" />
+                              {profile.role}
+                            </span>
+                            <span className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500/20 backdrop-blur-sm text-emerald-300 border border-emerald-400/30 rounded-full text-xs font-bold tracking-wider uppercase">
+                              <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                              Active
+                            </span>
+                          </div>
+                          <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 text-sm text-white/70">
+                            <div className="flex items-center gap-2">
+                              <Mail size={16} className="text-blue-300" />
+                              <span>{profile.email}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => setIsProfileEditing(!isProfileEditing)}
+                          className={`p-3 rounded-xl border transition-all duration-300 group ${
+                            isProfileEditing
+                              ? "bg-white text-[#18254D] border-white shadow-lg"
+                              : "bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white/20 hover:border-white/40"
+                          }`}
+                          title={isProfileEditing ? "Editing..." : "Edit profile"}
+                        >
+                          <Edit2 size={20} />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Profile Form */}
-                <div className="space-y-8 pt-2">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8">
-                    <div className="space-y-2.5">
-                      <label className="text-[10px] font-black text-slate-400 tracking-[0.25em] uppercase ml-1 flex items-center gap-2">
-                        <User
-                          size={12}
-                          strokeWidth={3}
-                          className="text-blue-500"
-                        />
-                        Full Name
-                      </label>
-                      <input
-                        type="text"
-                        value={profile.full_name}
-                        onChange={(e) =>
-                          setProfile({
-                            ...profile,
-                            full_name: e.target.value,
-                          })
-                        }
-                        disabled={!isProfileEditing}
-                        className={`w-full h-12 px-5 border rounded-2xl transition-all duration-300 text-sm font-black ${
-                          isProfileEditing
-                            ? "bg-white border-slate-200 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 focus:outline-none text-[#18254D] shadow-sm"
-                            : "bg-slate-50 border-slate-100 text-slate-500 cursor-not-allowed"
-                        }`}
-                      />
+                {/* Profile Form Card */}
+                <div className="bg-white rounded-3xl border border-slate-200/60 shadow-lg overflow-hidden">
+                  <div className="p-8 md:p-10">
+                    <div className="flex items-center justify-between mb-8">
+                      <div>
+                        <h4 className="text-xl font-black text-[#18254D] mb-1">Profile Information</h4>
+                        <p className="text-sm text-slate-500 font-medium">Update your personal details and contact information</p>
+                      </div>
+                      {isProfileEditing && (
+                        <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-700 rounded-full text-xs font-bold">
+                          <div className="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></div>
+                          Editing Mode
+                        </div>
+                      )}
                     </div>
-                    <div className="space-y-2.5">
-                      <label className="text-[10px] font-black text-slate-400 tracking-[0.25em] uppercase ml-1 flex items-center gap-2">
-                        <Building2
-                          size={12}
-                          strokeWidth={3}
-                          className="text-blue-500"
-                        />
-                        Designation
-                      </label>
-                      <input
-                        type="text"
-                        value={profile.role}
-                        disabled
-                        className="w-full h-12 px-5 bg-slate-50 border border-slate-100 rounded-2xl text-slate-500 cursor-not-allowed text-sm font-black"
-                      />
-                    </div>
-                    <div className="space-y-2.5 md:col-span-2">
-                      <label className="text-[10px] font-black text-slate-400 tracking-[0.25em] uppercase ml-1 flex items-center gap-2">
-                        <Mail
-                          size={12}
-                          strokeWidth={3}
-                          className="text-blue-500"
-                        />
-                        Email Address
-                      </label>
-                      <input
-                        type="email"
-                        value={profile.email}
-                        readOnly
-                        className="w-full h-12 px-5 bg-slate-50 border border-slate-100 rounded-2xl text-slate-400 cursor-not-allowed text-sm font-black"
-                      />
+                    
+                    <div className="space-y-8">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                        {/* Full Name */}
+                        <div className="space-y-2">
+                          <label className="text-xs font-bold text-slate-500 tracking-wide ml-1 flex items-center gap-2">
+                            <User
+                              size={14}
+                              strokeWidth={2.5}
+                              className="text-blue-500"
+                            />
+                            Full Name
+                          </label>
+                          <input
+                            type="text"
+                            value={profile.full_name}
+                            onChange={(e) =>
+                              setProfile({
+                                ...profile,
+                                full_name: e.target.value,
+                              })
+                            }
+                            disabled={!isProfileEditing}
+                            className={`w-full h-14 px-5 border-2 rounded-2xl transition-all duration-300 text-sm font-bold ${
+                              isProfileEditing
+                                ? "bg-white border-slate-200 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 focus:outline-none text-[#18254D] hover:border-slate-300"
+                                : "bg-slate-50 border-slate-100 text-slate-600 cursor-not-allowed"
+                            }`}
+                          />
+                        </div>
+                        
+                        {/* Designation */}
+                        <div className="space-y-2">
+                          <label className="text-xs font-bold text-slate-500 tracking-wide ml-1 flex items-center gap-2">
+                            <Building2
+                              size={14}
+                              strokeWidth={2.5}
+                              className="text-blue-500"
+                            />
+                            Designation
+                          </label>
+                          <input
+                            type="text"
+                            value={profile.role}
+                            disabled
+                            className="w-full h-14 px-5 bg-slate-50 border-2 border-slate-100 rounded-2xl text-slate-600 cursor-not-allowed text-sm font-bold"
+                          />
+                        </div>
+                        
+                        {/* Email Address */}
+                        <div className="space-y-2 md:col-span-2">
+                          <label className="text-xs font-bold text-slate-500 tracking-wide ml-1 flex items-center gap-2">
+                            <Mail
+                              size={14}
+                              strokeWidth={2.5}
+                              className="text-blue-500"
+                            />
+                            Email Address
+                          </label>
+                          <input
+                            type="email"
+                            value={profile.email}
+                            readOnly
+                            className="w-full h-14 px-5 bg-slate-50 border-2 border-slate-100 rounded-2xl text-slate-600 cursor-not-allowed text-sm font-bold"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Save Button */}
+                      {isProfileEditing && (
+                        <div className="flex justify-end pt-6 border-t-2 border-slate-100">
+                          <button
+                            onClick={handleProfileSave}
+                            disabled={isSubmitting || isProfileSaved}
+                            className="flex items-center justify-center gap-3 px-10 py-4 bg-gradient-to-r from-[#18254D] to-[#1e2e5e] text-white rounded-2xl hover:from-[#1e2e5e] hover:to-[#2a3f7a] transition-all active:scale-95 text-sm font-bold disabled:opacity-50 shadow-xl shadow-[#18254D]/25 animate-fade-in-up"
+                          >
+                            {isSubmitting ? (
+                              <>
+                                <Loader2 size={20} className="animate-spin" />
+                                <span>SAVING...</span>
+                              </>
+                            ) : isProfileSaved ? (
+                              <>
+                                <Check size={20} strokeWidth={3} />
+                                <span>CHANGES SAVED</span>
+                              </>
+                            ) : (
+                              <>
+                                <Save size={20} strokeWidth={2.5} />
+                                <span>SAVE CHANGES</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
-
-                  {isProfileEditing && (
-                    <div className="flex justify-end pt-8 border-t border-slate-100">
-                      <button
-                        onClick={handleProfileSave}
-                        disabled={isSubmitting || isProfileSaved}
-                        className="flex items-center justify-center gap-2 px-8 py-3.5 bg-[#18254D] text-white rounded-2xl hover:bg-[#1e2e5e] transition-all active:scale-95 text-sm font-black disabled:opacity-50 shadow-xl shadow-[#18254D]/20 animate-fade-in-up"
-                      >
-                        {isSubmitting ? (
-                          <>
-                            <Loader2 size={18} className="animate-spin" />
-                            <span>SAVING...</span>
-                          </>
-                        ) : isProfileSaved ? (
-                          <>
-                            <Check size={18} strokeWidth={3} />
-                            CHANGES SAVED
-                          </>
-                        ) : (
-                          <>
-                            <Save size={18} strokeWidth={3} />
-                            SAVE PROFILE
-                          </>
-                        )}
-                      </button>
-                    </div>
-                  )}
                 </div>
 
                 {/* Toast Notification */}
@@ -998,38 +1044,49 @@ const Settings = ({
 
             {/* AI SETTINGS TAB */}
             {activeTab === "ai" && (
-              <div className="space-y-8 animate-fade-in w-full">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <h3 className="text-2xl font-bold text-primary mb-2 tracking-tight">
-                      AI Integration Settings
-                    </h3>
-                    <p className="text-sm text-slate-500 font-bold">
-                      Manage AI models for enquiry filtering and analysis.
-                    </p>
+              <div className="space-y-0 animate-fade-in w-full">
+                {/* AI Header Card */}
+                <div className="relative overflow-hidden rounded-3xl bg-[#18254E] p-8 md:p-10 mb-8">
+                  {/* Background Pattern */}
+                  <div className="absolute inset-0 opacity-10">
+                    <div className="absolute top-0 right-0 w-96 h-96 bg-white rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-pink-400 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
+                  </div>
+                  
+                  <div className="relative">
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className="w-16 h-16 bg-white/10 backdrop-blur-sm rounded-2xl flex items-center justify-center border border-white/20">
+                        <Bot size={32} className="text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-3xl md:text-4xl font-black text-white mb-2 tracking-tight">
+                          AI Integration Settings
+                        </h3>
+                        <p className="text-white/70 font-medium">Manage AI models for enquiry filtering and analysis</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                {/* AI Models Management Section */}
-                <div className="pt-6 border-t border-slate-100">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-                    <div>
-                      <h4 className="text-[12px] font-bold text-primary tracking-[0.2em] flex items-center gap-2">
-                        <Bot size={14} className="text-violet-500" />
-                        AI MODELS ({aiModels.length})
-                      </h4>
-                      <p className="text-xs text-slate-500 mt-1 font-bold">
-                        Add and manage AI models for enquiry filtering.
-                      </p>
+                {/* AI Models Management Card */}
+                <div className="bg-white rounded-3xl border border-slate-200/60 shadow-lg overflow-hidden">
+                  <div className="p-8 md:p-10">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+                      <div>
+                        <h4 className="text-xl font-black text-[#18254D] mb-1 flex items-center gap-2">
+                          <Bot size={24} className="text-violet-500" />
+                          AI Models ({aiModels.length})
+                        </h4>
+                        <p className="text-sm text-slate-500 font-medium">Add and manage AI models for enquiry filtering</p>
+                      </div>
+                      <button
+                        onClick={() => setShowAddModelModal(true)}
+                        className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-[#18254D] to-[#1e2e5e] text-white rounded-xl hover:from-[#1e2e5e] hover:to-[#2a3f7a] transition-all active:scale-95 text-sm font-bold shadow-lg shadow-[#18254D]/20"
+                      >
+                        <Plus size={16} />
+                        <span>Add AI Model</span>
+                      </button>
                     </div>
-                    <button
-                      onClick={() => setShowAddModelModal(true)}
-                      className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white rounded-2xl hover:bg-slate-800 transition-all active:scale-95 text-[13px] font-bold tracking-wider shadow-lg"
-                    >
-                      <Plus size={16} />
-                      ADD AI MODEL
-                    </button>
-                  </div>
 
                   {/* Add AI Model Modal */}
                   {showAddModelModal &&
@@ -1459,33 +1516,92 @@ const Settings = ({
                   </button>
                 </div>
               </div>
+              </div>
             )}
             {/* SECURITY TAB */}
             {activeTab === "security" && (
-              <div className="space-y-8 animate-fade-in w-full">
-                <div>
-                  <h3 className="text-2xl font-bold text-primary mb-2 tracking-tight">
-                    Security Settings
-                  </h3>
-                  <p className="text-sm text-slate-500 font-bold">
-                    Manage your account security and access controls.
-                  </p>
+              <div className="space-y-0 animate-fade-in w-full">
+                {/* Security Header Card */}
+                <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#18254D] via-[#1e2e5e] to-[#2a3f7a] p-8 md:p-10 mb-8">
+                  {/* Background Pattern */}
+                  <div className="absolute inset-0 opacity-10">
+                    <div className="absolute top-0 right-0 w-96 h-96 bg-white rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-400 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
+                  </div>
+                  
+                  <div className="relative">
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className="w-16 h-16 bg-white/10 backdrop-blur-sm rounded-2xl flex items-center justify-center border border-white/20">
+                        <Lock size={32} className="text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-3xl md:text-4xl font-black text-white mb-2 tracking-tight">
+                          Security Settings
+                        </h3>
+                        <p className="text-white/70 font-medium">Manage your account security and access controls</p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
-                <div className="p-6 bg-slate-50 border border-slate-200/60 rounded-[20px]">
-                  <h4 className="font-bold text-slate-900 flex items-center gap-2 mb-4 tracking-tight">
-                    Change Password
-                  </h4>
-                  <button
-                    onClick={() => setShowPasswordForm(true)}
-                    className="flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white rounded-2xl hover:bg-slate-800 transition-all active:scale-95 text-[13px] font-bold tracking-wider shadow-lg"
-                  >
-                    <Lock size={14} strokeWidth={2.5} />
-                    Update Password
-                  </button>
+                {/* Password Update Card */}
+                <div className="bg-white rounded-3xl border border-slate-200/60 shadow-lg overflow-hidden">
+                  <div className="p-8 md:p-10">
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+                      <div>
+                        <h4 className="text-xl font-black text-[#18254D] mb-1">Password Management</h4>
+                        <p className="text-sm text-slate-500 font-medium">Update your password to keep your account secure</p>
+                      </div>
+                      <button
+                        onClick={() => setShowPasswordForm(true)}
+                        className="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-[#18254D] to-[#1e2e5e] text-white rounded-xl hover:from-[#1e2e5e] hover:to-[#2a3f7a] transition-all active:scale-95 text-sm font-bold shadow-lg shadow-[#18254D]/20"
+                      >
+                        <Lock size={16} />
+                        <span>Update Password</span>
+                      </button>
+                    </div>
 
-                  {/* Password Update Modal */}
-                  {showPasswordForm &&
+                    {/* Security Tips */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="p-4 bg-blue-50 border border-blue-100 rounded-2xl">
+                        <div className="flex items-start gap-3">
+                          <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center shrink-0">
+                            <Key size={20} className="text-blue-600" />
+                          </div>
+                          <div>
+                            <h5 className="text-sm font-bold text-blue-900 mb-1">Strong Password</h5>
+                            <p className="text-xs text-blue-700">Use at least 8 characters with mixed case, numbers & symbols</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-2xl">
+                        <div className="flex items-start gap-3">
+                          <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center shrink-0">
+                            <Check size={20} className="text-emerald-600" />
+                          </div>
+                          <div>
+                            <h5 className="text-sm font-bold text-emerald-900 mb-1">Regular Updates</h5>
+                            <p className="text-xs text-emerald-700">Change your password every 3-6 months for better security</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-4 bg-amber-50 border border-amber-100 rounded-2xl">
+                        <div className="flex items-start gap-3">
+                          <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center shrink-0">
+                            <Eye size={20} className="text-amber-600" />
+                          </div>
+                          <div>
+                            <h5 className="text-sm font-bold text-amber-900 mb-1">Stay Private</h5>
+                            <p className="text-xs text-amber-700">Never share your password with anyone or use it on multiple sites</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Password Update Modal */}
+                {showPasswordForm &&
                     createPortal(
                       <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
                         {/* Backdrop */}
@@ -1631,36 +1747,43 @@ const Settings = ({
                       </div>,
                       document.body
                     )}
-                </div>
               </div>
             )}
 
             {/* TEAM & ADMINS TAB */}
             {activeTab === "team" && (
-              <div className="space-y-8 animate-fade-in w-full">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                  <div>
-                    <h3 className="text-3xl font-black text-[#18254D] mb-2 tracking-tight">
-                      Manage Admins
-                    </h3>
-                    <p className="text-sm font-black text-slate-500">
-                      View and manage your network of administrators.
-                    </p>
+              <div className="space-y-0 animate-fade-in w-full">
+                {/* Team Header Card */}
+                <div className="relative overflow-hidden rounded-3xl bg-[#18254E] p-8 md:p-10 mb-8">
+                  {/* Background Pattern */}
+                  <div className="absolute inset-0 opacity-10">
+                    <div className="absolute top-0 right-0 w-96 h-96 bg-white rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-green-400 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
                   </div>
-                  {/* Add Admin Button */}
-                  {profile?.role !== "Admin" && (
-                    <button
-                      onClick={() => setShowAddAdminModal(true)}
-                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-[#18254D] text-white rounded-2xl hover:bg-[#1e2e5e] transition-all active:scale-95 text-[13px] font-black tracking-widest shadow-xl shadow-[#18254D]/20 group"
-                    >
-                      <Plus
-                        size={18}
-                        strokeWidth={3}
-                        className="group-hover:rotate-90 transition-transform"
-                      />
-                      <span>ADD ADMIN</span>
-                    </button>
-                  )}
+                  
+                  <div className="relative flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+                    <div className="flex items-center gap-4">
+                      <div className="w-16 h-16 bg-white/10 backdrop-blur-sm rounded-2xl flex items-center justify-center border border-white/20">
+                        <UsersIcon size={32} className="text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-3xl md:text-4xl font-black text-white mb-2 tracking-tight">
+                          Manage Admins
+                        </h3>
+                        <p className="text-white/70 font-medium">View and manage your network of administrators</p>
+                      </div>
+                    </div>
+                    {/* Add Admin Button */}
+                    {profile?.role !== "Admin" && (
+                      <button
+                        onClick={() => setShowAddAdminModal(true)}
+                        className="flex items-center justify-center gap-2 px-6 py-3 bg-white text-[#18254E] rounded-xl transition-all active:scale-95 text-sm font-bold shadow-lg"
+                      >
+                        <Plus size={18} strokeWidth={2.5} />
+                        <span>Add Admin</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 {/* Add Admin Modal */}
@@ -1977,11 +2100,10 @@ const Settings = ({
                     document.body
                   )}
 
-                {/* Admins List */}
-                <div className="space-y-4">
-                  <h4 className="text-[12px] font-bold text-primary  tracking-[0.2em] ml-1">
-                    Current Users ({admins.length})
-                  </h4>
+                {/* Admins List Card */}
+                <div className="bg-white rounded-3xl border border-slate-200/60 shadow-lg overflow-hidden">
+                  <div className="p-8 md:p-10">
+                    <h4 className="text-xl font-black text-[#18254D] mb-6">Current Users ({admins.length})</h4>
 
                   {loadingAdmins ? (
                     <div className="flex items-center justify-center py-10">
@@ -2060,8 +2182,8 @@ const Settings = ({
                                 </div>
                               </div>
 
-                              <div className="mt-auto px-6 pb-6 pt-2">
-                                <div className="flex gap-1">
+                              <div className="mt-auto px-6 pb-2 pt-2">
+                                <div className="flex justify-between">
                                   {admin.role !== "Root Admin" && (
                                     <>
                                         <button
@@ -2090,41 +2212,50 @@ const Settings = ({
                       ))}
                     </div>
                   )}
-                </div>
 
-                {/* Admin Creation Toast Notification */}
-                {showAdminToast && (
-                  <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 animate-fade-in">
-                    <div className="flex items-center gap-3 px-5 py-3 bg-primary text-white rounded-xl shadow-lg shadow-primary/30 border border-white/10 min-w-[320px]">
-                      <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center shrink-0">
-                        <Check size={14} className="text-white" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-xs font-bold tracking-wide text-center">
-                          {adminToastMessage}
-                        </p>
+                  {/* Admin Creation Toast Notification */}
+                  {showAdminToast && (
+                    <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 animate-fade-in">
+                      <div className="flex items-center gap-3 px-5 py-3 bg-primary text-white rounded-xl shadow-lg shadow-primary/30 border border-white/10 min-w-[320px]">
+                        <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+                          <Check size={14} className="text-white" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-xs font-bold tracking-wide text-center">
+                            {adminToastMessage}
+                          </p>
+                        </div>
                       </div>
                     </div>
+                  )}
                   </div>
-                )}
+                </div>
               </div>
             )}
 
             {/* DATA EXPORT TAB */}
             {activeTab === "export" && (
               <div className="space-y-8 animate-fade-in w-full">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                  <div>
-                    <h3 className="text-3xl font-black text-[#18254D] mb-2 tracking-tight">
-                      Data Export Center
-                    </h3>
-                    <p className="text-sm font-black text-slate-500">
-                      Download your CRM data in CSV format for analysis and
-                      reporting.
-                    </p>
+
+                <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#18254D] via-[#1e2e5e] to-[#2a3f7a] p-8 md:p-10 mb-8">
+                  {/* Background Pattern */}
+                  <div className="absolute inset-0 opacity-10">
+                    <div className="absolute top-0 right-0 w-96 h-96 bg-white rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-400 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
+                  </div>
+                  
+                  <div className="relative">
+                    <div className="flex items-center gap-4 mb-4">
+                      <div>
+                        <h3 className="text-3xl md:text-4xl font-black text-white mb-2 tracking-tight">
+                        Data Export Center</h3>
+                        <p className="text-white/70 font-medium">Download your CRM data in CSV format for analysis and
+                      reporting.</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
-
+                
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {/* Enquiries Export */}
                   <div className="group bg-white border border-slate-200/60 rounded-[20px] p-6 hover:border-slate-300 hover:shadow-lg transition-all duration-300 flex flex-col">

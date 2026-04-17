@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { useScrollLock } from "../../hooks/useScrollLock";
 import { Area, Line, ComposedChart, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { Users, UserPlus, Clock, CheckCircle2, ChevronRight, ChevronDown, Filter, Calendar, TrendingUp, X, Bell, Info, Inbox, Activity } from "lucide-react";
+import { BASE_URL } from "../../constants/config";
 
 // Simple stat card component
 function StatCard({ title, value, trend, trendUp, icon, description, delay = 0 }) {
@@ -348,7 +349,7 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
               </div>
               {currentUser?.image ? (
                 <img
-                  src={currentUser.image}
+                  src={BASE_URL + currentUser.image}
                   alt="Profile"
                   className="w-8 h-8 md:w-9 md:h-9 rounded-lg object-cover border border-slate-100 shadow-sm"
                 />
@@ -751,83 +752,107 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
       </div>
 
         {/* View All Follow-ups Selection Modal */}
-        {showViewAllModal && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
-            <div
-              className="fixed inset-0 bg-[#18254D]/40 backdrop-blur-sm animate-fade-in"
-              onClick={() => setShowViewAllModal(false)}
-            />
-            <div className="bg-white rounded-3xl shadow-2xl border border-slate-100 w-full max-w-sm overflow-hidden animate-pop relative z-10">
-              <div className="p-6 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
-                <h3 className="text-sm font-bold text-[#18254D] tracking-tight">
-                  View Follow-ups
-                </h3>
-                <button
-                  onClick={() => setShowViewAllModal(false)}
-                  className="p-1.5 hover:bg-slate-200 rounded-xl text-slate-400 transition-all"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-              <div className="p-4 space-y-3">
-                <button
-                  onClick={() => {
-                    onNavigate("followups-clients", viewAllTab);
-                    setShowViewAllModal(false);
-                  }}
-                  className="w-full flex items-center justify-between p-4 bg-slate-50 rounded-2xl hover:bg-[#18254D] hover:text-white transition-all group border border-slate-100"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-white rounded-xl group-hover:bg-white/10 shadow-sm border border-slate-100">
-                      <Users
-                        size={18}
-                        className="text-primary group-hover:text-white"
-                      />
-                    </div>
-                    <div className="text-left">
-                      <p className="text-xs font-bold tracking-tight">
-                        Reference Follow-ups
-                      </p>
-                      <p className="text-[14px] opacity-60 font-medium">
-                        Continue with existing clients
-                      </p>
-                    </div>
-                  </div>
-                  <ChevronRight size={16} />
-                </button>
+        {
+  showViewAllModal &&
+    createPortal(
+      <div className="fixed inset-0 z-[999999] flex items-center justify-center p-4">
 
-                <button
-                  onClick={() => {
-                    onNavigate("followups-leads", viewAllTab);
-                    setShowViewAllModal(false);
-                  }}
-                  className="w-full flex items-center justify-between p-4 bg-slate-50 rounded-2xl hover:bg-secondary hover:text-white transition-all group border border-slate-100"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-white rounded-xl group-hover:bg-white/10 shadow-sm border border-slate-100">
-                      <UserPlus
-                        size={18}
-                        className="text-secondary group-hover:text-white"
-                      />
-                    </div>
-                    <div className="text-left">
-                      <p className="text-xs font-bold tracking-tight">
-                        New Follow-ups
-                      </p>
-                      <p className="text-[14px] opacity-60 font-medium">
-                        Connect with potential leads
-                      </p>
-                    </div>
-                  </div>
-                  <ChevronRight size={16} />
-                </button>
-              </div>
-            </div>
+        {/* BACKDROP */}
+        <div
+          className="absolute inset-0 bg-slate-900/60 backdrop-blur-md transition-opacity duration-200"
+          onClick={() => setShowViewAllModal(false)}
+        />
+
+        {/* MODAL */}
+        <div className="relative z-10 bg-white rounded-3xl shadow-2xl border border-slate-100 w-full max-w-sm overflow-hidden animate-pop">
+
+          {/* HEADER */}
+          <div className="p-6 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
+            <h3 className="text-sm font-bold text-[#18254D] tracking-tight">
+              View Follow-ups
+            </h3>
+
+            <button
+              onClick={() => setShowViewAllModal(false)}
+              className="p-1.5 hover:bg-slate-200 rounded-xl text-slate-400 transition-all"
+            >
+              <X size={18} />
+            </button>
           </div>
-        )}
+
+          {/* BODY */}
+          <div className="p-4 space-y-3">
+
+            {/* Reference Follow-ups */}
+            <button
+              onClick={() => {
+                onNavigate("followups-clients", viewAllTab);
+                setShowViewAllModal(false);
+              }}
+              className="w-full flex items-center justify-between p-4 bg-slate-50 rounded-2xl hover:bg-[#18254D] hover:text-white transition-all group border border-slate-100"
+            >
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-white rounded-xl group-hover:bg-white/10 shadow-sm border border-slate-100">
+                  <Users
+                    size={18}
+                    className="text-primary group-hover:text-white"
+                  />
+                </div>
+
+                <div className="text-left">
+                  <p className="text-xs font-bold tracking-tight">
+                    Reference Follow-ups
+                  </p>
+                  <p className="text-[14px] opacity-60 font-medium">
+                    Continue with existing clients
+                  </p>
+                </div>
+              </div>
+
+              <ChevronRight size={16} />
+            </button>
+
+            {/* New Follow-ups */}
+            <button
+              onClick={() => {
+                onNavigate("followups-leads", viewAllTab);
+                setShowViewAllModal(false);
+              }}
+              className="w-full flex items-center justify-between p-4 bg-slate-50 rounded-2xl hover:bg-[#18254D] hover:text-white transition-all group border border-slate-100"
+            >
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-white rounded-xl group-hover:bg-white/10 shadow-sm border border-slate-100">
+                  <UserPlus
+                    size={18}
+                    className="text-secondary group-hover:text-white"
+                  />
+                </div>
+
+                <div className="text-left">
+                  <p className="text-xs font-bold tracking-tight">
+                    New Follow-ups
+                  </p>
+                  <p className="text-[14px] opacity-60 font-medium">
+                    Connect with potential leads
+                  </p>
+                </div>
+              </div>
+
+              <ChevronRight size={16} />
+            </button>
+
+          </div>
+        </div>
+      </div>,
+      document.body
+    )
+}
       </div>
     </div>
   );
 };
 
 export default Dashboard;
+
+
+
