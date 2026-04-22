@@ -91,6 +91,14 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
     return d.getDate() === today.getDate() && d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear();
   }
 
+  const getImageUrl = (imagePath) => {
+    if (!imagePath) return null;
+    // If it's already a full URL (starts with http), return as-is
+    if (imagePath.startsWith('http')) return imagePath;
+    // If it's a relative path, prepend BASE_URL
+    return BASE_URL + imagePath;
+  };
+
   function isMissed(date) {
     const d = new Date(date);
     const today = new Date();
@@ -349,7 +357,7 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
               </div>
               {currentUser?.image ? (
                 <img
-                  src={BASE_URL + currentUser.image}
+                  src={getImageUrl(currentUser.image)}
                   alt="Profile"
                   className="w-8 h-8 md:w-9 md:h-9 rounded-lg object-cover border border-slate-100 shadow-sm"
                 />

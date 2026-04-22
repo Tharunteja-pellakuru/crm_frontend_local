@@ -312,6 +312,15 @@ const Settings = ({
     });
   };
 
+  // Helper function to construct proper image URL
+  const getImageUrl = (imagePath) => {
+    if (!imagePath) return null;
+    // If it's already a full URL (starts with http), return as-is
+    if (imagePath.startsWith('http')) return imagePath;
+    // If it's a relative path, prepend BASE_URL
+    return BASE_URL + imagePath;
+  };
+
   const handleProfileSave = async () => {
     setIsSubmitting(true);
     try {
@@ -818,7 +827,7 @@ const Settings = ({
                           {profile.image ? (
                             <img
                               key={profile.image}
-                              src={BASE_URL + profile.image}
+                              src={getImageUrl(profile.image)}
                               alt="Profile"
                               className="w-36 h-36 rounded-full border-4 border-white/30 object-cover shadow-2xl relative z-10 group-hover:scale-105 transition-transform duration-500"
                               onError={(e) => {
