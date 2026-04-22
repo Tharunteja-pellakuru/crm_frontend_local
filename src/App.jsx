@@ -722,7 +722,7 @@ function AppRoutes() {
             email: data.email || "",
             phone: data.phone || "",
             status: "Active",
-            country: createdClient.client_country,
+            country: createdClient.client_country,  
             state: createdClient.client_state,
             currency: createdClient.client_currency,
             lead_id: createdClient.lead_id, // Ensure lead_id is present

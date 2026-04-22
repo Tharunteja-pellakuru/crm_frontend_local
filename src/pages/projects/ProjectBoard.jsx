@@ -346,7 +346,7 @@ const ProjectCard = ({
         <div className="flex flex-col gap-1">
           <span className="text-[13px] font-black text-slate-300 tracking-widest uppercase">Budget</span>
           <span className="text-[12px] font-bold text-primary flex items-center gap-0.5">
-            <IndianRupee size={10} strokeWidth={3} />
+            {commonCurrencies.find((c) => c.code === client?.currency)?.symbol || "₹"}
             {project.budget?.toLocaleString("en-IN") || "0"}
           </span>
         </div>
@@ -1402,7 +1402,7 @@ const ProjectBoard = ({
                   </label>
                   <div className="relative">
                     <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-bold">
-                      {formData.currency === "USD" ? "$" : "₹"}
+                      {formData.currency}
                     </div>
                     <input
                       type="text"

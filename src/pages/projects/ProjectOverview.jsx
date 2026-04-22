@@ -654,7 +654,7 @@ const ProjectOverview = ({
           <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm group hover:border-success/30 transition-all animate-fade-in-right">
             <div className="flex items-center justify-between mb-4">
               <div className="w-10 h-10 bg-success/10 text-success rounded-2xl flex items-center justify-center">
-                <IndianRupee size={20} />
+                {client?.currency}
               </div>
               <label className="text-[11px] sm:text-[12px] font-bold text-slate-400 tracking-[0.2em]">
                 Project Budget
@@ -662,12 +662,10 @@ const ProjectOverview = ({
             </div>
             {isEditing ? (
               <div className="relative">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-success font-bold text-lg">
-                  {commonCurrencies.find((c) => c.code === project?.currency)?.symbol || "₹"}
-                </div>
+                
                 <input
                   type="text"
-                  value={formatBudget(formData.budget, project?.currency)}
+                  value={formatBudget(formData.budget, client?.currency)}
                   onChange={(e) =>
                     setFormData({
                       ...formData,
@@ -680,8 +678,8 @@ const ProjectOverview = ({
             ) : (
               <p className="text-xl sm:text-2xl font-bold text-[#18254D] tracking-tight shrink-0">
                 {formData.budget > 0
-                  ? `${commonCurrencies.find((c) => c.code === project?.currency)?.symbol || "₹"}${formatBudget(formData.budget, project?.currency)}`
-                  : `${commonCurrencies.find((c) => c.code === project?.currency)?.symbol || "₹"}0`}
+                  ? `${commonCurrencies.find((c) => c.code === client?.currency)?.symbol || "₹"}${formatBudget(formData.budget, client?.currency)}`
+                  : `${commonCurrencies.find((c) => c.code === client?.currency)?.symbol || "₹"}0`}
               </p>
             )}
           </div>
