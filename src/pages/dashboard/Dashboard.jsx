@@ -584,7 +584,7 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
               )}
             </div>
           </div>
-          <div className="w-full lg:w-[65%] xl:w-[70%] bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col min-h-[400px] lg:min-h-0 lg:h-full overflow-hidden">
+          <div className="w-full lg:w-[65%] xl:w-[70%] bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col h-[480px] lg:h-full overflow-hidden">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
               <div>
                 <h3 className="text-base font-bold text-primary tracking-tight">
@@ -697,7 +697,7 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
                 </div>
               </div>
             </div>
-            <div className="flex-1 min-h-[150px] w-full mt-2" style={{ minHeight: "150px", minWidth: 0 }}>
+            <div className="flex-1 w-full mt-2 relative" style={{ minWidth: 0 }}>
               <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                 <ComposedChart data={chartData}>
                   <CartesianGrid
