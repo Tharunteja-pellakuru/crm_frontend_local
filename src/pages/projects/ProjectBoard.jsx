@@ -530,20 +530,24 @@ const ProjectBoard = ({
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const isValid = validateForm(formData, {
-      projectName: { required: true, minLength: 2, label: "Project Name" },
-      projectDescription: { required: true, label: "Project Description" },
-      budget: { required: true, type: "number", label: "Budget" },
-      onboardingDate: { required: true, label: "Onboarding Date" },
-      phone: { minLength: 10, label: "Phone Number" }
-    });
-
-    if (!isValid) return;
-
     if (!selectedClientId) {
       toast.error("Please select an existing client.");
       return;
     }
+
+    const isValid = validateForm(formData, {
+      projectName: { required: true, minLength: 2, label: "Project Name" },
+      projectDescription: { required: true, label: "Project Description" },
+      projectCategory: { required: true, label: "Project Category" },
+      projectStatus: { required: true, label: "Project Status" },
+      projectPriority: { required: true, label: "Project Priority" },
+      budget: { required: true, type: "number", label: "Project Budget" },
+      onboardingDate: { required: true, label: "Onboarding Date" },
+      deadline: { required: true, label: "Deadline Date" },
+      scopeDocument: { required: true, label: "Scope Document" },
+    });
+
+    if (!isValid) return;
 
     setIsSubmitting(true); // Set submitting state to true
 
@@ -988,7 +992,7 @@ const ProjectBoard = ({
               {/* CLIENT NAME SEARCHABLE DROPDOWN */}
               <div className="space-y-2 relative">
                 <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                  CLIENT NAME
+                  CLIENT NAME <span className="text-error">*</span>
                 </label>
                 <div className="relative">
                   <input
@@ -1173,7 +1177,7 @@ const ProjectBoard = ({
                 {/* PROJECT NAME */}
                 <div className="space-y-1.5 md:col-span-2">
                   <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                    PROJECT NAME
+                    PROJECT NAME <span className="text-error">*</span>
                   </label>
                   <input
                     required
@@ -1193,7 +1197,7 @@ const ProjectBoard = ({
                 {/* PROJECT DESCRIPTION */}
                 <div className="space-y-1.5 md:col-span-2">
                   <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                    PROJECT DESCRIPTION
+                    PROJECT DESCRIPTION <span className="text-error">*</span>
                   </label>
                   <textarea
                     rows={3}
@@ -1272,7 +1276,7 @@ const ProjectBoard = ({
 
                 <div className="space-y-1.5">
                   <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                    PROJECT STATUS
+                    PROJECT STATUS <span className="text-error">*</span>
                   </label>
                   <div className="relative">
                     <button
@@ -1335,7 +1339,7 @@ const ProjectBoard = ({
 
                 <div className="space-y-1.5">
                   <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                    PROJECT PRIORITY
+                    PROJECT PRIORITY <span className="text-error">*</span>
                   </label>
                   <div className="relative">
                     <button
@@ -1397,12 +1401,18 @@ const ProjectBoard = ({
 
                 <div className="space-y-1.5 md:col-span-2">
                   <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1 flex items-center gap-1.5">
-                    PROJECT BUDGET (
-                    {formData.currency})
+                    PROJECT BUDGET
+                    {formData.currency && (
+                      <span className="text-slate-400 font-bold">
+                        ({formData.currency})
+                      </span>
+                    )}
+                    <span className="text-error">*</span>
                   </label>
                   <div className="relative">
-                    <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-bold">
-                      {formData.currency}
+                    <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 font-bold text-sm">
+                      {commonCurrencies.find((c) => c.code === formData.currency)?.symbol ||
+                        (formData.currency ? formData.currency : "₹")}
                     </div>
                     <input
                       type="text"
@@ -1426,7 +1436,7 @@ const ProjectBoard = ({
                 {/* DATES */}
                 <div className="space-y-1.5">
                   <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                    ONBOARDING DATE
+                    ONBOARDING DATE <span className="text-error">*</span>
                   </label>
                   <DatePicker
                     value={formData.onboardingDate}
@@ -1441,7 +1451,7 @@ const ProjectBoard = ({
 
                 <div className="space-y-1.5">
                   <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                    DEADLINE (TENTATIVE)
+                    DEADLINE (TENTATIVE) <span className="text-error">*</span>
                   </label>
                   <DatePicker
                     value={formData.deadline}
@@ -1457,7 +1467,7 @@ const ProjectBoard = ({
                 {/* SCOPE DOCUMENT */}
                 <div className="space-y-1.5 md:col-span-2">
                   <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                    SCOPE DOCUMENT
+                    SCOPE DOCUMENT <span className="text-error">*</span>
                   </label>
                   <div className="relative group">
                     <input
