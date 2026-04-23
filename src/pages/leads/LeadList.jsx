@@ -2241,7 +2241,7 @@ const LeadList = ({
                     <div className="relative">
                       <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-bold">
                         {commonCurrencies.find(
-                          (c) => c.code === onboardingData.currency,
+                          (c) => c.code === onboardingData.currency,  
                         )?.symbol || "₹"}
                       </div>
                       <input

@@ -759,7 +759,7 @@ const ProjectBoard = ({
             const count = projects.filter(
               (p) =>
                 p.status === column.id &&
-                (selectedCategory === 3 ||
+                (selectedCategory === "All" ||
                   (p.category || 1) === selectedCategory),
             ).length;
             const isActive = activeStage === column.id;
@@ -1398,7 +1398,7 @@ const ProjectBoard = ({
                 <div className="space-y-1.5 md:col-span-2">
                   <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1 flex items-center gap-1.5">
                     PROJECT BUDGET (
-                    {formData.currency === "USD" ? "USD" : "INR"})
+                    {formData.currency})
                   </label>
                   <div className="relative">
                     <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-bold">
