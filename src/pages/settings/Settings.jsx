@@ -2144,7 +2144,7 @@ const Settings = ({
                                   <div className="absolute inset-0 bg-blue-500/10 rounded-3xl blur-2xl group-hover:bg-blue-500/20 transition-all duration-500" />
                                   {admin.image ? (
                                     <img
-                                      src={admin.image}
+                                      src={BASE_URL + admin.image}
                                       alt={admin.name}
                                       className="w-20 h-20 rounded-[28px] object-cover border-4 border-white shadow-xl relative z-0"
                                     />
