@@ -77,7 +77,12 @@ const ProjectOverview = ({
     if (!validateForm(formData, {
       name: { required: true, minLength: 2, label: "Project Name" },
       description: { required: true, label: "Project Description" },
-      budget: { required: true, type: "number", label: "Budget" }
+      status: { required: true, label: "Project Status" },
+      category: { required: true, label: "Project Category" },
+      priority: { required: true, label: "Project Priority" },
+      budget: { required: true, type: "number", label: "Budget" },
+      onboardingDate: { required: true, label: "Onboarding Date" },
+      deadline: { required: true, label: "Deadline Date" },
     })) return;
 
     setIsSubmitting(true);
@@ -187,7 +192,7 @@ const ProjectOverview = ({
   const CustomDropdown = ({ label, value, options, field, icon: Icon }) => (
     <div className="space-y-2 relative">
       <label className="text-[11px] sm:text-[12px] font-bold text-primary tracking-widest ml-1 opacity-50">
-        {label}
+        {label} {isEditing && <span className="text-error">*</span>}
       </label>
       <button
         type="button"
@@ -322,7 +327,7 @@ const ProjectOverview = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <label className="text-[12px] font-bold text-primary  tracking-widest ml-1 opacity-50">
-                  Project Name
+                  Project Name {isEditing && <span className="text-error">*</span>}
                 </label>
                 {isEditing ? (
                   <input
@@ -419,7 +424,7 @@ const ProjectOverview = ({
 
               <div className="space-y-2 md:col-span-2">
                 <label className="text-[12px] font-bold text-primary  tracking-widest ml-1 opacity-50">
-                  Project Description
+                  Project Description {isEditing && <span className="text-error">*</span>}
                 </label>
                 {isEditing ? (
                   <textarea
@@ -666,15 +671,17 @@ const ProjectOverview = ({
                 {client?.currency}
               </div>
               <label className="text-[11px] sm:text-[12px] font-bold text-slate-400 tracking-[0.2em]">
-                Project Budget
+                Project Budget {isEditing && <span className="text-error">*</span>}
               </label>
             </div>
             {isEditing ? (
               <div className="relative">
-                
+                <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-bold">
+                  {commonCurrencies.find((c) => c.code === client?.currency)?.symbol || "₹"}
+                </div>
                 <input
                   type="text"
-                  value={formatBudget(formData.budget)}
+                  value={formatBudget(formData.budget, client?.currency)}
                   onChange={(e) =>
                     setFormData({
                       ...formData,
@@ -705,7 +712,7 @@ const ProjectOverview = ({
             <div className="space-y-6 relative z-10">
               <div className="space-y-1">
                 <p className="text-[12px] sm:text-[14px] font-bold text-white/40 tracking-widest">
-                  Onboarding Date
+                  Onboarding Date {isEditing && <span className="text-error">*</span>}
                 </p>
                 {isEditing ? (
                   <DatePicker
@@ -737,7 +744,7 @@ const ProjectOverview = ({
 
               <div className="space-y-2">
                 <p className="text-[12px] sm:text-[14px] font-bold text-secondary tracking-widest">
-                  Final Deadline
+                  Final Deadline {isEditing && <span className="text-error">*</span>}
                 </p>
                 {isEditing ? (
                   <DatePicker
