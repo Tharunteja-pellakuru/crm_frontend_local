@@ -14,8 +14,8 @@ import logoImg from "../../assets/Parivartan_Logo.png";
 import { BASE_URL } from "../../constants/config";
 
 function LoginPage({ onLogin }) {
-  const [email, setEmail] = useState("ceo@eparivartan.com");
-  const [password, setPassword] = useState("Password@123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
