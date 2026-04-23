@@ -535,7 +535,9 @@ function AppRoutes() {
   }
 
   function handleLogout() {
-    logout(); // Use utility function
+    logout(); // Clear localStorage
+    setIsLoggedIn(false); // Update React state
+    toast.success("Logged out successfully");
   }
 
   function handleClientSelect(client, tab = "overview") {

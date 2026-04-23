@@ -20,7 +20,6 @@ export const isAuthenticated = () => {
 export const logout = () => {
   localStorage.removeItem("token");
   localStorage.removeItem("user");
-  window.location.reload(); // Reload to reset app state
 };
 
 // Create headers with auth token for API calls
