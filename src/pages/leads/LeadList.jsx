@@ -504,6 +504,19 @@ const LeadList = ({
     }
 
     return matchesSearch && matchesStatus && matchesLeadType;
+  }).sort((a, b) => {
+    const priority = { Hot: 1, Warm: 2, Cold: 3 };
+    const aPriority = priority[a.leadType] || 4;
+    const bPriority = priority[b.leadType] || 4;
+
+    if (aPriority !== bPriority) {
+      return aPriority - bPriority;
+    }
+
+    // Within same priority, sort by date (newest first)
+    const dateA = new Date(a.joinedDate || 0);
+    const dateB = new Date(b.joinedDate || 0);
+    return dateB - dateA;
   });
 
   const totalPages = Math.ceil(filteredLeads.length / RECORDS_PER_PAGE);
