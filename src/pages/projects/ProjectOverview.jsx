@@ -445,6 +445,80 @@ const ProjectOverview = ({
             </div>
           </div>
 
+                    <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm animate-fade-in-up">
+            <div className="bg-slate-50/50 px-5 py-3.5 border-b border-slate-100 flex items-center justify-between">
+              <h3 className="text-xs sm:text-sm font-bold text-[#18254D] tracking-widest flex items-center gap-3">
+                <FileText size={18} className="text-secondary" />
+                Documents
+              </h3>
+            </div>
+            <div className="p-4 md:p-5">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 bg-slate-50 rounded-xl border border-slate-100 group hover:border-secondary transition-all">
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center text-secondary border border-slate-100 shadow-sm">
+                    <FileText size={20} />
+                  </div>
+                  <div>
+                    <p className="text-xs sm:text-sm font-bold text-primary">
+                      Project Scope Document
+                    </p>
+                    <p className="text-[11px] sm:text-[12px] font-bold text-slate-400 tracking-widest">
+                      {project?.scopeDocument
+                        ? project.scopeDocument
+                        : "No document uploaded"}
+                    </p>
+                  </div>
+                </div>
+                {isEditing ? (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="file"
+                      accept=".pdf"
+                      id="scope-upload"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                          setFormData({ ...formData, scopeFile: file });
+                        }
+                      }}
+                    />
+                    <label
+                      htmlFor="scope-upload"
+                      className="px-3 py-2 bg-secondary text-white rounded-lg text-[11px] md:text-[12px] font-bold tracking-widest hover:bg-secondary/90 transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap"
+                    >
+                      <Upload size={14} />
+                      {formData.scopeFile ? "File Selected" : "Upload New PDF"}
+                    </label>
+                  </div>
+                ) : project?.scopeDocument ? (
+                  <div className="flex items-center gap-2">
+                    <a
+                      href={`${BASE_URL}/uploads/${project.scopeDocument}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3 py-2 bg-white border border-slate-200 text-[#18254D] rounded-lg text-[11px] md:text-[12px] font-bold tracking-widest hover:bg-slate-50 transition-all flex items-center gap-2 whitespace-nowrap"
+                    >
+                      <Eye size={14} className="text-secondary" />
+                      View
+                    </a>
+                    <button
+                      onClick={() => handleDownload(project.scopeDocument)}
+                      className="px-3 py-2 bg-white border border-slate-200 text-[#18254D] rounded-lg text-[11px] md:text-[12px] font-bold tracking-widest hover:bg-slate-50 transition-all flex items-center gap-2 whitespace-nowrap"
+                    >
+                      <Download size={14} className="text-secondary" />
+                      Download
+                    </button>
+                  </div>
+                ) : (
+                  <span className="text-[12px] font-bold text-slate-400 tracking-widest bg-slate-100/50 px-3 py-1 rounded-md border border-slate-100">
+                    No Document
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+
           {/* Follow-ups & History */}
           <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm animate-fade-in-up">
             <div className="bg-slate-50/50 px-5 py-3.5 border-b border-slate-100 flex items-center justify-between">
@@ -589,79 +663,7 @@ const ProjectOverview = ({
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm animate-fade-in-up">
-            <div className="bg-slate-50/50 px-5 py-3.5 border-b border-slate-100 flex items-center justify-between">
-              <h3 className="text-xs sm:text-sm font-bold text-[#18254D] tracking-widest flex items-center gap-3">
-                <FileText size={18} className="text-secondary" />
-                Documents
-              </h3>
-            </div>
-            <div className="p-4 md:p-5">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 bg-slate-50 rounded-xl border border-slate-100 group hover:border-secondary transition-all">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center text-secondary border border-slate-100 shadow-sm">
-                    <FileText size={20} />
-                  </div>
-                  <div>
-                    <p className="text-xs sm:text-sm font-bold text-primary">
-                      Project Scope Document
-                    </p>
-                    <p className="text-[11px] sm:text-[12px] font-bold text-slate-400 tracking-widest">
-                      {project?.scopeDocument
-                        ? project.scopeDocument
-                        : "No document uploaded"}
-                    </p>
-                  </div>
-                </div>
-                {isEditing ? (
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="file"
-                      accept=".pdf"
-                      id="scope-upload"
-                      className="hidden"
-                      onChange={(e) => {
-                        const file = e.target.files[0];
-                        if (file) {
-                          setFormData({ ...formData, scopeFile: file });
-                        }
-                      }}
-                    />
-                    <label
-                      htmlFor="scope-upload"
-                      className="px-3 py-2 bg-secondary text-white rounded-lg text-[11px] md:text-[12px] font-bold tracking-widest hover:bg-secondary/90 transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap"
-                    >
-                      <Upload size={14} />
-                      {formData.scopeFile ? "File Selected" : "Upload New PDF"}
-                    </label>
-                  </div>
-                ) : project?.scopeDocument ? (
-                  <div className="flex items-center gap-2">
-                    <a
-                      href={`${BASE_URL}/uploads/${project.scopeDocument}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-3 py-2 bg-white border border-slate-200 text-[#18254D] rounded-lg text-[11px] md:text-[12px] font-bold tracking-widest hover:bg-slate-50 transition-all flex items-center gap-2 whitespace-nowrap"
-                    >
-                      <Eye size={14} className="text-secondary" />
-                      View
-                    </a>
-                    <button
-                      onClick={() => handleDownload(project.scopeDocument)}
-                      className="px-3 py-2 bg-white border border-slate-200 text-[#18254D] rounded-lg text-[11px] md:text-[12px] font-bold tracking-widest hover:bg-slate-50 transition-all flex items-center gap-2 whitespace-nowrap"
-                    >
-                      <Download size={14} className="text-secondary" />
-                      Download
-                    </button>
-                  </div>
-                ) : (
-                  <span className="text-[12px] font-bold text-slate-400 tracking-widest bg-slate-100/50 px-3 py-1 rounded-md border border-slate-100">
-                    No Document
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
+
         </div>
 
         <div className="space-y-5">
