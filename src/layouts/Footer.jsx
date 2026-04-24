@@ -11,9 +11,9 @@ function Footer() {
           Version 1.0
         </div>
         <div className="flex flex-wrap justify-center gap-4 md:gap-6 font-medium text-slate-500">
-          <a href="/privacy" className="hover:text-[#18254D]">Privacy Policy</a>
-          <a href="/terms" className="hover:text-[#18254D]">Terms</a>
-          <a href="/support" className="hover:text-[#18254D]">Support</a>
+          <a href="/dashboard" className="hover:text-[#18254D]">Privacy Policy</a>
+          <a href="/dashboard" className="hover:text-[#18254D]">Terms</a>
+          <a href="/dashboard" className="hover:text-[#18254D]">Support</a>
         </div>
       </div>
     </footer>
