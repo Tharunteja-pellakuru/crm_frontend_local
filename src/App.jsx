@@ -95,10 +95,11 @@ function ProjectOverviewWrapper({
   projects,
   clients,
   followUps,
-  activities,
   onUpdateProject,
   onAddActivity,
   onAddFollowUp,
+  activities,
+  leads,
   loading,
 }) {
   const { id } = useParams();
@@ -123,6 +124,7 @@ function ProjectOverviewWrapper({
     <ProjectOverview
       project={project}
       client={clients.find((c) => c.id == project.clientId || c.client_id == project.clientId)}
+      lead={leads.find((l) => l.lead_id == project.lead_id)}
       onBack={() => navigate("/projects")}
       onUpdateProject={onUpdateProject}
       onAddActivity={onAddActivity}
@@ -239,6 +241,7 @@ function AppRoutes() {
       const transformedProjects = data.map((p) => ({
         id: p.project_id.toString(),
         clientId: p.client_id.toString(),
+        lead_id: p.lead_id?.toString(),
         name: p.project_name,
         description: p.project_description,
         status: p.project_status,
@@ -499,6 +502,7 @@ function AppRoutes() {
         const transformedProjects = data.map((p) => ({
           id: p.project_id.toString(),
           clientId: p.client_id.toString(),
+          lead_id: p.lead_id?.toString(),
           name: p.project_name,
           description: p.project_description,
           status: p.project_status,
@@ -1509,6 +1513,7 @@ function AppRoutes() {
           deadline: createdProject.deadline_date,
           scopeDocument: createdProject.scope_document,
           clientId: createdProject.client_id.toString(),
+          lead_id: createdProject.lead_id?.toString(),
         };
 
         setProjects([newProject, ...projects]);
@@ -2164,12 +2169,13 @@ function AppRoutes() {
             <ProjectOverviewWrapper
               projects={projects}
               clients={clients}
+              leads={leads}
               followUps={followUps}
               activities={activities}
               onUpdateProject={handleUpdateProject}
               onAddActivity={handleAddActivity}
               onAddFollowUp={handleAddFollowUp}
-              loading={projectsLoading || clientsLoading}
+              loading={projectsLoading || clientsLoading || leadsLoading}
             />
           }
         />

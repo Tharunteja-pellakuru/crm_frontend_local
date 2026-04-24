@@ -32,6 +32,7 @@ import { formatBudget, parseBudget } from "../../utils/formatters";
 const ProjectOverview = ({
   project,
   client,
+  lead,
   onBack,
   onUpdateProject,
   followUps,
@@ -778,13 +779,16 @@ const ProjectOverview = ({
             <h3 className="text-[11px] sm:text-[12px] font-bold text-slate-400 tracking-widest border-b border-slate-50 pb-3">
               Client Details
             </h3>
-            <div className="flex items-center gap-4 mb-6">
+            <div className="flex items-center gap-4 mb-6 pt-3">
               <div className="w-12 h-12 bg-primary text-white rounded-2xl flex items-center justify-center font-bold text-lg border-4 border-slate-50 shadow-md">
                 {client?.name?.charAt(0) || "C"}
               </div>
               <div>
                 <p className="text-[11px] sm:text-[12px] font-bold text-slate-400 tracking-widest mt-0.5">
                   {client?.name || ""}
+                </p>
+                <p className="text-[13px] font-bold text-primary truncate max-w-[150px]">
+                  {client?.company || ""}
                 </p>
               </div>
             </div>
@@ -810,6 +814,48 @@ const ProjectOverview = ({
               </div>
             </div>
           </div>
+
+          {lead && (
+            <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm animate-slide-up">
+              <h3 className="text-[11px] sm:text-[12px] font-bold text-slate-400 tracking-widest border-b border-slate-50 pb-3 uppercase">
+                Project Source (Lead)
+              </h3>
+              <div className="flex items-center gap-4 mb-6 pt-3">
+                <div className="w-12 h-12 bg-secondary text-white rounded-2xl flex items-center justify-center font-bold text-lg border-4 border-slate-50 shadow-md">
+                  {lead?.name?.charAt(0) || "L"}
+                </div>
+                <div>
+                  <p className="text-[11px] sm:text-[12px] font-bold text-slate-400 tracking-widest mt-0.5">
+                    {lead?.name || ""}
+                  </p>
+                  <p className="text-[13px] font-bold text-primary truncate max-w-[150px]">
+                    {lead?.company || ""}
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100 group hover:border-secondary transition-all">
+                  <Mail
+                    size={14}
+                    className="text-slate-400 group-hover:text-secondary"
+                  />
+                  <span className="text-[11px] sm:text-[12px] font-bold text-primary truncate">
+                    {lead?.email || "No email documented"}
+                  </span>
+                </div>
+                <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100 group hover:border-secondary transition-all">
+                  <Phone
+                    size={14}
+                    className="text-slate-400 group-hover:text-secondary"
+                  />
+                  <span className="text-[11px] sm:text-[12px] font-bold text-primary">
+                    {lead?.phone || "No phone documented"}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
