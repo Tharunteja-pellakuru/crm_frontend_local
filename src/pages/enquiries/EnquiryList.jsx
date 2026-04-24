@@ -1033,26 +1033,37 @@ const EnquiryList = ({
                     <div className="w-7 h-7 shrink-0 rounded-lg bg-white flex items-center justify-center shadow-sm border border-slate-100 group-hover/info:scale-110 transition-transform">
                       <Mail size={12} className="text-slate-400" />
                     </div>
-                    <span className="text-[13px] font-semibold text-slate-500 break-all">
+                    <a 
+                      href={`mailto:${enquiry.email}`}
+                      className="text-[13px] font-semibold text-slate-500 break-all hover:text-primary transition-colors cursor-pointer"
+                    >
                       {enquiry.email}
-                    </span>
+                    </a>
                   </div>
                   <div className="flex-1 flex items-center gap-2.5 p-2 bg-slate-50/80 border border-white/50 rounded-xl hover:bg-white hover:shadow-md hover:shadow-slate-100 transition-all group/info overflow-hidden">
                     <div className="w-7 h-7 shrink-0 rounded-lg bg-white flex items-center justify-center shadow-sm border border-slate-100 group-hover/info:scale-110 transition-transform">
                       <Phone size={12} className="text-slate-400" />
                     </div>
-                    <span className="text-[13px] font-semibold text-slate-500 break-all">
+                    <a 
+                      href={`tel:${enquiry.phone}`}
+                      className="text-[13px] font-semibold text-slate-500 break-all hover:text-primary transition-colors cursor-pointer"
+                    >
                       {enquiry.phone || "Not Provided"}
-                    </span>
+                    </a>
                   </div>
                   {enquiry.website && (
                     <div className="flex-1 flex items-center gap-2.5 p-2 bg-slate-50/80 border border-white/50 rounded-xl hover:bg-white hover:shadow-md hover:shadow-slate-100 transition-all group/info overflow-hidden">
                       <div className="w-7 h-7 shrink-0 rounded-lg bg-white flex items-center justify-center shadow-sm border border-slate-100 group-hover/info:scale-110 transition-transform">
                         <Globe size={12} className="text-slate-400" />
                       </div>
-                      <span className="text-[13px] font-semibold text-slate-500 break-all">
+                      <a 
+                        href={enquiry.website?.startsWith('http') ? enquiry.website : `https://${enquiry.website}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[13px] font-semibold text-slate-500 break-all hover:text-secondary transition-colors cursor-pointer"
+                      >
                         {enquiry.website}
-                      </span>
+                      </a>
                     </div>
                   )}
                 </div>
