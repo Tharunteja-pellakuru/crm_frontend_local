@@ -14,8 +14,10 @@ const SearchableDropdown = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [activeIndex, setActiveIndex] = useState(-1);
   const dropdownRef = useRef(null);
   const menuRef = useRef(null);
+  const scrollContainerRef = useRef(null);
   const [portalStyle, setPortalStyle] = useState({});
 
   useEffect(() => {
@@ -40,15 +42,29 @@ const SearchableDropdown = ({
       };
 
       updatePosition();
-      window.addEventListener("scroll", () => setIsOpen(false), true);
+      
+      const handleScroll = (e) => {
+        // Don't close if scrolling inside the dropdown itself
+        if (menuRef.current && menuRef.current.contains(e.target)) {
+          return;
+        }
+        setIsOpen(false);
+      };
+
+      window.addEventListener("scroll", handleScroll, true);
       window.addEventListener("resize", () => setIsOpen(false));
 
       return () => {
-        window.removeEventListener("scroll", () => setIsOpen(false), true);
+        window.removeEventListener("scroll", handleScroll, true);
         window.removeEventListener("resize", () => setIsOpen(false));
       };
     }
   }, [isOpen]);
+
+  // Reset active index when search term or open state changes
+  useEffect(() => {
+    setActiveIndex(-1);
+  }, [searchTerm, isOpen]);
 
   const filteredOptions = options.filter((option) => {
     if (!searchTerm) return true;
@@ -107,6 +123,38 @@ const SearchableDropdown = ({
     setSearchTerm("");
   };
 
+  const handleKeyDown = (e) => {
+    if (!isOpen) return;
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setActiveIndex((prev) => (prev < filteredOptions.length - 1 ? prev + 1 : prev));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setActiveIndex((prev) => (prev > 0 ? prev - 1 : prev));
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      if (activeIndex >= 0 && activeIndex < filteredOptions.length) {
+        handleSelect(filteredOptions[activeIndex]);
+      }
+    } else if (e.key === "Escape") {
+      setIsOpen(false);
+    }
+  };
+
+  // Auto-scroll active item into view
+  useEffect(() => {
+    if (activeIndex >= 0 && scrollContainerRef.current) {
+      const activeItem = scrollContainerRef.current.children[activeIndex];
+      if (activeItem) {
+        activeItem.scrollIntoView({
+          block: "nearest",
+          inline: "nearest",
+        });
+      }
+    }
+  }, [activeIndex]);
+
   return (
     <div className={`space-y-1.5 ${className}`} ref={dropdownRef}>
       {label && (
@@ -118,6 +166,7 @@ const SearchableDropdown = ({
         <button
           type="button"
           onClick={() => !disabled && setIsOpen(!isOpen)}
+          onKeyDown={handleKeyDown}
           className={`w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border ${isOpen ? "border-secondary ring-4 ring-secondary/10" : "border-slate-200"} rounded-2xl text-sm font-medium transition-all ${disabled ? "opacity-50 cursor-not-allowed" : "hover:border-secondary"}`}
           disabled={disabled}
         >
@@ -164,6 +213,7 @@ const SearchableDropdown = ({
                   placeholder="Type to search..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
+                  onKeyDown={handleKeyDown}
                 />
                 {searchTerm && (
                   <button
@@ -176,7 +226,10 @@ const SearchableDropdown = ({
                 )}
               </div>
             </div>
-            <div className="max-h-60 overflow-y-auto py-1 custom-scrollbar">
+            <div 
+              ref={scrollContainerRef}
+              className="max-h-60 overflow-y-auto py-1 custom-scrollbar"
+            >
               {filteredOptions.length > 0 ? (
                 filteredOptions.map((option, index) => {
                   const optionValue =
@@ -188,6 +241,7 @@ const SearchableDropdown = ({
                       ? option
                       : (option.label || option.name || option.code);
                   const isSelected = optionValue === value;
+                  const isActive = index === activeIndex;
 
                   return (
                     <button
@@ -197,6 +251,8 @@ const SearchableDropdown = ({
                       className={`w-full text-left px-4 py-2.5 text-[13px] font-bold tracking-widest transition-colors flex items-center justify-between ${
                         isSelected
                           ? "bg-secondary/5 text-secondary"
+                          : isActive
+                          ? "bg-slate-100 text-secondary"
                           : "text-[#18254D] hover:bg-slate-50"
                       }`}
                     >
