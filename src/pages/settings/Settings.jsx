@@ -315,10 +315,12 @@ const Settings = ({
   // Helper function to construct proper image URL
   const getImageUrl = (imagePath) => {
     if (!imagePath) return null;
-    // If it's already a full URL (starts with http), return as-is
-    if (imagePath.startsWith('http')) return imagePath;
+    // If it's already a full URL or a data URL (for preview), return as-is
+    if (imagePath.startsWith("http") || imagePath.startsWith("data:")) {
+      return imagePath;
+    }
     // If it's a relative path, prepend BASE_URL
-    return BASE_URL + imagePath;
+    return imagePath.startsWith("/") ? BASE_URL + imagePath : BASE_URL + "/" + imagePath;
   };
 
   const handleProfileSave = async () => {
@@ -371,10 +373,20 @@ const Settings = ({
           image: data.image || profile.image,
         };
         setProfile(updatedProfile);
+        
+        // Update admins list locally if the user is in it, to prevent "double cards" or stale data
+        setAdmins(prevAdmins => prevAdmins.map(admin => 
+          (admin.id === userId || admin.uuid === userId) 
+            ? { ...admin, image: data.image || admin.image, name: profile.full_name } 
+            : admin
+        ));
+
         // Update localStorage with new profile data
         localStorage.setItem("user", JSON.stringify(updatedProfile));
         setSelectedImageFile(null);
         setIsProfileEditing(false);
+        setIsProfileSaved(true);
+        setTimeout(() => setIsProfileSaved(false), 3000);
         showToastMessage("Profile updated successfully", "success");
       } else {
         showToastMessage(data.message || "Failed to update profile", "error");
@@ -2144,7 +2156,7 @@ const Settings = ({
                                   <div className="absolute inset-0 bg-blue-500/10 rounded-3xl blur-2xl group-hover:bg-blue-500/20 transition-all duration-500" />
                                   {admin.image ? (
                                     <img
-                                      src={BASE_URL + admin.image}
+                                      src={getImageUrl(admin.image)}
                                       alt={admin.name}
                                       className="w-20 h-20 rounded-[28px] object-cover border-4 border-white shadow-xl relative z-0"
                                     />
