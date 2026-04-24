@@ -214,6 +214,13 @@ const LeadList = ({
     newParams.set("view", view);
     setSearchParams(newParams, { replace: true });
   };
+
+  // Reset Lead Status filter when switching away from Pending view
+  useEffect(() => {
+    if (leadView !== "Pending") {
+      setLeadTypeFilter("All");
+    }
+  }, [leadView]);
   const [clientSearchQuery, setClientSearchQuery] = useState("");
   const [isPriorityDropdownOpen, setIsPriorityDropdownOpen] = useState(false);
   const [isOnboardStatusDropdownOpen, setIsOnboardStatusDropdownOpen] =
@@ -440,7 +447,7 @@ const LeadList = ({
           email: "",
           phone: "",
           clientType: "New",
-          status: "Active",
+          status: "",
           projectName: "",
           projectStatus: "In Progress",
           projectCategory: 1,
@@ -878,25 +885,29 @@ const LeadList = ({
 
                       {/* Scrollable Body */}
                       <div className="flex-1 p-5 space-y-4 overflow-y-auto custom-scrollbar">
-                        {/* Lead Status Section */}
-                        <div className="space-y-3">
-                          <label className="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase ml-1">
-                            Lead Status
-                          </label>
-                          <SearchableDropdown
-                            placeholder="Select Lead Status..."
-                            options={[
-                              { label: "ALL", value: "All" },
-                              { label: "HOT", value: "Hot" },
-                              { label: "WARM", value: "Warm" },
-                              { label: "COLD", value: "Cold" },
-                            ]}
-                            value={leadTypeFilter}
-                            onChange={setLeadTypeFilter}
-                          />
-                        </div>
+                        {leadView === "Pending" && (
+                          <>
+                            {/* Lead Status Section */}
+                            <div className="space-y-3">
+                              <label className="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase ml-1">
+                                Lead Status
+                              </label>
+                              <SearchableDropdown
+                                placeholder="Select Lead Status..."
+                                options={[
+                                  { label: "ALL", value: "All" },
+                                  { label: "HOT", value: "Hot" },
+                                  { label: "WARM", value: "Warm" },
+                                  { label: "COLD", value: "Cold" },
+                                ]}
+                                value={leadTypeFilter}
+                                onChange={setLeadTypeFilter}
+                              />
+                            </div>
 
-                        <div className="h-px bg-slate-100/50" />
+                            <div className="h-px bg-slate-100/50" />
+                          </>
+                        )}
 
                         {/* Date Range Section */}
                         <div className="space-y-3">
