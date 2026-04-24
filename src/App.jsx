@@ -1114,9 +1114,9 @@ function AppRoutes() {
           country_code: leadToUpdate.country_code || "",
         }),
       });
-
+      
       console.log("Restore API response status:", res.status);
-
+      
       if (res.ok) {
         const result = await res.json();
         const restoredLead = {

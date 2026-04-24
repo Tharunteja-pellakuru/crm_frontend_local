@@ -52,6 +52,7 @@ import {
 import { BASE_URL } from "../../constants/config";
 import { validateForm } from "../../utils/validation";
 import { extractCountryAndPhone } from "../../utils/leadUtils";
+import { formatBudget } from "../../utils/formatters";
 
 const ClientDetail = ({
   client,
@@ -314,7 +315,7 @@ const ClientDetail = ({
             : "Get a complete overview of client details."}
         </p>
       </div>
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 md:overflow-hidden flex flex-col min-h-[calc(100vh-8rem)] md:h-[calc(100vh-8rem)] animate-fade-in relative">
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col min-h-[calc(100vh-8rem)] animate-fade-in relative">
         {/* Header */}
         <div className="p-3 md:p-6 border-b border-slate-100 flex flex-row items-center justify-between bg-white gap-2 md:gap-4">
           <div className="flex items-center gap-2 md:gap-5 min-w-0">
@@ -347,7 +348,7 @@ const ClientDetail = ({
             </div>
           </div>
         </div>
-        <div className="flex-1 flex flex-col md:flex-row md:overflow-hidden">
+        <div className="flex-1 flex flex-col md:flex-row">
           {/* Edit Lead Modal */}
           {showEditModal &&
             createPortal(
@@ -909,7 +910,7 @@ const ClientDetail = ({
             )}
 
           {/* Side Panel */}
-          <div className="w-full md:w-[260px] lg:w-[300px] border-b md:border-b-0 md:border-r border-slate-100 p-4 md:p-6 md:overflow-y-auto bg-slate-50/20 no-scrollbar shrink-0">
+          <div className="w-full md:w-[260px] lg:w-[300px] border-b md:border-b-0 md:border-r border-slate-100 p-4 md:p-6 bg-slate-50/20 shrink-0">
             <div className="space-y-6 md:space-y-8">
               <div>
                 <h3 className="text-[12px] md:text-[14px] font-bold text-primary tracking-widest mb-3 md:mb-4 opacity-40">
@@ -995,7 +996,7 @@ const ClientDetail = ({
             </div>
           </div>
 
-          <div className="flex-1 flex flex-col md:overflow-hidden bg-white">
+          <div className="flex-1 flex flex-col bg-white">
             <div className="bg-white p-2 border-b border-slate-100">
               <div className="flex items-center gap-2">
                 <div className="flex flex-1 bg-slate-100/50 p-1 rounded-2xl border border-slate-200 shadow-sm overflow-x-auto no-scrollbar h-[40px] md:h-[42px] items-center gap-1">
@@ -1020,7 +1021,7 @@ const ClientDetail = ({
               </div>
             </div>
 
-            <div className="flex-1 md:overflow-y-auto p-4 md:p-6 no-scrollbar bg-white">
+            <div className="flex-1 p-4 md:p-6 bg-white">
               {activeTab === "overview" && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 animate-fade-in text-start">
                   {isLead ? (
@@ -1572,7 +1573,7 @@ const ClientDetail = ({
                               ? `${currencyObj.code} (${currencyObj.symbol})` 
                               : (client.currency || "$");
                           })()}{" "}
-                          {(project.budget / 1000).toFixed(0)}k
+                          {formatBudget(project.budget, client.currency)}
                         </p>
                         <p className="text-[13px] font-bold text-slate-400  tracking-widest mt-1">
                           {project.status}
