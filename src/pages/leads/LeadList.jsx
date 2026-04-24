@@ -1047,9 +1047,10 @@ const LeadList = ({
                           </span>
                         ) : (
                           <span
-                            className={`px-2 py-0.5 rounded-lg text-[14px] font-bold tracking-widest w-fit ${lead.status === "Active" ? "bg-success/10 text-success border border-success/20" : "bg-slate-100 text-slate-400 border border-slate-200"}`}
+                            className={`px-3 py-1 rounded-xl text-[14px] font-bold border flex items-center gap-2 shadow-sm transition-all w-fit ${status.className}`}
                           >
-                            {lead.status || "Active"}
+                            {status.icon}
+                            {status.label}
                           </span>
                         )}
                       </td>
