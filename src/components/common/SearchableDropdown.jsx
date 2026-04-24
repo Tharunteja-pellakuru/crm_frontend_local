@@ -43,20 +43,22 @@ const SearchableDropdown = ({
 
       updatePosition();
       
-      const handleScroll = (e) => {
-        // Don't close if scrolling inside the dropdown itself
-        if (menuRef.current && menuRef.current.contains(e.target)) {
+      const handleScrollResize = (e) => {
+        // If scrolling inside the dropdown itself, don't close OR reposition
+        if (e.type === "scroll" && menuRef.current && menuRef.current.contains(e.target)) {
           return;
         }
-        setIsOpen(false);
+        
+        // Update position to stay aligned with the trigger
+        updatePosition();
       };
 
-      window.addEventListener("scroll", handleScroll, true);
-      window.addEventListener("resize", () => setIsOpen(false));
+      window.addEventListener("scroll", handleScrollResize, true);
+      window.addEventListener("resize", handleScrollResize);
 
       return () => {
-        window.removeEventListener("scroll", handleScroll, true);
-        window.removeEventListener("resize", () => setIsOpen(false));
+        window.removeEventListener("scroll", handleScrollResize, true);
+        window.removeEventListener("resize", handleScrollResize);
       };
     }
   }, [isOpen]);
