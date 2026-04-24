@@ -113,6 +113,7 @@ const EnquiryList = ({
   const [endDate, setEndDate] = useState("");
   const [isFilterPopupOpen, setIsFilterPopupOpen] = useState(false);
   const filterButtonRef = useRef(null);
+  const filterPopupRef = useRef(null);
   const [filterPopupStyle, setFilterPopupStyle] = useState({});
 
   useEffect(() => {
@@ -166,8 +167,14 @@ const EnquiryList = ({
   }, [isFilterPopupOpen, aiAnalysisEnabled, activeTab]); // Recalculate if content expands (AI enabled) or tab changes
 
   useEffect(() => {
-    const handleScrollResize = () => {
-      if (isFilterPopupOpen) setIsFilterPopupOpen(false);
+    const handleScrollResize = (e) => {
+      if (isFilterPopupOpen) {
+        // If the scroll is happening inside the filter popup, don't close it
+        if (e.type === "scroll" && filterPopupRef.current && filterPopupRef.current.contains(e.target)) {
+          return;
+        }
+        setIsFilterPopupOpen(false);
+      }
     };
     if (isFilterPopupOpen) {
       window.addEventListener("scroll", handleScrollResize, true);
@@ -680,8 +687,11 @@ const EnquiryList = ({
                       className={`${window.innerWidth < 1024 ? "fixed inset-0 flex items-center justify-center p-4 z-[99999] pointer-events-none" : ""}`}
                     >
                       <div
+                        ref={filterPopupRef}
                         className="bg-white border border-slate-200 shadow-[0_20px_50px_rgba(0,0,0,0.15)] overflow-hidden animate-fade-in-up ring-1 ring-black/5 rounded-3xl pointer-events-auto"
                         style={filterPopupStyle}
+                        onWheel={(e) => e.stopPropagation()}
+                        onTouchMove={(e) => e.stopPropagation()}
                       >
                       {/* Sticky Header */}
                       <div className="flex-none p-4 border-b border-slate-50 flex items-center justify-between bg-white relative z-10">
