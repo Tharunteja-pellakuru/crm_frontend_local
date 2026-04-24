@@ -1421,6 +1421,40 @@ const LeadList = ({
                               <UserX size={16} />
                             </button>
                           )}
+                        {onEditLead && lead.status === "Lead" && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setEditingLead(lead);
+                              
+                              const { phone: extractedPhone, countryCode: extractedDialCode } = 
+                                extractCountryAndPhone(lead.phone, lead.country, countries);
+                              
+                              const dialCode = lead.country_code || extractedDialCode || "";
+                              const phone = extractedPhone || lead.phone || "";
+                              
+                              let finalDialCode = dialCode || "";
+                              if (finalDialCode && !finalDialCode.startsWith("+") && /^\d+$/.test(finalDialCode)) {
+                                finalDialCode = `+${finalDialCode}`;
+                              }
+                              
+                              setEditFormData({
+                                name: lead.name || "",
+                                email: lead.email || "",
+                                phone: phone,
+                                countryCode: finalDialCode,
+                                leadType: lead.leadType || "Hot",
+                                notes: lead.notes || "",
+                                website: lead.website || "",
+                              });
+                              setShowEditModal(true);
+                            }}
+                            className="p-2 bg-blue-50 text-blue-600 border border-blue-100 rounded-lg hover:bg-blue-100 transition-all active:scale-90"
+                            title="Edit Lead"
+                          >
+                            <Pencil size={16} />
+                          </button>
+                        )}
                         {onRestoreLead && lead.status === "Dismissed" && (
                           <div className="flex gap-2">
                             <button
