@@ -54,6 +54,7 @@ import { extractCountryAndPhone } from "../../utils/leadUtils";
 
 const LeadList = ({
   leads,
+  clients = [],
   loading = false,
   onSelectLead,
   onAddLead,
@@ -238,6 +239,11 @@ const LeadList = ({
   const [showEditConvertedModal, setShowEditConvertedModal] = useState(false);
   const [editingConvertedLeadId, setEditingConvertedLeadId] = useState(null);
   
+  // Existing Client selection states (for onboard modal)
+  const [selectedExistingClientId, setSelectedExistingClientId] = useState(null);
+  const [existingClientSearch, setExistingClientSearch] = useState("");
+  const [isExistingClientDropdownOpen, setIsExistingClientDropdownOpen] = useState(false);
+  
   // Edit Lead Modal states
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingLead, setEditingLead] = useState(null);
@@ -406,38 +412,61 @@ const LeadList = ({
   const handleOnboardSubmit = async (e) => {
     e.preventDefault();
 
-    const isValid = validateForm(onboardingData, {
-      name: { required: true, minLength: 2, label: "Full Name" },
-      email: { required: true, pattern: /^\S+@\S+\.\S+$/, label: "Email" },
-      phone: { required: true, minLength: 10, label: "Phone Number" },
-      organisationName: { required: true, label: "Organisation Name" },
-      country: { required: true, label: "Client Country" },
-      state: { required: true, label: "Client State" },
-      currency: { required: true, label: "Client Currency" },
-      clientStatus: { required: true, label: "Client Status" },
-      projectName: { required: true, label: "Project Name" },
-      projectDescription: { required: true, label: "Project Description" },
-      projectCategory: { required: true, label: "Project Category" },
-      projectStatus: { required: true, label: "Project Status" },
-      projectPriority: { required: true, label: "Project Priority" },
-      projectBudget: {
-        required: true,
-        type: "number",
-        label: "Project Budget",
-      },
-      onboardingDate: { required: true, label: "Onboarding Date" },
-      deadline: { required: true, label: "Deadline Date" },
-      scopeDocument: { required: true, label: "Scope Document" },
-    });
-
-    if (!isValid) return;
+    // For Existing Client, require a selected client
+    if (onboardingData.clientType === "Existing") {
+      if (!selectedExistingClientId) {
+        toast.error("Please select an existing client.");
+        return;
+      }
+      // Only validate project fields for existing client
+      const isValid = validateForm(onboardingData, {
+        projectName: { required: true, label: "Project Name" },
+        projectDescription: { required: true, label: "Project Description" },
+        projectCategory: { required: true, label: "Project Category" },
+        projectStatus: { required: true, label: "Project Status" },
+        projectPriority: { required: true, label: "Project Priority" },
+        projectBudget: { required: true, type: "number", label: "Project Budget" },
+        onboardingDate: { required: true, label: "Onboarding Date" },
+        deadline: { required: true, label: "Deadline Date" },
+        scopeDocument: { required: true, label: "Scope Document" },
+      });
+      if (!isValid) return;
+    } else {
+      // New Client: validate all fields
+      const isValid = validateForm(onboardingData, {
+        name: { required: true, minLength: 2, label: "Full Name" },
+        email: { required: true, pattern: /^\S+@\S+\.\S+$/, label: "Email" },
+        phone: { required: true, minLength: 10, label: "Phone Number" },
+        organisationName: { required: true, label: "Organisation Name" },
+        country: { required: true, label: "Client Country" },
+        state: { required: true, label: "Client State" },
+        currency: { required: true, label: "Client Currency" },
+        clientStatus: { required: true, label: "Client Status" },
+        projectName: { required: true, label: "Project Name" },
+        projectDescription: { required: true, label: "Project Description" },
+        projectCategory: { required: true, label: "Project Category" },
+        projectStatus: { required: true, label: "Project Status" },
+        projectPriority: { required: true, label: "Project Priority" },
+        projectBudget: { required: true, type: "number", label: "Project Budget" },
+        onboardingDate: { required: true, label: "Onboarding Date" },
+        deadline: { required: true, label: "Deadline Date" },
+        scopeDocument: { required: true, label: "Scope Document" },
+      });
+      if (!isValid) return;
+    }
 
     setIsSubmitting(true);
     try {
       if (onOnboardLead && onboardingLeadId) {
-        await onOnboardLead(onboardingLeadId, onboardingData);
+        const submitData = {
+          ...onboardingData,
+          ...(onboardingData.clientType === "Existing" ? { existingClientId: selectedExistingClientId } : {}),
+        };
+        await onOnboardLead(onboardingLeadId, submitData);
         setOnboardingLeadId(null);
         setShowOnboardModal(false);
+        setSelectedExistingClientId(null);
+        setExistingClientSearch("");
 
         // Automatically switch to Converted view for Leads
         setLeadView("Converted");
@@ -1793,29 +1822,218 @@ const LeadList = ({
                   <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
                     CLIENT TYPE
                   </label>
-                  <div className="grid grid-cols-1 gap-4">
-                    <label className="flex-1 flex items-center gap-3 p-4 bg-white border-2 border-[#18254D] rounded-xl cursor-default transition-all group shadow-sm">
+                  <div className="grid grid-cols-2 gap-4">
+                    <label
+                      className={`flex-1 flex items-center gap-3 p-4 bg-white border-2 rounded-xl cursor-pointer transition-all group shadow-sm ${onboardingData.clientType === "New" ? "border-[#18254D]" : "border-slate-200 hover:border-slate-300"}`}
+                      onClick={() => {
+                        setOnboardingData({ ...onboardingData, clientType: "New" });
+                        setSelectedExistingClientId(null);
+                        setExistingClientSearch("");
+                      }}
+                    >
                       <div className="relative flex items-center justify-center">
                         <input
                           type="radio"
-                          checked={true}
+                          name="clientType"
+                          checked={onboardingData.clientType === "New"}
                           readOnly
                           className="peer appearance-none w-6 h-6 border-2 border-[#18254D] rounded-full transition-all"
                         />
-                        <div className="absolute w-3 h-3 bg-[#18254D] rounded-full" />
+                        {onboardingData.clientType === "New" && (
+                          <div className="absolute w-3 h-3 bg-[#18254D] rounded-full" />
+                        )}
                       </div>
                       <div>
                         <p className="text-sm font-bold text-[#18254D] leading-none">
                           New Client
                         </p>
-                        <p className="text-[14px] text-slate-400 font-bold mt-1">
+                        <p className="text-[12px] text-slate-400 font-bold mt-1">
                           First-time engagement
+                        </p>
+                      </div>
+                    </label>
+                    <label
+                      className={`flex-1 flex items-center gap-3 p-4 bg-white border-2 rounded-xl cursor-pointer transition-all group shadow-sm ${onboardingData.clientType === "Existing" ? "border-[#18254D]" : "border-slate-200 hover:border-slate-300"}`}
+                      onClick={() => {
+                        setOnboardingData({ ...onboardingData, clientType: "Existing" });
+                      }}
+                    >
+                      <div className="relative flex items-center justify-center">
+                        <input
+                          type="radio"
+                          name="clientType"
+                          checked={onboardingData.clientType === "Existing"}
+                          readOnly
+                          className="peer appearance-none w-6 h-6 border-2 border-[#18254D] rounded-full transition-all"
+                        />
+                        {onboardingData.clientType === "Existing" && (
+                          <div className="absolute w-3 h-3 bg-[#18254D] rounded-full" />
+                        )}
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-[#18254D] leading-none">
+                          Existing Client
+                        </p>
+                        <p className="text-[12px] text-slate-400 font-bold mt-1">
+                          Select from client list
                         </p>
                       </div>
                     </label>
                   </div>
                 </div>
 
+                {/* EXISTING CLIENT DROPDOWN */}
+                {onboardingData.clientType === "Existing" && (
+                  <>
+                    <div className="space-y-2 relative">
+                      <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
+                        CLIENT NAME <span className="text-error">*</span>
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="text"
+                          placeholder="Search existing clients..."
+                          className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
+                          value={existingClientSearch}
+                          onChange={(e) => {
+                            setExistingClientSearch(e.target.value);
+                            setIsExistingClientDropdownOpen(true);
+                            if (!e.target.value) {
+                              setSelectedExistingClientId(null);
+                            }
+                          }}
+                          onFocus={() => setIsExistingClientDropdownOpen(true)}
+                        />
+                        <ChevronDown
+                          size={14}
+                          className={`absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition-transform ${isExistingClientDropdownOpen ? "rotate-180" : ""}`}
+                        />
+
+                        {isExistingClientDropdownOpen && (
+                          <>
+                            <div
+                              className="fixed inset-0 z-[80] pointer-events-auto"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setIsExistingClientDropdownOpen(false);
+                              }}
+                            />
+                            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top max-h-[200px] overflow-y-auto">
+                              <div className="bg-[#18254D] px-4 py-3 border-b border-white/10 sticky top-0">
+                                <p className="text-[14px] font-bold text-white/50  tracking-widest">
+                                  Select Client
+                                </p>
+                              </div>
+                              {clients
+                                .filter(
+                                  (c) =>
+                                    c.status === "Active" &&
+                                    (!existingClientSearch ||
+                                      c.name?.toLowerCase().includes(existingClientSearch.toLowerCase()) ||
+                                      c.company?.toLowerCase().includes(existingClientSearch.toLowerCase()) ||
+                                      c.email?.toLowerCase().includes(existingClientSearch.toLowerCase()))
+                                )
+                                .map((client) => (
+                                  <button
+                                    key={`onboard-client-sel-${client.id}`}
+                                    type="button"
+                                    onClick={() => {
+                                      setSelectedExistingClientId(client.id);
+                                      setExistingClientSearch(client.name);
+                                      setIsExistingClientDropdownOpen(false);
+                                      setOnboardingData((prev) => ({
+                                        ...prev,
+                                        organisationName: client.company || "",
+                                        country: client.country || "",
+                                        state: client.state || "",
+                                        currency: client.currency || "INR",
+                                        clientStatus: client.status || "Active",
+                                        projectCategory: client.projectCategory || 1,
+                                      }));
+                                    }}
+                                    className={`w-full text-left px-5 py-3 transition-colors ${
+                                      selectedExistingClientId === client.id
+                                        ? "bg-slate-100 border-l-4 border-secondary"
+                                        : "hover:bg-slate-50"
+                                    }`}
+                                  >
+                                    <p className="text-[14px] font-bold text-[#18254D]">
+                                      {client.name}
+                                    </p>
+                                    <p className="text-[14px] text-slate-400 font-medium mt-0.5">
+                                      {client.email}
+                                      {client.company ? ` · ${client.company}` : ""}
+                                    </p>
+                                  </button>
+                                ))}
+                              {clients.filter(
+                                (c) =>
+                                  c.status === "Active" &&
+                                  (!existingClientSearch ||
+                                    c.name?.toLowerCase().includes(existingClientSearch.toLowerCase()) ||
+                                    c.company?.toLowerCase().includes(existingClientSearch.toLowerCase()) ||
+                                    c.email?.toLowerCase().includes(existingClientSearch.toLowerCase()))
+                              ).length === 0 && (
+                                <p className="px-4 py-3 text-[12px] text-slate-400 font-bold text-center">
+                                  No clients found
+                                </p>
+                              )}
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* AUTO-FILLED CLIENT INFO (read-only) */}
+                    {selectedExistingClientId && (
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1 col-span-2">
+                          <label className="text-[14px] font-bold text-slate-400 tracking-widest ml-1">
+                            ORGANISATION NAME
+                          </label>
+                          <p className="px-3.5 py-2 bg-slate-50 border border-slate-100 rounded-xl text-[13px] font-medium text-[#18254D] truncate">
+                            {onboardingData.organisationName || "—"}
+                          </p>
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[14px] font-bold text-slate-400 tracking-widest ml-1">
+                            COUNTRY
+                          </label>
+                          <p className="px-3.5 py-2 bg-slate-50 border border-slate-100 rounded-xl text-[13px] font-medium text-[#18254D] truncate">
+                            {onboardingData.country || "—"}
+                          </p>
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[14px] font-bold text-slate-400 tracking-widest ml-1">
+                            STATE
+                          </label>
+                          <p className="px-3.5 py-2 bg-slate-50 border border-slate-100 rounded-xl text-[13px] font-medium text-[#18254D] truncate">
+                            {onboardingData.state || "—"}
+                          </p>
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[14px] font-bold text-slate-400 tracking-widest ml-1">
+                            CURRENCY
+                          </label>
+                          <p className="px-3.5 py-2 bg-slate-50 border border-slate-100 rounded-xl text-[13px] font-medium text-[#18254D] truncate">
+                            {onboardingData.currency || "—"}
+                          </p>
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[14px] font-bold text-slate-400 tracking-widest ml-1">
+                            CLIENT STATUS
+                          </label>
+                          <p className="px-3.5 py-2 bg-slate-100 border border-slate-200 rounded-xl text-[13px] font-medium text-secondary truncate">
+                            {onboardingData.clientStatus || "—"}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {/* NEW CLIENT FIELDS */}
+                {onboardingData.clientType === "New" && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="space-y-2 relative">
                     <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
@@ -2016,6 +2234,7 @@ const LeadList = ({
                     </div>
                   </div>
                 </div>
+                )}
 
                 {/* PROJECT DETAILS HEADING */}
                 <div className="flex items-center gap-3 pt-6">

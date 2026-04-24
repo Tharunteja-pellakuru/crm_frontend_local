@@ -744,7 +744,7 @@ const ProjectOverview = ({
 
               <div className="space-y-2">
                 <p className="text-[12px] sm:text-[14px] font-bold text-secondary tracking-widest">
-                  Final Deadline {isEditing && <span className="text-error">*</span>}
+                  Deadline(Tentative) {isEditing && <span className="text-error">*</span>}
                 </p>
                 {isEditing ? (
                   <DatePicker

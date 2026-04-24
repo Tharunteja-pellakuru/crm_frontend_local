@@ -750,8 +750,50 @@ function AppRoutes() {
 
   async function handleOnboardClient(id, data) {
     try {
+      // --- EXISTING CLIENT: just add a project for them ---
+      if (data.existingClientId) {
+        const projectResult = await handleAddProject({
+          clientId: data.existingClientId,
+          name: data.projectName,
+          description: data.projectDescription || "",
+          projectCategory: data.projectCategory || 1,
+          projectStatus: data.projectStatus || "In Progress",
+          projectPriority: data.projectPriority || "High",
+          budget: data.projectBudget,
+          onboardingDate: data.onboardingDate || new Date().toISOString().split("T")[0],
+          deadline: data.deadline || "",
+          scopeDocument: data.scopeDocument,
+        });
+
+        if (!projectResult) {
+          return { success: false };
+        }
+
+        // Mark the lead as converted
+        const leadPayload = { lead_status: "Converted" };
+        await fetch(`${BASE_URL}/api/update-lead/${id}`, {
+          method: "PUT",
+          headers: getAuthHeaders(),
+          body: JSON.stringify(leadPayload),
+        });
+
+        // Find existing client for state update
+        const existingClient = clients.find(c => c.id == data.existingClientId);
+
+        setLeads((prev) =>
+          prev.map((l) =>
+            l.lead_id == id
+              ? { ...l, isConverted: true, status: "Converted", leadType: l.leadType || "Converted" }
+              : l,
+          ),
+        );
+
+        toast.success("Lead converted & project added to existing client!");
+        return { success: true };
+      }
+
+      // --- NEW CLIENT flow (original) ---
       const formData = new FormData();
-      // Client details
       formData.append("organisation_name", data.organisationName || data.projectName || "");
       formData.append("client_name", data.name);
       formData.append("client_country", data.country || "");
@@ -760,7 +802,6 @@ function AppRoutes() {
       formData.append("client_status", data.clientStatus || "Active");
       formData.append("lead_id", id);
 
-      // Project details
       if (data.projectName) {
         formData.append("project_name", data.projectName);
         formData.append("project_description", data.projectDescription || "");
@@ -791,10 +832,7 @@ function AppRoutes() {
 
       const result = await res.json();
       const newClient = result.client;
-      const newProjectData = result.project; // Note: My backend doesn't return the project yet, let me fix it in the next step or adjust here.
-      // Actually, I should probably return both from the backend.
 
-      // Transform new client to match frontend format
       const transformedClient = {
         id: newClient.client_id.toString(),
         name: newClient.client_name,
@@ -816,14 +854,9 @@ function AppRoutes() {
         notes: data.projectDescription || data.notes || "",
       };
 
-      // Update clients state
       setClients((prev) => [transformedClient, ...prev]);
 
-      // If project was created, update projects state
-      // (Even if backend didn't return it yet, we can refetch or optimistically add)
-      // For now, I'll update the backend to return the project too.
       if (data.projectName) {
-        // We'll refetch projects to get the latest DB state including the new project
         fetch(`${BASE_URL}/api/get-projects`, {
           headers: getAuthHeaders(),
         })
@@ -849,7 +882,6 @@ function AppRoutes() {
           });
       }
 
-      // Update leads state to mark as converted
       setLeads((prev) =>
         prev.map((c) =>
           c.lead_id == id ? { ...transformedClient, lead_id: c.lead_id, status: "Converted" } : c,
@@ -2028,6 +2060,7 @@ function AppRoutes() {
           element={
             <LeadList
               leads={leads}
+              clients={clients}
               loading={leadsLoading}
               onSelectLead={handleClientSelect}
               onDeleteLead={handleDeleteLead}
