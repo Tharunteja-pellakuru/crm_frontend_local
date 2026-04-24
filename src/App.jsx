@@ -763,6 +763,7 @@ function AppRoutes() {
           onboardingDate: data.onboardingDate || new Date().toISOString().split("T")[0],
           deadline: data.deadline || "",
           scopeDocument: data.scopeDocument,
+          lead_id: id,
         });
 
         if (!projectResult) {
@@ -1475,6 +1476,9 @@ function AppRoutes() {
       formData.append("onboarding_date", data.onboardingDate || new Date().toISOString().split("T")[0]);
       formData.append("deadline_date", data.deadline || "");
       formData.append("client_id", data.clientId);
+      if (data.lead_id) {
+        formData.append("lead_id", data.lead_id);
+      }
       
       if (data.scopeDocument instanceof File) {
         formData.append("scope_document", data.scopeDocument);

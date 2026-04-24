@@ -268,7 +268,7 @@ const ClientList = ({
 
     setIsSubmitting(true);
     try {
-      await onOnboardClient(onboardingData);
+      await onOnboardClient(onboardingLeadId, onboardingData);
       setShowOnboardModal(false);
       setOnboardingData({
         name: "",
@@ -2013,6 +2013,7 @@ const ClientList = ({
                                         name: client.name,
                                         email: client.email,
                                         phone: client.phone,
+                                        existingClientId: client.id,
                                       });
                                       setIsClientDropdownOpen(false);
                                       setClientSearchQuery("");
