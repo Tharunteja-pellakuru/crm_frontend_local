@@ -334,8 +334,14 @@ const ClientList = ({
     return matchesSearch && matchesStatus && matchesLeadType;
   });
 
-  const totalPages = Math.ceil(filteredClients.length / RECORDS_PER_PAGE);
-  const currentClients = filteredClients.slice(
+  const sortedClients = [...filteredClients].sort((a, b) => {
+    const nameA = (a.name || "").toLowerCase();
+    const nameB = (b.name || "").toLowerCase();
+    return nameA.localeCompare(nameB);
+  });
+
+  const totalPages = Math.ceil(sortedClients.length / RECORDS_PER_PAGE);
+  const currentClients = sortedClients.slice(
     (currentPage - 1) * RECORDS_PER_PAGE,
     currentPage * RECORDS_PER_PAGE,
   );

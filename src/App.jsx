@@ -574,8 +574,34 @@ function AppRoutes() {
       if (res.ok) {
         toast.success("Client deleted successfully!");
         
+        // Find the client to get lead_id before removing it
+        const clientToDelete = clients.find((c) => c.id == id);
+        const leadId = clientToDelete?.lead_id;
+
         // Remove from clients list
-        setClients((prev) => prev.filter((c) => c.id != id));
+        setClients((prev) => {
+          const filtered = prev.filter((c) => c.id != id);
+          if (leadId) {
+            // Update the lead status in the clients list (which also holds pending leads)
+            return filtered.map((c) => 
+              (c.lead_id || c.id) == leadId 
+                ? { ...c, status: "Lead", leadType: "Hot", isConverted: false } 
+                : c
+            );
+          }
+          return filtered;
+        });
+
+        // Also update the dedicated leads list
+        if (leadId) {
+          setLeads((prev) => 
+            prev.map((l) => 
+              l.lead_id == leadId 
+                ? { ...l, status: "Lead", leadType: "Hot", isConverted: false } 
+                : l
+            )
+          );
+        }
 
         // Also remove any projects associated with this client
         setProjects((prev) => prev.filter((p) => p.clientId != id));

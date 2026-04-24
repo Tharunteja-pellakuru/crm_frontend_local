@@ -1533,7 +1533,7 @@ const ProjectBoard = ({
             <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 overflow-hidden animate-scale-in my-auto">
               <div className="p-6 text-center">
                 <div className="w-16 h-16 bg-[#18254E] rounded-full flex items-center justify-center mx-auto mb-4 border border-[#18254E] shadow-sm">
-                  <AlertTriangle size={32} className="text-[#18254E]" />
+                  <AlertTriangle size={32} className="text-[white]" />
                 </div>
                 <h3 className="text-xl font-bold text-primary mb-2">
                   Confirm Deletion

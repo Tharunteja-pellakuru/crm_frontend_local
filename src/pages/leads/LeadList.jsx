@@ -3059,7 +3059,7 @@ const LeadList = ({
                     setShowDeleteModal(false);
                     setLeadToDelete(null);
                   }}
-                  className="flex-1 px-4 py-2.5 bg-[#18254E] text-white rounded-xl text-xs font-bold tracking-widest hover:bg-rose-600 shadow-lg shadow-rose-200 transition-all active:scale-95 uppercase"
+                  className="flex-1 px-4 py-2.5 bg-[#18254E] text-white rounded-xl text-xs font-bold tracking-widest shadow-lg shadow-primary-200 transition-all active:scale-95 uppercase"
                 >
                   Delete Lead
                 </button>
