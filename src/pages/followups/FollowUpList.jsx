@@ -80,6 +80,9 @@ const FollowUpList = ({
   const RECORDS_PER_PAGE = 10;
   const [endDate, setEndDate] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All");
+  const [priorityFilter, setPriorityFilter] = useState("High");
+  const [modeFilter, setModeFilter] = useState("All");
+  const [statusFilter, setStatusFilter] = useState("All");
   const [isModeDropdownOpen, setIsModeDropdownOpen] = useState(false);
   const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
   const [showCompletionModal, setShowCompletionModal] = useState(false);
@@ -105,6 +108,7 @@ const FollowUpList = ({
   const [isCompMinOpen, setIsCompMinOpen] = useState(false);
   const [isCompPeriodOpen, setIsCompPeriodOpen] = useState(false);
   const filterButtonRef = useRef(null);
+  const filterPopupRef = useRef(null);
   const [filterPopupStyle, setFilterPopupStyle] = useState({});
 
   useEffect(() => {
@@ -154,16 +158,23 @@ const FollowUpList = ({
   }, [isFilterPopupOpen]);
 
   useEffect(() => {
-    const handleScrollResize = () => {
+    const handleScrollResize = (e) => {
+      // Ignore scroll events that originate from inside the filter popup
+      if (filterPopupRef.current && filterPopupRef.current.contains(e.target)) {
+        return;
+      }
+      if (isFilterPopupOpen) setIsFilterPopupOpen(false);
+    };
+    const handleResize = () => {
       if (isFilterPopupOpen) setIsFilterPopupOpen(false);
     };
     if (isFilterPopupOpen) {
       window.addEventListener("scroll", handleScrollResize, true);
-      window.addEventListener("resize", handleScrollResize);
+      window.addEventListener("resize", handleResize);
     }
     return () => {
       window.removeEventListener("scroll", handleScrollResize, true);
-      window.removeEventListener("resize", handleScrollResize);
+      window.removeEventListener("resize", handleResize);
     };
   }, [isFilterPopupOpen]);
 
@@ -197,7 +208,7 @@ const FollowUpList = ({
     );
   };
 
-  // Base filtering (type + category + search) — before status tab filter
+  // Base filtering (type + category + search + priority + mode + status) — before status tab filter
   const baseFiltered = followUps.filter((f) => {
     const client = getClientById(f.clientId, f.leadId, f.projectId);
     if (typeFilter !== "All") {
@@ -235,6 +246,22 @@ const FollowUpList = ({
       if (entityCategory !== categoryNum) return false;
     }
 
+    // Priority Filter
+    if (priorityFilter !== "All") {
+      if (f.priority !== priorityFilter) return false;
+    }
+
+    // Meeting Mode Filter
+    if (modeFilter !== "All") {
+      if ((f.followup_mode || "").toLowerCase() !== modeFilter.toLowerCase()) return false;
+    }
+
+    // Follow Status Filter
+    if (statusFilter !== "All") {
+      const fStatus = (f.status || f.followup_status || "").toLowerCase();
+      if (fStatus !== statusFilter.toLowerCase()) return false;
+    }
+
     return true;
   });
 
@@ -252,6 +279,9 @@ const FollowUpList = ({
         !isOverdue(f.dueDate) && !isToday(f.dueDate) && f.status === "pending",
     ).length,
   };
+
+  // Priority sort order: High first, then Medium, then Low
+  const priorityOrder = { High: 0, Medium: 1, Low: 2 };
 
   const filteredFollowUps = baseFiltered
     .filter((f) => {
@@ -273,9 +303,16 @@ const FollowUpList = ({
       const isCompletedA = sA === "completed";
       const isCompletedB = sB === "completed";
 
+      // Completed items always go to the bottom
       if (isCompletedA && !isCompletedB) return 1;
       if (!isCompletedA && isCompletedB) return -1;
 
+      // Sort by priority first (High → Medium → Low)
+      const pA = priorityOrder[a.priority] ?? 1;
+      const pB = priorityOrder[b.priority] ?? 1;
+      if (pA !== pB) return pA - pB;
+
+      // Then sort by date within the same priority
       return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
     });
 
@@ -486,22 +523,25 @@ const FollowUpList = ({
               <button
                 onClick={() => setIsFilterPopupOpen(!isFilterPopupOpen)}
                 className={`w-full md:w-auto h-[38px] flex items-center justify-center gap-2.5 px-6 py-2 rounded-xl text-[12px] font-bold tracking-widest transition-all shadow-sm active:scale-95 group border ${
-                  startDate || endDate || (typeFilter === "Active" && categoryFilter !== "All")
+                  startDate || endDate || (typeFilter === "Active" && categoryFilter !== "All") || priorityFilter !== "All" || modeFilter !== "All" || statusFilter !== "All"
                     ? "bg-secondary/5 border-secondary text-secondary"
                     : "bg-slate-50 border-slate-100 text-[#18254D] hover:bg-white hover:border-slate-200 shadow-slate-200/50"
                 }`}
               >
                 <Filter
                   size={14}
-                  className={(startDate || endDate || (typeFilter === "Active" && categoryFilter !== "All")) ? "text-secondary" : "text-slate-400"}
+                  className={(startDate || endDate || (typeFilter === "Active" && categoryFilter !== "All") || priorityFilter !== "All" || modeFilter !== "All" || statusFilter !== "All") ? "text-secondary" : "text-slate-400"}
                 />
                 <span>FILTERS</span>
-                {(startDate || endDate || (typeFilter === "Active" && categoryFilter !== "All")) && (
+                {(startDate || endDate || (typeFilter === "Active" && categoryFilter !== "All") || priorityFilter !== "All" || modeFilter !== "All" || statusFilter !== "All") && (
                   <span className="flex items-center justify-center w-5 h-5 bg-secondary text-white text-[10px] font-black rounded-full ml-1 shadow-sm">
                     {[
                       !!startDate,
                       !!endDate,
-                      (typeFilter === "Active" && categoryFilter !== "All")
+                      (typeFilter === "Active" && categoryFilter !== "All"),
+                      priorityFilter !== "All",
+                      modeFilter !== "All",
+                      statusFilter !== "All",
                     ].filter(Boolean).length}
                   </span>
                 )}
@@ -523,6 +563,7 @@ const FollowUpList = ({
                       className={`${window.innerWidth < 1024 ? "fixed inset-0 flex items-center justify-center p-4 z-[99999] pointer-events-none" : ""}`}
                     >
                       <div
+                        ref={filterPopupRef}
                         className="bg-white border border-slate-200 shadow-[0_20px_50px_rgba(0,0,0,0.15)] overflow-hidden animate-fade-in-up ring-1 ring-black/5 rounded-3xl pointer-events-auto"
                         style={filterPopupStyle}
                       >
@@ -534,12 +575,15 @@ const FollowUpList = ({
                             Filter Follow-ups
                           </h3>
                         </div>
-                        {(startDate || endDate || (typeFilter === "Active" && categoryFilter !== "All")) && (
+                        {(startDate || endDate || (typeFilter === "Active" && categoryFilter !== "All") || priorityFilter !== "All" || modeFilter !== "All" || statusFilter !== "All") && (
                           <button
                             onClick={() => {
                               setStartDate("");
                               setEndDate("");
                               setCategoryFilter("All");
+                              setPriorityFilter("All");
+                              setModeFilter("All");
+                              setStatusFilter("All");
                               setIsFilterPopupOpen(false);
                             }}
                             className="text-[10px] font-black text-rose-500 hover:text-rose-600 tracking-widest uppercase transition-colors"
@@ -568,6 +612,60 @@ const FollowUpList = ({
                             />
                           </div>
                         )}
+
+                        {typeFilter === "Active" && <div className="h-px bg-slate-100/50" />}
+
+                        {/* Priority Filter */}
+                        <div className="space-y-3">
+                          <label className="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase ml-1">
+                            Priority
+                          </label>
+                          <SearchableDropdown
+                            placeholder="Select Priority..."
+                            options={["All", "High", "Medium", "Low"].map(p => ({
+                              label: p.toUpperCase(),
+                              value: p
+                            }))}
+                            value={priorityFilter}
+                            onChange={setPriorityFilter}
+                          />
+                        </div>
+
+                        <div className="h-px bg-slate-100/50" />
+
+                        {/* Meeting Mode Filter */}
+                        <div className="space-y-3">
+                          <label className="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase ml-1">
+                            Meeting Mode
+                          </label>
+                          <SearchableDropdown
+                            placeholder="Select Mode..."
+                            options={["All", "Call", "Email", "Meeting", "Whatsapp"].map(m => ({
+                              label: m.toUpperCase(),
+                              value: m
+                            }))}
+                            value={modeFilter}
+                            onChange={setModeFilter}
+                          />
+                        </div>
+
+                        <div className="h-px bg-slate-100/50" />
+
+                        {/* Follow Status Filter */}
+                        <div className="space-y-3">
+                          <label className="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase ml-1">
+                            Follow Status
+                          </label>
+                          <SearchableDropdown
+                            placeholder="Select Status..."
+                            options={["All", "Pending", "Completed"].map(s => ({
+                              label: s.toUpperCase(),
+                              value: s
+                            }))}
+                            value={statusFilter}
+                            onChange={setStatusFilter}
+                          />
+                        </div>
 
                         <div className="h-px bg-slate-100/50" />
 
