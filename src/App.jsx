@@ -52,6 +52,8 @@ function ClientDetailWrapper({
   onSelectProject,
   projects,
   loading,
+  onDismissLead,
+  onRestoreLead,
 }) {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -86,6 +88,8 @@ function ClientDetailWrapper({
       initialTab={location.state?.tab || "overview"}
       onSelectProject={onSelectProject}
       projects={projects}
+      onDismissLead={onDismissLead}
+      onRestoreLead={onRestoreLead}
     />
   );
 }
@@ -191,6 +195,7 @@ function AppRoutes() {
           phone: lead.phone_number || "",
           country_code: lead.country_code || autoCode || "",
           isConverted: lead.lead_status === "Converted" || !!lead.client_organisation,
+          isLead: true,
           status:
             lead.lead_status === "Dismissed"
               ? "Dismissed"
@@ -225,7 +230,7 @@ function AppRoutes() {
       setLeads(transformedLeads);
       const pendingLeads = transformedLeads.filter((l) => l.status === "Lead" || l.status === "Dismissed");
       setClients((prev) => {
-        const nonLeads = prev.filter((c) => c.status !== "Lead" && c.status !== "Dismissed");
+        const nonLeads = prev.filter((c) => !c.isLead);
         return [...nonLeads, ...pendingLeads];
       });
     } catch (e) {
@@ -278,6 +283,7 @@ function AppRoutes() {
         phone: c.phone || "",
         country_code: c.country_code || "",
         status: c.status || c.client_status || "Active",
+        isClient: true,
         projectCategory: typeof (c.projectCategory || c.project_category) === 'string'
             ? (REVERSE_CATEGORY_MAP[c.projectCategory || c.project_category] || parseInt((c.projectCategory || c.project_category), 10) || 1)
             : (c.projectCategory || c.project_category || 1),
@@ -294,9 +300,7 @@ function AppRoutes() {
         lastContact: c.updated_at?.split("T")[0] || new Date().toISOString().split("T")[0],
       }));
       setClients((prev) => {
-        const leads = prev.filter(
-          (c) => c.status === "Lead" || c.status === "Dismissed",
-        );
+        const leads = prev.filter((c) => c.isLead);
         return [...transformedClients, ...leads];
       });
     } catch (e) {
@@ -374,6 +378,7 @@ function AppRoutes() {
             country_code: lead.country_code || autoCode || "",
             status: lead.lead_status === "Dismissed" ? "Dismissed" : (lead.lead_status === "Converted" ? "Converted" : "Lead"),
             isConverted: lead.lead_status === "Converted",
+            isLead: true,
             leadType: lead.lead_status || "Warm",
             projectCategory: typeof lead.lead_category === 'string' 
               ? (REVERSE_CATEGORY_MAP[lead.lead_category] || parseInt(lead.lead_category, 10) || 1) 
@@ -405,9 +410,7 @@ function AppRoutes() {
           (l) => l.status === "Lead" || l.status === "Dismissed"
         );
         setClients((prev) => {
-          const nonLeads = prev.filter(
-            (c) => c.status !== "Lead" && c.status !== "Dismissed",
-          );
+          const nonLeads = prev.filter((c) => !c.isLead);
           return [...nonLeads, ...pendingLeads];
         });
 
@@ -694,6 +697,7 @@ function AppRoutes() {
             phone: result.lead?.phone_number || data.phone,
             status: "Lead",
             isConverted: result.lead?.lead_status === "Converted",
+            isLead: true,
             leadType: result.lead?.lead_status || data.leadType || "Warm",
             projectCategory: data.projectCategory || 1,
             industry: data.projectCategory || 1,
@@ -754,6 +758,7 @@ function AppRoutes() {
             email: data.email || "",
             phone: data.phone || "",
             status: "Active",
+            isClient: true,
             country: createdClient.client_country,  
             state: createdClient.client_state,
             currency: createdClient.client_currency,
@@ -870,6 +875,7 @@ function AppRoutes() {
         email: data.email || "",
         phone: data.phone || "",
         status: "Active",
+        isClient: true,
         company: newClient.organisation_name,
         country: newClient.client_country || data.country || "",
         state: newClient.client_state || data.state || "",
@@ -2115,7 +2121,7 @@ function AppRoutes() {
           path="/clients"
           element={
             <ClientList
-              clients={clients.filter((c) => c.status !== "Lead" && c.status !== "Dismissed")}
+              clients={clients.filter((c) => c.isClient)}
               loading={clientsLoading}
               onSelectClient={handleClientSelect}
               onDeleteClient={handleDeleteClient}
@@ -2167,6 +2173,8 @@ function AppRoutes() {
               onSelectProject={handleProjectSelect}
               projects={projects}
               loading={clientsLoading}
+              onDismissLead={handleDismissLead}
+              onRestoreLead={handleRestoreLead}
             />
           }
         />
@@ -2185,6 +2193,8 @@ function AppRoutes() {
               onSelectProject={handleProjectSelect}
               projects={projects}
               loading={leadsLoading}
+              onDismissLead={handleDismissLead}
+              onRestoreLead={handleRestoreLead}
             />
           }
         />

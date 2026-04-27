@@ -1136,7 +1136,7 @@ const EnquiryList = ({
                       onClick={() => onDismiss(enquiry.id)}
                       className="w-full sm:w-auto flex-1 sm:flex-none py-2 sm:py-2.5 lg:py-2 px-3 sm:px-4 lg:px-3 flex items-center justify-center gap-1.5 sm:gap-2 text-slate-400 border border-slate-200 rounded-full hover:bg-rose-50 hover:text-rose-500 hover:border-rose-200 transition-all font-bold tracking-wider text-[11px] sm:text-[14px] lg:text-[13px] uppercase group/dismiss whitespace-nowrap"
                     >
-                      <X className="group-hover/dismiss:rotate-90 transition-transform shrink-0 w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                      <UserX className="group-hover/dismiss:rotate-90 transition-transform shrink-0 w-3.5 h-3.5 sm:w-4 sm:h-4" />
                       Dismiss
                     </button>
                   </>
@@ -1158,7 +1158,7 @@ const EnquiryList = ({
                       onClick={() => onDismiss(enquiry.id)}
                       className="w-full sm:w-auto flex-1 sm:flex-none py-2 sm:py-2.5 lg:py-2 px-3 sm:px-4 lg:px-3 flex items-center justify-center gap-1.5 sm:gap-2 text-slate-400 border border-slate-200 rounded-full hover:bg-rose-50 hover:text-rose-500 hover:border-rose-200 transition-all font-bold tracking-wider text-[11px] sm:text-[14px] lg:text-[13px] uppercase group/dismiss whitespace-nowrap"
                     >
-                      <X className="group-hover/dismiss:rotate-90 transition-transform shrink-0 w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                      <UserX className="group-hover/dismiss:rotate-90 transition-transform shrink-0 w-3.5 h-3.5 sm:w-4 sm:h-4" />
                       Dismiss
                     </button>
                   </>

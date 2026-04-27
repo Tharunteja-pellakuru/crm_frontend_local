@@ -595,23 +595,22 @@ const FollowUpList = ({
 
                       {/* Scrollable Body */}
                       <div className="flex-1 p-5 space-y-4 overflow-y-auto custom-scrollbar">
-                        {/* Category Filter (ONLY visible for Active/Project view) */}
-                        {typeFilter === "Active" && (
-                          <div className="space-y-3">
-                            <label className="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase ml-1">
-                              Project Category
-                            </label>
-                            <SearchableDropdown
-                              placeholder="Select Category..."
-                              options={["All", "Tech", "Social Media"].map(cat => ({
-                                label: cat.toUpperCase(),
-                                value: cat
-                              }))}
-                              value={categoryFilter}
-                              onChange={setCategoryFilter}
-                            />
-                          </div>
-                        )}
+                          {/* {typeFilter === "Active" && (
+                            <div className="space-y-3">
+                              <label className="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase ml-1">
+                                Project Category
+                              </label>
+                              <SearchableDropdown
+                                placeholder="Select Category..."
+                                options={["All", "Tech", "Social Media"].map(cat => ({
+                                  label: cat.toUpperCase(),
+                                  value: cat
+                                }))}
+                                value={categoryFilter}
+                                onChange={setCategoryFilter}
+                              />
+                            </div>
+                          )} */}
 
                         {typeFilter === "Active" && <div className="h-px bg-slate-100/50" />}
 

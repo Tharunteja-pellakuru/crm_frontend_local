@@ -20,6 +20,7 @@ import {
   Zap,
   Target,
   Pencil,
+  RotateCcw,
   Flame,    
   Sun,
   Snowflake,
@@ -29,6 +30,7 @@ import {
   ChevronDown,
   Globe,
   UserCheck,
+  UserX,
   Tag,
   DollarSign,
 } from "lucide-react";
@@ -65,6 +67,8 @@ const ClientDetail = ({
   initialTab = "overview",
   onSelectProject,
   projects = [],
+  onDismissLead,
+  onRestoreLead,
 }) => {
   const isLead = client.status === "Lead" || client.status === "Dismissed";
   const [activeTab, setActiveTab] = useState(initialTab);
@@ -346,6 +350,42 @@ const ClientDetail = ({
                 </div>
               </div>
             </div>
+          </div>
+          <div className="flex items-center gap-2 md:gap-3 shrink-0 pr-2">
+            <button
+              onClick={() => setShowEditModal(true)}
+              className="p-2 md:p-2.5 bg-white border border-slate-200 rounded-lg md:rounded-xl text-slate-400 hover:text-primary hover:border-primary hover:bg-slate-50 transition-all active:scale-95 shadow-sm flex items-center gap-2"
+              title="Edit Details"
+            >
+              <Pencil size={16} strokeWidth={2.5} />
+              <span className="hidden sm:inline text-xs font-bold tracking-widest uppercase">Edit</span>
+            </button>
+
+            {client.status !== "Dismissed" ? (
+              <button
+                onClick={() => {
+                  if (isLead) {
+                    onDismissLead && onDismissLead(client.lead_id || client.id);
+                  } else {
+                    onUpdateClient && onUpdateClient(client.id, { ...client, status: "Dismissed", clientStatus: "Dismissed" });
+                  }
+                }}
+                className="p-2 md:p-2.5 bg-white border border-slate-200 rounded-lg md:rounded-xl text-slate-400 hover:text-amber-500 hover:border-amber-500 hover:bg-amber-50 transition-all active:scale-95 shadow-sm flex items-center gap-2"
+                title={isLead ? "Dismiss Lead" : "Dismiss Client"}
+              >
+                <UserX size={16} strokeWidth={2.5} />
+                <span className="hidden sm:inline text-xs font-bold tracking-widest uppercase">Dismiss</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => onRestoreLead && onRestoreLead(client.lead_id || client.id)}
+                className="p-2 md:p-2.5 bg-white border border-slate-200 rounded-lg md:rounded-xl text-slate-400 hover:text-blue-500 hover:border-blue-500 hover:bg-blue-50 transition-all active:scale-95 shadow-sm flex items-center gap-2"
+                title="Restore"
+              >
+                <RotateCcw size={16} strokeWidth={2.5} />
+                <span className="hidden sm:inline text-xs font-bold tracking-widest uppercase">Restore</span>
+              </button>
+            )}
           </div>
         </div>
         <div className="flex-1 flex flex-col md:flex-row">

@@ -676,6 +676,45 @@ const ClientList = ({
           </div>
         </div>
 
+        {/* Client View Toggles (Clients Only) */}
+        {title === "Clients" && (
+          <div className="flex justify-center my-4 w-full px-1 sm:px-0">
+            <div className="relative flex flex-nowrap bg-slate-100/50 p-0.5 rounded-[14px] border border-slate-200 shadow-sm leading-none w-full sm:w-auto items-center gap-0 overflow-hidden">
+              {/* Moving Indicator */}
+              <div
+                className="absolute top-[2px] bottom-[2px] left-[2px] bg-white rounded-[11px] shadow-sm transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] border border-white/20 z-0"
+                style={{
+                  width: "calc(25% - 2px)",
+                  transform: `translateX(${["All", "Active", "Inactive", "Dismissed"].indexOf(filterStatus) * 100}%)`,
+                }}
+              />
+
+              {["All", "Active", "Inactive", "Dismissed"].map((view) => {
+                const colors = {
+                  All: "text-slate-600",
+                  Active: "text-emerald-600",
+                  Inactive: "text-amber-500",
+                  Dismissed: "text-rose-600",
+                };
+
+                return (
+                  <button
+                    key={view}
+                    onClick={() => setFilterStatus(view)}
+                    className={`relative z-10 flex-1 sm:flex-none px-2 sm:px-5 py-2.5 sm:py-2 rounded-xl text-[10px] sm:text-[12px] font-bold tracking-wider transition-all duration-300 flex items-center justify-center min-w-[75px] sm:min-w-[110px] h-[30px] sm:h-[36px] whitespace-nowrap active:scale-95 ${
+                      filterStatus === view
+                        ? `${colors[view]} scale-[1.02]`
+                        : "text-slate-400 hover:text-slate-600"
+                    }`}
+                  >
+                    {view}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Lead View Toggles (Leads Only) */}
         {title === "Leads" && (
           <div className="flex justify-center my-4 w-full px-1 sm:px-0">
@@ -853,12 +892,12 @@ const ClientList = ({
                                   onDeleteClient(client.id);
                                 }}
                                 className="p-2.5 bg-white border border-slate-200 rounded-lg text-slate-300 hover:text-error hover:border-error hover:bg-error/5 transition-all active:scale-90 shadow-sm"
-                                title="Delete"
+                                title={title === "Clients" ? "Delete Client" : "Delete"}
                               >
                                 <Trash2 size={18} />
                               </button>
                             )}
-                          {onDismissLead &&
+                          {onDismissLead && title === "Leads" &&
                             (client.status === "Lead" || client.isConverted) &&
                             client.status !== "Dismissed" && (
                               <button
@@ -868,6 +907,27 @@ const ClientList = ({
                                 }}
                                 className="p-2.5 bg-white border border-slate-200 rounded-lg text-slate-300 hover:text-amber-500 hover:border-amber-500 hover:bg-amber-50 transition-all active:scale-90 shadow-sm"
                                 title="Dismiss Lead"
+                              >
+                                <UserX size={18} />
+                              </button>
+                            )}
+                          {onUpdateClient && title === "Clients" &&
+                            client.status !== "Dismissed" && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onUpdateClient(client.id, {
+                                    organisationName: client.company || client.organisation_name || client.organisationName || "",
+                                    name: client.name || client.client_name || "",
+                                    country: client.country || client.client_country || "",
+                                    state: client.state || client.client_state || "",
+                                    currency: client.currency || client.client_currency || "",
+                                    clientStatus: "Dismissed",
+                                    status: "Dismissed",
+                                  });
+                                }}
+                                className="p-2.5 bg-white border border-slate-200 rounded-lg text-slate-300 hover:text-amber-500 hover:border-amber-500 hover:bg-amber-50 transition-all active:scale-90 shadow-sm"
+                                title="Dismiss Client"
                               >
                                 <UserX size={18} />
                               </button>
@@ -1047,6 +1107,41 @@ const ClientList = ({
                     >
                       <Pencil size={16} />
                     </button>
+                    {onUpdateClient && title === "Clients" &&
+                      client.status !== "Dismissed" && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onUpdateClient(client.id, {
+                              organisationName: client.company || client.organisation_name || client.organisationName || "",
+                              name: client.name || client.client_name || "",
+                              country: client.country || client.client_country || "",
+                              state: client.state || client.client_state || "",
+                              currency: client.currency || client.client_currency || "",
+                              clientStatus: "Dismissed",
+                              status: "Dismissed",
+                            });
+                          }}
+                          className="p-2 bg-amber-50 text-amber-600 border border-amber-100 rounded-lg hover:bg-amber-100 transition-all active:scale-90"
+                          title="Dismiss Client"
+                        >
+                          <UserX size={16} />
+                        </button>
+                      )}
+                    {onDismissLead && title === "Leads" &&
+                      (client.status === "Lead" || client.isConverted) &&
+                      client.status !== "Dismissed" && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDismissLead(client.id);
+                          }}
+                          className="p-2 bg-amber-50 text-amber-600 border border-amber-100 rounded-lg hover:bg-amber-100 transition-all active:scale-90"
+                          title="Dismiss Lead"
+                        >
+                          <UserX size={16} />
+                        </button>
+                      )}
                   </div>
                 </div>
               </div>
@@ -1508,6 +1603,7 @@ const ClientList = ({
                       >
                         <option value="Active">Active</option>
                         <option value="Inactive">Inactive</option>
+                        <option value="Dismissed">Dismissed</option>
                       </select>
                     </div>
                   </div>
@@ -2207,6 +2303,7 @@ const ClientList = ({
                   >
                     <option value="Active">Active</option>
                     <option value="Inactive">Inactive</option>
+                    <option value="Dismissed">Dismissed</option>
                   </select>
                 </div>
               </div>
@@ -2698,7 +2795,7 @@ const ClientList = ({
                               Select Status
                             </p>
                           </div>
-                          {["Active", "InActive"].map(
+                          {["Active", "Inactive", "Dismissed"].map(
                             (status) => (
                               <button
                                 key={status}
