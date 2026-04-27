@@ -612,7 +612,7 @@ const ProjectBoard = ({
               Manage and track all your projects and their delivery status.
             </p>
           </div>
-          <div className="w-full lg:w-auto">
+          {/* <div className="w-full lg:w-auto">
             <button
               onClick={() => setShowAddModal(true)}
               className="w-full lg:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white rounded-2xl hover:bg-slate-800 transition-all text-[13px] font-bold  tracking-wider shadow-lg active:scale-95 group"
@@ -624,7 +624,7 @@ const ProjectBoard = ({
               />
               Add New Project
             </button>
-          </div>
+          </div> */}
         </div>
 
         {/* Control Bar */}
@@ -887,7 +887,7 @@ const ProjectBoard = ({
                 ));
               })()}
               {/* Add Project Button */}
-              <div className="flex justify-center">
+              {/* <div className="flex justify-center">
                 <button
                   onClick={() => setShowAddModal(true)}
                   className="w-full max-w-sm py-6 border-2 border-dashed border-slate-100 rounded-2xl text-slate-300 text-[12px] font-bold  tracking-widest hover:border-secondary hover:text-secondary hover:bg-secondary/[0.02] transition-all group flex flex-col items-center justify-center gap-2 min-h-[100px]"
@@ -899,7 +899,7 @@ const ProjectBoard = ({
                   />
                   Initiate Project
                 </button>
-              </div>
+              </div> */}
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-10">
