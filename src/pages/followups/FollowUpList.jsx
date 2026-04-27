@@ -404,7 +404,7 @@ const FollowUpList = ({
         followup_mode: "Call",
         followup_status: "pending",
         follow_brief: "",
-        priority: "Medium",
+        priority: "High",
         timeHour: "12",
         timeMinute: "00",
         timePeriod: "PM",

@@ -814,7 +814,7 @@ function AppRoutes() {
         setLeads((prev) =>
           prev.map((l) =>
             l.lead_id == id
-              ? { ...l, isConverted: true, status: "Converted", leadType: l.leadType || "Converted" }
+              ? { ...l, isConverted: true, status: "Converted", leadType: "Converted" }
               : l,
           ),
         );
