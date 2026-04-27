@@ -351,7 +351,7 @@ const ClientDetail = ({
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2 md:gap-3 shrink-0 pr-2">
+          {/* <div className="flex items-center gap-2 md:gap-3 shrink-0 pr-2">
             <button
               onClick={() => setShowEditModal(true)}
               className="p-2 md:p-2.5 bg-white border border-slate-200 rounded-lg md:rounded-xl text-slate-400 hover:text-primary hover:border-primary hover:bg-slate-50 transition-all active:scale-95 shadow-sm flex items-center gap-2"
@@ -386,7 +386,7 @@ const ClientDetail = ({
                 <span className="hidden sm:inline text-xs font-bold tracking-widest uppercase">Restore</span>
               </button>
             )}
-          </div>
+          </div> */}
         </div>
         <div className="flex-1 flex flex-col md:flex-row">
           {/* Edit Lead Modal */}

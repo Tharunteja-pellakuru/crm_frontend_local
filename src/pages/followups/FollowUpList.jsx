@@ -1433,6 +1433,10 @@ const FollowUpList = ({
                                       (c.status !== "Lead" || c.isConverted)
                                     )
                                       return false;
+                                    
+                                    // For Clients (typeFilter !== "Lead"), only show Active clients
+                                    if (typeFilter !== "Lead" && c.status !== "Active" && c.status !== "Lead")
+                                      return false;
                                     if (!clientSearchTerm.trim()) return true;
                                     const q = clientSearchTerm.toLowerCase();
                                     return (

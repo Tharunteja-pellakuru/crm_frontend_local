@@ -66,7 +66,7 @@ const ClientList = ({
   onUpdateClient,
 }) => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterStatus, setFilterStatus] = useState("All");
+  const [filterStatus, setFilterStatus] = useState("Active");
   const [leadTypeFilter, setLeadTypeFilter] = useState("All");
   const [isFilterPopupOpen, setIsFilterPopupOpen] = useState(false);
 
@@ -588,6 +588,8 @@ const ClientList = ({
               />
             </div>
 
+
+
             {/* 2. Filters Button */}
             <div className="relative w-full md:w-auto flex-none" ref={filterButtonRef}>
               <button
@@ -603,9 +605,9 @@ const ClientList = ({
                   className={startDate || endDate ? "text-secondary" : "text-slate-400"}
                 />
                 <span>FILTERS</span>
-                {(startDate || endDate) && (
+                {(startDate || endDate || (title === "Clients" ? filterStatus !== "Active" : leadView !== "Pending")) && (
                   <span className="flex items-center justify-center w-5 h-5 bg-secondary text-white text-[10px] font-black rounded-full ml-1 shadow-sm">
-                    {[!!startDate, !!endDate].filter(Boolean).length}
+                    {[!!startDate, !!endDate, (title === "Clients" ? filterStatus !== "Active" : leadView !== "Pending")].filter(Boolean).length}
                   </span>
                 )}
                 <ChevronDown
@@ -637,11 +639,13 @@ const ClientList = ({
                             Filter {title}
                           </h3>
                         </div>
-                        {(startDate || endDate) && (
+                        {(startDate || endDate || (title === "Clients" ? filterStatus !== "Active" : leadView !== "Pending")) && (
                           <button
                             onClick={() => {
                               setStartDate("");
                               setEndDate("");
+                              if (title === "Clients") setFilterStatus("Active");
+                              else setLeadView("Pending");
                               setIsFilterPopupOpen(false);
                             }}
                             className="text-[10px] font-black text-rose-500 hover:text-rose-600 tracking-widest uppercase transition-colors"
@@ -671,6 +675,39 @@ const ClientList = ({
                             />
                           </div>
                         </div>
+
+                        {/* Status Section */}
+                        <div className="space-y-3">
+                          <label className="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase ml-1">
+                            {title === "Clients" ? "Client Status" : "Lead Status"}
+                          </label>
+                          <SearchableDropdown
+                            placeholder={title === "Clients" ? "Select Status..." : "Select View..."}
+                            options={
+                              title === "Clients"
+                                ? [
+                                    { label: "ACTIVE", value: "Active" },
+                                    { label: "ALL CLIENTS", value: "All" },
+                                    { label: "INACTIVE", value: "Inactive" },
+                                    { label: "DISMISSED", value: "Dismissed" },
+                                  ]
+                                : [
+                                    { label: "PENDING", value: "Pending" },
+                                    { label: "CONVERTED", value: "Converted" },
+                                    { label: "DISMISSED", value: "Dismissed" },
+                                  ]
+                            }
+                            value={title === "Clients" ? filterStatus : leadView}
+                            onChange={(val) => {
+                              if (title === "Clients") {
+                                setFilterStatus(val);
+                              } else {
+                                setLeadView(val);
+                              }
+                              setCurrentPage(1);
+                            }}
+                          />
+                        </div>
                       </div>
 
                       {/* Sticky Footer */}
@@ -691,82 +728,7 @@ const ClientList = ({
           </div>
         </div>
 
-        {/* Client View Toggles (Clients Only) */}
-        {title === "Clients" && (
-          <div className="flex justify-center my-4 w-full px-1 sm:px-0">
-            <div className="relative flex flex-nowrap bg-slate-100/50 p-0.5 rounded-[14px] border border-slate-200 shadow-sm leading-none w-full sm:w-auto items-center gap-0 overflow-hidden">
-              {/* Moving Indicator */}
-              <div
-                className="absolute top-[2px] bottom-[2px] left-[2px] bg-white rounded-[11px] shadow-sm transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] border border-white/20 z-0"
-                style={{
-                  width: "calc(25% - 2px)",
-                  transform: `translateX(${["All", "Active", "Inactive", "Dismissed"].indexOf(filterStatus) * 100}%)`,
-                }}
-              />
 
-              {["All", "Active", "Inactive", "Dismissed"].map((view) => {
-                const colors = {
-                  All: "text-slate-600",
-                  Active: "text-emerald-600",
-                  Inactive: "text-amber-500",
-                  Dismissed: "text-rose-600",
-                };
-
-                return (
-                  <button
-                    key={view}
-                    onClick={() => setFilterStatus(view)}
-                    className={`relative z-10 flex-1 sm:flex-none px-2 sm:px-5 py-2.5 sm:py-2 rounded-xl text-[10px] sm:text-[12px] font-bold tracking-wider transition-all duration-300 flex items-center justify-center min-w-[75px] sm:min-w-[110px] h-[30px] sm:h-[36px] whitespace-nowrap active:scale-95 ${
-                      filterStatus === view
-                        ? `${colors[view]} scale-[1.02]`
-                        : "text-slate-400 hover:text-slate-600"
-                    }`}
-                  >
-                    {view}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Lead View Toggles (Leads Only) */}
-        {title === "Leads" && (
-          <div className="flex justify-center my-4 w-full px-1 sm:px-0">
-            <div className="relative flex flex-nowrap bg-slate-100/50 p-0.5 rounded-[14px] border border-slate-200 shadow-sm leading-none w-full sm:w-auto items-center gap-0 overflow-hidden">
-              {/* Moving Indicator */}
-              <div
-                className="absolute top-[2px] bottom-[2px] left-[2px] bg-white rounded-[11px] shadow-sm transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] border border-white/20 z-0"
-                style={{
-                  width: "calc(33.333% - 2px)",
-                  transform: `translateX(${["Pending", "Converted", "Dismissed"].indexOf(leadView) * 100}%)`,
-                }}
-              />
-
-              {["Pending", "Converted", "Dismissed"].map((view) => {
-                const colors = {
-                  Pending: "text-blue-600",
-                  Converted: "text-emerald-600",
-                  Dismissed: "text-rose-600",
-                };
-
-                return (
-                  <button
-                    key={view}
-                    onClick={() => setLeadView(view)}
-                    className={`relative z-10 flex-1 sm:flex-none px-2 sm:px-5 py-2.5 sm:py-2 rounded-xl text-[10px] sm:text-[12px] font-bold tracking-wider transition-all duration-300 flex items-center justify-center min-w-[75px] sm:min-w-[110px] h-[30px] sm:h-[36px] whitespace-nowrap active:scale-95 ${
-                      leadView === view
-                        ? `${colors[view]} scale-[1.02]`
-                        : "text-slate-400 hover:text-slate-600"
-                    }`}
-                  >
-                    {view}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
 
         {/* Main List */}
         <div className="hidden lg:block bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden w-full">
@@ -2113,7 +2075,7 @@ const ClientList = ({
                               {allClients
                                 .filter(
                                   (c) =>
-                                    c.status !== "Lead" &&
+                                    c.status === "Active" &&
                                     c.name
                                       .toLowerCase()
                                       .includes(
