@@ -893,7 +893,7 @@ const Settings = ({
                     
                     {/* Profile Info */}
                     <div className="flex-1 text-center md:text-left">
-                      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                      <div className="flex flex-col md:flex-row items-center md:items-start md:justify-between gap-4">
                         <div className="flex-1">
                           <h3 className="text-3xl md:text-4xl font-black text-white mb-3 tracking-tight">
                             {profile.full_name}
@@ -1483,7 +1483,7 @@ const Settings = ({
                                     setEditingModelId(model.aimodel_id);
                                     setEditModelData({ ...model });
                                   }}
-                                  className="flex-1 sm:flex-none p-2.5 hover:bg-slate-100 rounded-xl transition-all text-slate-400 hover:text-primary flex items-center justify-center gap-2 text-[12px] font-bold group"
+                                  className="sm:flex-none p-2.5 hover:bg-slate-100 rounded-xl transition-all text-slate-400 hover:text-primary flex items-center justify-center gap-2 text-[12px] font-bold group"
                                   title="Edit model"
                                 >
                                   <Edit2
@@ -1495,7 +1495,7 @@ const Settings = ({
                                 {!model.isDefault && (
                                   <button
                                     onClick={() => onDeleteAiModel(model.aimodel_id)}
-                                    className="flex-1 sm:flex-none p-2.5 hover:bg-red-50 rounded-xl transition-all text-slate-400 hover:text-red-500 flex items-center justify-center gap-2 text-[12px] font-bold group"
+                                    className="sm:flex-none p-2.5 hover:bg-red-50 rounded-xl transition-all text-slate-400 hover:text-red-500 flex items-center justify-center gap-2 text-[12px] font-bold group"
                                     title="Delete model"
                                   >
                                     <Trash2
