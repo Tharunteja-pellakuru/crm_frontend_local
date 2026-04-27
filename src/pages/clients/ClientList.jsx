@@ -335,6 +335,21 @@ const ClientList = ({
   });
 
   const sortedClients = [...filteredClients].sort((a, b) => {
+    // Status priority: Active (0) > Inactive (1) > Dismissed (2)
+    const statusPriority = {
+      Active: 0,
+      Inactive: 1,
+      Dismissed: 2,
+    };
+
+    const priorityA = statusPriority[a.status] ?? 3;
+    const priorityB = statusPriority[b.status] ?? 3;
+
+    if (priorityA !== priorityB) {
+      return priorityA - priorityB;
+    }
+
+    // Secondary sort by name
     const nameA = (a.name || "").toLowerCase();
     const nameB = (b.name || "").toLowerCase();
     return nameA.localeCompare(nameB);
