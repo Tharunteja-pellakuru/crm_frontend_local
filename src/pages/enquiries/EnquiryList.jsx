@@ -30,6 +30,7 @@ import {
   ChevronLeft,
   ChevronRight,
   UserCheck,
+  UserX,
   AlertTriangle,
   Filter,
 } from "lucide-react";
