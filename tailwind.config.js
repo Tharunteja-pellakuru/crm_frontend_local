@@ -8,6 +8,8 @@ export default {
     extend: {
       fontFamily: {
         sans: ["Calibri", "sans-serif"],
+        serif: ["Calibri", "serif"],
+        mono: ["Calibri", "monospace"],
       },
       colors: {
         primary: "#18254D",
