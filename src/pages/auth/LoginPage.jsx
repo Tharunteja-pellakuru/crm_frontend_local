@@ -83,21 +83,14 @@ function LoginPage({ onLogin }) {
               />
             </div>
           )}
-          {/* <div className="flex flex-col border-l-2 border-primary/10 pl-4">
-            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-primary tracking-tighter leading-none">
-              Parivartan
-            </h1>
-            <p className="text-[12px] md:text-xs lg:text-sm font-bold text-slate-500  tracking-[0.4em] mt-1">
-              CRM Portal
-            </p>
-          </div> */}
+
         </div>
 
         {/* Login Card */}
         <div className="bg-white p-4 md:p-6 lg:p-8 rounded-2xl shadow-xl border border-slate-200 w-full transition-all duration-500 hover:shadow-2xl hover:scale-[1.02] hover:border-primary/20">
           <div className="mb-3 md:mb-4 lg:mb-6 text-center">
             <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-primary tracking-tighter">
-              Welcome Back
+              CRM Login 
             </h2>
             <p className="text-[12px] md:text-xs lg:text-sm text-textMuted font-bold  tracking-widest mt-1">
               Please sign in to your account

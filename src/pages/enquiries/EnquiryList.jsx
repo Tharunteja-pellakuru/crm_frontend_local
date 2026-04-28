@@ -467,7 +467,7 @@ const EnquiryList = ({
       phone: enquiry.phone,
       website: enquiry.website,
       leadType: "Hot",
-      country: enquiry.countryName || enquiry.country || "",
+      country: enquiry.countryName || enquiry.country || "India (+91)",
       countryCode: enquiry.countryCode || "",
       notes: enquiry.message,
     });

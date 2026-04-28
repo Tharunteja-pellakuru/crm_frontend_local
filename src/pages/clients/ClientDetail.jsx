@@ -270,6 +270,19 @@ const ClientDetail = ({
     index === self.findIndex((t) => t.id === f.id)
   );
 
+  const upcomingFollowUps = [
+    ...clientFollowUps,
+    ...followUps.filter((f) => 
+      f.clientId == client.id || 
+      (client.lead_id && f.clientId == client.lead_id) ||
+      clientProjectIds.includes(f.projectId || f.project_id)
+    )
+  ].filter((f, index, self) => 
+    f.status?.toLowerCase() !== "completed" && 
+    f.followup_status?.toLowerCase() !== "completed" &&
+    index === self.findIndex((t) => t.id === f.id)
+  ).sort((a, b) => new Date(a.followup_date || a.dueDate) - new Date(b.followup_date || b.dueDate));
+
   const handleLogInteraction = (e) => {
     e.preventDefault();
 
@@ -1119,6 +1132,69 @@ const ClientDetail = ({
                       </div>
                     </>
                   )}
+
+                  {/* Upcoming Follow-ups Section */}
+                  <div className="col-span-1 sm:col-span-2 mt-4 md:mt-6 border-t border-slate-100 pt-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-[12px] md:text-[14px] font-bold text-primary tracking-widest uppercase flex items-center gap-2">
+                        <Clock size={16} className="text-secondary" />
+                        Upcoming Follow-ups
+                      </h3>
+                    </div>
+                    
+                    {upcomingFollowUps.length > 0 ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+                        {upcomingFollowUps.slice(0, 4).map((fu) => (
+                          <div 
+                            key={fu.id}
+                            className="bg-slate-50/50 p-4 rounded-2xl border border-slate-100 hover:border-secondary/30 hover:bg-white hover:shadow-md transition-all group relative overflow-hidden text-start"
+                          >
+                            <div className="absolute top-0 left-0 w-1 h-full bg-secondary opacity-20 group-hover:opacity-100 transition-opacity"></div>
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold tracking-widest uppercase ${
+                                    fu.priority === 'High' ? 'bg-error/10 text-error' :
+                                    fu.priority === 'Medium' ? 'bg-warning/10 text-warning' :
+                                    'bg-info/10 text-info'
+                                  }`}>
+                                    {fu.priority}
+                                  </span>
+                                  <span className="text-[10px] md:text-[11px] font-bold text-slate-400 tracking-widest uppercase">
+                                    {fu.followup_mode}
+                                  </span>
+                                </div>
+                                <h4 className="text-sm md:text-base font-bold text-primary truncate mb-1">
+                                  {fu.title}
+                                </h4>
+                                <p className="text-xs text-textMuted line-clamp-1 mb-3 font-medium">
+                                  {fu.description}
+                                </p>
+                                <div className="flex items-center gap-4 text-[10px] md:text-[11px] font-bold text-slate-400 tracking-widest uppercase">
+                                  <div className="flex items-center gap-1.5">
+                                    <Calendar size={12} className="text-secondary" />
+                                    {new Date(fu.followup_date || fu.dueDate).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}
+                                  </div>
+                                  <div className="flex items-center gap-1.5">
+                                    <Clock size={12} className="text-secondary" />
+                                    {new Date(fu.followup_date || fu.dueDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="bg-slate-50/50 rounded-2xl border border-dashed border-slate-200 p-8 flex flex-col items-center justify-center text-center">
+                        <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm border border-slate-100 mb-3 text-slate-300">
+                          <Clock size={24} />
+                        </div>
+                        <p className="text-sm font-bold text-slate-400 tracking-tight mb-1">No pending follow-ups</p>
+                        <p className="text-[12px] text-slate-300 font-medium max-w-[200px]">Keep track of your next steps by adding a follow-up.</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
               {activeTab === "activity" && (
