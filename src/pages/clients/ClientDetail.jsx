@@ -82,9 +82,9 @@ const ClientDetail = ({
     notes: "",
     website: "",
     projectCategory: 1,
-    country: "",
+    country: "India",
     state: "",
-    currency: "",
+    currency: "INR",
     organisationName: "",
     clientStatus: "Active",
   });

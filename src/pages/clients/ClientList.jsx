@@ -111,6 +111,8 @@ const ClientList = ({
     projectPriority: "High",
     projectDescription: "",
     projectBudget: "",
+    country: "India",
+    currency: "INR",
   });
 
 
@@ -126,11 +128,11 @@ const ClientList = ({
     projectName: "",
     projectStatus: "Planning",
     projectCategory: 1,
-    projectPriority: "Medium",
+    projectPriority: "High",
     projectDescription: "",
-    country: "",
+    country: "India",
     state: "",
-    currency: "",
+    currency: "INR",
     organisationName: "",
     clientStatus: "Active",
   });
@@ -1053,6 +1055,7 @@ const ClientList = ({
                             deadline: "",
                             scopeDocument: "",
                             projectStatus: "Planning",
+                            projectPriority: "High",
                           });
                           setShowOnboardModal(true);
                         }}

@@ -194,8 +194,8 @@ const EnquiryList = ({
     phone: "",
     website: "",
     leadType: "Hot",
-    country: "",
-    countryCode: "",
+    country: "India",
+    countryCode: "+91",
     notes: "",
   });
   const [showSimulateForm, setShowSimulateForm] = useState(false);
@@ -467,8 +467,8 @@ const EnquiryList = ({
       phone: enquiry.phone,
       website: enquiry.website,
       leadType: "Hot",
-      country: enquiry.countryName || enquiry.country || "India (+91)",
-      countryCode: enquiry.countryCode || "",
+      country: enquiry.countryName || enquiry.country || "India",
+      countryCode: enquiry.countryCode || "+91",
       notes: enquiry.message,
     });
     setLeadModalOpen(true);

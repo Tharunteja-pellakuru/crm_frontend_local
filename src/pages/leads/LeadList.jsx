@@ -264,9 +264,9 @@ const LeadList = ({
     phone: "",
     countryCode: "",
     organisationName: "",
-    country: "",
+    country: "India",
     state: "",
-    currency: "",
+    currency: "INR",
     clientStatus: "Active",
     projectName: "",
     projectDescription: "",
@@ -296,9 +296,9 @@ const LeadList = ({
     projectPriority: "High",
     projectDescription: "",
     projectBudget: "",
-    country: "",
+    country: "India",
     state: "",
-    currency: "",
+    currency: "INR",
     organisationName: "",
     clientStatus: "Active",
     onboardingDate: new Date().toISOString().split("T")[0],
@@ -325,10 +325,10 @@ const LeadList = ({
     projectName: "",
     projectStatus: "Planning",
     projectCategory: 1,
-    projectPriority: "Medium",
+    projectPriority: "High",
     projectDescription: "",
-    country: "",
-    countryCode: "",
+    country: "India",
+    countryCode: "+91",
   });
 
   const handleEditConvertedClick = (lead) => {
@@ -770,10 +770,10 @@ const LeadList = ({
           projectName: "",
           projectStatus: "Planning",
           projectCategory: 1, // Changed to numeric ID
-          projectPriority: "Medium",
+          projectPriority: "High",
           projectDescription: "",
-          country: "",
-          countryCode: "",
+          country: "India",
+          countryCode: "+91",
         });
         toast.success("Lead added successfully!");
       }
@@ -1396,6 +1396,7 @@ const LeadList = ({
                                 scopeDocument: "",
                                 projectStatus: "Planning",
                                 projectCategory: lead.projectCategory || 1,
+                                projectPriority: "High",
                                 clientStatus: "Active",
                                 currency: lead.currency || countryCurrency || "",
                                 country: initialCountry,
