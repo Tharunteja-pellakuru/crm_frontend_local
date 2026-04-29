@@ -316,7 +316,24 @@ const ClientDetail = ({
         date: new Date().toISOString().split("T")[0],
         time: new Date().toTimeString().split(" ")[0].substring(0, 5),
       });
-      setIsLogging(false);
+    }
+  };
+
+  const getFollowUpStatusLabel = (date) => {
+    if (!date) return null;
+    const fuDate = new Date(date);
+    const today = new Date();
+    
+    // Normalize dates to midnight for comparison
+    const fuDay = new Date(fuDate.getFullYear(), fuDate.getMonth(), fuDate.getDate());
+    const todayDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    
+    if (fuDay < todayDay) {
+      return { label: "Overdue", className: "bg-error/10 text-error border-error/20" };
+    } else if (fuDay.getTime() === todayDay.getTime()) {
+      return { label: "Today", className: "bg-warning/10 text-warning border-warning/20" };
+    } else {
+      return { label: "Upcoming", className: "bg-info/10 text-info border-info/20" };
     }
   };
 
@@ -1153,6 +1170,14 @@ const ClientDetail = ({
                             <div className="flex items-start justify-between gap-4">
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 mb-2">
+                                  {(() => {
+                                    const status = getFollowUpStatusLabel(fu.followup_date || fu.dueDate);
+                                    return status && (
+                                      <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold tracking-widest uppercase border ${status.className}`}>
+                                        {status.label}
+                                      </span>
+                                    );
+                                  })()}
                                   <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold tracking-widest uppercase ${
                                     fu.priority === 'High' ? 'bg-error/10 text-error' :
                                     fu.priority === 'Medium' ? 'bg-warning/10 text-warning' :

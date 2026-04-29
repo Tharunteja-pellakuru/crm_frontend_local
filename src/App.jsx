@@ -956,6 +956,40 @@ function AppRoutes() {
 
       // Update local state after successful API call
       setClients((prev) => prev.map((c) => (c.id == id ? { ...c, ...data } : c)));
+
+      // Sync back to Lead record if lead_id exists
+      const currentClient = clients.find((c) => c.id == id);
+      if (currentClient && currentClient.lead_id) {
+        try {
+          const leadPayload = {
+            full_name: data.name || currentClient.name,
+            organisation_name: data.organisationName || currentClient.organisation_name || "",
+            email: currentClient.email || "",
+            phone_number: currentClient.phone || "",
+            country: data.country || currentClient.country || "",
+            lead_status: "Converted",
+            website_url: currentClient.website || "",
+          };
+
+          await fetch(`${BASE_URL}/api/update-lead/${currentClient.lead_id}`, {
+            method: "PUT",
+            headers: getAuthHeaders(),
+            body: JSON.stringify(leadPayload),
+          });
+
+          // Update local Leads state
+          setLeads((prev) =>
+            prev.map((l) =>
+              l.lead_id == currentClient.lead_id
+                ? { ...l, name: data.name || l.name, organisation_name: data.organisationName || l.organisation_name }
+                : l
+            )
+          );
+        } catch (syncErr) {
+          console.error("Failed to sync lead record during client update:", syncErr);
+        }
+      }
+
       toast.success("Client updated successfully");
     } catch (error) {
       console.error("Update client error:", error);
@@ -1024,12 +1058,13 @@ function AppRoutes() {
         ),
       );
 
-      // Also update Clients
+      // Also update Clients in local state
       setClients((prev) =>
         prev.map((c) =>
           c.lead_id == id
             ? {
                 ...c,
+                name: data.name || c.name, // Sync the name
                 organisation_name: data.organisationName || c.organisation_name,
                 projectCategory: updatedCategory,
                 industry: updatedCategory,
@@ -1037,6 +1072,30 @@ function AppRoutes() {
             : c,
         ),
       );
+
+      // 4. Update the Client record in the database if it exists
+      const associatedClient = clients.find((cl) => cl.lead_id == id);
+      if (associatedClient) {
+        try {
+          const clientPayload = {
+            client_name: data.name || associatedClient.name,
+            organisation_name: data.organisationName || associatedClient.organisation_name,
+            client_country: data.country || associatedClient.country,
+            client_state: data.state || associatedClient.state,
+            client_currency: data.currency || associatedClient.currency,
+            client_status: data.clientStatus || associatedClient.status || "Active",
+          };
+
+          await fetch(`${BASE_URL}/api/update-client/${associatedClient.id}`, {
+            method: "PUT",
+            headers: getAuthHeaders(),
+            body: JSON.stringify(clientPayload),
+          });
+        } catch (clientErr) {
+          console.error("Failed to sync client record:", clientErr);
+          // We don't throw here to allow the lead update to still be considered successful
+        }
+      }
 
       // Also update Projects
       setProjects((prev) =>
@@ -1318,6 +1377,29 @@ function AppRoutes() {
           message: optimisticLead.notes,
         }),
       });
+
+      // 3. If lead is already converted, sync the changes to the Client record too
+      if (optimisticLead.isConverted) {
+        const associatedClient = clients.find((c) => c.lead_id == id);
+        if (associatedClient) {
+          try {
+            await fetch(`${BASE_URL}/api/update-client/${associatedClient.id}`, {
+              method: "PUT",
+              headers: getAuthHeaders(),
+              body: JSON.stringify({
+                client_name: optimisticLead.name,
+                organisation_name: optimisticLead.organisationName || optimisticLead.company || associatedClient.organisation_name,
+                client_country: optimisticLead.country || associatedClient.country,
+                client_state: optimisticLead.state || associatedClient.state,
+                client_currency: optimisticLead.currency || associatedClient.currency,
+                client_status: optimisticLead.clientStatus || associatedClient.status || "Active",
+              }),
+            });
+          } catch (clientErr) {
+            console.error("Failed to sync client record during lead edit:", clientErr);
+          }
+        }
+      }
 
       if (!res.ok) {
         // Rollback on failure
