@@ -33,6 +33,7 @@ import {
   UserX,
   Tag,
   DollarSign,
+  Bell,
 } from "lucide-react";
 import { MOCK_ACTIVITIES } from "../../constants/mockData";
 import {
@@ -294,6 +295,18 @@ const ClientDetail = ({
     f.followup_status?.toLowerCase() !== "completed" &&
     index === self.findIndex((t) => t.id === f.id)
   ).sort((a, b) => parseLocalDate(a.followup_date || a.dueDate) - parseLocalDate(b.followup_date || b.dueDate));
+
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const tomorrowStart = new Date(todayStart);
+  tomorrowStart.setDate(tomorrowStart.getDate() + 1);
+
+  const overdueFUs = upcomingFollowUps.filter(f => parseLocalDate(f.followup_date || f.dueDate) < todayStart);
+  const todayFUs = upcomingFollowUps.filter(f => {
+    const d = parseLocalDate(f.followup_date || f.dueDate);
+    return d >= todayStart && d < tomorrowStart;
+  });
+  const futureFUs = upcomingFollowUps.filter(f => parseLocalDate(f.followup_date || f.dueDate) >= tomorrowStart);
 
   const handleLogInteraction = (e) => {
     e.preventDefault();
@@ -1173,66 +1186,86 @@ const ClientDetail = ({
                       </h3>
                     </div>
                     
-                    {upcomingFollowUps.length > 0 ? (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
-                        {upcomingFollowUps.slice(0, 4).map((fu) => (
-                          <div 
-                            key={fu.id}
-                            className="bg-slate-50/50 p-4 rounded-2xl border border-slate-100 hover:border-secondary/30 hover:bg-white hover:shadow-md transition-all group relative overflow-hidden text-start"
-                          >
-                            <div className="absolute top-0 left-0 w-1 h-full bg-secondary opacity-20 group-hover:opacity-100 transition-opacity"></div>
-                            <div className="flex items-start justify-between gap-4">
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 mb-2">
-                                  {(() => {
-                                    const status = getFollowUpStatusLabel(fu.followup_date || fu.dueDate);
-                                    return status && (
-                                      <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold tracking-widest uppercase border ${status.className}`}>
-                                        {status.label}
+                    <div className="space-y-6">
+                      {[
+                        { title: "Overdue", icon: <Bell size={14} />, tasks: overdueFUs, color: "error", styles: "text-error bg-error/10 border-error/20" },
+                        { title: "Today", icon: <Clock size={14} />, tasks: todayFUs, color: "secondary", styles: "text-secondary bg-secondary/10 border-secondary/20" },
+                        { title: "Upcoming", icon: <Calendar size={14} />, tasks: futureFUs, color: "info", styles: "text-info bg-info/10 border-info/20" }
+                      ].map((section) => section.tasks.length > 0 && (
+                        <div key={section.title} className="space-y-3">
+                          <div className="flex items-center gap-2 mb-3">
+                            <div className={`p-1.5 rounded-lg ${section.styles}`}>
+                              {section.icon}
+                            </div>
+                            <h4 className={`text-[12px] font-black tracking-[0.2em] uppercase ${section.title === 'Overdue' ? 'text-error' : section.title === 'Today' ? 'text-secondary' : 'text-info'}`}>
+                              {section.title} ({section.tasks.length})
+                            </h4>
+                            <div className="flex-1 h-[1px] bg-slate-100"></div>
+                          </div>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+                            {section.tasks.map((fu) => (
+                              <div 
+                                key={fu.id}
+                                className={`bg-white p-4 rounded-2xl border transition-all group relative overflow-hidden text-start hover:shadow-md ${
+                                  section.title === 'Overdue' ? 'border-error/20 hover:border-error/40' : 
+                                  section.title === 'Today' ? 'border-secondary/20 hover:border-secondary/40' :
+                                  'border-slate-100 hover:border-info/40'
+                                }`}
+                              >
+                                <div className={`absolute top-0 left-0 w-1 h-full transition-opacity opacity-20 group-hover:opacity-100 ${
+                                  section.title === 'Overdue' ? 'bg-error' : 
+                                  section.title === 'Today' ? 'bg-secondary' : 
+                                  'bg-info'
+                                }`}></div>
+                                <div className="flex items-start justify-between gap-4">
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2 mb-2">
+                                      <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold tracking-widest uppercase ${
+                                        fu.priority === 'High' ? 'bg-error/10 text-error' :
+                                        fu.priority === 'Medium' ? 'bg-warning/10 text-warning' :
+                                        'bg-info/10 text-info'
+                                      }`}>
+                                        {fu.priority}
                                       </span>
-                                    );
-                                  })()}
-                                  <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold tracking-widest uppercase ${
-                                    fu.priority === 'High' ? 'bg-error/10 text-error' :
-                                    fu.priority === 'Medium' ? 'bg-warning/10 text-warning' :
-                                    'bg-info/10 text-info'
-                                  }`}>
-                                    {fu.priority}
-                                  </span>
-                                  <span className="text-[10px] md:text-[11px] font-bold text-slate-400 tracking-widest uppercase">
-                                    {fu.followup_mode}
-                                  </span>
-                                </div>
-                                <h4 className="text-sm md:text-base font-bold text-primary truncate mb-1">
-                                  {fu.title}
-                                </h4>
-                                <p className="text-xs text-textMuted line-clamp-1 mb-3 font-medium">
-                                  {fu.description}
-                                </p>
-                                <div className="flex items-center gap-4 text-[10px] md:text-[11px] font-bold text-slate-400 tracking-widest uppercase">
-                                  <div className="flex items-center gap-1.5">
-                                    <Calendar size={12} className="text-secondary" />
-                                    {parseLocalDate(fu.followup_date || fu.dueDate).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}
-                                  </div>
-                                  <div className="flex items-center gap-1.5">
-                                    <Clock size={12} className="text-secondary" />
-                                    {parseLocalDate(fu.followup_date || fu.dueDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
+                                      <span className="text-[10px] md:text-[11px] font-bold text-slate-400 tracking-widest uppercase">
+                                        {fu.followup_mode}
+                                      </span>
+                                    </div>
+                                    <h4 className="text-sm md:text-base font-bold text-primary truncate mb-1">
+                                      {fu.title}
+                                    </h4>
+                                    <p className="text-xs text-textMuted line-clamp-1 mb-3 font-medium">
+                                      {fu.description}
+                                    </p>
+                                    <div className="flex items-center gap-4 text-[10px] md:text-[11px] font-bold text-slate-400 tracking-widest uppercase">
+                                      <div className="flex items-center gap-1.5">
+                                        <Calendar size={12} className="text-secondary" />
+                                        {parseLocalDate(fu.followup_date || fu.dueDate).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}
+                                      </div>
+                                      <div className="flex items-center gap-1.5">
+                                        <Clock size={12} className="text-secondary" />
+                                        {parseLocalDate(fu.followup_date || fu.dueDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
+                                      </div>
+                                    </div>
                                   </div>
                                 </div>
                               </div>
-                            </div>
+                            ))}
                           </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="bg-slate-50/50 rounded-2xl border border-dashed border-slate-200 p-8 flex flex-col items-center justify-center text-center">
-                        <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm border border-slate-100 mb-3 text-slate-300">
-                          <Clock size={24} />
                         </div>
-                        <p className="text-sm font-bold text-slate-400 tracking-tight mb-1">No pending follow-ups</p>
-                        <p className="text-[12px] text-slate-300 font-medium max-w-[200px]">Keep track of your next steps by adding a follow-up.</p>
-                      </div>
-                    )}
+                      ))}
+
+                      {upcomingFollowUps.length === 0 && (
+                        <div className="bg-slate-50/50 rounded-2xl border border-dashed border-slate-200 p-8 flex flex-col items-center justify-center text-center">
+                          <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm border border-slate-100 mb-3 text-slate-300">
+                            <Clock size={24} />
+                          </div>
+                          <p className="text-sm font-bold text-slate-400 tracking-tight mb-1">No pending follow-ups</p>
+                          <p className="text-[12px] text-slate-300 font-medium max-w-[200px]">Keep track of your next steps by adding a follow-up.</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               )}
@@ -1298,34 +1331,25 @@ const ClientDetail = ({
                                   </div>
                                   <div className="bg-success/5 p-3 rounded-xl border border-success/20 hover:border-success/40 transition-all">
                                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-1.5">
-                                      <span className="text-[11px] md:text-[14px] font-bold text-slate-400  tracking-widest capitalize">
-                                        {fu.completed_at
-                                          ? parseLocalDate(
-                                              fu.completed_at,
-                                            ).toLocaleDateString([], {
-                                              month: "short",
-                                              day: "numeric",
-                                              year: "numeric",
-                                            })
-                                          : fu.dueDate
-                                            ? parseLocalDate(
-                                                fu.dueDate,
-                                              ).toLocaleDateString([], {
-                                                month: "short",
-                                                day: "numeric",
-                                                year: "numeric",
-                                              })
-                                            : ""}
-                                        {fu.completed_at &&
-                                          " · " +
-                                            parseLocalDate(
-                                              fu.completed_at,
-                                            ).toLocaleTimeString([], {
-                                              hour: "2-digit",
-                                              minute: "2-digit",
-                                              hour12: true,
-                                            })}
-                                      </span>
+                                      <div className="flex items-center gap-2">
+                                        <span className="text-[10px] md:text-[12px] font-black text-slate-400 tracking-[0.2em] uppercase">
+                                          Follow-up Created:
+                                        </span>
+                                        <span className="text-[11px] md:text-[14px] font-bold text-slate-500 tracking-widest capitalize">
+                                          {parseLocalDate(fu.created_at || fu.createdAt || fu.joinedDate || fu.dueDate).toLocaleDateString([], {
+                                            month: "short",
+                                            day: "numeric",
+                                            year: "numeric",
+                                          })}
+                                          {" · "}
+                                          {parseLocalDate(fu.created_at || fu.createdAt || fu.joinedDate || fu.dueDate).toLocaleTimeString([], {
+                                            hour: "2-digit",
+                                            minute: "2-digit",
+                                            hour12: true,
+                                          })}
+                                        </span>
+                                      </div>
+
                                       <span className="text-[11px] md:text-[13px] font-bold  tracking-widest px-2 py-0.5 rounded-md bg-success/10 text-success w-fit">
                                         Follow-Up Completed
                                       </span>
@@ -1391,16 +1415,18 @@ const ClientDetail = ({
                                   </div>
                                   <div className="bg-slate-50/50 p-3 rounded-xl border border-slate-100 hover:border-slate-200 transition-all">
                                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-1.5">
-                                      <span className="text-[11px] md:text-[14px] font-bold text-slate-400  tracking-widest capitalize">
-                                        {parseLocalDate(conv.date).toLocaleDateString(
-                                          [],
-                                          {
+                                      <div className="flex items-center gap-2">
+                                        <span className="text-[10px] md:text-[12px] font-black text-slate-400 tracking-[0.2em] uppercase">
+                                          Interaction Date:
+                                        </span>
+                                        <span className="text-[11px] md:text-[14px] font-bold text-slate-500 tracking-widest capitalize">
+                                          {parseLocalDate(conv.date).toLocaleDateString([], {
                                             month: "short",
                                             day: "numeric",
                                             year: "numeric",
-                                          },
-                                        )}
-                                      </span>
+                                          })}
+                                        </span>
+                                      </div>
                                       <span
                                         className={`text-[11px] md:text-[13px] font-bold  tracking-widest px-2 py-0.5 rounded-md w-fit ${
                                           conv.type === "call"
@@ -1615,23 +1641,24 @@ const ClientDetail = ({
                                             className={`${conv.source === "followup" ? "bg-success/5 border-success/20 shadow-sm shadow-success/5" : "bg-slate-50/50 border-slate-100"} p-3 rounded-xl border transition-all`}
                                           >
                                             <div className="flex items-center justify-between mb-1.5">
-                                              <span className="text-[14px] font-bold text-slate-400  tracking-widest">
-                                                {parseLocalDate(
-                                                  conv.date,
-                                                ).toLocaleDateString([], {
-                                                  month: "short",
-                                                  day: "numeric",
-                                                  year: "numeric",
-                                                })}
-                                                {" · "}
-                                                {parseLocalDate(
-                                                  conv.date,
-                                                ).toLocaleTimeString([], {
-                                                  hour: "2-digit",
-                                                  minute: "2-digit",
-                                                  hour12: true,
-                                                })}
-                                              </span>
+                                              <div className="flex items-center gap-2">
+                                                <span className="text-[10px] md:text-[12px] font-black text-slate-400 tracking-[0.2em] uppercase">
+                                                  {conv.source === "followup" ? "Follow-up Created:" : "Interaction Date:"}
+                                                </span>
+                                                <span className="text-[14px] font-bold text-slate-500  tracking-widest">
+                                                  {parseLocalDate(conv.created_at || conv.createdAt || conv.date).toLocaleDateString([], {
+                                                    month: "short",
+                                                    day: "numeric",
+                                                    year: "numeric",
+                                                  })}
+                                                  {" · "}
+                                                  {parseLocalDate(conv.created_at || conv.createdAt || conv.date).toLocaleTimeString([], {
+                                                    hour: "2-digit",
+                                                    minute: "2-digit",
+                                                    hour12: true,
+                                                  })}
+                                                </span>
+                                              </div>
                                               <span
                                                 className={`text-[13px] font-bold  tracking-widest px-2 py-0.5 rounded-md ${
                                                   conv.source === "followup"
