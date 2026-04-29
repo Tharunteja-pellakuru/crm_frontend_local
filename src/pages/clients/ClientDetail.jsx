@@ -52,6 +52,18 @@ import {
   REVERSE_CATEGORY_MAP,
 } from "../../constants/categoryConstants";
 import { BASE_URL } from "../../constants/config";
+
+const parseLocalDate = (dateStr) => {
+  if (!dateStr) return new Date();
+  if (dateStr instanceof Date) return dateStr;
+  if (typeof dateStr === 'string' && dateStr.includes('T') && dateStr.endsWith('Z')) {
+    const normalized = dateStr.replace('T', ' ').replace('Z', '').split('.')[0];
+    const date = new Date(normalized);
+    if (!isNaN(date.getTime())) return date;
+  }
+  const date = new Date(dateStr);
+  return isNaN(date.getTime()) ? new Date() : date;
+};
 import { validateForm } from "../../utils/validation";
 import { extractCountryAndPhone } from "../../utils/leadUtils";
 import { formatBudget } from "../../utils/formatters";
@@ -1198,11 +1210,11 @@ const ClientDetail = ({
                                 <div className="flex items-center gap-4 text-[10px] md:text-[11px] font-bold text-slate-400 tracking-widest uppercase">
                                   <div className="flex items-center gap-1.5">
                                     <Calendar size={12} className="text-secondary" />
-                                    {new Date(fu.followup_date || fu.dueDate).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}
+                                    {parseLocalDate(fu.followup_date || fu.dueDate).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}
                                   </div>
                                   <div className="flex items-center gap-1.5">
                                     <Clock size={12} className="text-secondary" />
-                                    {new Date(fu.followup_date || fu.dueDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
+                                    {parseLocalDate(fu.followup_date || fu.dueDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
                                   </div>
                                 </div>
                               </div>
@@ -1286,7 +1298,7 @@ const ClientDetail = ({
                                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-1.5">
                                       <span className="text-[11px] md:text-[14px] font-bold text-slate-400  tracking-widest capitalize">
                                         {fu.completed_at
-                                          ? new Date(
+                                          ? parseLocalDate(
                                               fu.completed_at,
                                             ).toLocaleDateString([], {
                                               month: "short",
@@ -1294,7 +1306,7 @@ const ClientDetail = ({
                                               year: "numeric",
                                             })
                                           : fu.dueDate
-                                            ? new Date(
+                                            ? parseLocalDate(
                                                 fu.dueDate,
                                               ).toLocaleDateString([], {
                                                 month: "short",
@@ -1304,7 +1316,7 @@ const ClientDetail = ({
                                             : ""}
                                         {fu.completed_at &&
                                           " · " +
-                                            new Date(
+                                            parseLocalDate(
                                               fu.completed_at,
                                             ).toLocaleTimeString([], {
                                               hour: "2-digit",
@@ -1332,7 +1344,7 @@ const ClientDetail = ({
                                         {fu.completed_at && (
                                           <p className="text-[14px] font-bold text-slate-400 tracking-widest">
                                             Completed At:{" "}
-                                            {new Date(
+                                            {parseLocalDate(
                                               fu.completed_at,
                                             ).toLocaleDateString([], {
                                               month: "short",
@@ -1340,7 +1352,7 @@ const ClientDetail = ({
                                               year: "numeric",
                                             })}
                                             {" · "}
-                                            {new Date(
+                                            {parseLocalDate(
                                               fu.completed_at,
                                             ).toLocaleTimeString([], {
                                               hour: "2-digit",
@@ -1378,7 +1390,7 @@ const ClientDetail = ({
                                   <div className="bg-slate-50/50 p-3 rounded-xl border border-slate-100 hover:border-slate-200 transition-all">
                                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-1.5">
                                       <span className="text-[11px] md:text-[14px] font-bold text-slate-400  tracking-widest capitalize">
-                                        {new Date(conv.date).toLocaleDateString(
+                                        {parseLocalDate(conv.date).toLocaleDateString(
                                           [],
                                           {
                                             month: "short",
@@ -1560,7 +1572,7 @@ const ClientDetail = ({
                                     {group.interactions
                                       .sort(
                                         (a, b) =>
-                                          new Date(b.date) - new Date(a.date),
+                                          parseLocalDate(b.date) - parseLocalDate(a.date),
                                       )
                                       .map((conv) => (
                                         <div
@@ -1602,7 +1614,7 @@ const ClientDetail = ({
                                           >
                                             <div className="flex items-center justify-between mb-1.5">
                                               <span className="text-[14px] font-bold text-slate-400  tracking-widest">
-                                                {new Date(
+                                                {parseLocalDate(
                                                   conv.date,
                                                 ).toLocaleDateString([], {
                                                   month: "short",
@@ -1610,7 +1622,7 @@ const ClientDetail = ({
                                                   year: "numeric",
                                                 })}
                                                 {" · "}
-                                                {new Date(
+                                                {parseLocalDate(
                                                   conv.date,
                                                 ).toLocaleTimeString([], {
                                                   hour: "2-digit",

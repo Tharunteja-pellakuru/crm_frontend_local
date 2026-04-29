@@ -30,6 +30,23 @@ import {
 } from "../../constants/categoryConstants";
 import { validateForm } from "../../utils/validation";
 
+const parseLocalDate = (dateStr) => {
+  if (!dateStr) return new Date();
+  if (dateStr instanceof Date) return dateStr;
+  
+  // If the date string contains a 'T' but ends with 'Z', it might be treated as UTC.
+  // If we want to treat it as local time, we should replace T with a space and remove Z.
+  // This is a common fix when backends return local times as ISO UTC strings.
+  if (typeof dateStr === 'string' && dateStr.includes('T') && dateStr.endsWith('Z')) {
+    const normalized = dateStr.replace('T', ' ').replace('Z', '').split('.')[0];
+    const date = new Date(normalized);
+    if (!isNaN(date.getTime())) return date;
+  }
+  
+  const date = new Date(dateStr);
+  return isNaN(date.getTime()) ? new Date() : date;
+};
+
 const FollowUpList = ({
   followUps,
   clients,
@@ -199,7 +216,7 @@ const FollowUpList = ({
   const isOverdue = (date) =>
     new Date(date) < new Date(new Date().setHours(0, 0, 0, 0));
   const isToday = (date) => {
-    const d = new Date(date);
+    const d = parseLocalDate(date);
     const today = new Date();
     return (
       d.getDate() === today.getDate() &&
@@ -313,7 +330,7 @@ const FollowUpList = ({
       if (pA !== pB) return pA - pB;
 
       // Then sort by date within the same priority
-      return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+      return parseLocalDate(a.dueDate).getTime() - parseLocalDate(b.dueDate).getTime();
     });
 
   const totalPages = Math.ceil(filteredFollowUps.length / RECORDS_PER_PAGE);
@@ -812,12 +829,12 @@ const FollowUpList = ({
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2">
                       <div className="flex items-center gap-1.5 text-[12px] text-textMuted font-bold  tracking-widest">
                         <Clock size={12} className="text-secondary" />
-                        {new Date(f.dueDate).toLocaleDateString([], {
+                        {parseLocalDate(f.dueDate).toLocaleDateString([], {
                           month: "short",
                           day: "numeric",
                         })}
                         {" · "}
-                        {new Date(f.dueDate).toLocaleTimeString([], {
+                        {parseLocalDate(f.dueDate).toLocaleTimeString([], {
                           hour: "2-digit",
                           minute: "2-digit",
                           hour12: true,
@@ -873,7 +890,7 @@ const FollowUpList = ({
                           }
                         }
 
-                        const d = f.dueDate ? new Date(f.dueDate) : new Date();
+                        const d = f.dueDate ? parseLocalDate(f.dueDate) : new Date();
                         const localDate = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")}`;
                         const localHour24 = d.getHours();
                         const localHour12 = (localHour24 % 12 || 12).toString();

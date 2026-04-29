@@ -5,6 +5,18 @@ import { Area, Line, ComposedChart, XAxis, YAxis, CartesianGrid, Tooltip, Respon
 import { Users, UserPlus, Clock, CheckCircle2, ChevronRight, ChevronDown, Filter, Calendar, TrendingUp, X, Bell, Info, Inbox, Activity } from "lucide-react";
 import { BASE_URL } from "../../constants/config";
 
+const parseLocalDate = (dateStr) => {
+  if (!dateStr) return new Date();
+  if (dateStr instanceof Date) return dateStr;
+  if (typeof dateStr === 'string' && dateStr.includes('T') && dateStr.endsWith('Z')) {
+    const normalized = dateStr.replace('T', ' ').replace('Z', '').split('.')[0];
+    const date = new Date(normalized);
+    if (!isNaN(date.getTime())) return date;
+  }
+  const date = new Date(dateStr);
+  return isNaN(date.getTime()) ? new Date() : date;
+};
+
 // Simple stat card component
 function StatCard({ title, value, trend, trendUp, icon, description, delay = 0 }) {
   return (
@@ -86,7 +98,7 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
 
   // Helper functions
   function isToday(date) {
-    const d = new Date(date);
+    const d = parseLocalDate(date);
     const today = new Date();
     return d.getDate() === today.getDate() && d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear();
   }
@@ -100,7 +112,7 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
   };
 
   function isMissed(date) {
-    const d = new Date(date);
+    const d = parseLocalDate(date);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     return d < today;
@@ -498,9 +510,10 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
                           </div>
                           <span className="text-[14px] text-textMuted font-bold flex items-center gap-1 ">
                             <Clock size={10} />{" "}
-                            {new Date(f.dueDate).toLocaleTimeString([], {
+                            {parseLocalDate(f.dueDate).toLocaleTimeString([], {
                               hour: "2-digit",
                               minute: "2-digit",
+                              hour12: true,
                             })}
                           </span>
                         </div>
@@ -564,7 +577,7 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
                           </div>
                           <span className="text-[13px] text-error/60 font-black flex items-center gap-1 ">
                             <Clock size={10} />{" "}
-                            {new Date(f.dueDate).toLocaleDateString()}
+                            {parseLocalDate(f.dueDate).toLocaleDateString()}
                           </span>
                         </div>
                         <div className="flex flex-col gap-0.5">
