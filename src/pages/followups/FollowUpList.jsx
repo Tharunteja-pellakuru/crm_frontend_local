@@ -451,6 +451,21 @@ const FollowUpList = ({
     }
   };
 
+  const getModeBadge = (mode) => {
+    switch (mode?.toLowerCase()) {
+      case "call":
+        return "bg-success/10 text-success border-success/20";
+      case "email":
+        return "bg-info/10 text-info border-info/20";
+      case "meeting":
+        return "bg-secondary/10 text-secondary border-secondary/20";
+      case "whatsapp":
+        return "bg-emerald-500/10 text-emerald-600 border-emerald-500/20";
+      default:
+        return "bg-slate-50 text-slate-500 border-slate-200";
+    }
+  };
+
   // Show loading state
   if (loading) {
     return (
@@ -810,17 +825,17 @@ const FollowUpList = ({
                   >
                     <div className="flex flex-wrap items-center gap-2 mb-1.5">
                       <span
-                        className={`px-2.5 py-0.5 rounded-md text-[14px] font-bold  tracking-wider border ${getPriorityBadge(f.priority)}`}
+                        className={`px-2 py-0.5 rounded-md text-[11px] font-bold tracking-widest uppercase border ${getPriorityBadge(f.priority)}`}
                       >
                         {f.priority}
                       </span>
                       {f.followup_mode && (
-                        <span className="px-2.5 py-0.5 rounded-md text-[14px] font-bold  tracking-wider border border-slate-200 bg-slate-50 text-slate-500">
+                        <span className={`px-2 py-0.5 rounded-md text-[11px] font-bold tracking-widest uppercase border ${getModeBadge(f.followup_mode)}`}>
                           {f.followup_mode}
                         </span>
                       )}
                       {overdue && (
-                        <span className="text-[14px] font-bold  tracking-wider text-error bg-error/10 px-2.5 py-0.5 rounded-md border border-error/20">
+                        <span className="text-[11px] font-bold tracking-widest uppercase text-error bg-error/10 px-2 py-0.5 rounded-md border border-error/20">
                           Overdue
                         </span>
                       )}
@@ -829,6 +844,14 @@ const FollowUpList = ({
                       className={`text-sm font-bold text-primary tracking-tight transition-colors group-hover/content:text-secondary ${f.status === "completed" ? "line-through opacity-50" : ""}`}
                     >
                       {f.title}
+                      <span className="text-slate-400 font-medium mx-1.5">-</span>
+                      <span className="text-secondary">{client?.name}</span>
+                      {client?.status !== "Lead" && client?.status !== "Dismissed" && f.projectName && (
+                        <>
+                          <span className="text-slate-400 font-medium mx-1.5">-</span>
+                          <span className="text-secondary">{f.projectName}</span>
+                        </>
+                      )}
                     </h4>
                     {f.description && (
                       <p className="text-[13px] text-slate-400 font-medium mt-1 line-clamp-2">
@@ -849,21 +872,6 @@ const FollowUpList = ({
                           hour12: true,
                         })}
                       </div>
-                      {f.projectName && (
-                        <div className="flex items-center gap-1.5 text-[12px] text-textMuted font-bold  tracking-widest">
-                          <span className="text-secondary">•</span>
-                          {f.projectName}
-                        </div>
-                      )}
-                      <button
-                        onClick={() =>
-                          client && onSelectClient && onSelectClient(client)
-                        }
-                        className="flex items-center gap-1.5 text-[12px] text-textMuted font-bold  tracking-widest hover:text-secondary hover:underline transition-all"
-                      >
-                        <span className="text-secondary">•</span>
-                        {client?.name}
-                      </button>
                     </div>
                     {f.status === "completed" && (f.completed_at || f.completed_by) && (
                       <div className="mt-2.5 pt-2.5 border-t border-slate-100 flex flex-wrap items-center gap-x-4 gap-y-1.5">

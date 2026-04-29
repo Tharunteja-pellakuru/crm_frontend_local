@@ -488,13 +488,13 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
                         <div className="flex justify-between items-start mb-2.5">
                           <div className="flex gap-1.5 flex-wrap">
                             <span
-                              className={`px-2 py-0.5 rounded-lg text-[13px] font-bold tracking-widest ${f.priority === "High" ? "bg-error/10 text-error" : "bg-info/10 text-info"}`}
+                              className={`px-2 py-0.5 rounded-lg text-[11px] font-bold tracking-widest border ${f.priority === "High" ? "bg-error/10 text-error border-error/20" : "bg-info/10 text-info border-info/20"}`}
                             >
                               {f.priority}
                             </span>
                             {client && (
                               <span
-                                className={`px-2 py-0.5 rounded-lg text-[13px] font-bold tracking-widest ${
+                                className={`px-2 py-0.5 rounded-lg text-[11px] font-bold tracking-widest ${
                                   client.status === "Active"
                                     ? "bg-primary text-white uppercase shadow-sm"
                                     : "bg-secondary text-white uppercase shadow-sm"
@@ -554,13 +554,13 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
                         <div className="flex justify-between items-start mb-2.5">
                           <div className="flex gap-1.5 flex-wrap">
                             <span
-                              className={`px-2 py-0.5 rounded-lg text-[13px] font-black tracking-widest bg-white/50 text-error border border-error/10`}
+                              className={`px-2 py-0.5 rounded-lg text-[11px] font-black tracking-widest bg-error/10 text-error border border-error/20 uppercase`}
                             >
                               Overdue
                             </span>
                             {client && (
                               <span
-                                className={`px-2 py-0.5 rounded-lg text-[13px] font-bold tracking-widest ${
+                                className={`px-2 py-0.5 rounded-lg text-[11px] font-bold tracking-widest ${
                                   client.status === "Active"
                                     ? "bg-primary text-white uppercase shadow-sm"
                                     : "bg-secondary text-white uppercase shadow-sm"

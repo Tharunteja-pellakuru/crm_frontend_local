@@ -65,6 +65,21 @@ const parseLocalDate = (dateStr) => {
   const date = new Date(dateStr);
   return isNaN(date.getTime()) ? new Date() : date;
 };
+
+const getModeBadge = (mode) => {
+  switch (mode?.toLowerCase()) {
+    case "call":
+      return "bg-success/10 text-success border-success/20";
+    case "email":
+      return "bg-info/10 text-info border-info/20";
+    case "meeting":
+      return "bg-secondary/10 text-secondary border-secondary/20";
+    case "whatsapp":
+      return "bg-emerald-500/10 text-emerald-600 border-emerald-500/20";
+    default:
+      return "bg-slate-50 text-slate-500 border-slate-200";
+  }
+};
 import { validateForm } from "../../utils/validation";
 import { extractCountryAndPhone } from "../../utils/leadUtils";
 import { formatBudget } from "../../utils/formatters";
@@ -1221,14 +1236,14 @@ const ClientDetail = ({
                                 <div className="flex items-start justify-between gap-4">
                                   <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2 mb-2">
-                                      <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold tracking-widest uppercase ${
+                                      <span className={`px-2 py-0.5 rounded-md text-[11px] font-bold tracking-widest uppercase ${
                                         fu.priority === 'High' ? 'bg-error/10 text-error' :
                                         fu.priority === 'Medium' ? 'bg-warning/10 text-warning' :
                                         'bg-info/10 text-info'
                                       }`}>
                                         {fu.priority}
                                       </span>
-                                      <span className="text-[10px] md:text-[11px] font-bold text-slate-400 tracking-widest uppercase">
+                                      <span className={`px-2 py-0.5 rounded-md text-[11px] font-bold tracking-widest uppercase border ${getModeBadge(fu.followup_mode)}`}>
                                         {fu.followup_mode}
                                       </span>
                                     </div>
@@ -1428,13 +1443,7 @@ const ClientDetail = ({
                                         </span>
                                       </div>
                                       <span
-                                        className={`text-[11px] md:text-[13px] font-bold  tracking-widest px-2 py-0.5 rounded-md w-fit ${
-                                          conv.type === "call"
-                                            ? "bg-success/10 text-success"
-                                            : conv.type === "meeting"
-                                              ? "bg-secondary/10 text-secondary"
-                                              : "bg-info/10 text-info"
-                                        }`}
+                                        className={`text-[11px] md:text-[13px] font-bold tracking-widest px-2 py-0.5 rounded-md w-fit border uppercase ${getModeBadge(conv.type)}`}
                                       >
                                         {conv.type}
                                       </span>
@@ -1660,14 +1669,10 @@ const ClientDetail = ({
                                                 </span>
                                               </div>
                                               <span
-                                                className={`text-[13px] font-bold  tracking-widest px-2 py-0.5 rounded-md ${
+                                                className={`text-[13px] font-bold tracking-widest px-2 py-0.5 rounded-md border ${
                                                   conv.source === "followup"
-                                                    ? "bg-success/10 text-success"
-                                                    : conv.type === "call"
-                                                      ? "bg-success/10 text-success"
-                                                      : conv.type === "meeting"
-                                                        ? "bg-secondary/10 text-secondary"
-                                                        : "bg-info/10 text-info"
+                                                    ? "bg-success/10 text-success border-success/20"
+                                                    : getModeBadge(conv.type)
                                                 }`}
                                               >
                                                 {conv.source === "followup"
