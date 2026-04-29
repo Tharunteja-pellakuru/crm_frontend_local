@@ -333,16 +333,18 @@ const ClientDetail = ({
 
   const getFollowUpStatusLabel = (date) => {
     if (!date) return null;
-    const fuDate = new Date(date);
+    const fuDate = parseLocalDate(date);
     const today = new Date();
     
-    // Normalize dates to midnight for comparison
+    if (fuDate < today) {
+      return { label: "Overdue", className: "bg-error/10 text-error border-error/20" };
+    }
+    
+    // Normalize dates to midnight for comparison to see if it's "Today" or "Upcoming"
     const fuDay = new Date(fuDate.getFullYear(), fuDate.getMonth(), fuDate.getDate());
     const todayDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
     
-    if (fuDay < todayDay) {
-      return { label: "Overdue", className: "bg-error/10 text-error border-error/20" };
-    } else if (fuDay.getTime() === todayDay.getTime()) {
+    if (fuDay.getTime() === todayDay.getTime()) {
       return { label: "Today", className: "bg-warning/10 text-warning border-warning/20" };
     } else {
       return { label: "Upcoming", className: "bg-info/10 text-info border-info/20" };

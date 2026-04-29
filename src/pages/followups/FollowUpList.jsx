@@ -214,7 +214,7 @@ const FollowUpList = ({
     return client;
   };
   const isOverdue = (date) =>
-    new Date(date) < new Date(new Date().setHours(0, 0, 0, 0));
+    parseLocalDate(date) < new Date();
   const isToday = (date) => {
     const d = parseLocalDate(date);
     const today = new Date();

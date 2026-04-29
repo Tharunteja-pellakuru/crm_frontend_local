@@ -112,10 +112,7 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
   };
 
   function isMissed(date) {
-    const d = parseLocalDate(date);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return d < today;
+    return parseLocalDate(date) < new Date();
   }
 
   // Calculate stats
