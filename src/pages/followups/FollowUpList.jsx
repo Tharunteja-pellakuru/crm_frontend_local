@@ -22,6 +22,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Loader2,
+  User,
 } from "lucide-react";
 import SearchableDropdown from "../../components/common/SearchableDropdown";
 import {
@@ -780,6 +781,11 @@ const FollowUpList = ({
                       if (f.status === "completed") {
                         onToggleStatus(f.id);
                       } else {
+                        const now = new Date();
+                        setCompletionDate(now.toLocaleDateString("en-CA"));
+                        setCompletionHour((now.getHours() % 12 || 12).toString());
+                        setCompletionMinute(now.getMinutes().toString().padStart(2, "0"));
+                        setCompletionPeriod(now.getHours() >= 12 ? "PM" : "AM");
                         setCompletingFollowUpId(f.id);
                         setCompletionBrief("");
                         setShowCompletionModal(true);
@@ -856,12 +862,28 @@ const FollowUpList = ({
                         {client?.name}
                       </button>
                     </div>
+                    {f.status === "completed" && (f.completed_at || f.completed_by) && (
+                      <div className="mt-2.5 pt-2.5 border-t border-slate-100 flex flex-wrap items-center gap-x-4 gap-y-1.5">
+                        {f.completed_at && (
+                          <div className="flex items-center gap-1.5 text-[11px] font-bold tracking-widest text-success bg-success/5 px-2 py-1 rounded-md border border-success/10">
+                            <CheckCircle2 size={12} strokeWidth={3} />
+                            COMPLETED: {parseLocalDate(f.completed_at).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })} · {parseLocalDate(f.completed_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
+                          </div>
+                        )}
+                        {f.completed_by && (
+                          <div className="flex items-center gap-1.5 text-[11px] font-bold tracking-widest text-slate-400 bg-slate-50 px-2 py-1 rounded-md border border-slate-100">
+                            <User size={12} strokeWidth={3} />
+                            BY: {f.completed_by}
+                          </div>
+                        )}
+                      </div>
+                    )}
                     {f.status === "completed" && f.follow_brief && (
-                      <div className="mt-2 px-3 py-2 bg-success/5 border border-success/20 rounded-lg">
-                        <p className="text-[12px] font-bold text-success  tracking-wider mb-0.5">
-                          Conclusion
+                      <div className="mt-2 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg">
+                        <p className="text-[11px] font-bold text-slate-400 tracking-widest uppercase mb-1">
+                          Conclusion Brief
                         </p>
-                        <p className="text-[13px] text-slate-600 font-medium">
+                        <p className="text-[13px] text-primary font-medium leading-relaxed">
                           {f.follow_brief}
                         </p>
                       </div>
@@ -878,7 +900,7 @@ const FollowUpList = ({
                         let compPrd = "PM";
 
                         if (f.status === "completed" && f.completed_at) {
-                          const cd = new Date(f.completed_at);
+                          const cd = parseLocalDate(f.completed_at);
                           if (!isNaN(cd.getTime())) {
                             compDate = `${cd.getFullYear()}-${(cd.getMonth() + 1).toString().padStart(2, "0")}-${cd.getDate().toString().padStart(2, "0")}`;
                             compHr = (cd.getHours() % 12 || 12).toString();

@@ -293,7 +293,7 @@ const ClientDetail = ({
     f.status?.toLowerCase() !== "completed" && 
     f.followup_status?.toLowerCase() !== "completed" &&
     index === self.findIndex((t) => t.id === f.id)
-  ).sort((a, b) => new Date(a.followup_date || a.dueDate) - new Date(b.followup_date || b.dueDate));
+  ).sort((a, b) => parseLocalDate(a.followup_date || a.dueDate) - parseLocalDate(b.followup_date || b.dueDate));
 
   const handleLogInteraction = (e) => {
     e.preventDefault();
