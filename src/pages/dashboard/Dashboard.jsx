@@ -481,8 +481,7 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
                         key={`dash-task-today-${f.id}`}
                         onClick={() => {
                           if (!client) return;
-                          const route = client.status?.toLowerCase() === "lead" ? "followups-leads" : "followups-clients";
-                          onNavigate(route);
+                          onSelectFollowUp(client);
                         }}
                         className="p-4 bg-slate-50 border border-slate-100 rounded-xl hover:bg-white hover:border-secondary transition-all cursor-pointer shadow-sm group"
                       >
@@ -548,8 +547,7 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
                         key={`dash-task-missed-${f.id}`}
                         onClick={() => {
                           if (!client) return;
-                          const route = client.status?.toLowerCase() === "lead" ? "followups-leads" : "followups-clients";
-                          onNavigate(route);
+                          onSelectFollowUp(client);
                         }}
                         className="p-4 bg-error/5 border border-error/10 rounded-xl hover:bg-white hover:border-error transition-all cursor-pointer shadow-sm group"
                       >

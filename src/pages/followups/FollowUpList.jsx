@@ -804,7 +804,10 @@ const FollowUpList = ({
                       <CheckCircle2 size={14} strokeWidth={3} />
                     )}
                   </button>
-                  <div className="flex-1 min-w-0 text-left">
+                  <div 
+                    className="flex-1 min-w-0 text-left cursor-pointer group/content"
+                    onClick={() => client && onSelectClient && onSelectClient(client)}
+                  >
                     <div className="flex flex-wrap items-center gap-2 mb-1.5">
                       <span
                         className={`px-2.5 py-0.5 rounded-md text-[14px] font-bold  tracking-wider border ${getPriorityBadge(f.priority)}`}
@@ -823,7 +826,7 @@ const FollowUpList = ({
                       )}
                     </div>
                     <h4
-                      className={`text-sm font-bold text-primary tracking-tight ${f.status === "completed" ? "line-through opacity-50" : ""}`}
+                      className={`text-sm font-bold text-primary tracking-tight transition-colors group-hover/content:text-secondary ${f.status === "completed" ? "line-through opacity-50" : ""}`}
                     >
                       {f.title}
                     </h4>
