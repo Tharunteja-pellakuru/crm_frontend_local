@@ -2058,7 +2058,6 @@ function AppRoutes() {
       } else if (newLead && enquiryUuid) {
         await handleUpdateEnquiryStatus(enquiryUuid, "Converted");
       }
-      navigate("/leads");
     } catch (err) {
       console.error("Error promoting enquiry:", err);
     }
