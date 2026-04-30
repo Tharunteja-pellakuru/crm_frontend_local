@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { toast } from "react-hot-toast";
 import {
   ArrowLeft,
@@ -19,6 +19,8 @@ import {
   Upload,
   Loader2,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import DatePicker from "../../components/ui/DatePicker";
 import {
@@ -40,6 +42,16 @@ const ProjectOverview = ({
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  
+  const pendingRef = useRef(null);
+  const historyRef = useRef(null);
+
+  const scrollContainer = (ref, dir) => {
+    if (ref.current) {
+      const scrollAmount = ref.current.clientWidth;
+      ref.current.scrollBy({ left: dir === 'left' ? -scrollAmount : scrollAmount, behavior: 'smooth' });
+    }
+  };
   const [formData, setFormData] = useState({
     name: project?.name || "",
     status: project?.status || "Pending",
@@ -531,16 +543,21 @@ const ProjectOverview = ({
             </div>
             <div className="p-5">
               {(() => {
-                const combinedHistory = [
-                  ...(followUps?.filter((f) => (f.projectId || f.project_id) == project.id) || []),
-                  ...(activities?.filter((a) => (a.projectId || a.project_id) == project.id) || []),
+                const projectFollowUps = followUps?.filter((f) => (f.projectId || f.project_id) == project.id) || [];
+                const projectActivities = activities?.filter((a) => (a.projectId || a.project_id) == project.id) || [];
+
+                const pendingOrUpcoming = projectFollowUps.filter(f => f.status === 'pending').sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+
+                const completedAndHistory = [
+                  ...projectFollowUps.filter(f => f.status === 'completed'),
+                  ...projectActivities
                 ].sort((a, b) => {
-                  const dateA = new Date(a.dueDate || a.date);
-                  const dateB = new Date(b.dueDate || b.date);
+                  const dateA = new Date(a.dueDate || a.date || a.createdAt);
+                  const dateB = new Date(b.dueDate || b.date || b.createdAt);
                   return dateB - dateA;
                 });
 
-                if (combinedHistory.length === 0) {
+                if (pendingOrUpcoming.length === 0 && completedAndHistory.length === 0) {
                   return (
                     <div className="text-center py-8">
                       <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-3 text-slate-300">
@@ -554,111 +571,145 @@ const ProjectOverview = ({
                 }
 
                 return (
-                  <div className="relative border-l-2 border-slate-100 ml-3 space-y-4">
-                    {combinedHistory.map((item, idx) => {
-                      const isFollowUp = !!item.dueDate;
-                      const date = new Date(item.dueDate || item.date);
-                      const type = (item.followup_mode || item.type || "call").toLowerCase();
-
-                      return (
-                        <div key={item.id || idx} className="ml-6 relative">
-                          <div
-                            className={`absolute -left-[33px] w-6 h-6 rounded-lg flex items-center justify-center text-white shadow-sm z-10 ${
-                              isFollowUp
-                                ? item.status === "completed"
-                                  ? "bg-success"
-                                  : "bg-warning"
-                                : type === "email"
-                                  ? "bg-info"
-                                  : type === "call"
-                                    ? "bg-success"
-                                    : type === "meeting"
-                                      ? "bg-secondary"
-                                      : "bg-slate-400"
-                            }`}
-                          >
-                            {type === "call" ? (
-                              <Phone size={11} strokeWidth={2.5} />
-                            ) : type === "meeting" ? (
-                              <Calendar size={11} strokeWidth={2.5} />
-                            ) : (
-                              <Mail size={11} strokeWidth={2.5} />
-                            )}
+                  <div className="space-y-8">
+                    {/* Pending or upcoming Follow ups */}
+                    <div>
+                      <div className="flex items-center justify-between mb-4">
+                        <h4 className="text-[11px] sm:text-[13px] font-bold text-slate-400 tracking-[0.2em] uppercase flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-warning"></span>
+                          Pending Follow-ups ({pendingOrUpcoming.length})
+                        </h4>
+                        {pendingOrUpcoming.length > 1 && (
+                          <div className="flex items-center gap-2">
+                            <button onClick={() => scrollContainer(pendingRef, 'left')} className="p-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-400 hover:text-primary transition-colors border border-slate-200 shadow-sm"><ChevronLeft size={16} /></button>
+                            <button onClick={() => scrollContainer(pendingRef, 'right')} className="p-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-400 hover:text-primary transition-colors border border-slate-200 shadow-sm"><ChevronRight size={16} /></button>
                           </div>
-                          <div
-                            className={`${isFollowUp ? (item.status === "completed" ? "bg-success/5 border-success/20" : "bg-warning/5 border-warning/20") : "bg-slate-50 border-slate-100"} p-3.5 rounded-xl border transition-all hover:shadow-sm`}
-                          >
-                            <div className="flex items-center justify-between mb-1.5">
-                              <span className="text-[12px] md:text-[14px] font-bold text-slate-400 tracking-widest">
-                                {date.toLocaleDateString([], {
-                                  month: "short",
-                                  day: "numeric",
-                                  year: "numeric",
-                                })}
-                                {" · "}
-                                {date.toLocaleTimeString([], {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                  hour12: true,
-                                })}
-                              </span>
-                              <span
-                                className={`text-[11px] md:text-[13px] font-bold tracking-widest px-2 py-0.5 rounded-md ${
-                                  isFollowUp
-                                    ? item.status === "completed"
-                                      ? "bg-success/10 text-success"
-                                      : "bg-warning/10 text-warning"
-                                    : "bg-slate-200 text-slate-600"
-                                }`}
-                              >
-                                {isFollowUp 
-                                  ? (item.status === "completed" ? "FOLLOW-UP COMPLETED" : item.status.toUpperCase()) 
-                                  : "INTERACTION"}
-                              </span>
-                            </div>
-                            <p className="text-[13px] font-bold text-primary tracking-tight mb-1">
-                              {item.title || (isFollowUp ? "Follow-up Scheduled" : "Conversation Logged")}
-                            </p>
-                            
-                            {isFollowUp && item.status === "completed" ? (
-                              <div className="space-y-3 mt-3">
-                                {item.description && (
-                                  <div className="p-2.5 bg-slate-50 border border-slate-100 rounded-lg">
-                                    <p className="text-[13px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
-                                      <span className="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
-                                      Planned Follow-up
-                                    </p>
-                                    <p className="text-[13px] text-slate-600 leading-relaxed font-medium">
-                                      {item.description}
-                                    </p>
+                        )}
+                      </div>
+                      {pendingOrUpcoming.length > 0 ? (
+                        <div ref={pendingRef} className="flex overflow-x-auto gap-4 pb-4 snap-x snap-mandatory no-scrollbar scroll-smooth">
+                          {pendingOrUpcoming.map((item, idx) => {
+                            const date = new Date(item.dueDate);
+                            const type = (item.followup_mode || "call").toLowerCase();
+                            return (
+                              <div key={`pending-${item.id || idx}`} className="min-w-full w-full shrink-0 snap-start bg-warning/5 border border-warning/20 rounded-xl p-4 flex flex-col hover:shadow-md transition-all">
+                                <div className="flex items-center justify-between mb-3">
+                                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-white shadow-sm ${
+                                      type === "email" ? "bg-info" : type === "call" ? "bg-success" : type === "meeting" ? "bg-secondary" : "bg-slate-400"
+                                  }`}>
+                                    {type === "call" ? <Phone size={14} strokeWidth={2.5} /> : type === "meeting" ? <Calendar size={14} strokeWidth={2.5} /> : <Mail size={14} strokeWidth={2.5} />}
                                   </div>
-                                )}
-                                {item.follow_brief && (
-                                  <div className="mt-2">
-                                    <p className="text-[13px] font-bold text-success uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
-                                      <span className="w-1.5 h-1.5 rounded-full bg-success"></span>
-                                      Completion Summary
-                                    </p>
-                                    <p className="text-[12px] font-medium text-primary leading-relaxed">
-                                      {item.follow_brief}
-                                    </p>
+                                  <span className="text-[11px] md:text-[13px] font-bold tracking-widest px-2 py-0.5 rounded-md bg-warning/10 text-warning uppercase">
+                                    PENDING
+                                  </span>
+                                </div>
+                                <h5 className="text-[14px] font-bold text-primary tracking-tight mb-2 line-clamp-1">{item.title}</h5>
+                                {item.description && <p className="text-[12px] font-medium text-slate-500 line-clamp-2 mb-3">{item.description}</p>}
+                                <div className="mt-auto pt-3 border-t border-warning/10 flex items-center gap-2 text-[12px] font-bold text-slate-400 tracking-widest">
+                                  <Calendar size={14} className="text-warning" />
+                                  <span>
+                                    {date.toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" })}
+                                    {" · "}
+                                    {date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true })}
+                                  </span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <div className="text-[12px] font-bold text-slate-400 tracking-widest italic bg-slate-50 p-4 rounded-xl border border-slate-100">No pending follow-ups.</div>
+                      )}
+                    </div>
+
+                    {/* Completed Follow ups & History */}
+                    <div>
+                      <div className="flex items-center justify-between mb-4">
+                        <h4 className="text-[11px] sm:text-[13px] font-bold text-slate-400 tracking-[0.2em] uppercase flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-success"></span>
+                          History & Completed ({completedAndHistory.length})
+                        </h4>
+                        {completedAndHistory.length > 1 && (
+                          <div className="flex items-center gap-2">
+                            <button onClick={() => scrollContainer(historyRef, 'left')} className="p-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-400 hover:text-primary transition-colors border border-slate-200 shadow-sm"><ChevronLeft size={16} /></button>
+                            <button onClick={() => scrollContainer(historyRef, 'right')} className="p-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-400 hover:text-primary transition-colors border border-slate-200 shadow-sm"><ChevronRight size={16} /></button>
+                          </div>
+                        )}
+                      </div>
+                      {completedAndHistory.length > 0 ? (
+                        <div ref={historyRef} className="flex overflow-x-auto gap-4 pb-4 snap-x snap-mandatory no-scrollbar scroll-smooth">
+                          {completedAndHistory.map((item, idx) => {
+                            const isFollowUp = !!item.dueDate;
+                            const date = new Date(item.dueDate || item.date || item.createdAt);
+                            const type = (item.followup_mode || item.type || "call").toLowerCase();
+                            return (
+                              <div key={`history-${item.id || idx}`} className={`min-w-full w-full shrink-0 snap-start rounded-xl p-4 flex flex-col hover:shadow-md transition-all ${isFollowUp ? 'bg-success/5 border border-success/20' : 'bg-slate-50 border border-slate-100'}`}>
+                                <div className="flex items-center justify-between mb-3">
+                                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-white shadow-sm ${
+                                      isFollowUp ? "bg-success" : type === "email" ? "bg-info" : type === "call" ? "bg-success" : type === "meeting" ? "bg-secondary" : "bg-slate-400"
+                                  }`}>
+                                    {type === "call" ? <Phone size={14} strokeWidth={2.5} /> : type === "meeting" ? <Calendar size={14} strokeWidth={2.5} /> : <Mail size={14} strokeWidth={2.5} />}
                                   </div>
-                                )}
-                                {item.completed_by && (
-                                  <p className="text-[14px] font-bold text-slate-400 tracking-widest mt-2">
-                                    Completed by: {item.completed_by}
+                                  <span className={`text-[11px] md:text-[13px] font-bold tracking-widest px-2 py-0.5 rounded-md uppercase ${isFollowUp ? 'bg-success/10 text-success' : 'bg-slate-200 text-slate-600'}`}>
+                                    {isFollowUp ? "COMPLETED" : "LOGGED"}
+                                  </span>
+                                </div>
+                                <h5 className="text-[14px] font-bold text-primary tracking-tight mb-2 line-clamp-1">{item.title || "Conversation Logged"}</h5>
+                                
+                                {isFollowUp ? (
+                                  <div className="flex-1">
+                                    {item.follow_brief && (
+                                      <div className="mb-2">
+                                        <p className="text-[12px] font-medium text-primary line-clamp-3">
+                                          "{item.follow_brief}"
+                                        </p>
+                                      </div>
+                                    )}
+                                    {item.completed_by && (
+                                      <p className="text-[11px] font-bold text-slate-400 tracking-widest mt-1">
+                                        By: {item.completed_by}
+                                      </p>
+                                    )}
+                                  </div>
+                                ) : (
+                                  <p className="text-[12px] font-medium text-primary/80 leading-relaxed italic line-clamp-3 flex-1">
+                                    "{item.description}"
                                   </p>
                                 )}
+                                
+                                <div className={`mt-auto pt-3 flex flex-col gap-1.5 text-[12px] font-bold tracking-widest ${isFollowUp ? 'border-t border-success/10 text-success/70' : 'border-t border-slate-200 text-slate-400'}`}>
+                                  {isFollowUp ? (
+                                    <>
+                                      <div className="flex items-center gap-2">
+                                        <Calendar size={14} className="text-success" />
+                                        <span>Scheduled: {new Date(item.dueDate).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" })} · {new Date(item.dueDate).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true })}</span>
+                                      </div>
+                                      {item.completed_at && (
+                                        <div className="flex items-center gap-2">
+                                          <CheckCircle size={14} className="text-success" />
+                                          <span>Completed: {new Date(item.completed_at).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" })} · {new Date(item.completed_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true })}</span>
+                                        </div>
+                                      )}
+                                    </>
+                                  ) : (
+                                    <div className="flex items-center gap-2">
+                                      <Calendar size={14} className="text-slate-400" />
+                                      <span>
+                                        {date.toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" })}
+                                        {" · "}
+                                        {date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true })}
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
                               </div>
-                            ) : (
-                              <p className="text-[12px] font-medium text-primary/80 leading-relaxed italic">
-                                "{item.follow_brief || item.description}"
-                              </p>
-                            )}
-                          </div>
+                            );
+                          })}
                         </div>
-                      );
-                    })}
+                      ) : (
+                        <div className="text-[12px] font-bold text-slate-400 tracking-widest italic bg-slate-50 p-4 rounded-xl border border-slate-100">No history available.</div>
+                      )}
+                    </div>
                   </div>
                 );
               })()}
