@@ -303,7 +303,7 @@ const FollowUpList = ({
 
   const filteredFollowUps = baseFiltered
     .filter((f) => {
-      if (f.status === "completed" && activeFilter !== "All") return false;
+      if (f.status === "completed" && activeFilter !== "All") return false; 
       if (activeFilter === "Overdue")
         return isOverdue(f.dueDate) && f.status === "pending";
       if (activeFilter === "Today")
@@ -325,13 +325,7 @@ const FollowUpList = ({
       if (isCompletedA && !isCompletedB) return 1;
       if (!isCompletedA && isCompletedB) return -1;
 
-      // Sort by timeframe first (Overdue -> Today -> Upcoming)
-      const getTfWeight = (item) => isOverdue(item.dueDate) ? 1 : (isToday(item.dueDate) ? 2 : 3);
-      const tA = getTfWeight(a);
-      const tB = getTfWeight(b);
-      if (tA !== tB) return tA - tB;
-
-      // Sort by priority second (High → Medium → Low)
+      // Sort by priority first (High → Medium → Low)
       const pA = priorityOrder[a.priority] ?? 1;
       const pB = priorityOrder[b.priority] ?? 1;
       if (pA !== pB) return pA - pB;
@@ -800,34 +794,33 @@ const FollowUpList = ({
               let showTimeframeHeader = false;
               
               if (!prev) {
-                showTimeframeHeader = true;
                 showPriorityHeader = true;
+                showTimeframeHeader = true;
               } else {
-                 const prevOverdue = isOverdue(prev.dueDate) && prev.status === "pending";
-                 const prevToday = isToday(prev.dueDate) && prev.status === "pending";
-                 const prevTimeframe = prev.status === "completed" ? "Completed" : (prevOverdue ? "Overdue" : (prevToday ? "Today" : "Upcoming"));
-                 
-                 if (timeframe !== prevTimeframe || (prev.status === "completed" !== (f.status === "completed"))) {
-                    showTimeframeHeader = true;
+                 if (prev.priority !== f.priority || (prev.status === "completed" !== (f.status === "completed"))) {
                     showPriorityHeader = true;
+                    showTimeframeHeader = true;
                  } else {
-                    if (prev.priority !== f.priority) {
-                      showPriorityHeader = true;
+                    const prevOverdue = isOverdue(prev.dueDate) && prev.status === "pending";
+                    const prevToday = isToday(prev.dueDate) && prev.status === "pending";
+                    const prevTimeframe = prev.status === "completed" ? "Completed" : (prevOverdue ? "Overdue" : (prevToday ? "Today" : "Upcoming"));
+                    if (timeframe !== prevTimeframe) {
+                      showTimeframeHeader = true;
                     }
                  }
               }
 
               return (
                 <React.Fragment key={`group-${f.id}`}>
-                  {showTimeframeHeader && (
+                  {showPriorityHeader && (
                     <div className="w-full mt-4 mb-1 flex items-center gap-3">
-                       <h3 className="text-[13px] font-black text-[#18254D] uppercase tracking-widest">{f.status === "completed" ? "Completed Tasks" : timeframe}</h3>
+                       <h3 className="text-[13px] font-black text-[#18254D] uppercase tracking-widest">{f.status === "completed" ? "Completed Tasks" : `${f.priority} Priority`}</h3>
                        <div className="flex-1 h-px bg-slate-200"></div>
                     </div>
                   )}
-                  {showPriorityHeader && f.status !== "completed" && (
+                  {showTimeframeHeader && f.status !== "completed" && (
                     <div className="w-full mt-1 mb-0.5 ml-1">
-                       <h4 className="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase">{f.priority} Priority</h4>
+                       <h4 className="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase">{timeframe}</h4>
                     </div>
                   )}
                   <div
