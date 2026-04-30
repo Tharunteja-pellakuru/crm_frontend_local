@@ -379,6 +379,7 @@ const ProjectBoard = ({
   onDeleteProject,
 }) => {
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [selectedPriority, setSelectedPriority] = useState("All");
   const [projectToDelete, setProjectToDelete] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [isFilterPopupOpen, setIsFilterPopupOpen] = useState(false);
@@ -503,6 +504,8 @@ const ProjectBoard = ({
     const matchesStatus = p.status === activeStage;
     const matchesCategory =
       selectedCategory === "All" ? true : (p.category || 1) === selectedCategory;
+    const matchesPriority = 
+      selectedPriority === "All" ? true : (p.priority?.toLowerCase() === selectedPriority.toLowerCase());
     const query = searchQuery.toLowerCase();
     const matchesSearch =
       !query ||
@@ -512,7 +515,12 @@ const ProjectBoard = ({
         .find((c) => c.id == p.clientId || c.client_id == p.clientId)
         ?.company?.toLowerCase()
         .includes(query);
-    return matchesStatus && matchesCategory && matchesSearch;
+    return matchesStatus && matchesCategory && matchesPriority && matchesSearch;
+  }).sort((a, b) => {
+    if (!a.deadline && !b.deadline) return 0;
+    if (!a.deadline) return 1;
+    if (!b.deadline) return -1;
+    return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
   });
 
   const handleCategoryChange = (cat) => {
@@ -660,11 +668,11 @@ const ProjectBoard = ({
                   className={selectedCategory !== "All" ? "text-secondary" : "text-slate-400"}
                 />
                 <span>FILTERS</span>
-                {selectedCategory !== "All" && (
+                {selectedCategory !== "All" || selectedPriority !== "All" ? (
                   <span className="flex items-center justify-center w-5 h-5 bg-secondary text-white text-[10px] font-black rounded-full ml-1 shadow-sm">
-                    1
+                    {(selectedCategory !== "All" ? 1 : 0) + (selectedPriority !== "All" ? 1 : 0)}
                   </span>
-                )}
+                ) : null}
                 <ChevronDown
                   size={14}
                   className={`transition-transform duration-300 ${isFilterPopupOpen ? "rotate-180" : ""}`}
@@ -694,10 +702,11 @@ const ProjectBoard = ({
                             Filter Projects
                           </h3>
                         </div>
-                        {selectedCategory !== "All" && (
+                        {(selectedCategory !== "All" || selectedPriority !== "All") && (
                           <button
                             onClick={() => {
                               handleCategoryChange("All");
+                              setSelectedPriority("All");
                               setIsFilterPopupOpen(false);
                             }}
                             className="text-[10px] font-black text-rose-500 hover:text-rose-600 tracking-widest uppercase transition-colors"
@@ -724,6 +733,26 @@ const ProjectBoard = ({
                             value={selectedCategory}
                             onChange={(val) => {
                               handleCategoryChange(val);
+                            }}
+                          />
+                        </div>
+
+                        {/* Priority Section */}
+                        <div className="space-y-3 pt-4 border-t border-slate-50">
+                          <label className="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase ml-1">
+                            Project Priority
+                          </label>
+                          <SearchableDropdown
+                            placeholder="Select Priority..."
+                            options={[
+                              { label: "ALL", value: "All" },
+                              { label: "HIGH", value: "High" },
+                              { label: "MEDIUM", value: "Medium" },
+                              { label: "LOW", value: "Low" },
+                            ]}
+                            value={selectedPriority}
+                            onChange={(val) => {
+                              setSelectedPriority(val);
                             }}
                           />
                         </div>
@@ -764,7 +793,9 @@ const ProjectBoard = ({
               (p) =>
                 p.status === column.id &&
                 (selectedCategory === "All" ||
-                  (p.category || 1) === selectedCategory),
+                  (p.category || 1) === selectedCategory) &&
+                (selectedPriority === "All" ||
+                  (p.priority?.toLowerCase() === selectedPriority.toLowerCase()))
             ).length;
             const isActive = activeStage === column.id;
             return (
