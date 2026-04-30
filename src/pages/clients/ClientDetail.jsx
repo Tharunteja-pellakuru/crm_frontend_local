@@ -1197,7 +1197,7 @@ const ClientDetail = ({
                     <div className="flex items-center justify-between mb-4">
                       <h3 className="text-[12px] md:text-[14px] font-bold text-primary tracking-widest uppercase flex items-center gap-2">
                         <Clock size={16} className="text-secondary" />
-                        Upcoming Follow-ups
+                        Follow-ups
                       </h3>
                     </div>
                     
