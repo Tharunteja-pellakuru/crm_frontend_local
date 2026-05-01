@@ -1053,7 +1053,7 @@ const LeadList = ({
                     >
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-6">
-                          <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-primary flex items-center justify-center text-white font-bold text-xl border-2 border-slate-50 shadow-lg shrink-0">
+                          <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-primary flex items-center justify-center text-white font-bold text-xl border-2 border-slate-50 shadow-lg shrink-0">
                             {lead.name.charAt(0).toUpperCase()}
                           </div>
                           <div className="min-w-0 flex items-center gap-4">

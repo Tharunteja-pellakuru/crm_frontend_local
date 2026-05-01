@@ -21,6 +21,8 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  Clock,
+  CheckCircle2,
 } from "lucide-react";
 import DatePicker from "../../components/ui/DatePicker";
 import {
@@ -30,6 +32,136 @@ import { BASE_URL } from "../../constants/config";
 import { validateForm } from "../../utils/validation";
 import { commonCurrencies } from "../../utils/locationData";
 import { formatBudget, parseBudget } from "../../utils/formatters";
+
+const parseLocalDate = (dateStr) => {
+  if (!dateStr) return new Date();
+  if (dateStr instanceof Date) return dateStr;
+  if (typeof dateStr === 'string' && dateStr.includes('T') && dateStr.endsWith('Z')) {
+    const normalized = dateStr.replace('T', ' ').replace('Z', '').split('.')[0];
+    const date = new Date(normalized);
+    if (!isNaN(date.getTime())) return date;
+  }
+  const date = new Date(dateStr);
+  return isNaN(date.getTime()) ? new Date() : date;
+};
+
+const getModeBadge = (mode) => {
+  switch (mode?.toLowerCase()) {
+    case "call":
+      return "bg-success/10 text-success border-success/20";
+    case "email":
+      return "bg-info/10 text-info border-info/20";
+    case "meeting":
+      return "bg-secondary/10 text-secondary border-secondary/20";
+    case "whatsapp":
+      return "bg-emerald-500/10 text-emerald-600 border-emerald-500/20";
+    default:
+      return "bg-slate-50 text-slate-500 border-slate-200";
+  }
+};
+
+const ConversationCard = ({ conv }) => {
+  const isFollowup = conv.source === "followup";
+  const isPending = conv.source === "pending";
+  const type = (conv.type || conv.followup_mode || "call").toLowerCase();
+  
+  const createdDate = parseLocalDate(conv.created_at || conv.createdAt || conv.joinedDate || conv.date || conv.dueDate);
+  const completedDate = conv.completed_at ? parseLocalDate(conv.completed_at) : null;
+  const dueDate = conv.followup_date ? parseLocalDate(conv.followup_date) : conv.dueDate ? parseLocalDate(conv.dueDate) : createdDate;
+
+  return (
+    <div className={`min-w-full w-full shrink-0 snap-start rounded-xl p-4 flex flex-col hover:shadow-md transition-all border ${
+      isFollowup ? "bg-success/5 border-success/20 shadow-sm shadow-success/5" : 
+      isPending ? "bg-warning/5 border-warning/20 shadow-sm shadow-warning/5" : 
+      "bg-slate-50/50 border-slate-100 hover:border-slate-200"
+    }`}>
+      <div className="flex items-center justify-between mb-3">
+        <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-white shadow-sm ${
+          isPending ? "bg-warning" : isFollowup ? "bg-success" : type === "email" ? "bg-info" : type === "call" ? "bg-success" : type === "meeting" ? "bg-secondary" : type === "whatsapp" ? "bg-[#25D366]" : "bg-slate-400"
+        }`}>
+          {type === "call" ? <Phone size={14} strokeWidth={2.5} /> : type === "meeting" ? <Calendar size={14} strokeWidth={2.5} /> : type === "whatsapp" ? <MessageSquare size={14} strokeWidth={2.5} /> : <Mail size={14} strokeWidth={2.5} />}
+        </div>
+        <span className={`text-[11px] md:text-[13px] font-bold tracking-widest px-2 py-0.5 rounded-md border uppercase ${
+          isPending ? "bg-warning/10 text-warning border-warning/20" :
+          isFollowup ? "bg-success/10 text-success border-success/20" : getModeBadge(type)
+        }`}>
+          {isPending ? "PENDING" : isFollowup ? "FOLLOW-UP COMPLETED" : type}
+        </span>
+      </div>
+      
+      {conv.title && (
+        <h5 className="text-[14px] font-bold text-primary tracking-tight mb-2 line-clamp-1 opacity-90">{conv.title}</h5>
+      )}
+      
+      <div className="flex-1 space-y-3 mb-4">
+        {isFollowup && conv.originalDescription && (
+          <div className="p-2.5 bg-white/50 border border-slate-100 rounded-lg">
+            <p className="text-[12px] text-slate-600 font-medium line-clamp-2">
+              {conv.originalDescription}
+            </p>
+          </div>
+        )}
+        <div>
+          {isFollowup && (
+            <p className="text-[11px] font-bold text-success uppercase tracking-widest mb-1 flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-success"></span>
+              Summary
+            </p>
+          )}
+          <p className="text-[12px] font-medium text-primary leading-relaxed line-clamp-3">
+            {conv.description || conv.follow_brief}
+          </p>
+        </div>
+      </div>
+      
+      <div className={`mt-auto pt-3 flex flex-col gap-1.5 text-[11px] font-bold tracking-widest ${
+        isFollowup ? 'border-t border-success/10 text-success/70' : 
+        isPending ? 'border-t border-warning/10 text-warning/70' : 
+        'border-t border-slate-200 text-slate-400'
+      }`}>
+        {(isFollowup || isPending) && (
+          <div className="flex items-center gap-1.5 mb-1 text-slate-400">
+            <Clock size={12} className={isPending ? "text-warning" : ""} />
+            <span>
+              Follow-up Scheduled Date: {dueDate.toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" })}
+              {" · "}
+              {dueDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true })}
+            </span>
+          </div>
+        )}
+        {isFollowup && (
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <CheckCircle2 size={12} className="text-success" />
+              <span>
+                Follow-up Completed Date: {completedDate ? completedDate.toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" }) : "N/A"}
+                {completedDate && " · "}
+                {completedDate && completedDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true })}
+              </span>
+            </div>
+          </div>
+        )}
+        {!isFollowup && !isPending && (
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <Calendar size={12} className="text-slate-400" />
+              <span>
+                Interaction Date: {createdDate.toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" })}
+                {" · "}
+                {createdDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true })}
+              </span>
+            </div>
+          </div>
+        )}
+        {((isFollowup && conv.completed_by) || conv.completedBy) && (
+          <p className={`mt-1 ${isFollowup ? "text-success/70" : "text-slate-400"}`}>
+            Completed by: {conv.completed_by || conv.completedBy}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+};
 
 const ProjectOverview = ({
   project,
@@ -275,10 +407,10 @@ const ProjectOverview = ({
         <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
           <button
             onClick={onBack}
-            className="p-2 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-primary transition-all shrink-0"
+            className="p-1.5 hover:bg-slate-50 rounded-lg text-slate-400 hover:text-primary transition-all shrink-0 active:scale-95"
             title="Back to Board"
           >
-            <ArrowLeft size={18} strokeWidth={2.5} />
+            <ArrowLeft size={16} strokeWidth={2.5} />
           </button>
           <h2 className="text-base md:text-xl font-bold text-[#18254D] tracking-tight leading-tight line-clamp-1">
             {formData.name}
@@ -588,34 +720,12 @@ const ProjectOverview = ({
                       </div>
                       {pendingOrUpcoming.length > 0 ? (
                         <div ref={pendingRef} className="flex overflow-x-auto gap-4 pb-4 snap-x snap-mandatory no-scrollbar scroll-smooth">
-                          {pendingOrUpcoming.map((item, idx) => {
-                            const date = new Date(item.dueDate);
-                            const type = (item.followup_mode || "call").toLowerCase();
-                            return (
-                              <div key={`pending-${item.id || idx}`} className="min-w-full w-full shrink-0 snap-start bg-warning/5 border border-warning/20 rounded-xl p-4 flex flex-col hover:shadow-md transition-all">
-                                <div className="flex items-center justify-between mb-3">
-                                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-white shadow-sm ${
-                                      type === "email" ? "bg-info" : type === "call" ? "bg-success" : type === "meeting" ? "bg-secondary" : "bg-slate-400"
-                                  }`}>
-                                    {type === "call" ? <Phone size={14} strokeWidth={2.5} /> : type === "meeting" ? <Calendar size={14} strokeWidth={2.5} /> : <Mail size={14} strokeWidth={2.5} />}
-                                  </div>
-                                  <span className="text-[11px] md:text-[13px] font-bold tracking-widest px-2 py-0.5 rounded-md bg-warning/10 text-warning uppercase">
-                                    PENDING
-                                  </span>
-                                </div>
-                                <h5 className="text-[14px] font-bold text-primary tracking-tight mb-2 line-clamp-1">{item.title}</h5>
-                                {item.description && <p className="text-[12px] font-medium text-slate-500 line-clamp-2 mb-3">{item.description}</p>}
-                                <div className="mt-auto pt-3 border-t border-warning/10 flex items-center gap-2 text-[12px] font-bold text-slate-400 tracking-widest">
-                                  <Calendar size={14} className="text-warning" />
-                                  <span>
-                                    {date.toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" })}
-                                    {" · "}
-                                    {date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true })}
-                                  </span>
-                                </div>
-                              </div>
-                            );
-                          })}
+                          {pendingOrUpcoming.map((item, idx) => (
+                            <ConversationCard key={`pending-${item.id || idx}`} conv={{
+                              ...item,
+                              source: "pending",
+                            }} />
+                          ))}
                         </div>
                       ) : (
                         <div className="text-[12px] font-bold text-slate-400 tracking-widest italic bg-slate-50 p-4 rounded-xl border border-slate-100">No pending follow-ups.</div>
@@ -640,69 +750,13 @@ const ProjectOverview = ({
                         <div ref={historyRef} className="flex overflow-x-auto gap-4 pb-4 snap-x snap-mandatory no-scrollbar scroll-smooth">
                           {completedAndHistory.map((item, idx) => {
                             const isFollowUp = !!item.dueDate;
-                            const date = new Date(item.dueDate || item.date || item.createdAt);
-                            const type = (item.followup_mode || item.type || "call").toLowerCase();
                             return (
-                              <div key={`history-${item.id || idx}`} className={`min-w-full w-full shrink-0 snap-start rounded-xl p-4 flex flex-col hover:shadow-md transition-all ${isFollowUp ? 'bg-success/5 border border-success/20' : 'bg-slate-50 border border-slate-100'}`}>
-                                <div className="flex items-center justify-between mb-3">
-                                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-white shadow-sm ${
-                                      isFollowUp ? "bg-success" : type === "email" ? "bg-info" : type === "call" ? "bg-success" : type === "meeting" ? "bg-secondary" : "bg-slate-400"
-                                  }`}>
-                                    {type === "call" ? <Phone size={14} strokeWidth={2.5} /> : type === "meeting" ? <Calendar size={14} strokeWidth={2.5} /> : <Mail size={14} strokeWidth={2.5} />}
-                                  </div>
-                                  <span className={`text-[11px] md:text-[13px] font-bold tracking-widest px-2 py-0.5 rounded-md uppercase ${isFollowUp ? 'bg-success/10 text-success' : 'bg-slate-200 text-slate-600'}`}>
-                                    {isFollowUp ? "COMPLETED" : "LOGGED"}
-                                  </span>
-                                </div>
-                                <h5 className="text-[14px] font-bold text-primary tracking-tight mb-2 line-clamp-1">{item.title || "Conversation Logged"}</h5>
-                                
-                                {isFollowUp ? (
-                                  <div className="flex-1">
-                                    {item.follow_brief && (
-                                      <div className="mb-2">
-                                        <p className="text-[12px] font-medium text-primary line-clamp-3">
-                                          "{item.follow_brief}"
-                                        </p>
-                                      </div>
-                                    )}
-                                    {item.completed_by && (
-                                      <p className="text-[11px] font-bold text-slate-400 tracking-widest mt-1">
-                                        By: {item.completed_by}
-                                      </p>
-                                    )}
-                                  </div>
-                                ) : (
-                                  <p className="text-[12px] font-medium text-primary/80 leading-relaxed italic line-clamp-3 flex-1">
-                                    "{item.description}"
-                                  </p>
-                                )}
-                                
-                                <div className={`mt-auto pt-3 flex flex-col gap-1.5 text-[12px] font-bold tracking-widest ${isFollowUp ? 'border-t border-success/10 text-success/70' : 'border-t border-slate-200 text-slate-400'}`}>
-                                  {isFollowUp ? (
-                                    <>
-                                      <div className="flex items-center gap-2">
-                                        <Calendar size={14} className="text-success" />
-                                        <span>Scheduled: {new Date(item.dueDate).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" })} · {new Date(item.dueDate).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true })}</span>
-                                      </div>
-                                      {item.completed_at && (
-                                        <div className="flex items-center gap-2">
-                                          <CheckCircle size={14} className="text-success" />
-                                          <span>Completed: {new Date(item.completed_at).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" })} · {new Date(item.completed_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true })}</span>
-                                        </div>
-                                      )}
-                                    </>
-                                  ) : (
-                                    <div className="flex items-center gap-2">
-                                      <Calendar size={14} className="text-slate-400" />
-                                      <span>
-                                        {date.toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" })}
-                                        {" · "}
-                                        {date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true })}
-                                      </span>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
+                              <ConversationCard key={`history-${item.id || idx}`} conv={{
+                                ...item,
+                                source: isFollowUp ? "followup" : "activity",
+                                originalDescription: item.description,
+                                description: item.follow_brief || item.description,
+                              }} />
                             );
                           })}
                         </div>

@@ -16,6 +16,7 @@ import {
   Briefcase,
   Calendar,
   X,
+  ChevronLeft,
   ChevronRight,
   Zap,
   Target,
@@ -80,6 +81,99 @@ const getModeBadge = (mode) => {
       return "bg-slate-50 text-slate-500 border-slate-200";
   }
 };
+
+const ConversationCard = ({ conv }) => {
+  const type = conv.source === "followup" ? (conv.type || conv.followup_mode || "call").toLowerCase() : (conv.type || "call").toLowerCase();
+  const createdDate = parseLocalDate(conv.created_at || conv.createdAt || conv.joinedDate || conv.date || conv.dueDate);
+  const completedDate = conv.completed_at ? parseLocalDate(conv.completed_at) : null;
+  const dueDate = conv.followup_date ? parseLocalDate(conv.followup_date) : conv.dueDate ? parseLocalDate(conv.dueDate) : createdDate;
+  const isFollowup = conv.source === "followup";
+
+  return (
+    <div className={`min-w-full w-full shrink-0 snap-start rounded-xl p-4 flex flex-col hover:shadow-md transition-all border ${isFollowup ? "bg-success/5 border-success/20 shadow-sm shadow-success/5" : "bg-slate-50/50 border-slate-100 hover:border-slate-200"}`}>
+      <div className="flex items-center justify-between mb-3">
+        <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-white shadow-sm ${
+          isFollowup ? "bg-success" : type === "email" ? "bg-info" : type === "call" ? "bg-success" : type === "meeting" ? "bg-secondary" : type === "whatsapp" ? "bg-[#25D366]" : "bg-slate-400"
+        }`}>
+          {type === "call" ? <Phone size={14} strokeWidth={2.5} /> : type === "meeting" ? <Calendar size={14} strokeWidth={2.5} /> : type === "whatsapp" ? <MessageSquare size={14} strokeWidth={2.5} /> : <Mail size={14} strokeWidth={2.5} />}
+        </div>
+        <span className={`text-[11px] md:text-[13px] font-bold tracking-widest px-2 py-0.5 rounded-md border uppercase ${
+          isFollowup ? "bg-success/10 text-success border-success/20" : getModeBadge(type)
+        }`}>
+          {isFollowup ? "FOLLOW-UP COMPLETED" : type}
+        </span>
+      </div>
+      
+      {conv.title && (
+        <h5 className="text-[14px] font-bold text-primary tracking-tight mb-2 line-clamp-1 opacity-90">{conv.title}</h5>
+      )}
+      
+      <div className="flex-1 space-y-3 mb-4">
+        {isFollowup && conv.originalDescription && (
+          <div className="p-2.5 bg-white/50 border border-slate-100 rounded-lg">
+            <p className="text-[12px] text-slate-600 font-medium line-clamp-2">
+              {conv.originalDescription}
+            </p>
+          </div>
+        )}
+        <div>
+          {isFollowup && (
+            <p className="text-[11px] font-bold text-success uppercase tracking-widest mb-1 flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-success"></span>
+              Summary
+            </p>
+          )}
+          <p className="text-[12px] font-medium text-primary leading-relaxed line-clamp-3">
+            {conv.description || conv.follow_brief}
+          </p>
+        </div>
+      </div>
+      
+      <div className={`mt-auto pt-3 flex flex-col gap-1.5 text-[11px] font-bold tracking-widest ${isFollowup ? 'border-t border-success/10 text-success/70' : 'border-t border-slate-200 text-slate-400'}`}>
+        {isFollowup && (
+          <div className="flex items-center gap-1.5 mb-1 text-slate-400">
+            <Clock size={12} />
+            <span>
+              Follow-up Scheduled Date: {dueDate.toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" })}
+              {" · "}
+              {dueDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true })}
+            </span>
+          </div>
+        )}
+        {isFollowup && (
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <CheckCircle2 size={12} className="text-success" />
+              <span>
+                Follow-up Completed Date: {completedDate ? completedDate.toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" }) : "N/A"}
+                {completedDate && " · "}
+                {completedDate && completedDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true })}
+              </span>
+            </div>
+          </div>
+        )}
+        {!isFollowup && (
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <Calendar size={12} className="text-slate-400" />
+              <span>
+                Interaction Date: {createdDate.toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" })}
+                {" · "}
+                {createdDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true })}
+              </span>
+            </div>
+          </div>
+        )}
+        {((isFollowup && conv.completed_by) || conv.completedBy) && (
+          <p className={`mt-1 ${isFollowup ? "text-success/70" : "text-slate-400"}`}>
+            Completed by: {conv.completed_by || conv.completedBy}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+};
+
 import { validateForm } from "../../utils/validation";
 import { extractCountryAndPhone } from "../../utils/leadUtils";
 import { formatBudget } from "../../utils/formatters";
@@ -97,6 +191,7 @@ const ClientDetail = ({
   projects = [],
   onDismissLead,
   onRestoreLead,
+  onToggleStatus,
 }) => {
   const isLead = client.status === "Lead" || client.status === "Dismissed";
   const [activeTab, setActiveTab] = useState(initialTab);
@@ -166,9 +261,31 @@ const ClientDetail = ({
   const [isFollowStatusOpen, setIsFollowStatusOpen] = useState(false);
   const [isFollowProjectOpen, setIsFollowProjectOpen] = useState(false);
   const [isLogging, setIsLogging] = useState(false);
+  const [showCompletionModal, setShowCompletionModal] = useState(false);
+  const [completionBrief, setCompletionBrief] = useState("");
+  const [completingFollowUpId, setCompletingFollowUpId] = useState(null);
+  const [completionDate, setCompletionDate] = useState(
+    new Date().toLocaleDateString("en-CA"),
+  );
+  const [completionHour, setCompletionHour] = useState(
+    (new Date().getHours() % 12 || 12).toString(),
+  );
+  const [completionMinute, setCompletionMinute] = useState(
+    new Date().getMinutes().toString().padStart(2, "0"),
+  );
+  const [completionPeriod, setCompletionPeriod] = useState(
+    new Date().getHours() >= 12 ? "PM" : "AM",
+  );
+  const [completedBy, setCompletedBy] = useState(() => {
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    return user.full_name || "";
+  });
+  const [isCompHourOpen, setIsCompHourOpen] = useState(false);
+  const [isCompMinOpen, setIsCompMinOpen] = useState(false);
+  const [isCompPeriodOpen, setIsCompPeriodOpen] = useState(false);
 
   // Lock scroll when any modal is open
-  useScrollLock(showEditModal || showAddFollowUpModal || isLogging);
+  useScrollLock(showEditModal || showAddFollowUpModal || isLogging || showCompletionModal);
 
   const handleAddFollowUpSubmit = async (e) => {
     e.preventDefault();
@@ -254,6 +371,12 @@ const ClientDetail = ({
   });
 
   const [clientFollowUps, setClientFollowUps] = useState([]);
+  const [isLeadConvOpen, setIsLeadConvOpen] = useState(true);
+  const [expandedProjectIndex, setExpandedProjectIndex] = useState(0);
+
+  const toggleProject = (idx) => {
+    setExpandedProjectIndex((prev) => (prev === idx ? null : idx));
+  };
 
   useEffect(() => {
     if (client && client.id) {
@@ -309,7 +432,16 @@ const ClientDetail = ({
     f.status?.toLowerCase() !== "completed" && 
     f.followup_status?.toLowerCase() !== "completed" &&
     index === self.findIndex((t) => t.id === f.id)
-  ).sort((a, b) => parseLocalDate(a.followup_date || a.dueDate) - parseLocalDate(b.followup_date || b.dueDate));
+  ).sort((a, b) => {
+    const dateA = parseLocalDate(a.followup_date || a.dueDate);
+    const dateB = parseLocalDate(b.followup_date || b.dueDate);
+    const diff = dateA - dateB;
+    if (diff !== 0) return diff;
+    
+    // Secondary sort by Priority
+    const priorityMap = { 'High': 1, 'Medium': 2, 'Low': 3 };
+    return (priorityMap[a.priority] || 4) - (priorityMap[b.priority] || 4);
+  });
 
   const now = new Date();
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -322,6 +454,14 @@ const ClientDetail = ({
     return d >= todayStart && d < tomorrowStart;
   });
   const futureFUs = upcomingFollowUps.filter(f => parseLocalDate(f.followup_date || f.dueDate) >= tomorrowStart);
+
+  const scrollContainer = (id, dir) => {
+    const container = document.getElementById(id);
+    if (container) {
+      const scrollAmount = container.clientWidth;
+      container.scrollBy({ left: dir === 'left' ? -scrollAmount : scrollAmount, behavior: 'smooth' });
+    }
+  };
 
   const handleLogInteraction = (e) => {
     e.preventDefault();
@@ -397,12 +537,12 @@ const ClientDetail = ({
           <div className="flex items-center gap-2 md:gap-5 min-w-0">
             <button
               onClick={onBack}
-              className="p-2 md:p-3.5 hover:bg-slate-100 rounded-lg md:rounded-xl text-slate-400 hover:text-primary transition-all border border-slate-100 shadow-sm shrink-0"
+              className="p-2 md:p-2.5 hover:bg-slate-50 rounded-lg md:rounded-xl text-slate-400 hover:text-primary transition-all border border-slate-100 shadow-sm shrink-0 active:scale-95"
             >
-              <ArrowLeft className="w-4 h-4 md:w-5 md:h-5" strokeWidth={3} />
+              <ArrowLeft className="w-4 h-4 md:w-4.5 md:h-4.5" strokeWidth={2.5} />
             </button>
             <div className="flex items-center gap-2 md:gap-5 overflow-hidden min-w-0">
-              <div className="w-8 h-8 md:w-12 md:h-12 rounded-lg md:rounded-xl bg-primary flex items-center justify-center text-white font-bold text-sm md:text-xl border md:border-2 border-slate-50 shadow-md md:shadow-lg shrink-0">
+              <div className="w-8 h-8 md:w-12 md:h-12 rounded-[50%] bg-primary flex items-center justify-center text-white font-bold text-sm md:text-xl border md:border-2 border-slate-50 shadow-md md:shadow-lg shrink-0">
                 {client.name.charAt(0).toUpperCase()}
               </div>
               <div className="min-w-0">
@@ -1021,6 +1161,197 @@ const ClientDetail = ({
               document.body,
             )}
 
+          {/* Mark as Completed Modal */}
+          {showCompletionModal &&
+            createPortal(
+              <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+                <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-zoom-in border border-slate-200">
+                  {/* Modal Header */}
+                  <div className="bg-[#18254D] p-5 text-white relative">
+                    <button
+                      onClick={() => setShowCompletionModal(false)}
+                      className="absolute top-5 right-5 text-white/70 hover:text-white transition-colors"
+                    >
+                      <X size={20} />
+                    </button>
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center bg-white/5">
+                        <CheckCircle2 size={20} className="text-white/40" />
+                      </div>
+                      <div>
+                        <h3 className="text-base font-bold leading-none">
+                          Mark as Completed
+                        </h3>
+                        <p className="text-white/40 text-xs font-medium mt-1">
+                          Follow-up Conclusion
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Modal Body */}
+                  <form
+                    onSubmit={async (e) => {
+                      e.preventDefault();
+                      
+                      let compHour = parseInt(completionHour || "12");
+                      if (completionPeriod === "PM" && compHour < 12) compHour += 12;
+                      if (completionPeriod === "AM" && compHour === 12) compHour = 0;
+                      const compTime24 = `${compHour.toString().padStart(2, "0")}:${completionMinute || "00"}`;
+                      const combinedCompletionStr = `${completionDate} ${compTime24}:00`;
+
+                      if (onToggleStatus) {
+                        await onToggleStatus(
+                          completingFollowUpId,
+                          completionBrief,
+                          combinedCompletionStr,
+                          completedBy
+                        );
+                      }
+                      setShowCompletionModal(false);
+                    }}
+                    className="p-6 space-y-5 text-start"
+                  >
+                    {/* Conclusion Brief */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-bold text-primary flex items-center gap-1">
+                        Conclusion Brief <span className="text-red-500">*</span>
+                      </label>
+                      <textarea
+                        required
+                        rows={4}
+                        placeholder="Write a brief conclusion about this follow-up..."
+                        className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/10 focus:border-primary focus:outline-none text-sm font-medium resize-none transition-all placeholder:text-slate-300"
+                        value={completionBrief}
+                        onChange={(e) => setCompletionBrief(e.target.value)}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Completion Date */}
+                      <div className="space-y-2">
+                        <label className="text-sm font-bold text-primary flex items-center gap-1">
+                          Completion Date <span className="text-red-500">*</span>
+                        </label>
+                        <DatePicker
+                          value={completionDate}
+                          onChange={setCompletionDate}
+                        />
+                      </div>
+
+                      {/* Completion Time */}
+                      <div className="space-y-2">
+                        <label className="text-sm font-bold text-primary flex items-center gap-1">
+                          Completion Time <span className="text-red-500">*</span>
+                        </label>
+                        <div className="flex items-center gap-1.5">
+                          {/* Hour Dropdown */}
+                          <div className="relative flex-1">
+                            <button
+                              type="button"
+                              onClick={() => setIsCompHourOpen(!isCompHourOpen)}
+                              className="w-full h-[38px] px-3 bg-white border border-slate-200 rounded-lg text-sm font-bold flex items-center justify-between"
+                            >
+                              {completionHour.padStart(2, '0')} <ChevronDown size={14} className="text-slate-400" />
+                            </button>
+                            {isCompHourOpen && (
+                              <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-100 rounded-lg shadow-xl z-[100] max-h-40 overflow-y-auto custom-scrollbar">
+                                {Array.from({ length: 12 }, (_, i) => (i + 1).toString()).map(h => (
+                                  <button
+                                    key={h}
+                                    type="button"
+                                    onClick={() => { setCompletionHour(h); setIsCompHourOpen(false); }}
+                                    className="w-full text-left px-3 py-2 hover:bg-slate-50 text-xs font-bold"
+                                  >
+                                    {h.padStart(2, '0')}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Minute Dropdown */}
+                          <div className="relative flex-1">
+                            <button
+                              type="button"
+                              onClick={() => setIsCompMinOpen(!isCompMinOpen)}
+                              className="w-full h-[38px] px-3 bg-white border border-slate-200 rounded-lg text-sm font-bold flex items-center justify-between"
+                            >
+                              {completionMinute} <ChevronDown size={14} className="text-slate-400" />
+                            </button>
+                            {isCompMinOpen && (
+                              <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-100 rounded-lg shadow-xl z-[100] max-h-40 overflow-y-auto custom-scrollbar">
+                                {["00", "05", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55"].map(m => (
+                                  <button
+                                    key={m}
+                                    type="button"
+                                    onClick={() => { setCompletionMinute(m); setIsCompMinOpen(false); }}
+                                    className="w-full text-left px-3 py-2 hover:bg-slate-50 text-xs font-bold"
+                                  >
+                                    {m}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Period Dropdown */}
+                          <div className="relative flex-1">
+                            <button
+                              type="button"
+                              onClick={() => setIsCompPeriodOpen(!isCompPeriodOpen)}
+                              className="w-full h-[38px] px-3 bg-white border border-slate-200 rounded-lg text-sm font-bold flex items-center justify-between"
+                            >
+                              {completionPeriod} <ChevronDown size={14} className="text-slate-400" />
+                            </button>
+                            {isCompPeriodOpen && (
+                              <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-100 rounded-lg shadow-xl z-[100] overflow-hidden">
+                                {["AM", "PM"].map(p => (
+                                  <button
+                                    key={p}
+                                    type="button"
+                                    onClick={() => { setCompletionPeriod(p); setIsCompPeriodOpen(false); }}
+                                    className="w-full text-left px-3 py-2 hover:bg-slate-50 text-xs font-bold"
+                                  >
+                                    {p}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Completed By */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-bold text-primary flex items-center gap-1">
+                        Completed By <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        required
+                        type="text"
+                        className="w-full px-4 h-[42px] bg-slate-50/50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/10 focus:border-primary focus:outline-none text-sm font-bold"
+                        value={completedBy}
+                        onChange={(e) => setCompletedBy(e.target.value)}
+                      />
+                    </div>
+
+                    {/* Submit Button */}
+                    <div className="pt-2">
+                      <button
+                        type="submit"
+                        className="w-full h-[48px] bg-[#18254D] text-white rounded-xl text-sm font-bold tracking-widest shadow-lg active:scale-[0.98] transition-all hover:bg-slate-800 flex items-center justify-center uppercase"
+                      >
+                        Complete
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>,
+              document.body,
+            )}
+
           {/* Side Panel */}
           <div className="w-full md:w-[260px] lg:w-[300px] border-b md:border-b-0 md:border-r border-slate-100 p-4 md:p-6 bg-slate-50/20 shrink-0">
             <div className="space-y-6 md:space-y-8">
@@ -1101,14 +1432,14 @@ const ClientDetail = ({
                 <h3 className="text-[12px] md:text-[14px] font-bold text-primary tracking-widest mb-3 md:mb-4 opacity-40">
                   Brief Message
                 </h3>
-                <div className="p-3.5 md:p-5 bg-white border border-slate-100 rounded-xl shadow-inner italic text-[11px] md:text-[13px] lg:text-sm text-primary leading-relaxed font-medium">
+                <div className="p-3.5 md:p-5 bg-white border border-slate-100 rounded-xl shadow-inner text-[11px] md:text-[13px] lg:text-sm text-primary leading-relaxed font-medium">
                   {client.notes}
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="flex-1 flex flex-col bg-white">
+          <div className="flex-1 flex flex-col bg-white min-w-0">
             <div className="bg-white p-2 border-b border-slate-100">
               <div className="flex items-center gap-2">
                 <div className="flex flex-1 bg-slate-100/50 p-1 rounded-2xl border border-slate-200 shadow-sm overflow-x-auto no-scrollbar h-[40px] md:h-[42px] items-center gap-1">
@@ -1201,77 +1532,127 @@ const ClientDetail = ({
                       </h3>
                     </div>
                     
-                    <div className="space-y-6">
+                    <div className="space-y-8">
                       {[
                         { title: "Overdue", icon: <Bell size={14} />, tasks: overdueFUs, color: "error", styles: "text-error bg-error/10 border-error/20" },
                         { title: "Today", icon: <Clock size={14} />, tasks: todayFUs, color: "secondary", styles: "text-secondary bg-secondary/10 border-secondary/20" },
                         { title: "Upcoming", icon: <Calendar size={14} />, tasks: futureFUs, color: "info", styles: "text-info bg-info/10 border-info/20" }
                       ].map((section) => section.tasks.length > 0 && (
-                        <div key={section.title} className="space-y-3">
-                          <div className="flex items-center gap-2 mb-3">
+                        <div key={section.title} className="space-y-4">
+                          <div className="flex items-center gap-3 mb-2">
                             <div className={`p-1.5 rounded-lg ${section.styles}`}>
                               {section.icon}
                             </div>
                             <h4 className={`text-[12px] font-black tracking-[0.2em] uppercase ${section.title === 'Overdue' ? 'text-error' : section.title === 'Today' ? 'text-secondary' : 'text-info'}`}>
-                              {section.title} ({section.tasks.length})
+                              {section.title} Schedule ({section.tasks.length})
                             </h4>
                             <div className="flex-1 h-[1px] bg-slate-100"></div>
                           </div>
                           
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
-                            {section.tasks.map((fu) => (
-                              <div 
-                                key={fu.id}
-                                className={`bg-white p-4 rounded-2xl border transition-all group relative overflow-hidden text-start hover:shadow-md ${
-                                  section.title === 'Overdue' ? 'border-error/20 hover:border-error/40' : 
-                                  section.title === 'Today' ? 'border-secondary/20 hover:border-secondary/40' :
-                                  'border-slate-100 hover:border-info/40'
-                                }`}
-                              >
-                                <div className={`absolute top-0 left-0 w-1 h-full transition-opacity opacity-20 group-hover:opacity-100 ${
-                                  section.title === 'Overdue' ? 'bg-error' : 
-                                  section.title === 'Today' ? 'bg-secondary' : 
-                                  'bg-info'
-                                }`}></div>
-                                <div className="flex items-start justify-between gap-4">
-                                  <div className="flex-1 min-w-0">
-                                    <div className="flex flex-wrap items-center gap-2 mb-2">
-                                      <span className={`px-2 py-0.5 rounded-md text-[11px] font-bold tracking-widest uppercase ${
-                                        fu.priority === 'High' ? 'bg-error/10 text-error' :
-                                        fu.priority === 'Medium' ? 'bg-warning/10 text-warning' :
-                                        'bg-info/10 text-info'
-                                      }`}>
-                                        {fu.priority}
-                                      </span>
-                                      <span className={`px-2 py-0.5 rounded-md text-[11px] font-bold tracking-widest uppercase border ${getModeBadge(fu.followup_mode)}`}>
-                                        {fu.followup_mode}
-                                      </span>
-                                      {fu.projectName && (
-                                        <span className="px-2 py-0.5 rounded-md text-[11px] font-bold tracking-widest uppercase border bg-slate-50 text-slate-500 border-slate-200">
-                                          {fu.projectName}
-                                        </span>
-                                      )}
+                          <div className="relative space-y-4 ml-2 pl-6 border-l-2 border-slate-50">
+                            {section.tasks.map((fu, idx) => {
+                              const fuDate = parseLocalDate(fu.followup_date || fu.dueDate);
+                              const prevFu = section.tasks[idx - 1];
+                              const prevFuDate = prevFu ? parseLocalDate(prevFu.followup_date || prevFu.dueDate) : null;
+                              const hasConflict = prevFuDate && (fuDate - prevFuDate) < 30 * 60 * 1000;
+                              
+                              return (
+                                <div key={fu.id} className="relative">
+                                  <div className={`absolute -left-[31px] top-4 w-2.5 h-2.5 rounded-full border-2 border-white shadow-sm ${
+                                    fu.priority === 'High' ? 'bg-error scale-110' : 'bg-slate-300'
+                                  }`}></div>
+                                  
+                                  <div className={`p-4 rounded-2xl border transition-all group relative flex flex-col md:flex-row items-start gap-4 hover:shadow-md ${
+                                    fu.status === 'completed' 
+                                      ? "bg-slate-50/50 border-slate-100 opacity-80" 
+                                      : fu.priority === 'High'
+                                        ? "bg-error/[0.06] border-error/20 shadow-sm shadow-error/5"
+                                        : fu.priority === 'Medium'
+                                          ? "bg-warning/[0.06] border-warning/20 shadow-sm shadow-warning/5"
+                                          : "bg-info/[0.06] border-info/20 shadow-sm shadow-info/5"
+                                  } ${hasConflict ? 'ring-2 ring-amber-400 ring-offset-2' : ''}`}>
+                                    
+                                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-white shadow-sm shrink-0 ${
+                                      fu.priority === 'High' ? 'bg-error' : fu.priority === 'Medium' ? 'bg-warning' : 'bg-info'
+                                    }`}>
+                                      {fu.followup_mode?.toLowerCase() === 'call' ? <Phone size={18} strokeWidth={2.5} /> : 
+                                       fu.followup_mode?.toLowerCase() === 'meeting' ? <Calendar size={18} strokeWidth={2.5} /> : 
+                                       fu.followup_mode?.toLowerCase() === 'whatsapp' ? <MessageSquare size={18} strokeWidth={2.5} /> :
+                                       <Mail size={18} strokeWidth={2.5} />}
                                     </div>
-                                    <h4 className="text-sm md:text-base font-bold text-primary truncate mb-1">
-                                      {fu.title}
-                                    </h4>
-                                    <p className="text-xs text-textMuted line-clamp-1 mb-3 font-medium">
-                                      {fu.description}
-                                    </p>
-                                    <div className="flex items-center gap-4 text-[10px] md:text-[11px] font-bold text-slate-400 tracking-widest uppercase">
-                                      <div className="flex items-center gap-1.5">
-                                        <Calendar size={12} className="text-secondary" />
-                                        {parseLocalDate(fu.followup_date || fu.dueDate).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}
+
+                                    <div className="flex-1 min-w-0">
+                                      {hasConflict && (
+                                        <div className="absolute top-0 right-0 px-2 py-0.5 bg-amber-100 text-amber-700 text-[9px] font-black tracking-widest uppercase rounded-bl-lg flex items-center gap-1">
+                                          <Clock size={10} /> Time Conflict
+                                        </div>
+                                      )}
+                                      
+                                      <div className="flex items-center justify-between mb-3">
+                                        <div className="flex flex-wrap items-center gap-2">
+                                          <span className={`px-2 py-0.5 rounded-md text-[10px] font-black tracking-widest uppercase border ${
+                                            fu.priority === 'High' ? 'bg-error/10 text-error border-error/20' :
+                                            fu.priority === 'Medium' ? 'bg-warning/10 text-warning border-warning/20' :
+                                            'bg-info/10 text-info border-info/20'
+                                          }`}>
+                                            {fu.priority} Priority
+                                          </span>
+                                          <span className={`px-2 py-0.5 rounded-md text-[10px] font-black tracking-widest uppercase border ${getModeBadge(fu.followup_mode)}`}>
+                                            {fu.followup_mode}
+                                          </span>
+                                        </div>
                                       </div>
-                                      <div className="flex items-center gap-1.5">
-                                        <Clock size={12} className="text-secondary" />
-                                        {parseLocalDate(fu.followup_date || fu.dueDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
+                                      
+                                      <h4 className="text-sm font-bold text-primary tracking-tight mb-1">
+                                        {fu.title}
+                                        {fu.projectName && (
+                                          <>
+                                            <span className="text-slate-300 font-medium mx-2">|</span>
+                                            <span className="text-secondary/70">{fu.projectName}</span>
+                                          </>
+                                        )}
+                                      </h4>
+                                      
+                                      {fu.description && (
+                                        <p className="text-[12px] text-slate-500 line-clamp-1 font-medium mb-3 leading-relaxed">
+                                          {fu.description}
+                                        </p>
+                                      )}
+
+                                      <div className="mt-auto pt-2 border-t border-slate-50 flex items-center justify-between gap-2">
+                                        <div className="flex items-center gap-2 md:gap-3 text-[10px] md:text-[11px] font-bold text-slate-400 uppercase tracking-widest min-w-0 flex-1">
+                                          <div className="flex items-center gap-1.5 shrink-0">
+                                            <Calendar size={11} className="text-slate-300" />
+                                            <span className="truncate">{fuDate.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                                          </div>
+                                          <div className="flex items-center gap-1.5 text-secondary shrink-0">
+                                            <Clock size={11} className="opacity-70" />
+                                            <span>{fuDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}</span>
+                                          </div>
+                                        </div>
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            const now = new Date();
+                                            setCompletionDate(now.toLocaleDateString("en-CA"));
+                                            setCompletionHour((now.getHours() % 12 || 12).toString());
+                                            setCompletionMinute(now.getMinutes().toString().padStart(2, "0"));
+                                            setCompletionPeriod(now.getHours() >= 12 ? "PM" : "AM");
+                                            setCompletingFollowUpId(fu.id);
+                                            setCompletionBrief("");
+                                            setShowCompletionModal(true);
+                                          }}
+                                          className="w-7 h-7 md:w-8 md:h-8 rounded-lg border border-slate-200 bg-white text-slate-300 hover:border-success hover:text-success hover:bg-success/5 transition-all flex items-center justify-center shrink-0 shadow-sm"
+                                          title="Mark as Completed"
+                                        >
+                                          <CheckCircle2 size={13} strokeWidth={3} />
+                                        </button>
                                       </div>
                                     </div>
                                   </div>
                                 </div>
-                              </div>
-                            ))}
+                              );
+                            })}
                           </div>
                         </div>
                       ))}
@@ -1298,172 +1679,71 @@ const ClientDetail = ({
                   </div>
 
                   {isLead ? (
-                    /* Lead: Simple flat timeline, no project grouping */
-                    <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-                      <div className="p-4">
-                        <div className="relative border-l-2 border-slate-100 ml-4 md:ml-3 space-y-4">
-                          {clientActivities.length === 0 &&
-                          completedFollowUps.length === 0 ? (
-                            <p className="ml-6 text-[12px] font-bold text-slate-300  tracking-widest py-4">
-                              No conversations logged yet
-                            </p>
-                          ) : (
-                            <>
-                              {completedFollowUps.map((fu) => (
-                                <div
-                                  key={`fu-${fu.id}`}
-                                  className="ml-6 relative"
-                                >
-                                  <div
-                                    className={`absolute -left-[32px] md:-left-[33px] w-6 h-6 rounded-lg flex items-center justify-center text-white shadow-sm z-10 ${
-                                      fu.followup_mode?.toLowerCase() === "call"
-                                        ? "bg-success"
-                                        : fu.followup_mode?.toLowerCase() ===
-                                            "email"
-                                          ? "bg-info"
-                                          : fu.followup_mode?.toLowerCase() ===
-                                              "meeting"
-                                            ? "bg-secondary"
-                                            : fu.followup_mode?.toLowerCase() ===
-                                                "whatsapp"
-                                              ? "bg-[#25D366]"
-                                              : "bg-success"
-                                    }`}
-                                  >
-                                    {fu.followup_mode?.toLowerCase() ===
-                                    "call" ? (
-                                      <Phone size={11} strokeWidth={2.5} />
-                                    ) : fu.followup_mode?.toLowerCase() ===
-                                      "email" ? (
-                                      <Mail size={11} strokeWidth={2.5} />
-                                    ) : fu.followup_mode?.toLowerCase() ===
-                                      "meeting" ? (
-                                      <Calendar size={11} strokeWidth={2.5} />
-                                    ) : fu.followup_mode?.toLowerCase() ===
-                                      "whatsapp" ? (
-                                      <MessageSquare
-                                        size={11}
-                                        strokeWidth={2.5}
-                                      />
-                                    ) : (
-                                      <Phone size={11} strokeWidth={2.5} />
-                                    )}
-                                  </div>
-                                  <div className="bg-success/5 p-3 rounded-xl border border-success/20 hover:border-success/40 transition-all">
-                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-1.5">
-                                      <div className="flex items-center gap-2">
-                                        <span className="text-[10px] md:text-[12px] font-black text-slate-400 tracking-[0.2em] uppercase">
-                                          Follow-up Created:
-                                        </span>
-                                        <span className="text-[11px] md:text-[14px] font-bold text-slate-500 tracking-widest capitalize">
-                                          {parseLocalDate(fu.created_at || fu.createdAt || fu.joinedDate || fu.dueDate).toLocaleDateString([], {
-                                            month: "short",
-                                            day: "numeric",
-                                            year: "numeric",
-                                          })}
-                                          {" · "}
-                                          {parseLocalDate(fu.created_at || fu.createdAt || fu.joinedDate || fu.dueDate).toLocaleTimeString([], {
-                                            hour: "2-digit",
-                                            minute: "2-digit",
-                                            hour12: true,
-                                          })}
-                                        </span>
-                                      </div>
+                    /* Lead: Carousel */
+                    (() => {
+                      const leadConversations = [
+                        ...completedFollowUps.map(fu => ({
+                          ...fu, 
+                          source: "followup",
+                          originalDescription: fu.description,
+                          description: fu.follow_brief || "No summary provided",
+                          completedBy: fu.completed_by
+                        })),
+                        ...clientActivities.map(a => ({
+                          ...a, 
+                          source: "activity",
+                          originalDescription: null
+                        }))
+                      ].sort((a, b) => parseLocalDate(b.date || b.completed_at || b.dueDate || b.created_at || b.createdAt) - parseLocalDate(a.date || a.completed_at || a.dueDate || a.created_at || a.createdAt));
 
-                                      <span className="text-[11px] md:text-[13px] font-bold  tracking-widest px-2 py-0.5 rounded-md bg-success/10 text-success w-fit">
-                                        Follow-Up Completed
-                                      </span>
-                                    </div>
-                                    <p className="text-[13px] font-bold text-primary tracking-tight mb-1">
-                                      {fu.title}
-                                    </p>
-                                    <p className="text-[12px] font-medium text-primary/80 leading-relaxed">
-                                      {fu.follow_brief}
-                                    </p>
-                                    {(fu.completed_by || fu.completed_at) && (
-                                      <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-2">
-                                        {fu.completed_by && (
-                                          <p className="text-[14px] font-bold text-slate-400 tracking-widest">
-                                            Completed by: {fu.completed_by}
-                                          </p>
-                                        )}
-                                        {fu.completed_at && (
-                                          <p className="text-[14px] font-bold text-slate-400 tracking-widest">
-                                            Completed At:{" "}
-                                            {parseLocalDate(
-                                              fu.completed_at,
-                                            ).toLocaleDateString([], {
-                                              month: "short",
-                                              day: "numeric",
-                                              year: "numeric",
-                                            })}
-                                            {" · "}
-                                            {parseLocalDate(
-                                              fu.completed_at,
-                                            ).toLocaleTimeString([], {
-                                              hour: "2-digit",
-                                              minute: "2-digit",
-                                              hour12: true,
-                                            })}
-                                          </p>
-                                        )}
-                                      </div>
-                                    )}
-                                  </div>
+                      return (
+                        <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+                          <div 
+                            className="flex items-center justify-between p-4 bg-slate-50/50 border-b border-slate-100 cursor-pointer hover:bg-slate-50 transition-colors"
+                            onClick={() => setIsLeadConvOpen(!isLeadConvOpen)}
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="w-7 h-7 rounded-lg flex items-center justify-center text-white shadow-sm bg-primary">
+                                <MessageSquare size={14} strokeWidth={2.5} />
+                              </div>
+                              <div>
+                                <h4 className="text-xs font-bold text-primary tracking-tight">
+                                  All Conversations
+                                </h4>
+                                <p className="text-[14px] font-bold text-slate-400 tracking-widest">
+                                  {leadConversations.length} total
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              {leadConversations.length > 1 && isLeadConvOpen && (
+                                <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                                  <button onClick={() => scrollContainer('lead-conv-carousel', 'left')} className="p-1.5 rounded-lg bg-white hover:bg-slate-50 text-slate-400 hover:text-primary transition-colors border border-slate-200 shadow-sm"><ChevronLeft size={16} /></button>
+                                  <button onClick={() => scrollContainer('lead-conv-carousel', 'right')} className="p-1.5 rounded-lg bg-white hover:bg-slate-50 text-slate-400 hover:text-primary transition-colors border border-slate-200 shadow-sm"><ChevronRight size={16} /></button>
                                 </div>
-                              ))}
-                              {clientActivities.map((conv) => (
-                                <div key={conv.id} className="ml-6 relative">
-                                  <div
-                                    className={`absolute -left-[32px] md:-left-[33px] w-6 h-6 rounded-lg flex items-center justify-center text-white shadow-sm z-10 ${
-                                      conv.type === "email"
-                                        ? "bg-info"
-                                        : conv.type === "call"
-                                          ? "bg-success"
-                                          : conv.type === "meeting"
-                                            ? "bg-secondary"
-                                            : "bg-slate-400"
-                                    }`}
-                                  >
-                                    {conv.type === "call" ? (
-                                      <Phone size={11} strokeWidth={2.5} />
-                                    ) : conv.type === "meeting" ? (
-                                      <Calendar size={11} strokeWidth={2.5} />
-                                    ) : (
-                                      <Mail size={11} strokeWidth={2.5} />
-                                    )}
-                                  </div>
-                                  <div className="bg-slate-50/50 p-3 rounded-xl border border-slate-100 hover:border-slate-200 transition-all">
-                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-1.5">
-                                      <div className="flex items-center gap-2">
-                                        <span className="text-[10px] md:text-[12px] font-black text-slate-400 tracking-[0.2em] uppercase">
-                                          Interaction Date:
-                                        </span>
-                                        <span className="text-[11px] md:text-[14px] font-bold text-slate-500 tracking-widest capitalize">
-                                          {parseLocalDate(conv.date).toLocaleDateString([], {
-                                            month: "short",
-                                            day: "numeric",
-                                            year: "numeric",
-                                          })}
-                                        </span>
-                                      </div>
-                                      <span
-                                        className={`text-[11px] md:text-[13px] font-bold tracking-widest px-2 py-0.5 rounded-md w-fit border uppercase ${getModeBadge(conv.type)}`}
-                                      >
-                                        {conv.type}
-                                      </span>
-                                    </div>
-                                    <p className="text-[12px] font-medium text-primary leading-relaxed">
-                                      {conv.description}
-                                    </p>
-                                  </div>
+                              )}
+                              <ChevronDown size={20} className={`text-slate-400 transition-transform ${isLeadConvOpen ? "rotate-180" : ""}`} />
+                            </div>
+                          </div>
+                          
+                          {isLeadConvOpen && (
+                            <div className="p-4 bg-white animate-fade-in-up">
+                              {leadConversations.length === 0 ? (
+                                <div className="text-center py-6 text-[12px] font-bold text-slate-300 tracking-widest uppercase">
+                                  No conversations logged yet
                                 </div>
-                              ))}
-                            </>
+                              ) : (
+                                <div id="lead-conv-carousel" className="flex overflow-x-auto gap-4 pb-4 snap-x snap-mandatory no-scrollbar scroll-smooth">
+                                  {leadConversations.map((conv, idx) => (
+                                    <ConversationCard key={`lead-conv-${conv.id || idx}`} conv={conv} />
+                                  ))}
+                                </div>
+                              )}
+                            </div>
                           )}
                         </div>
-                      </div>
-                    </div>
+                      );
+                    })()
                   ) : (
                     /* Client: Project-wise conversations */
                     (() => {
@@ -1520,6 +1800,8 @@ const ClientDetail = ({
                           id: `fu-${f.id}`,
                           type: (f.followup_mode || "call").toLowerCase(),
                           date: f.completed_at || f.dueDate,
+                          created_at: f.created_at || f.createdAt,
+                          completed_at: f.completed_at,
                           description: f.follow_brief || "No summary provided",
                           originalDescription: f.description,
                           title: f.title,
@@ -1527,6 +1809,8 @@ const ClientDetail = ({
                           projectName: f.projectName,
                           projectId: f.projectId,
                           clientId: f.clientId,
+                          dueDate: f.dueDate,
+                          followup_date: f.followup_date,
                           source: "followup",
                         }),
                       );
@@ -1536,7 +1820,7 @@ const ClientDetail = ({
                         ...(generalInteractions.length > 0
                           ? [
                               {
-                                projectName: "other Conversations",
+                                projectName: "Other Conversations",
                                 projectStatus: "N/A",
                                 interactions: generalInteractions,
                               },
@@ -1568,7 +1852,10 @@ const ClientDetail = ({
                                 className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm mb-6"
                               >
                                 {/* Project Header */}
-                                <div className="flex items-center justify-between p-4 bg-slate-50/50 border-b border-slate-100">
+                                <div 
+                                  className="flex items-center justify-between p-4 bg-slate-50/50 border-b border-slate-100 cursor-pointer hover:bg-slate-50 transition-colors"
+                                  onClick={() => toggleProject(groupIdx)}
+                                >
                                   <div className="flex items-center gap-3">
                                     <div
                                       className={`w-7 h-7 rounded-lg flex items-center justify-center text-white shadow-sm ${
@@ -1592,139 +1879,52 @@ const ClientDetail = ({
                                       </p>
                                     </div>
                                   </div>
-                                  {group.projectStatus !== "N/A" && (
-                                    <span
-                                      className={`px-2.5 py-1 rounded-lg text-[13px] font-bold  tracking-widest border ${
-                                        group.projectStatus === "Active" ||
-                                        group.projectStatus === "Planning"
-                                          ? "bg-secondary/10 text-secondary border-secondary/20"
-                                          : group.projectStatus === "Completed"
-                                            ? "bg-success/10 text-success border-success/20"
-                                            : "bg-info/10 text-info border-info/20"
-                                      }`}
-                                    >
-                                      {group.projectStatus}
-                                    </span>
-                                  )}
-                                </div>
-
-                                {/* Conversations Timeline */}
-                                <div className="p-4">
-                                  <div className="relative border-l-2 border-slate-100 ml-3 space-y-4">
-                                    {group.interactions
-                                      .sort(
-                                        (a, b) =>
-                                          parseLocalDate(b.date) - parseLocalDate(a.date),
-                                      )
-                                      .map((conv) => (
-                                        <div
-                                          key={conv.id}
-                                          className="ml-6 relative"
-                                        >
-                                          <div
-                                            className={`absolute -left-[33px] w-6 h-6 rounded-lg flex items-center justify-center text-white shadow-sm z-10 ${
-                                              conv.source === "followup"
-                                                ? "bg-success"
-                                                : conv.type === "email"
-                                                  ? "bg-info"
-                                                  : conv.type === "call"
-                                                    ? "bg-success"
-                                                    : conv.type === "meeting"
-                                                      ? "bg-secondary"
-                                                      : "bg-slate-400"
-                                            }`}
-                                          >
-                                            {conv.type === "call" ? (
-                                              <Phone
-                                                size={11}
-                                                strokeWidth={2.5}
-                                              />
-                                            ) : conv.type === "meeting" ? (
-                                              <Calendar
-                                                size={11}
-                                                strokeWidth={2.5}
-                                              />
-                                            ) : (
-                                              <Mail
-                                                size={11}
-                                                strokeWidth={2.5}
-                                              />
-                                            )}
-                                          </div>
-                                          <div
-                                            className={`${conv.source === "followup" ? "bg-success/5 border-success/20 shadow-sm shadow-success/5" : "bg-slate-50/50 border-slate-100"} p-3 rounded-xl border transition-all`}
-                                          >
-                                            <div className="flex items-center justify-between mb-1.5">
-                                              <div className="flex items-center gap-2">
-                                                <span className="text-[10px] md:text-[12px] font-black text-slate-400 tracking-[0.2em] uppercase">
-                                                  {conv.source === "followup" ? "Follow-up Created:" : "Interaction Date:"}
-                                                </span>
-                                                <span className="text-[14px] font-bold text-slate-500  tracking-widest">
-                                                  {parseLocalDate(conv.created_at || conv.createdAt || conv.date).toLocaleDateString([], {
-                                                    month: "short",
-                                                    day: "numeric",
-                                                    year: "numeric",
-                                                  })}
-                                                  {" · "}
-                                                  {parseLocalDate(conv.created_at || conv.createdAt || conv.date).toLocaleTimeString([], {
-                                                    hour: "2-digit",
-                                                    minute: "2-digit",
-                                                    hour12: true,
-                                                  })}
-                                                </span>
-                                              </div>
-                                              <span
-                                                className={`text-[13px] font-bold tracking-widest px-2 py-0.5 rounded-md border ${
-                                                  conv.source === "followup"
-                                                    ? "bg-success/10 text-success border-success/20"
-                                                    : getModeBadge(conv.type)
-                                                }`}
-                                              >
-                                                {conv.source === "followup"
-                                                  ? "FOLLOW-UP COMPLETED"
-                                                  : conv.type.toUpperCase()}
-                                              </span>
-                                            </div>
-                                            {conv.title && (
-                                              <p className="text-[12px] font-bold text-primary tracking-tight mb-1 opacity-70">
-                                                {conv.title}
-                                              </p>
-                                            )}
-                                            <div className="space-y-3">
-                                              {conv.source === "followup" &&
-                                                conv.originalDescription && (
-                                                  <div className="p-2.5 bg-slate-50 border border-slate-100 rounded-lg">
-                                                    <p className="text-[13px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
-                                                      <span className="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
-                                                      Planned Follow-up
-                                                    </p>
-                                                    <p className="text-[13px] text-slate-600 leading-relaxed font-medium capitalize">
-                                                      {conv.originalDescription}
-                                                    </p>
-                                                  </div>
-                                                )}
-                                              <div>
-                                                {conv.source === "followup" && (
-                                                  <p className="text-[13px] font-bold text-success uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
-                                                    <span className="w-1.5 h-1.5 rounded-full bg-success"></span>
-                                                    Completion Summary
-                                                  </p>
-                                                )}
-                                                <p className="text-[12px] font-medium text-primary leading-relaxed">
-                                                  {conv.description}
-                                                </p>
-                                              </div>
-                                            </div>
-                                            {conv.completedBy && (
-                                              <p className="text-[14px] font-bold text-slate-400 tracking-widest mt-2">
-                                                Completed by: {conv.completedBy}
-                                              </p>
-                                            )}
-                                          </div>
-                                        </div>
-                                      ))}
+                                  <div className="flex items-center gap-3">
+                                    {group.projectStatus !== "N/A" && (
+                                      <span
+                                        className={`px-2.5 py-1 rounded-lg text-[13px] font-bold  tracking-widest border ${
+                                          group.projectStatus === "Active" ||
+                                          group.projectStatus === "Planning"
+                                            ? "bg-secondary/10 text-secondary border-secondary/20"
+                                            : group.projectStatus === "Completed"
+                                              ? "bg-success/10 text-success border-success/20"
+                                              : "bg-info/10 text-info border-info/20"
+                                        }`}
+                                      >
+                                        {group.projectStatus}
+                                      </span>
+                                    )}
+                                    {group.interactions.length > 1 && expandedProjectIndex === groupIdx && (
+                                      <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                                        <button onClick={() => scrollContainer(`client-conv-carousel-${groupIdx}`, 'left')} className="p-1.5 rounded-lg bg-white hover:bg-slate-50 text-slate-400 hover:text-primary transition-colors border border-slate-200 shadow-sm"><ChevronLeft size={16} /></button>
+                                        <button onClick={() => scrollContainer(`client-conv-carousel-${groupIdx}`, 'right')} className="p-1.5 rounded-lg bg-white hover:bg-slate-50 text-slate-400 hover:text-primary transition-colors border border-slate-200 shadow-sm"><ChevronRight size={16} /></button>
+                                      </div>
+                                    )}
+                                    <ChevronDown size={20} className={`text-slate-400 transition-transform ${expandedProjectIndex === groupIdx ? "rotate-180" : ""}`} />
                                   </div>
                                 </div>
+
+                                {/* Conversations Carousel */}
+                                {expandedProjectIndex === groupIdx && (
+                                  <div className="p-4 bg-white animate-fade-in-up">
+                                    {group.interactions.length === 0 ? (
+                                      <div className="text-center py-6 text-[12px] font-bold text-slate-300 tracking-widest uppercase">
+                                        No conversations logged yet
+                                      </div>
+                                    ) : (
+                                      <div id={`client-conv-carousel-${groupIdx}`} className="flex overflow-x-auto gap-4 pb-4 snap-x snap-mandatory no-scrollbar scroll-smooth">
+                                        {group.interactions
+                                          .sort(
+                                            (a, b) =>
+                                              parseLocalDate(b.date || b.completed_at || b.dueDate || b.created_at || b.createdAt) - parseLocalDate(a.date || a.completed_at || a.dueDate || a.created_at || a.createdAt),
+                                          )
+                                          .map((conv, idx) => (
+                                            <ConversationCard key={`conv-${conv.id || idx}`} conv={conv} />
+                                          ))}
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
                               </div>
                             ))
                           )}

@@ -23,6 +23,7 @@ import {
   ChevronRight,
   Loader2,
   User,
+  Mail,
 } from "lucide-react";
 import SearchableDropdown from "../../components/common/SearchableDropdown";
 import {
@@ -325,13 +326,15 @@ const FollowUpList = ({
       if (isCompletedA && !isCompletedB) return 1;
       if (!isCompletedA && isCompletedB) return -1;
 
-      // Sort by priority first (High → Medium → Low)
+      // Sort purely by date and time (closest first)
+      const timeA = parseLocalDate(a.dueDate).getTime();
+      const timeB = parseLocalDate(b.dueDate).getTime();
+      if (timeA !== timeB) return timeA - timeB;
+
+      // If time is same, sort by priority (High -> Medium -> Low)
       const pA = priorityOrder[a.priority] ?? 1;
       const pB = priorityOrder[b.priority] ?? 1;
-      if (pA !== pB) return pA - pB;
-
-      // Then sort by date within the same priority
-      return parseLocalDate(a.dueDate).getTime() - parseLocalDate(b.dueDate).getTime();
+      return pA - pB;
     });
 
   const totalPages = Math.ceil(filteredFollowUps.length / RECORDS_PER_PAGE);
@@ -789,219 +792,206 @@ const FollowUpList = ({
               const isFToday = isToday(f.dueDate) && f.status === "pending";
               const timeframe = f.status === "completed" ? "Completed" : (overdue ? "Overdue" : (isFToday ? "Today" : "Upcoming"));
               
-              const prev = index > 0 ? currentFollowUps[index - 1] : null;
-              let showPriorityHeader = false;
-              let showTimeframeHeader = false;
-              
-              if (!prev) {
-                showPriorityHeader = true;
-                showTimeframeHeader = true;
-              } else {
-                 if (prev.priority !== f.priority || (prev.status === "completed" !== (f.status === "completed"))) {
-                    showPriorityHeader = true;
-                    showTimeframeHeader = true;
-                 } else {
-                    const prevOverdue = isOverdue(prev.dueDate) && prev.status === "pending";
-                    const prevToday = isToday(prev.dueDate) && prev.status === "pending";
-                    const prevTimeframe = prev.status === "completed" ? "Completed" : (prevOverdue ? "Overdue" : (prevToday ? "Today" : "Upcoming"));
-                    if (timeframe !== prevTimeframe) {
-                      showTimeframeHeader = true;
-                    }
-                 }
-              }
-
               return (
-                <React.Fragment key={`group-${f.id}`}>
-                  {showPriorityHeader && (
-                    <div className="w-full mt-4 mb-1 flex items-center gap-3">
-                       <h3 className="text-[13px] font-black text-[#18254D] uppercase tracking-widest">{f.status === "completed" ? "Completed Tasks" : `${f.priority} Priority`}</h3>
-                       <div className="flex-1 h-px bg-slate-200"></div>
-                    </div>
-                  )}
-                  {showTimeframeHeader && f.status !== "completed" && (
-                    <div className="w-full mt-1 mb-0.5 ml-1">
-                       <h4 className="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase">{timeframe}</h4>
-                    </div>
-                  )}
                   <div
-                    className={`group bg-white rounded-xl border transition-all hover:shadow-md flex flex-col md:flex-row items-start p-3 gap-3 ${f.status === "completed" ? "opacity-50 grayscale" : overdue ? "border-error/20 bg-error/[0.01]" : "border-slate-200 hover:border-secondary/30"}`}
+                    key={f.id}
+                    className={`group relative p-4 rounded-xl border transition-all hover:shadow-md flex flex-col md:flex-row items-start gap-4 ${
+                      f.status === "completed" 
+                        ? "bg-slate-50/50 border-slate-100 opacity-80" 
+                        : f.priority === 'High'
+                          ? "bg-error/[0.06] border-error/20 shadow-sm shadow-error/5"
+                          : f.priority === 'Medium'
+                            ? "bg-warning/[0.06] border-warning/20 shadow-sm shadow-warning/5"
+                            : "bg-info/[0.06] border-info/20 shadow-sm shadow-info/5"
+                    }`}
                   >
-                  <button
-                    onClick={() => {
-                      if (f.status === "completed") {
-                        onToggleStatus(f.id);
-                      } else {
-                        const now = new Date();
-                        setCompletionDate(now.toLocaleDateString("en-CA"));
-                        setCompletionHour((now.getHours() % 12 || 12).toString());
-                        setCompletionMinute(now.getMinutes().toString().padStart(2, "0"));
-                        setCompletionPeriod(now.getHours() >= 12 ? "PM" : "AM");
-                        setCompletingFollowUpId(f.id);
-                        setCompletionBrief("");
-                        setShowCompletionModal(true);
-                      }
-                    }}
-                    className={`w-8 h-8 rounded-lg border-2 transition-all flex items-center justify-center shrink-0 mt-1 ${f.status === "completed" ? "bg-success border-success text-white" : "bg-white border-slate-200 text-slate-300 hover:border-success hover:text-success hover:bg-success/5"}`}
-                    title={
-                      f.status === "completed"
-                        ? "Mark as Pending"
-                        : "Mark as Completed"
-                    }
-                  >
-                    {f.status === "completed" ? (
-                      <Check size={16} strokeWidth={4} />
-                    ) : (
-                      <CheckCircle2 size={14} strokeWidth={3} />
-                    )}
-                  </button>
-                  <div 
-                    className="flex-1 min-w-0 text-left cursor-pointer group/content"
-                    onClick={() => client && onSelectClient && onSelectClient(client)}
-                  >
-                    <div className="flex flex-wrap items-center gap-2 mb-1.5">
-                      <span
-                        className={`px-2 py-0.5 rounded-md text-[11px] font-bold tracking-widest uppercase border ${getPriorityBadge(f.priority)}`}
+                    {/* Left Icon Box */}
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-white shadow-sm shrink-0 ${
+                      f.status === 'completed' ? 'bg-success' : f.priority === 'High' ? 'bg-error' : f.priority === 'Medium' ? 'bg-warning' : 'bg-info'
+                    }`}>
+                      {f.status === 'completed' ? (
+                        <Check size={18} strokeWidth={3} />
+                      ) : (
+                        f.followup_mode?.toLowerCase() === 'call' ? <Phone size={18} strokeWidth={2.5} /> : 
+                        f.followup_mode?.toLowerCase() === 'meeting' ? <Calendar size={18} strokeWidth={2.5} /> : 
+                        f.followup_mode?.toLowerCase() === 'whatsapp' ? <MessageSquare size={18} strokeWidth={2.5} /> :
+                        <Mail size={18} strokeWidth={2.5} />
+                      )}
+                    </div>
+
+                    <div className="flex-1 min-w-0 flex flex-col">
+                      {/* Top row: Status badges and Timeframe */}
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className={`text-[10px] md:text-[11px] font-black tracking-widest px-2 py-0.5 rounded-md border uppercase ${getPriorityBadge(f.priority)}`}>
+                            {f.priority} Priority
+                          </span>
+                          <span className={`px-2 py-0.5 rounded-md text-[10px] md:text-[11px] font-black tracking-widest uppercase border ${getModeBadge(f.followup_mode)}`}>
+                            {f.followup_mode}
+                          </span>
+                          {overdue && f.status !== 'completed' && (
+                            <span className="text-[10px] md:text-[11px] font-black tracking-widest uppercase text-error bg-error/10 px-2 py-0.5 rounded-md border border-error/20">
+                              Overdue
+                            </span>
+                          )}
+                        </div>
+                        {f.status !== 'completed' && (
+                          <span className="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase hidden md:block">
+                            {timeframe}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Title and Client */}
+                      <h4
+                        className={`text-[14px] font-bold text-primary tracking-tight mb-1 cursor-pointer hover:text-secondary transition-colors ${f.status === "completed" ? "line-through opacity-60" : ""}`}
+                        onClick={() => client && onSelectClient && onSelectClient(client)}
                       >
-                        {f.priority}
-                      </span>
-                      {f.followup_mode && (
-                        <span className={`px-2 py-0.5 rounded-md text-[11px] font-bold tracking-widest uppercase border ${getModeBadge(f.followup_mode)}`}>
-                          {f.followup_mode}
-                        </span>
-                      )}
-                      {overdue && (
-                        <span className="text-[11px] font-bold tracking-widest uppercase text-error bg-error/10 px-2 py-0.5 rounded-md border border-error/20">
-                          Overdue
-                        </span>
-                      )}
-                    </div>
-                    <h4
-                      className={`text-sm font-bold text-primary tracking-tight transition-colors group-hover/content:text-secondary ${f.status === "completed" ? "line-through opacity-50" : ""}`}
-                    >
-                      {f.title}
-                      <span className="text-slate-400 font-medium mx-1.5">-</span>
-                      <span className="text-secondary">{client?.name}</span>
-                      {client?.status !== "Lead" && client?.status !== "Dismissed" && f.projectName && (
-                        <>
-                          <span className="text-slate-400 font-medium mx-1.5">-</span>
-                          <span className="text-secondary">{f.projectName}</span>
-                        </>
-                      )}
-                    </h4>
-                    {f.description && (
-                      <p className="text-[13px] text-slate-400 font-medium mt-1 line-clamp-2">
-                        {f.description}
-                      </p>
-                    )}
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2">
-                      <div className="flex items-center gap-1.5 text-[12px] text-textMuted font-bold  tracking-widest">
-                        <Clock size={12} className="text-secondary" />
-                        {parseLocalDate(f.dueDate).toLocaleDateString([], {
-                          month: "short",
-                          day: "numeric",
-                        })}
-                        {" · "}
-                        {parseLocalDate(f.dueDate).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                          hour12: true,
-                        })}
-                      </div>
-                    </div>
-                    {f.status === "completed" && (f.completed_at || f.completed_by) && (
-                      <div className="mt-2.5 pt-2.5 border-t border-slate-100 flex flex-wrap items-center gap-x-4 gap-y-1.5">
-                        {f.completed_at && (
-                          <div className="flex items-center gap-1.5 text-[11px] font-bold tracking-widest text-success bg-success/5 px-2 py-1 rounded-md border border-success/10">
-                            <CheckCircle2 size={12} strokeWidth={3} />
-                            COMPLETED: {parseLocalDate(f.completed_at).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })} · {parseLocalDate(f.completed_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
-                          </div>
+                        {f.title}
+                        <span className="text-slate-300 font-medium mx-2">|</span>
+                        <span className="text-secondary">{client?.name || "No Client"}</span>
+                        {client?.status !== "Lead" && client?.status !== "Dismissed" && f.projectName && (
+                          <>
+                            <span className="text-slate-300 font-medium mx-2">|</span>
+                            <span className="text-secondary/70">{f.projectName}</span>
+                          </>
                         )}
-                        {f.completed_by && (
-                          <div className="flex items-center gap-1.5 text-[11px] font-bold tracking-widest text-slate-400 bg-slate-50 px-2 py-1 rounded-md border border-slate-100">
-                            <User size={12} strokeWidth={3} />
-                            BY: {f.completed_by}
+                      </h4>
+
+                      {/* Description */}
+                      {f.description && (
+                        <p className={`text-[12px] font-medium leading-relaxed mb-4 ${f.status === 'completed' ? 'text-slate-400' : 'text-slate-500'} line-clamp-2`}>
+                          {f.description}
+                        </p>
+                      )}
+
+                      {/* Completion Data for Completed Tasks */}
+                      {f.status === "completed" && (f.completed_at || f.completed_by || f.follow_brief) && (
+                        <div className="mb-4 space-y-3">
+                          <div className="flex flex-wrap items-center gap-2">
+                            {f.completed_at && (
+                              <div className="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-success bg-success/5 px-2 py-1 rounded-md border border-success/10 uppercase">
+                                <CheckCircle2 size={12} strokeWidth={3} />
+                                Completed: {parseLocalDate(f.completed_at).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}
+                              </div>
+                            )}
+                            {f.completed_by && (
+                              <div className="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-slate-400 bg-slate-50 px-2 py-1 rounded-md border border-slate-100 uppercase">
+                                <User size={12} strokeWidth={3} />
+                                By: {f.completed_by}
+                              </div>
+                            )}
                           </div>
-                        )}
+                          {f.follow_brief && (
+                            <div className="p-3 bg-slate-50 border border-slate-100 rounded-lg">
+                              <p className="text-[10px] font-black text-slate-400 tracking-widest uppercase mb-1 opacity-60">
+                                Conclusion Brief
+                              </p>
+                              <p className="text-[12px] text-primary font-medium leading-relaxed">
+                                {f.follow_brief}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Bottom row: Meta and Actions */}
+                      <div className={`mt-auto pt-3 border-t flex items-center justify-between gap-2 ${f.status === 'completed' ? 'border-slate-100' : 'border-slate-50'}`}>
+                        <div className="flex items-center gap-2 md:gap-4 min-w-0 flex-1">
+                          <div className={`flex items-center gap-1.5 text-[10px] md:text-[11px] font-bold tracking-widest uppercase shrink-0 ${f.status === 'completed' ? 'text-slate-300' : 'text-slate-400'}`}>
+                            <Calendar size={11} className="opacity-70" />
+                            <span className="truncate">
+                              {parseLocalDate(f.dueDate).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" })}
+                            </span>
+                          </div>
+                          <div className={`flex items-center gap-1.5 text-[10px] md:text-[11px] font-bold tracking-widest uppercase shrink-0 ${f.status === 'completed' ? 'text-slate-300' : 'text-secondary'}`}>
+                            <Clock size={11} className="opacity-70" />
+                            <span>
+                              {parseLocalDate(f.dueDate).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true })}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-1.5 md:gap-2 shrink-0">
+                          <button
+                            onClick={() => {
+                              if (f.status === "completed") {
+                                onToggleStatus(f.id);
+                              } else {
+                                const now = new Date();
+                                setCompletionDate(now.toLocaleDateString("en-CA"));
+                                setCompletionHour((now.getHours() % 12 || 12).toString());
+                                setCompletionMinute(now.getMinutes().toString().padStart(2, "0"));
+                                setCompletionPeriod(now.getHours() >= 12 ? "PM" : "AM");
+                                setCompletingFollowUpId(f.id);
+                                setCompletionBrief("");
+                                setShowCompletionModal(true);
+                              }
+                            }}
+                            className={`w-8 h-8 rounded-lg border transition-all flex items-center justify-center shrink-0 ${
+                              f.status === "completed" 
+                                ? "bg-success border-success text-white shadow-sm shadow-success/20" 
+                                : "bg-white border-slate-200 text-slate-300 hover:border-success hover:text-success hover:bg-success/5"
+                            }`}
+                            title={f.status === "completed" ? "Mark as Pending" : "Mark as Completed"}
+                          >
+                            {f.status === "completed" ? <Check size={16} strokeWidth={4} /> : <CheckCircle2 size={14} strokeWidth={3} />}
+                          </button>
+
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              let compDate = new Date().toISOString().split("T")[0];
+                              let compHr = "12";
+                              let compMin = "00";
+                              let compPrd = "PM";
+
+                              if (f.status === "completed" && f.completed_at) {
+                                const cd = parseLocalDate(f.completed_at);
+                                if (!isNaN(cd.getTime())) {
+                                  compDate = `${cd.getFullYear()}-${(cd.getMonth() + 1).toString().padStart(2, "0")}-${cd.getDate().toString().padStart(2, "0")}`;
+                                  compHr = (cd.getHours() % 12 || 12).toString();
+                                  compMin = cd.getMinutes().toString().padStart(2, "0");
+                                  compPrd = cd.getHours() >= 12 ? "PM" : "AM";
+                                }
+                              }
+
+                              const d = f.dueDate ? parseLocalDate(f.dueDate) : new Date();
+                              setFormData({
+                                ...f,
+                                followup_status: f.status || f.followup_status || "pending",
+                                followup_date: `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")}`,
+                                timeHour: (d.getHours() % 12 || 12).toString(),
+                                timeMinute: d.getMinutes().toString().padStart(2, "0"),
+                                timePeriod: d.getHours() >= 12 ? "PM" : "AM",
+                                completed_by: f.completed_by || "",
+                                completionDate: compDate,
+                                completionHour: compHr,
+                                completionMinute: compMin,
+                                completionPeriod: compPrd,
+                              });
+                              setShowAddModal(true);
+                            }}
+                            className="w-8 h-8 bg-white border border-slate-200 text-slate-400 rounded-lg hover:text-primary hover:border-primary/30 transition-all flex items-center justify-center"
+                            title="Edit"
+                          >
+                            <Edit2 size={14} />
+                          </button>
+
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onDeleteFollowUp && onDeleteFollowUp(f.id);
+                            }}
+                            className="w-8 h-8 bg-white border border-slate-200 text-slate-400 rounded-lg hover:text-error hover:border-error/30 transition-all flex items-center justify-center"
+                            title="Delete"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
                       </div>
-                    )}
-                    {f.status === "completed" && f.follow_brief && (
-                      <div className="mt-2 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg">
-                        <p className="text-[11px] font-bold text-slate-400 tracking-widest uppercase mb-1">
-                          Conclusion Brief
-                        </p>
-                        <p className="text-[13px] text-primary font-medium leading-relaxed">
-                          {f.follow_brief}
-                        </p>
-                      </div>
-                    )}
+                    </div>
                   </div>
-
-                  <div className="flex gap-2 shrink-0">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        let compDate = new Date().toISOString().split("T")[0];
-                        let compHr = "12";
-                        let compMin = "00";
-                        let compPrd = "PM";
-
-                        if (f.status === "completed" && f.completed_at) {
-                          const cd = parseLocalDate(f.completed_at);
-                          if (!isNaN(cd.getTime())) {
-                            compDate = `${cd.getFullYear()}-${(cd.getMonth() + 1).toString().padStart(2, "0")}-${cd.getDate().toString().padStart(2, "0")}`;
-                            compHr = (cd.getHours() % 12 || 12).toString();
-                            compMin = cd
-                              .getMinutes()
-                              .toString()
-                              .padStart(2, "0");
-                            compPrd = cd.getHours() >= 12 ? "PM" : "AM";
-                          }
-                        }
-
-                        const d = f.dueDate ? parseLocalDate(f.dueDate) : new Date();
-                        const localDate = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")}`;
-                        const localHour24 = d.getHours();
-                        const localHour12 = (localHour24 % 12 || 12).toString();
-                        const localMinute = d
-                          .getMinutes()
-                          .toString()
-                          .padStart(2, "0");
-                        const localPeriod = localHour24 >= 12 ? "PM" : "AM";
-
-                        setFormData({
-                          ...f,
-                          followup_status:
-                            f.status || f.followup_status || "pending",
-                          followup_date: localDate,
-                          timeHour: localHour12,
-                          timeMinute: localMinute,
-                          timePeriod: localPeriod,
-                          completed_by: f.completed_by || "",
-                          completionDate: compDate,
-                          completionHour: compHr,
-                          completionMinute: compMin,
-                          completionPeriod: compPrd,
-                        });
-                        setShowAddModal(true);
-                      }}
-                      className="p-2.5 bg-white border border-slate-200 text-slate-400 rounded-xl hover:text-primary transition-all active:scale-90 hover:shadow-sm"
-                      title="Edit Follow-up"
-                    >
-                      <Edit2 size={16} />
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onDeleteFollowUp && onDeleteFollowUp(f.id);
-                      }}
-                      className="p-2.5 bg-white border border-slate-200 text-slate-400 rounded-xl hover:text-error hover:border-error/30 transition-all active:scale-90 hover:shadow-sm"
-                      title="Delete Follow-up"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
-                </div>
-                </React.Fragment>
               );
             })
           )}

@@ -54,6 +54,7 @@ function ClientDetailWrapper({
   loading,
   onDismissLead,
   onRestoreLead,
+  onToggleStatus,
 }) {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -90,6 +91,7 @@ function ClientDetailWrapper({
       projects={projects}
       onDismissLead={onDismissLead}
       onRestoreLead={onRestoreLead}
+      onToggleStatus={onToggleStatus}
     />
   );
 }
@@ -135,6 +137,7 @@ function ProjectOverviewWrapper({
       onAddFollowUp={onAddFollowUp}
       followUps={followUps}
       activities={activities}
+      onToggleStatus={onToggleStatus}
     />
   );
 }
@@ -2256,6 +2259,7 @@ function AppRoutes() {
               loading={clientsLoading}
               onDismissLead={handleDismissLead}
               onRestoreLead={handleRestoreLead}
+              onToggleStatus={handleToggleFollowUpStatus}
             />
           }
         />
@@ -2276,6 +2280,7 @@ function AppRoutes() {
               loading={leadsLoading}
               onDismissLead={handleDismissLead}
               onRestoreLead={handleRestoreLead}
+              onToggleStatus={handleToggleFollowUpStatus}
             />
           }
         />
@@ -2293,6 +2298,7 @@ function AppRoutes() {
               onAddActivity={handleAddActivity}
               onAddFollowUp={handleAddFollowUp}
               loading={projectsLoading || clientsLoading || leadsLoading}
+              onToggleStatus={handleToggleFollowUpStatus}
             />
           }
         />
