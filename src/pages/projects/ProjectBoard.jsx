@@ -328,7 +328,7 @@ const ProjectCard = ({
                     onClick={(e) => {
                       e.stopPropagation();
                       onDelete && onDelete(project);
-                      setIsMenuOpen(false);
+                      setIsMenuOpen(false); 
                     }}
                     className="w-full text-left px-4 py-2.5 text-[12px] font-bold  tracking-widest text-rose-400 hover:bg-rose-50 hover:text-rose-600 transition-colors border-t border-slate-50"
                   >
