@@ -107,6 +107,7 @@ function ProjectOverviewWrapper({
   activities,
   leads,
   loading,
+  onToggleStatus,
 }) {
   const { id } = useParams();
   const navigate = useNavigate();

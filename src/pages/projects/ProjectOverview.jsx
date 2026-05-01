@@ -60,7 +60,7 @@ const getModeBadge = (mode) => {
   }
 };
 
-const ConversationCard = ({ conv }) => {
+const ConversationCard = ({ conv, onToggleStatus }) => {
   const isFollowup = conv.source === "followup";
   const isPending = conv.source === "pending";
   const type = (conv.type || conv.followup_mode || "call").toLowerCase();
@@ -141,6 +141,24 @@ const ConversationCard = ({ conv }) => {
             </div>
           </div>
         )}
+        {isPending && (
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5 text-slate-400">
+               <Clock size={12} className="text-warning" />
+               <span>Pending Completion</span>
+            </div>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleStatus(conv.id);
+              }}
+              className="w-7 h-7 rounded-lg border border-warning/20 bg-white text-warning hover:border-success hover:text-success hover:bg-success/5 transition-all flex items-center justify-center shrink-0 shadow-sm"
+              title="Mark as Completed"
+            >
+              <CheckCircle2 size={13} strokeWidth={3} />
+            </button>
+          </div>
+        )}
         {!isFollowup && !isPending && (
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5">
@@ -171,6 +189,7 @@ const ProjectOverview = ({
   onUpdateProject,
   followUps,
   activities,
+  onToggleStatus,
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -724,7 +743,7 @@ const ProjectOverview = ({
                             <ConversationCard key={`pending-${item.id || idx}`} conv={{
                               ...item,
                               source: "pending",
-                            }} />
+                            }} onToggleStatus={onToggleStatus} />
                           ))}
                         </div>
                       ) : (
@@ -756,7 +775,7 @@ const ProjectOverview = ({
                                 source: isFollowUp ? "followup" : "activity",
                                 originalDescription: item.description,
                                 description: item.follow_brief || item.description,
-                              }} />
+                              }} onToggleStatus={onToggleStatus} />
                             );
                           })}
                         </div>
