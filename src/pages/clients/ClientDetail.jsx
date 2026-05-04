@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { toast } from "react-hot-toast";
+import { addToGoogleCalendar } from "../../utils/calendar";
+
 import { createPortal } from "react-dom";
 import { useScrollLock } from "../../hooks/useScrollLock";
 import {
@@ -82,27 +84,61 @@ const getModeBadge = (mode) => {
   }
 };
 
-const ConversationCard = ({ conv }) => {
+const ConversationCard = ({ conv, onAddToCalendar }) => {
   const type = conv.source === "followup" ? (conv.type || conv.followup_mode || "call").toLowerCase() : (conv.type || "call").toLowerCase();
   const createdDate = parseLocalDate(conv.created_at || conv.createdAt || conv.joinedDate || conv.date || conv.dueDate);
   const completedDate = conv.completed_at ? parseLocalDate(conv.completed_at) : null;
   const dueDate = conv.followup_date ? parseLocalDate(conv.followup_date) : conv.dueDate ? parseLocalDate(conv.dueDate) : createdDate;
   const isFollowup = conv.source === "followup";
+  const isPending = conv.source === "pending";
+
+  const getBgColor = () => {
+    if (isFollowup) return "bg-success/5 border-success/20 shadow-sm shadow-success/5";
+    
+    switch (conv.priority) {
+      case "High":
+        return "bg-error/5 border-error/20 shadow-sm shadow-error/5 hover:border-error/40";
+      case "Medium":
+        return "bg-warning/5 border-warning/20 shadow-sm shadow-warning/5 hover:border-warning/40";
+      case "Low":
+        return "bg-info/5 border-info/20 shadow-sm shadow-info/5 hover:border-info/40";
+      default:
+        return "bg-slate-50/50 border-slate-100 hover:border-slate-200";
+    }
+  };
 
   return (
-    <div className={`min-w-full w-full shrink-0 snap-start rounded-xl p-4 flex flex-col hover:shadow-md transition-all border ${isFollowup ? "bg-success/5 border-success/20 shadow-sm shadow-success/5" : "bg-slate-50/50 border-slate-100 hover:border-slate-200"}`}>
+    <div className={`group min-w-full w-full shrink-0 snap-start rounded-xl p-4 flex flex-col hover:shadow-md transition-all border relative ${getBgColor()}`}>
       <div className="flex items-center justify-between mb-3">
         <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-white shadow-sm ${
-          isFollowup ? "bg-success" : type === "email" ? "bg-info" : type === "call" ? "bg-success" : type === "meeting" ? "bg-secondary" : type === "whatsapp" ? "bg-[#25D366]" : "bg-slate-400"
+          isPending ? "bg-warning" : isFollowup ? "bg-success" : type === "email" ? "bg-info" : type === "call" ? "bg-success" : type === "meeting" ? "bg-secondary" : type === "whatsapp" ? "bg-[#25D366]" : "bg-slate-400"
         }`}>
           {type === "call" ? <Phone size={14} strokeWidth={2.5} /> : type === "meeting" ? <Calendar size={14} strokeWidth={2.5} /> : type === "whatsapp" ? <MessageSquare size={14} strokeWidth={2.5} /> : <Mail size={14} strokeWidth={2.5} />}
         </div>
+
+        {isPending && (
+          <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onAddToCalendar(conv);
+              }}
+              className="p-1.5 bg-white border border-slate-200 text-slate-400 rounded-lg hover:text-blue-500 hover:border-blue-500/30 transition-all flex items-center justify-center shadow-sm"
+              title="Add to Google Calendar"
+            >
+              <Calendar size={12} />
+            </button>
+          </div>
+        )}
+
         <span className={`text-[11px] md:text-[13px] font-bold tracking-widest px-2 py-0.5 rounded-md border uppercase ${
+          isPending ? "bg-warning/10 text-warning border-warning/20" :
           isFollowup ? "bg-success/10 text-success border-success/20" : getModeBadge(type)
         }`}>
-          {isFollowup ? "FOLLOW-UP COMPLETED" : type}
+          {isPending ? "PENDING" : isFollowup ? "FOLLOW-UP COMPLETED" : type}
         </span>
       </div>
+
       
       {conv.title && (
         <h5 className="text-[14px] font-bold text-primary tracking-tight mb-2 line-clamp-1 opacity-90">{conv.title}</h5>
@@ -463,7 +499,32 @@ const ClientDetail = ({
     }
   };
 
+  const handleAddToCalendar = async (f) => {
+    try {
+      const dueDate = f.followup_date ? parseLocalDate(f.followup_date) : f.dueDate ? parseLocalDate(f.dueDate) : new Date();
+      const startTime = dueDate;
+      const endTime = new Date(startTime.getTime() + 30 * 60000); // 30 mins later
+      
+      const eventData = {
+        title: `Follow-up: ${f.title}`,
+        description: `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n 📋 FOLLOW-UP DETAILS\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n 📌 TITLE:     ${f.title}\n 👤 CLIENT:    ${client?.name || "N/A"}\n 🏢 COMPANY:   ${client?.company || "N/A"}\n 📞 MODE:      ${f.followup_mode || "Call"}\n\n ──────────────────────────────\n 📝 DESCRIPTION:\n ${f.description || "No description provided."}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nGenerated via Parivartan CRM`,
+        start: startTime,
+        end: endTime
+      };
+
+      toast.promise(addToGoogleCalendar(eventData), {
+        loading: 'Connecting to Google Calendar...',
+        success: 'Event added to your calendar!',
+        error: 'Failed to add event to calendar.'
+      });
+    } catch (error) {
+      console.error(error);
+      toast.error("Could not sync with Google Calendar.");
+    }
+  };
+
   const handleLogInteraction = (e) => {
+
     e.preventDefault();
 
     const isValid = validateForm(logData, {
@@ -531,9 +592,9 @@ const ClientDetail = ({
             : "Get a complete overview of client details."}
         </p>
       </div>
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col min-h-[calc(100vh-8rem)] animate-fade-in relative">
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col min-h-[calc(100vh-8rem)] animate-fade-in relative overflow-hidden">
         {/* Header */}
-        <div className="p-3 md:p-6 border-b border-slate-100 flex flex-row items-center justify-between bg-white gap-2 md:gap-4">
+        <div className="p-3 md:p-6 border-b border-slate-100 flex flex-row items-center justify-between bg-white rounded-t-2xl gap-2 md:gap-4">
           <div className="flex items-center gap-2 md:gap-5 min-w-0">
             <button
               onClick={onBack}
@@ -1647,7 +1708,18 @@ const ClientDetail = ({
                                         >
                                           <CheckCircle2 size={13} strokeWidth={3} />
                                         </button>
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleAddToCalendar(fu);
+                                          }}
+                                          className="w-7 h-7 md:w-8 md:h-8 rounded-lg border border-slate-200 bg-white text-slate-300 hover:border-blue-500 hover:text-blue-500 hover:bg-blue-50 transition-all flex items-center justify-center shrink-0 shadow-sm"
+                                          title="Add to Google Calendar"
+                                        >
+                                          <Calendar size={13} />
+                                        </button>
                                       </div>
+
                                     </div>
                                   </div>
                                 </div>
@@ -1735,8 +1807,9 @@ const ClientDetail = ({
                               ) : (
                                 <div id="lead-conv-carousel" className="flex overflow-x-auto gap-4 pb-4 snap-x snap-mandatory no-scrollbar scroll-smooth">
                                   {leadConversations.map((conv, idx) => (
-                                    <ConversationCard key={`lead-conv-${conv.id || idx}`} conv={conv} />
+                                    <ConversationCard key={`lead-conv-${conv.id || idx}`} conv={conv} onAddToCalendar={handleAddToCalendar} />
                                   ))}
+
                                 </div>
                               )}
                             </div>

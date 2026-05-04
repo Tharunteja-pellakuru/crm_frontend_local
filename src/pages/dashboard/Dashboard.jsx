@@ -4,6 +4,9 @@ import { useScrollLock } from "../../hooks/useScrollLock";
 import { Area, Line, ComposedChart, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { Users, UserPlus, Clock, CheckCircle2, ChevronRight, ChevronDown, Filter, Calendar, TrendingUp, X, Bell, Info, Inbox, Activity } from "lucide-react";
 import { BASE_URL } from "../../constants/config";
+import { addToGoogleCalendar } from "../../utils/calendar";
+import { toast } from "react-hot-toast";
+
 
 const parseLocalDate = (dateStr) => {
   if (!dateStr) return new Date();
@@ -114,6 +117,36 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
   function isMissed(date) {
     return parseLocalDate(date) < new Date();
   }
+
+  const handleAddToCalendar = async (f) => {
+    try {
+      const startTime = parseLocalDate(f.dueDate);
+      const endTime = new Date(startTime.getTime() + 30 * 60000); // 30 mins later
+      
+      const client = clients.find(
+        (c) =>
+          (f.clientId && (c.id == f.clientId || c.client_id == f.clientId)) ||
+          (f.leadId && (c.lead_id == f.leadId || c.id == f.leadId)),
+      );
+
+      const eventData = {
+        title: `Follow-up: ${f.title}`,
+        description: `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n 📋 FOLLOW-UP DETAILS\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n 📌 TITLE:     ${f.title}\n 👤 CLIENT:    ${client?.name || "N/A"}\n 🏢 COMPANY:   ${client?.company || "N/A"}\n 📞 MODE:      ${f.followup_mode || "Call"}\n\n ──────────────────────────────\n 📝 DESCRIPTION:\n ${f.description || "No description provided."}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nGenerated via Parivartan CRM`,
+        start: startTime,
+        end: endTime
+      };
+
+      toast.promise(addToGoogleCalendar(eventData), {
+        loading: 'Connecting to Google Calendar...',
+        success: 'Event added to your calendar!',
+        error: 'Failed to add event to calendar.'
+      });
+    } catch (error) {
+      console.error(error);
+      toast.error("Could not sync with Google Calendar.");
+    }
+  };
+
 
   // Calculate stats
   const newEnquiries = enquiries.filter((e) => e.status === "new");
@@ -523,7 +556,20 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
                             {f.title}
                           </h4>
                         </div>
+                        <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                           <button
+                             onClick={(e) => {
+                               e.stopPropagation();
+                               handleAddToCalendar(f);
+                             }}
+                             className="p-1.5 bg-white border border-slate-200 text-slate-400 rounded-lg hover:text-blue-500 hover:border-blue-500/30 transition-all flex items-center justify-center shadow-sm"
+                             title="Add to Google Calendar"
+                           >
+                             <Calendar size={12} />
+                           </button>
+                        </div>
                       </div>
+
                     );
                   })
                 )
@@ -585,7 +631,20 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
                             {f.title}
                           </h4>
                         </div>
+                        <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                           <button
+                             onClick={(e) => {
+                               e.stopPropagation();
+                               handleAddToCalendar(f);
+                             }}
+                             className="p-1.5 bg-white border border-slate-200 text-slate-400 rounded-lg hover:text-blue-500 hover:border-blue-500/30 transition-all flex items-center justify-center shadow-sm"
+                             title="Add to Google Calendar"
+                           >
+                             <Calendar size={12} />
+                           </button>
+                        </div>
                       </div>
+
                     );
                   })
                 )

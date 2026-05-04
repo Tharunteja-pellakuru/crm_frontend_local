@@ -1,5 +1,7 @@
 import React, { useState, useRef } from "react";
 import { toast } from "react-hot-toast";
+import { addToGoogleCalendar } from "../../utils/calendar";
+
 import {
   ArrowLeft,
   Calendar,
@@ -73,7 +75,7 @@ const getPriorityBadge = (p) => {
   }
 };
 
-const ConversationCard = ({ conv, onClick }) => {
+const ConversationCard = ({ conv, onClick, onAddToCalendar }) => {
   const isFollowup = conv.source === "followup";
   const isPending = conv.source === "pending";
   const type = (conv.type || conv.followup_mode || "call").toLowerCase();
@@ -82,14 +84,25 @@ const ConversationCard = ({ conv, onClick }) => {
   const completedDate = conv.completed_at ? parseLocalDate(conv.completed_at) : null;
   const dueDate = conv.followup_date ? parseLocalDate(conv.followup_date) : conv.dueDate ? parseLocalDate(conv.dueDate) : createdDate;
 
+  const getBgColor = () => {
+    if (isFollowup) return "bg-success/5 border-success/20 shadow-sm shadow-success/5";
+    
+    switch (conv.priority) {
+      case "High":
+        return "bg-error/5 border-error/20 shadow-sm shadow-error/5 hover:border-error/40";
+      case "Medium":
+        return "bg-warning/5 border-warning/20 shadow-sm shadow-warning/5 hover:border-warning/40";
+      case "Low":
+        return "bg-info/5 border-info/20 shadow-sm shadow-info/5 hover:border-info/40";
+      default:
+        return "bg-slate-50/50 border-slate-100 hover:border-slate-200";
+    }
+  };
+
   return (
     <div 
       onClick={onClick}
-      className={`min-w-full w-full shrink-0 snap-start rounded-xl p-4 flex flex-col hover:shadow-md transition-all border cursor-pointer ${
-      isFollowup ? "bg-success/5 border-success/20 shadow-sm shadow-success/5" : 
-      isPending ? "bg-warning/5 border-warning/20 shadow-sm shadow-warning/5" : 
-      "bg-slate-50/50 border-slate-100 hover:border-slate-200"
-    }`}>
+      className={`group min-w-full w-full shrink-0 snap-start rounded-xl p-4 flex flex-col hover:shadow-md transition-all border cursor-pointer relative ${getBgColor()}`}>
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-white shadow-sm ${
@@ -111,7 +124,23 @@ const ConversationCard = ({ conv, onClick }) => {
             </span>
           </div>
         </div>
+
+        {isPending && (
+          <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onAddToCalendar(conv);
+              }}
+              className="p-1.5 bg-white border border-slate-200 text-slate-400 rounded-lg hover:text-blue-500 hover:border-blue-500/30 transition-all flex items-center justify-center shadow-sm"
+              title="Add to Google Calendar"
+            >
+              <Calendar size={14} />
+            </button>
+          </div>
+        )}
       </div>
+
       
       {conv.title && (
         <h5 className="text-[14px] font-bold text-primary tracking-tight mb-2 line-clamp-1 opacity-90">{conv.title}</h5>
@@ -218,6 +247,31 @@ const ProjectOverview = ({
       ref.current.scrollBy({ left: dir === 'left' ? -scrollAmount : scrollAmount, behavior: 'smooth' });
     }
   };
+
+  const handleAddToCalendar = async (f) => {
+    try {
+      const dueDate = f.followup_date ? parseLocalDate(f.followup_date) : f.dueDate ? parseLocalDate(f.dueDate) : new Date();
+      const startTime = dueDate;
+      const endTime = new Date(startTime.getTime() + 30 * 60000); // 30 mins later
+      
+      const eventData = {
+        title: `Follow-up: ${f.title}`,
+        description: `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n 📋 FOLLOW-UP DETAILS\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n 📌 TITLE:     ${f.title}\n 👤 CLIENT:    ${client?.name || lead?.name || "N/A"}\n 🏢 COMPANY:   ${client?.company || lead?.company || "N/A"} (Project: ${project?.name || "N/A"})\n 📞 MODE:      ${f.followup_mode || "Call"}\n\n ──────────────────────────────\n 📝 DESCRIPTION:\n ${f.description || "No description provided."}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nGenerated via Parivartan CRM`,
+        start: startTime,
+        end: endTime
+      };
+
+      toast.promise(addToGoogleCalendar(eventData), {
+        loading: 'Connecting to Google Calendar...',
+        success: 'Event added to your calendar!',
+        error: 'Failed to add event to calendar.'
+      });
+    } catch (error) {
+      console.error(error);
+      toast.error("Could not sync with Google Calendar.");
+    }
+  };
+
   const [formData, setFormData] = useState({
     name: project?.name || "",
     status: project?.status || "Pending",
@@ -760,7 +814,9 @@ const ProjectOverview = ({
                               source: "pending",
                             }} 
                             onClick={() => (client || lead) && onSelectClient && onSelectClient(client || lead, "overview")}
+                            onAddToCalendar={handleAddToCalendar}
                             />
+
                           ))}
                         </div>
                       ) : (

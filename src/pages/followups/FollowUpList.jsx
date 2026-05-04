@@ -31,7 +31,8 @@ import {
   REVERSE_CATEGORY_MAP,
 } from "../../constants/categoryConstants";
 import { validateForm } from "../../utils/validation";
-import { generateGoogleCalendarLink, generateICSFile } from "../../utils/calendar";
+import { addToGoogleCalendar } from "../../utils/calendar";
+
 
 const parseLocalDate = (dateStr) => {
   if (!dateStr) return new Date();
@@ -130,7 +131,6 @@ const FollowUpList = ({
   const filterButtonRef = useRef(null);
   const filterPopupRef = useRef(null);
   const [filterPopupStyle, setFilterPopupStyle] = useState({});
-  const [activeCalendarMenu, setActiveCalendarMenu] = useState(null);
 
   useEffect(() => {
     if (isFilterPopupOpen && filterButtonRef.current) {
@@ -452,7 +452,32 @@ const FollowUpList = ({
     }
   };
 
+  const handleAddToCalendar = async (f) => {
+    try {
+      const startTime = parseLocalDate(f.dueDate);
+      const endTime = new Date(startTime.getTime() + 30 * 60000); // 30 mins later
+      
+      const client = getClientById(f.clientId, f.leadId, f.projectId);
+      const eventData = {
+        title: `Follow-up: ${f.title}`,
+        description: `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n 📋 FOLLOW-UP DETAILS\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n 📌 TITLE:     ${f.title}\n 👤 CLIENT:    ${client?.name || "N/A"}\n 🏢 COMPANY:   ${client?.company || "N/A"}\n 📞 MODE:      ${f.followup_mode || "Call"}\n\n ──────────────────────────────\n 📝 DESCRIPTION:\n ${f.description || "No description provided."}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nGenerated via Parivartan CRM`,
+        start: startTime,
+        end: endTime
+      };
+
+      toast.promise(addToGoogleCalendar(eventData), {
+        loading: 'Connecting to Google Calendar...',
+        success: 'Event added to your calendar!',
+        error: 'Failed to add event to calendar.'
+      });
+    } catch (error) {
+      console.error(error);
+      toast.error("Could not sync with Google Calendar.");
+    }
+  };
+
   const getPriorityBadge = (p) => {
+
     switch (p) {
       case "High":
         return "bg-error/10 text-error border-error/20";
@@ -947,76 +972,21 @@ const FollowUpList = ({
                             {f.status === "completed" ? <Check size={16} strokeWidth={4} /> : <CheckCircle2 size={14} strokeWidth={3} />}
                           </button>
 
-                          <div className="relative">
+                          {f.status !== "completed" && (
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setActiveCalendarMenu(activeCalendarMenu === f.id ? null : f.id);
+                                handleAddToCalendar(f);
                               }}
-                              className={`w-8 h-8 rounded-lg border transition-all flex items-center justify-center shrink-0 ${
-                                activeCalendarMenu === f.id
-                                  ? "bg-secondary border-secondary text-white shadow-sm shadow-secondary/20"
-                                  : "bg-white border-slate-200 text-slate-300 hover:border-secondary hover:text-secondary hover:bg-secondary/5"
-                              }`}
-                              title="Add to Calendar"
+                              className="w-8 h-8 bg-white border border-slate-200 text-slate-400 rounded-lg hover:text-blue-500 hover:border-blue-500/30 transition-all flex items-center justify-center"
+                              title="Add to Google Calendar"
                             >
-                              <Calendar size={14} strokeWidth={3} />
+                              <Calendar size={14} />
                             </button>
-
-                            {activeCalendarMenu === f.id && (
-                              <>
-                                <div 
-                                  className="fixed inset-0 z-[100]" 
-                                  onClick={() => setActiveCalendarMenu(null)}
-                                />
-                                <div className="absolute bottom-full right-0 mb-2 w-48 bg-white border border-slate-100 rounded-xl shadow-2xl z-[110] animate-fade-in-up py-2">
-                                  <div className="px-4 py-2 border-b border-slate-50 mb-1">
-                                    <p className="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase">
-                                      Add to Calendar
-                                    </p>
-                                  </div>
-                                  <a
-                                    href={generateGoogleCalendarLink({
-                                      title: f.title,
-                                      description: f.description,
-                                      startDate: f.dueDate,
-                                      location: f.followup_mode
-                                    })}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    onClick={() => setActiveCalendarMenu(null)}
-                                    className="w-full flex items-center gap-3 px-4 py-2 text-[12px] font-bold text-slate-600 hover:bg-slate-50 hover:text-primary transition-colors"
-                                  >
-                                    <div className="w-2 h-2 rounded-full bg-[#4285F4]"></div>
-                                    Google Calendar
-                                  </a>
-                                  <button
-                                    onClick={() => {
-                                      const icsUrl = generateICSFile({
-                                        title: f.title,
-                                        description: f.description,
-                                        startDate: f.dueDate,
-                                        location: f.followup_mode
-                                      });
-                                      const link = document.createElement("a");
-                                      link.href = icsUrl;
-                                      link.setAttribute("download", `${f.title.replace(/\s+/g, "_")}.ics`);
-                                      document.body.appendChild(link);
-                                      link.click();
-                                      document.body.removeChild(link);
-                                      setActiveCalendarMenu(null);
-                                    }}
-                                    className="w-full flex items-center gap-3 px-4 py-2 text-[12px] font-bold text-slate-600 hover:bg-slate-50 hover:text-primary transition-colors"
-                                  >
-                                    <div className="w-2 h-2 rounded-full bg-slate-400"></div>
-                                    Download iCal (.ics)
-                                  </button>
-                                </div>
-                              </>
-                            )}
-                          </div>
+                          )}
 
                           <button
+
                             onClick={(e) => {
                               e.stopPropagation();
                               let compDate = new Date().toISOString().split("T")[0];
