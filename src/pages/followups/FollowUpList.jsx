@@ -1164,7 +1164,7 @@ const FollowUpList = ({
                           </button>
                           {isCompMinOpen && (
                             <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-100 rounded-lg shadow-xl z-[100] max-h-32 overflow-y-auto">
-                              {Array.from({ length: 12 }, (_, i) => i * 5).map(
+                              {Array.from({ length: 60 }, (_, i) => i).map(
                                 (m) => (
                                   <button
                                     key={m}
@@ -1175,7 +1175,7 @@ const FollowUpList = ({
                                       );
                                       setIsCompMinOpen(false);
                                     }}
-                                    className="w-full text-left px-3 py-1.5 text-[12px] hover:bg-slate-50"
+                                    className={`w-full text-left px-3 py-1.5 text-[12px] hover:bg-slate-50 ${completionMinute === m.toString().padStart(2, "0") ? "bg-slate-100 text-secondary font-bold" : ""}`}
                                   >
                                     {m.toString().padStart(2, "0")}
                                   </button>
