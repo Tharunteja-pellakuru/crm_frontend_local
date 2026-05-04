@@ -73,7 +73,7 @@ const getPriorityBadge = (p) => {
   }
 };
 
-const ConversationCard = ({ conv, onToggleStatus, onClick }) => {
+const ConversationCard = ({ conv, onClick }) => {
   const isFollowup = conv.source === "followup";
   const isPending = conv.source === "pending";
   const type = (conv.type || conv.followup_mode || "call").toLowerCase();
@@ -171,16 +171,6 @@ const ConversationCard = ({ conv, onToggleStatus, onClick }) => {
                <Clock size={12} className="text-warning" />
                <span>Pending Completion</span>
             </div>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onToggleStatus(conv.id);
-              }}
-              className="w-7 h-7 rounded-lg border border-warning/20 bg-white text-warning hover:border-success hover:text-success hover:bg-success/5 transition-all flex items-center justify-center shrink-0 shadow-sm"
-              title="Mark as Completed"
-            >
-              <CheckCircle2 size={13} strokeWidth={3} />
-            </button>
           </div>
         )}
         {!isFollowup && !isPending && (
@@ -769,7 +759,6 @@ const ProjectOverview = ({
                               ...item,
                               source: "pending",
                             }} 
-                            onToggleStatus={onToggleStatus} 
                             onClick={() => (client || lead) && onSelectClient && onSelectClient(client || lead, "overview")}
                             />
                           ))}
@@ -804,7 +793,6 @@ const ProjectOverview = ({
                                 originalDescription: item.description,
                                 description: item.follow_brief || item.description,
                               }} 
-                              onToggleStatus={onToggleStatus} 
                               onClick={() => (client || lead) && onSelectClient && onSelectClient(client || lead, "activity")}
                               />
                             );
