@@ -26,8 +26,6 @@ export const generateClientSummary = async (client, projects) => {
       headers: getAuthHeaders(),
       body: JSON.stringify({
         enquiry: {
-          name: client.name,
-          email: client.email || "",
           message: prompt,
         },
       }),
@@ -59,8 +57,6 @@ export const generateEmailDraft = async (client, context) => {
       headers: getAuthHeaders(),
       body: JSON.stringify({
         enquiry: {
-          name: client.name,
-          email: client.email || "",
           message: prompt,
         },
       }),
@@ -87,8 +83,6 @@ export const suggestNextAction = async (client) => {
       headers: getAuthHeaders(),
       body: JSON.stringify({
         enquiry: {
-          name: client.name,
-          email: client.email || "",
           message: prompt,
         },
       }),
@@ -113,7 +107,10 @@ export const analyzeEnquiryRelevance = async (enquiry, apiKey, modelId) => {
       method: "POST",
       headers: getAuthHeaders(),
       body: JSON.stringify({
-        enquiry,
+        enquiry: {
+          id: enquiry.id || enquiry.enquiry_id,
+          message: enquiry.message,
+        },
         modelId, // optional - backend will use default if not provided
       }),
     });
@@ -137,7 +134,11 @@ export const batchAnalyzeEnquiries = async (enquiries, apiKey, modelId) => {
       method: "POST",
       headers: getAuthHeaders(),
       body: JSON.stringify({
-        enquiries,
+        enquiries: enquiries.map((e) => ({
+          id: e.id,
+          enquiry_id: e.enquiry_id,
+          message: e.message,
+        })),
         modelId, // optional - backend will use default if not provided
       }),
     });
@@ -168,7 +169,11 @@ export const analyzeEnquiriesCustomBatch = async (
       method: "POST",
       headers: getAuthHeaders(),
       body: JSON.stringify({
-        enquiries,
+        enquiries: enquiries.map((e) => ({
+          id: e.id,
+          enquiry_id: e.enquiry_id,
+          message: e.message,
+        })),
         modelId,
         customPrompt,
       }),

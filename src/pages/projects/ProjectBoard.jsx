@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { toast } from "react-hot-toast";
 import { createPortal } from "react-dom";
 import { useScrollLock } from "../../hooks/useScrollLock";
+import { useSearch } from "../../hooks/useSearch";
 // MOCK_PROJECTS and MOCK_CLIENTS are now passed as props
 import {
   Calendar,
@@ -381,7 +382,7 @@ const ProjectBoard = ({
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedPriority, setSelectedPriority] = useState("All");
   const [projectToDelete, setProjectToDelete] = useState(null);
-  const [searchQuery, setSearchQuery] = useState("");
+  const { searchTerm, setSearchTerm } = useSearch(null);
   const [isFilterPopupOpen, setIsFilterPopupOpen] = useState(false);
   const COLUMNS =
     selectedCategory === 1
@@ -506,15 +507,16 @@ const ProjectBoard = ({
       selectedCategory === "All" ? true : (p.category || 1) === selectedCategory;
     const matchesPriority = 
       selectedPriority === "All" ? true : (p.priority?.toLowerCase() === selectedPriority.toLowerCase());
-    const query = searchQuery.toLowerCase();
+    const query = searchTerm.toLowerCase();
+    const matchedClient = clients.find(
+      (c) => c.id == p.clientId || c.client_id == p.clientId
+    );
     const matchesSearch =
       !query ||
       p.name?.toLowerCase().includes(query) ||
       p.description?.toLowerCase().includes(query) ||
-      clients
-        .find((c) => c.id == p.clientId || c.client_id == p.clientId)
-        ?.company?.toLowerCase()
-        .includes(query);
+      matchedClient?.company?.toLowerCase().includes(query) ||
+      matchedClient?.name?.toLowerCase().includes(query);
     return matchesStatus && matchesCategory && matchesPriority && matchesSearch;
   }).sort((a, b) => {
     if (!a.deadline && !b.deadline) return 0;
@@ -647,8 +649,8 @@ const ProjectBoard = ({
               <input
                 type="text"
                 placeholder="Search projects..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full h-[38px] pl-11 pr-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium text-[#18254D] focus:outline-none focus:ring-4 focus:ring-[#18254D]/10 focus:border-[#18254D]/20 transition-all placeholder:text-[#18254D]/30"
               />
             </div>

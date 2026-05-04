@@ -450,20 +450,24 @@ const ClientDetail = ({
   );
 
   const completedFollowUps = [
-    ...clientFollowUps,
-    ...followUps.filter((f) => clientProjectIds.includes(f.projectId || f.project_id))
-  ].filter((f, index, self) => 
-    f.status === "completed" && 
-    index === self.findIndex((t) => t.id === f.id)
-  );
-
-  const upcomingFollowUps = [
-    ...clientFollowUps,
     ...followUps.filter((f) => 
       f.clientId == client.id || 
       (client.lead_id && f.clientId == client.lead_id) ||
       clientProjectIds.includes(f.projectId || f.project_id)
-    )
+    ),
+    ...clientFollowUps
+  ].filter((f, index, self) => 
+    (f.status === "completed" || f.followup_status === "completed") && 
+    index === self.findIndex((t) => t.id === f.id)
+  );
+
+  const upcomingFollowUps = [
+    ...followUps.filter((f) => 
+      f.clientId == client.id || 
+      (client.lead_id && f.clientId == client.lead_id) ||
+      clientProjectIds.includes(f.projectId || f.project_id)
+    ),
+    ...clientFollowUps
   ].filter((f, index, self) => 
     f.status?.toLowerCase() !== "completed" && 
     f.followup_status?.toLowerCase() !== "completed" &&
@@ -1268,6 +1272,7 @@ const ClientDetail = ({
                           combinedCompletionStr,
                           completedBy
                         );
+                        fetchClientFollowups();
                       }
                       setShowCompletionModal(false);
                     }}
@@ -1342,7 +1347,7 @@ const ClientDetail = ({
                             </button>
                             {isCompMinOpen && (
                               <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-100 rounded-lg shadow-xl z-[100] max-h-40 overflow-y-auto custom-scrollbar">
-                                {["00", "05", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55"].map(m => (
+                                {Array.from({ length: 60 }, (_, i) => i.toString().padStart(2, '0')).map(m => (
                                   <button
                                     key={m}
                                     type="button"

@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { createPortal } from "react-dom";
 import { useScrollLock } from "../../hooks/useScrollLock";
+import { useSearch } from "../../hooks/useSearch";
 import {
   Search,
   Filter,
@@ -67,7 +68,9 @@ const LeadList = ({
   onEditLead,
   allLeads = [],
 }) => {
-  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const RECORDS_PER_PAGE = 10;
+  const { searchTerm, setSearchTerm } = useSearch(setCurrentPage);
   const [filterStatus, setFilterStatus] = useState("All");
   const [leadTypeFilter, setLeadTypeFilter] = useState("All");
   const [startDate, setStartDate] = useState("");
@@ -199,8 +202,7 @@ const LeadList = ({
     isEditStatusDropdownOpen,
   ]);
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const RECORDS_PER_PAGE = 10;
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showOnboardModal, setShowOnboardModal] = useState(false);
@@ -505,9 +507,12 @@ const LeadList = ({
     // Skip invalid leads
     if (!lead || typeof lead !== "object") return false;
 
+    const q = searchTerm.toLowerCase();
     const matchesSearch =
-      (lead.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (lead.company || "").toLowerCase().includes(searchTerm.toLowerCase());
+      (lead.name || "").toLowerCase().includes(q) ||
+      (lead.company || "").toLowerCase().includes(q) ||
+      (lead.email || "").toLowerCase().includes(q) ||
+      (lead.phone || "").toLowerCase().includes(q);
 
     let matchesStatus = filterStatus === "All" || lead.status === filterStatus;
     let matchesLeadType = true;

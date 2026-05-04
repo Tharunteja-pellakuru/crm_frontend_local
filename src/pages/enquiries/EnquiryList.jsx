@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from "react";
 import { toast } from "react-hot-toast";
 import { createPortal } from "react-dom";
 import { useScrollLock } from "../../hooks/useScrollLock";
+import { useSearch } from "../../hooks/useSearch";
 import {
   Mail,
   Phone,
@@ -99,7 +100,9 @@ const EnquiryList = ({
     };
   }, [isModelDropdownOpen]);
   const [filterQuery, setFilterQuery] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const RECORDS_PER_PAGE = 10;
+  const { searchTerm, setSearchTerm } = useSearch(setCurrentPage);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [aiAnalysisError, setAiAnalysisError] = useState(null);
   const [aiAnalysisEnabled, setAiAnalysisEnabled] = useState(false);
@@ -107,8 +110,6 @@ const EnquiryList = ({
   // store the *database record id* here; provider-specific modelId is
   // available as `model.modelId` on the objects in `aiModels`.
   const [selectedAiModel, setSelectedAiModel] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const RECORDS_PER_PAGE = 10;
   const [leadModalOpen, setLeadModalOpen] = useState(false);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -266,7 +267,6 @@ const EnquiryList = ({
   useEffect(() => {
     setCurrentPage(1);
   }, [
-    searchTerm,
     startDate,
     endDate,
     activeTab,

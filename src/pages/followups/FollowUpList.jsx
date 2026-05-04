@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { toast } from "react-hot-toast";
 import { createPortal } from "react-dom";
 import { useScrollLock } from "../../hooks/useScrollLock";
+import { useSearch } from "../../hooks/useSearch";
 import DatePicker from "../../components/ui/DatePicker";
 import {
   Clock,
@@ -67,7 +68,9 @@ const FollowUpList = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeFilter, setActiveFilter] = useState("All");
   const [showAddModal, setShowAddModal] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const RECORDS_PER_PAGE = 10;
+  const { searchTerm, setSearchTerm } = useSearch(setCurrentPage);
   const [isFilterPopupOpen, setIsFilterPopupOpen] = useState(false);
   const [isClientDropdownOpen, setIsClientDropdownOpen] = useState(false);
   const [isPriorityDropdownOpen, setIsPriorityDropdownOpen] = useState(false);
@@ -97,8 +100,6 @@ const FollowUpList = ({
     completionPeriod: "PM",
   });
   const [startDate, setStartDate] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const RECORDS_PER_PAGE = 10;
   const [endDate, setEndDate] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [priorityFilter, setPriorityFilter] = useState("All");

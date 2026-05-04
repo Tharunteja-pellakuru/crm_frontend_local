@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { toast } from "react-hot-toast";
 import { createPortal } from "react-dom";
 import { useScrollLock } from "../../hooks/useScrollLock";
+import { useSearch } from "../../hooks/useSearch";
 import {
   Search,
   Filter,
@@ -65,14 +66,14 @@ const ClientList = ({
   loading = false,
   onUpdateClient,
 }) => {
-  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const RECORDS_PER_PAGE = 10;
+  const { searchTerm, setSearchTerm } = useSearch(setCurrentPage);
   const [filterStatus, setFilterStatus] = useState("Active");
   const [leadTypeFilter, setLeadTypeFilter] = useState("All");
   const [isFilterPopupOpen, setIsFilterPopupOpen] = useState(false);
 
   const [startDate, setStartDate] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const RECORDS_PER_PAGE = 10;
   const [endDate, setEndDate] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -301,9 +302,12 @@ const ClientList = ({
   };
 
   const filteredClients = clients.filter((client) => {
+    const q = searchTerm.toLowerCase();
     const matchesSearch =
-      (client.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (client.company || client.organisation_name || "").toLowerCase().includes(searchTerm.toLowerCase());
+      (client.name || "").toLowerCase().includes(q) ||
+      (client.company || client.organisation_name || "").toLowerCase().includes(q) ||
+      (client.email || "").toLowerCase().includes(q) ||
+      (client.phone || "").toLowerCase().includes(q);
 
     let matchesStatus =
       filterStatus === "All" || client.status === filterStatus;
