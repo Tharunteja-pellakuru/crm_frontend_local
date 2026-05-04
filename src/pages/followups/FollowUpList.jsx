@@ -872,7 +872,7 @@ const FollowUpList = ({
                             {f.completed_at && (
                               <div className="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-success bg-success/5 px-2 py-1 rounded-md border border-success/10 uppercase">
                                 <CheckCircle2 size={12} strokeWidth={3} />
-                                Completed: {parseLocalDate(f.completed_at).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}
+                                Completed: {parseLocalDate(f.completed_at).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })} {parseLocalDate(f.completed_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
                               </div>
                             )}
                             {f.completed_by && (
