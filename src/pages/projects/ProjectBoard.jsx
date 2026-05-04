@@ -527,8 +527,6 @@ const ProjectBoard = ({
 
   const handleCategoryChange = (cat) => {
     setSelectedCategory(cat);
-    setActiveStage("Planning");
-    setIsCategoryDropdownOpen(false);
   };
 
   const handleEditProject = (project) => {
