@@ -901,13 +901,13 @@ const FollowUpList = ({
                           <div className={`flex items-center gap-1.5 text-[10px] md:text-[11px] font-bold tracking-widest uppercase shrink-0 ${f.status === 'completed' ? 'text-slate-300' : 'text-slate-400'}`}>
                             <Calendar size={11} className="opacity-70" />
                             <span className="truncate">
-                              {parseLocalDate(f.dueDate).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" })}
+                              Scheduled: {parseLocalDate(f.dueDate).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" })}
                             </span>
                           </div>
                           <div className={`flex items-center gap-1.5 text-[10px] md:text-[11px] font-bold tracking-widest uppercase shrink-0 ${f.status === 'completed' ? 'text-slate-300' : 'text-secondary'}`}>
                             <Clock size={11} className="opacity-70" />
                             <span>
-                              {parseLocalDate(f.dueDate).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true })}
+                              Time: {parseLocalDate(f.dueDate).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true })}
                             </span>
                           </div>
                         </div>
