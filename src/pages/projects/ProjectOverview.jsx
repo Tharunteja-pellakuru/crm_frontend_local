@@ -60,7 +60,20 @@ const getModeBadge = (mode) => {
   }
 };
 
-const ConversationCard = ({ conv, onToggleStatus }) => {
+const getPriorityBadge = (p) => {
+  switch (p) {
+    case "High":
+      return "bg-error/10 text-error border-error/20";
+    case "Medium":
+      return "bg-warning/10 text-warning border-warning/20";
+    case "Low":
+      return "bg-info/10 text-info border-info/20";
+    default:
+      return "bg-slate-50 text-slate-500 border-slate-200";
+  }
+};
+
+const ConversationCard = ({ conv, onToggleStatus, onClick }) => {
   const isFollowup = conv.source === "followup";
   const isPending = conv.source === "pending";
   const type = (conv.type || conv.followup_mode || "call").toLowerCase();
@@ -70,23 +83,34 @@ const ConversationCard = ({ conv, onToggleStatus }) => {
   const dueDate = conv.followup_date ? parseLocalDate(conv.followup_date) : conv.dueDate ? parseLocalDate(conv.dueDate) : createdDate;
 
   return (
-    <div className={`min-w-full w-full shrink-0 snap-start rounded-xl p-4 flex flex-col hover:shadow-md transition-all border ${
+    <div 
+      onClick={onClick}
+      className={`min-w-full w-full shrink-0 snap-start rounded-xl p-4 flex flex-col hover:shadow-md transition-all border cursor-pointer ${
       isFollowup ? "bg-success/5 border-success/20 shadow-sm shadow-success/5" : 
       isPending ? "bg-warning/5 border-warning/20 shadow-sm shadow-warning/5" : 
       "bg-slate-50/50 border-slate-100 hover:border-slate-200"
     }`}>
       <div className="flex items-center justify-between mb-3">
-        <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-white shadow-sm ${
-          isPending ? "bg-warning" : isFollowup ? "bg-success" : type === "email" ? "bg-info" : type === "call" ? "bg-success" : type === "meeting" ? "bg-secondary" : type === "whatsapp" ? "bg-[#25D366]" : "bg-slate-400"
-        }`}>
-          {type === "call" ? <Phone size={14} strokeWidth={2.5} /> : type === "meeting" ? <Calendar size={14} strokeWidth={2.5} /> : type === "whatsapp" ? <MessageSquare size={14} strokeWidth={2.5} /> : <Mail size={14} strokeWidth={2.5} />}
+        <div className="flex items-center gap-2">
+          <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-white shadow-sm ${
+            isPending ? "bg-warning" : isFollowup ? "bg-success" : type === "email" ? "bg-info" : type === "call" ? "bg-success" : type === "meeting" ? "bg-secondary" : type === "whatsapp" ? "bg-[#25D366]" : "bg-slate-400"
+          }`}>
+            {type === "call" ? <Phone size={14} strokeWidth={2.5} /> : type === "meeting" ? <Calendar size={14} strokeWidth={2.5} /> : type === "whatsapp" ? <MessageSquare size={14} strokeWidth={2.5} /> : <Mail size={14} strokeWidth={2.5} />}
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            {(isFollowup || isPending) && conv.priority && (
+              <span className={`text-[10px] md:text-[11px] font-black tracking-widest px-2 py-0.5 rounded-md border uppercase ${getPriorityBadge(conv.priority)}`}>
+                {conv.priority}
+              </span>
+            )}
+            <span className={`text-[10px] md:text-[11px] font-bold tracking-widest px-2 py-0.5 rounded-md border uppercase ${
+              isPending ? "bg-warning/10 text-warning border-warning/20" :
+              isFollowup ? "bg-success/10 text-success border-success/20" : getModeBadge(type)
+            }`}>
+              {isPending ? "PENDING" : isFollowup ? "FOLLOW-UP COMPLETED" : type}
+            </span>
+          </div>
         </div>
-        <span className={`text-[11px] md:text-[13px] font-bold tracking-widest px-2 py-0.5 rounded-md border uppercase ${
-          isPending ? "bg-warning/10 text-warning border-warning/20" :
-          isFollowup ? "bg-success/10 text-success border-success/20" : getModeBadge(type)
-        }`}>
-          {isPending ? "PENDING" : isFollowup ? "FOLLOW-UP COMPLETED" : type}
-        </span>
       </div>
       
       {conv.title && (
@@ -190,6 +214,7 @@ const ProjectOverview = ({
   followUps,
   activities,
   onToggleStatus,
+  onSelectClient,
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -743,7 +768,10 @@ const ProjectOverview = ({
                             <ConversationCard key={`pending-${item.id || idx}`} conv={{
                               ...item,
                               source: "pending",
-                            }} onToggleStatus={onToggleStatus} />
+                            }} 
+                            onToggleStatus={onToggleStatus} 
+                            onClick={() => (client || lead) && onSelectClient && onSelectClient(client || lead, "overview")}
+                            />
                           ))}
                         </div>
                       ) : (
@@ -775,7 +803,10 @@ const ProjectOverview = ({
                                 source: isFollowUp ? "followup" : "activity",
                                 originalDescription: item.description,
                                 description: item.follow_brief || item.description,
-                              }} onToggleStatus={onToggleStatus} />
+                              }} 
+                              onToggleStatus={onToggleStatus} 
+                              onClick={() => (client || lead) && onSelectClient && onSelectClient(client || lead, "activity")}
+                              />
                             );
                           })}
                         </div>

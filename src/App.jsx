@@ -108,6 +108,7 @@ function ProjectOverviewWrapper({
   leads,
   loading,
   onToggleStatus,
+  onSelectClient,
 }) {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -139,6 +140,7 @@ function ProjectOverviewWrapper({
       followUps={followUps}
       activities={activities}
       onToggleStatus={onToggleStatus}
+      onSelectClient={onSelectClient}
     />
   );
 }
@@ -2300,6 +2302,7 @@ function AppRoutes() {
               onAddFollowUp={handleAddFollowUp}
               loading={projectsLoading || clientsLoading || leadsLoading}
               onToggleStatus={handleToggleFollowUpStatus}
+              onSelectClient={handleClientSelect}
             />
           }
         />
