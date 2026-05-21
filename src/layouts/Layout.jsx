@@ -4,6 +4,7 @@ import { Menu, X } from "lucide-react";
 import Sidebar from "./Sidebar";
 import Footer from "./Footer";
 import Logo from "../components/ui/Logo";
+import parivartanLogo from "../assets/Parivartan_Logo.png";
 
 const Layout = ({ 
   onLogout, enquiries, followUps, clients 
@@ -36,7 +37,7 @@ const Layout = ({
       {/* Mobile Backdrop */}
       {isMobileSidebarOpen && (
         <div
-          className="fixed inset-0 bg-primary/30 backdrop-blur-xl z-[105] min-[1201px]:hidden animate-fade-in"
+          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-[105] min-[1201px]:hidden animate-fade-in"
           onClick={() => setIsMobileSidebarOpen(false)}
         />
       )}
@@ -63,12 +64,12 @@ const Layout = ({
       </div>
 
       {/* Main Container */}
-      <div className={`flex-1 flex flex-col min-[1201px]:ml-72 w-full min-[1201px]:w-[calc(100%-18rem)] transition-all duration-300 ease-smooth ${isPageTransitioning ? "opacity-0 translate-y-4" : "opacity-100 translate-y-0"}`}>
-        <header className="min-[1201px]:hidden flex items-center justify-between bg-[#18254D] text-white p-5 fixed top-0 left-0 right-0 z-[100] shadow-lg h-24 animate-fade-in-down">
-          <Logo size={200} showText={false} className="!gap-2.5" />
+      <div className={`flex-1 flex flex-col min-[1201px]:ml-60 w-full min-[1201px]:w-[calc(100%-15rem)] transition-all duration-300 ease-smooth ${isPageTransitioning ? "opacity-0 translate-y-4" : "opacity-100 translate-y-0"}`}>
+        <header className="min-[1201px]:hidden flex items-center justify-between bg-white text-slate-800 p-5 fixed top-0 left-0 right-0 z-[100] shadow-md h-24 animate-fade-in-down border-b border-slate-200">
+          <img src={parivartanLogo} alt="Parivartan" style={{ width: 180 }} className="h-auto object-contain" />
           <button
             onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
-            className="p-2.5 bg-white/10 rounded-xl hover:bg-white/20 transition-all active:scale-95"
+            className="p-2.5 bg-slate-100 rounded-xl hover:bg-slate-200 transition-all active:scale-95 text-slate-600"
           >
             {isMobileSidebarOpen ? <X size={24} /> : <Menu size={24} />}
           </button>

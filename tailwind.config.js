@@ -7,9 +7,9 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["Calibri", "sans-serif"],
-        serif: ["Calibri", "serif"],
-        mono: ["Calibri", "monospace"],
+        sans: ["Inter", "system-ui", "sans-serif"],
+        serif: ["Inter", "serif"],
+        mono: ["Inter", "monospace"],
       },
       colors: {
         primary: "#18254D",
