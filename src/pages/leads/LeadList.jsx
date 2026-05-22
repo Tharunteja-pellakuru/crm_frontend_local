@@ -66,6 +66,7 @@ const LeadList = ({
   onAddActivity,
   onUpdateConvertedLead,
   onEditLead,
+  onAddFollowUp,
   allLeads = [],
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -225,7 +226,6 @@ const LeadList = ({
     }
   }, [leadView]);
   const [clientSearchQuery, setClientSearchQuery] = useState("");
-  const [isPriorityDropdownOpen, setIsPriorityDropdownOpen] = useState(false);
   const [isOnboardStatusDropdownOpen, setIsOnboardStatusDropdownOpen] =
     useState(false);
   const [isOnboardPriorityDropdownOpen, setIsOnboardPriorityDropdownOpen] =
@@ -238,6 +238,7 @@ const LeadList = ({
     useState(false);
   const [showFollowUpModal, setShowFollowUpModal] = useState(false);
   const [followUpLeadId, setFollowUpLeadId] = useState(null);
+  const [followUpLeadName, setFollowUpLeadName] = useState("");
   const [showEditConvertedModal, setShowEditConvertedModal] = useState(false);
   const [editingConvertedLeadId, setEditingConvertedLeadId] = useState(null);
   
@@ -280,11 +281,32 @@ const LeadList = ({
     onboardingDate: "",
   });
   const [followUpData, setFollowUpData] = useState({
-    type: "Call",
+    clientId: "",
+    title: "",
     description: "",
-    date: new Date().toISOString().split("T")[0],
-    time: new Date().toTimeString().split(" ")[0].substring(0, 5),
+    followup_date: new Date().toLocaleDateString("en-CA"),
+    priority: "High",
+    followup_mode: "Call",
+    followup_status: "Pending",
+    timeHour: "12",
+    timeMinute: "00",
+    timePeriod: new Date().getHours() >= 12 ? "PM" : "AM",
+    follow_brief: "",
+    completed_by: "",
+    completionDate: new Date().toLocaleDateString("en-CA"),
+    completionHour: "12",
+    completionMinute: "00",
+    completionPeriod: new Date().getHours() >= 12 ? "PM" : "AM",
   });
+  const [isPriorityDropdownOpen, setIsPriorityDropdownOpen] = useState(false);
+  const [isHourDropdownOpen, setIsHourDropdownOpen] = useState(false);
+  const [isMinuteDropdownOpen, setIsMinuteDropdownOpen] = useState(false);
+  const [isPeriodDropdownOpen, setIsPeriodDropdownOpen] = useState(false);
+  const [isModeDropdownOpen, setIsModeDropdownOpen] = useState(false);
+  const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
+  const [isCompHourOpen, setIsCompHourOpen] = useState(false);
+  const [isCompMinOpen, setIsCompMinOpen] = useState(false);
+  const [isCompPeriodOpen, setIsCompPeriodOpen] = useState(false);
 
   const [onboardingData, setOnboardingData] = useState({
     name: "",
@@ -310,6 +332,78 @@ const LeadList = ({
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [leadToDelete, setLeadToDelete] = useState(null);
+
+  const handleOpenFollowUpModal = (lead) => {
+    if (!lead) return;
+
+    setFollowUpLeadId(lead.lead_id);
+    setFollowUpLeadName(lead.name || "Lead");
+    setFollowUpData({
+      clientId: lead.lead_id,
+      title: "",
+      description: "",
+      followup_date: new Date().toLocaleDateString("en-CA"),
+      priority: "High",
+      followup_mode: "Call",
+      followup_status: "Pending",
+      timeHour: "12",
+      timeMinute: "00",
+      timePeriod: new Date().getHours() >= 12 ? "PM" : "AM",
+      follow_brief: "",
+      completed_by: "",
+      completionDate: new Date().toLocaleDateString("en-CA"),
+      completionHour: "12",
+      completionMinute: "00",
+      completionPeriod: new Date().getHours() >= 12 ? "PM" : "AM",
+    });
+    setShowFollowUpModal(true);
+  };
+
+  const resetFollowUpModal = () => {
+    setShowFollowUpModal(false);
+    setFollowUpLeadId(null);
+    setFollowUpLeadName("");
+    setFollowUpData({
+      clientId: "",
+      title: "",
+      description: "",
+      followup_date: new Date().toLocaleDateString("en-CA"),
+      priority: "High",
+      followup_mode: "Call",
+      followup_status: "Pending",
+      timeHour: "12",
+      timeMinute: "00",
+      timePeriod: new Date().getHours() >= 12 ? "PM" : "AM",
+      follow_brief: "",
+      completed_by: "",
+      completionDate: new Date().toLocaleDateString("en-CA"),
+      completionHour: "12",
+      completionMinute: "00",
+      completionPeriod: new Date().getHours() >= 12 ? "PM" : "AM",
+    });
+    setIsPriorityDropdownOpen(false);
+    setIsHourDropdownOpen(false);
+    setIsMinuteDropdownOpen(false);
+    setIsPeriodDropdownOpen(false);
+    setIsModeDropdownOpen(false);
+    setIsStatusDropdownOpen(false);
+    setIsCompHourOpen(false);
+    setIsCompMinOpen(false);
+    setIsCompPeriodOpen(false);
+  };
+
+  const getPriorityBadge = (priority) => {
+    switch ((priority || "").toLowerCase()) {
+      case "high":
+        return "bg-rose-100 text-rose-500";
+      case "medium":
+        return "bg-amber-100 text-amber-600";
+      case "low":
+        return "bg-emerald-100 text-emerald-600";
+      default:
+        return "bg-slate-100 text-slate-500";
+    }
+  };
 
 
   // Lock scroll when any modal is open
@@ -1032,6 +1126,9 @@ const LeadList = ({
                   <th className="px-6 py-4 text-left text-[12px] font-bold text-slate-400  tracking-widest border-b border-slate-100">
                     Lead Status
                   </th>
+                  <th className="px-6 py-4 text-left text-[12px] font-bold text-slate-400  tracking-widest border-b border-slate-100">
+                    Created By
+                  </th>
                   <th className="px-6 py-4 text-right text-[12px] font-bold text-slate-400  tracking-widest border-b border-slate-100">
                     Control
                   </th>
@@ -1088,11 +1185,28 @@ const LeadList = ({
                           </span>
                         )}
                       </td>
+                      <td className="px-6 py-4">
+                        <div className="text-sm font-medium text-slate-600">
+                          {lead.createdByName || "System"}
+                        </div>
+                      </td>
                       <td className="px-6 py-4 text-right">
                         <div
                           className="flex justify-end gap-3"
                           onClick={(e) => e.stopPropagation()}
                         >
+                          {lead.status !== "Dismissed" && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleOpenFollowUpModal(lead);
+                              }}
+                              className="p-2.5 bg-indigo-50/60 border border-indigo-200/60 rounded-lg text-indigo-500/80 hover:text-indigo-600 hover:border-indigo-500 hover:bg-indigo-50 transition-all active:scale-90 shadow-sm"
+                              title="Add Follow Up"
+                            >
+                              <MessageSquare size={18} />
+                            </button>
+                          )}
                           {leadView === "Converted" ? (
                             <button
                               onClick={(e) => {
@@ -1305,6 +1419,10 @@ const LeadList = ({
                   </span>
                 </div>
 
+                <div className="mb-4 rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-[12px] font-medium text-slate-500">
+                  Created By: <span className="font-semibold text-slate-700">{lead.createdByName || "System"}</span>
+                </div>
+
                 <div className="space-y-3 mb-4">
                   {lead.status === "Lead" ? (
                     <div className="space-y-3">
@@ -1341,6 +1459,18 @@ const LeadList = ({
                     className="flex items-center gap-2"
                     onClick={(e) => e.stopPropagation()}
                   >
+                    {lead.status !== "Dismissed" && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenFollowUpModal(lead);
+                        }}
+                        className="p-2 bg-indigo-50 text-indigo-600 border border-indigo-100 rounded-lg hover:bg-indigo-100 transition-all active:scale-90"
+                        title="Add Follow Up"
+                      >
+                        <MessageSquare size={16} />
+                      </button>
+                    )}
                     {leadView === "Converted" ? (
                       <button
                         onClick={(e) => {
@@ -2915,129 +3045,122 @@ const LeadList = ({
 
       {showFollowUpModal &&
         createPortal(
-          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[99999] flex items-center justify-center p-4 overflow-y-auto">
-            <div className="bg-white w-full max-w-md rounded-xl shadow-2xl border border-slate-200 overflow-hidden animate-fade-in flex flex-col max-h-[85vh]">
-              <div className="bg-primary p-4 text-white relative shrink-0">
+          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[99999] flex items-center justify-center p-4 overflow-y-auto custom-scrollbar">
+            <div className="bg-white w-full max-w-lg rounded-xl shadow-2xl border border-slate-200 animate-fade-in my-auto max-h-[90vh] flex flex-col">
+              <div className="bg-primary p-4 text-white relative rounded-t-xl">
                 <button
-                  onClick={() => setShowFollowUpModal(false)}
+                  onClick={resetFollowUpModal}
                   className="absolute top-4 right-4 p-1.5 hover:bg-white/10 rounded-xl transition-colors"
                 >
                   <X size={18} strokeWidth={3} />
                 </button>
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-indigo-400/20 rounded-xl flex items-center justify-center shadow-lg border border-indigo-400/30">
-                    <MessageSquare
-                      size={18}
-                      className="text-indigo-300"
-                      strokeWidth={2.5}
-                    />
-                  </div>
-                  <div>
-                    <h3 className="text-base font-bold tracking-tighter leading-none">
-                      Follow Up
-                    </h3>
-                    <p className="text-slate-400 text-[14px] font-bold  tracking-widest mt-0.5">
-                      {followUpLeadName}
-                    </p>
-                  </div>
-                </div>
+                <h3 className="text-base font-bold tracking-tighter mb-0.5">
+                  Follow Up
+                </h3>
+                <p className="text-slate-400 text-[14px] font-bold  tracking-widest">
+                  {followUpLeadName}
+                </p>
               </div>
-
               <form
-                onSubmit={(e) => {
+                onSubmit={async (e) => {
                   e.preventDefault();
-                  if (followUpData.description && followUpLeadId) {
-                    if (onAddActivity) {
-                      const combinedDateTime = new Date(
-                        `${followUpData.date}T${followUpData.time}`,
-                      );
-                      onAddActivity({
-                        clientId: followUpLeadId,
-                        type: followUpData.type,
-                        description: followUpData.description,
-                        date: combinedDateTime.toISOString(),
-                      });
-                    }
-                    setShowFollowUpModal(false);
-                    const lead = clients.find((c) => c.lead_id === followUpLeadId);
-                    if (lead) {
-                      onSelectClient(lead, "activity");
-                    }
+
+                  const isValid = validateForm(followUpData, {
+                    title: { required: true, minLength: 2, label: "Task Title" },
+                    description: { required: true, minLength: 2, label: "Description" },
+                    followup_date: { required: true, label: "Follow-up Date" },
+                    timeHour: { required: true, label: "Follow-up Hour" },
+                    timeMinute: { required: true, label: "Follow-up Minute" },
+                    timePeriod: { required: true, label: "Follow-up Period" },
+                    priority: { required: true, label: "Priority" },
+                    followup_mode: { required: true, label: "Follow-up Mode" },
+                    followup_status: { required: true, label: "Follow-up Status" },
+                  });
+
+                  if (!isValid || !followUpLeadId) return;
+
+                  let hour = parseInt(followUpData.timeHour || "12", 10);
+                  if ((followUpData.timePeriod || "PM").toUpperCase() === "PM" && hour < 12) {
+                    hour += 12;
                   }
+                  if ((followUpData.timePeriod || "PM").toUpperCase() === "AM" && hour === 12) {
+                    hour = 0;
+                  }
+                  const combinedDateTime = `${followUpData.followup_date} ${hour.toString().padStart(2, "0")}:${(followUpData.timeMinute || "00").padStart(2, "0")}:00`;
+                  const formattedStatus =
+                    followUpData.followup_status.charAt(0).toUpperCase() +
+                    followUpData.followup_status.slice(1).toLowerCase();
+                  const payload = {
+                    clientId: followUpLeadId,
+                    title: followUpData.title,
+                    description: followUpData.description,
+                    followup_date: combinedDateTime,
+                    priority: followUpData.priority,
+                    followup_mode: followUpData.followup_mode,
+                    followup_status: formattedStatus,
+                    follow_brief: followUpData.follow_brief || "",
+                    completed_by:
+                      followUpData.completed_by ||
+                      (formattedStatus === "Completed"
+                        ? JSON.parse(localStorage.getItem("user") || "{}").full_name || "System"
+                        : ""),
+                    completionDate: followUpData.completionDate || "",
+                    completionHour: followUpData.completionHour || "",
+                    completionMinute: followUpData.completionMinute || "",
+                    completionPeriod: followUpData.completionPeriod || "",
+                  };
+
+                  if (onAddFollowUp) {
+                    await onAddFollowUp(payload);
+                  }
+
+                  resetFollowUpModal();
                 }}
-                className="p-4 space-y-3 overflow-y-auto"
+                className="p-4 space-y-2 overflow-y-auto no-scrollbar"
               >
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-2">
-                    <label className="text-[12px] font-bold text-primary  tracking-widest ml-1">
-                      Date
-                    </label>
-                    <DatePicker
-                      value={followUpData.date}
-                      onChange={(val) =>
-                        setFollowUpData({
-                          ...followUpData,
-                          date: val,
-                        })
-                      }
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-[12px] font-bold text-primary  tracking-widest ml-1">
-                      Time
-                    </label>
-                    <div className="relative">
-                      <input
-                        required
-                        type="time"
-                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 focus:outline-none text-sm font-medium"
-                        value={followUpData.time}
-                        onChange={(e) =>
-                          setFollowUpData({
-                            ...followUpData,
-                            time: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
-                  </div>
-                </div>
-
                 <div className="space-y-2">
-                  <label className="text-[12px] font-bold text-primary  tracking-widest ml-1">
-                    Interaction Type
+                  <label className="text-[14px] font-bold text-primary tracking-widest ml-1">
+                    Lead Name <span className="text-error">*</span>
                   </label>
-                  <div className="grid grid-cols-3 gap-2">
-                    {["Call", "Email", "Meeting"].map((type) => (
-                      <button
-                        key={type}
-                        type="button"
-                        onClick={() =>
-                          setFollowUpData({
-                            ...followUpData,
-                            type: type,
-                          })
-                        }
-                        className={`py-2.5 px-3 rounded-xl border text-[12px] font-bold  tracking-widest transition-all ${
-                          followUpData.type === type
-                            ? "bg-indigo-500 border-indigo-500 text-white shadow-md shadow-indigo-200"
-                            : "bg-white border-slate-100 text-slate-400 hover:border-slate-300"
-                        }`}
-                      >
-                        {type}
-                      </button>
-                    ))}
-                  </div>
+                  <button
+                    type="button"
+                    className="w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium shadow-sm cursor-not-allowed"
+                    disabled
+                  >
+                    <span className="text-primary truncate max-w-[90%]">
+                      {followUpLeadName || "Select a lead..."}
+                    </span>
+                    <ChevronDown size={16} className="text-slate-400" />
+                  </button>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[12px] font-bold text-primary  tracking-widest ml-1">
-                    Follow Up Message
+                  <label className="text-[14px] font-bold text-primary tracking-widest ml-1">
+                    Task Title <span className="text-error">*</span>
+                  </label>
+                  <input
+                    required
+                    type="text"
+                    placeholder="e.g. Discuss project scope"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 focus:outline-none text-sm font-medium shadow-sm"
+                    value={followUpData.title}
+                    onChange={(e) =>
+                      setFollowUpData({
+                        ...followUpData,
+                        title: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[14px] font-bold text-primary tracking-widest ml-1">
+                    Description <span className="text-error">*</span>
                   </label>
                   <textarea
                     required
-                    placeholder="e.g. Discussed budget constraints and finalized timeline..."
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 focus:outline-none text-sm font-medium min-h-[80px] resize-none"
+                    placeholder="Add details about your follow-up..."
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 focus:outline-none text-sm font-medium min-h-[110px] resize-none shadow-sm"
                     value={followUpData.description}
                     onChange={(e) =>
                       setFollowUpData({
@@ -3048,13 +3171,272 @@ const LeadList = ({
                   />
                 </div>
 
-                <div className="pt-1 shrink-0">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <label className="text-[14px] font-bold text-primary tracking-widest ml-1">
+                      Follow-up Date <span className="text-error">*</span>
+                    </label>
+                    <DatePicker
+                      value={followUpData.followup_date}
+                      onChange={(val) =>
+                        setFollowUpData({
+                          ...followUpData,
+                          followup_date: val,
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[14px] font-bold text-primary tracking-widest ml-1">
+                      Follow-up Time (12h) <span className="text-error">*</span>
+                    </label>
+                    <div className="flex gap-2">
+                      <select
+                        className="flex-1 px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold shadow-sm focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 focus:outline-none"
+                        value={followUpData.timeHour}
+                        onChange={(e) =>
+                          setFollowUpData({
+                            ...followUpData,
+                            timeHour: e.target.value,
+                          })
+                        }
+                      >
+                        {Array.from({ length: 12 }, (_, i) => i + 1).map((h) => (
+                          <option key={`lead-follow-hour-${h}`} value={String(h).padStart(2, "0")}>
+                            {String(h).padStart(2, "0")}
+                          </option>
+                        ))}
+                      </select>
+                      <select
+                        className="flex-1 px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold shadow-sm focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 focus:outline-none"
+                        value={followUpData.timeMinute || "00"}
+                        onChange={(e) =>
+                          setFollowUpData({
+                            ...followUpData,
+                            timeMinute: e.target.value,
+                          })
+                        }
+                      >
+                        {Array.from({ length: 60 }, (_, i) => i).map((m) => (
+                          <option key={`lead-follow-min-${m}`} value={String(m).padStart(2, "0")}>
+                            {String(m).padStart(2, "0")}
+                          </option>
+                        ))}
+                      </select>
+                      <select
+                        className="w-[96px] px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold shadow-sm focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 focus:outline-none"
+                        value={(followUpData.timePeriod || "PM").toUpperCase()}
+                        onChange={(e) =>
+                          setFollowUpData({
+                            ...followUpData,
+                            timePeriod: e.target.value,
+                          })
+                        }
+                      >
+                        <option value="AM">AM</option>
+                        <option value="PM">PM</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[14px] font-bold text-primary tracking-widest ml-1">
+                    Priority <span className="text-error">*</span>
+                  </label>
+                  <select
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium shadow-sm focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 focus:outline-none"
+                    value={followUpData.priority}
+                    onChange={(e) =>
+                      setFollowUpData({
+                        ...followUpData,
+                        priority: e.target.value,
+                      })
+                    }
+                  >
+                    <option value="High">High</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Low">Low</option>
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[14px] font-bold text-primary tracking-widest ml-1">
+                    Follow-up Mode <span className="text-error">*</span>
+                  </label>
+                  <select
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium shadow-sm focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 focus:outline-none"
+                    value={followUpData.followup_mode}
+                    onChange={(e) =>
+                      setFollowUpData({
+                        ...followUpData,
+                        followup_mode: e.target.value,
+                      })
+                    }
+                  >
+                    <option value="Call">Call</option>
+                    <option value="Email">Email</option>
+                    <option value="Meeting">Meeting</option>
+                    <option value="Whatsapp">Whatsapp</option>
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[14px] font-bold text-primary tracking-widest ml-1">
+                    Follow-up Status <span className="text-error">*</span>
+                  </label>
+                  <select
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium shadow-sm focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 focus:outline-none"
+                    value={followUpData.followup_status}
+                    onChange={(e) => {
+                      const status = e.target.value;
+                      const updates = { followup_status: status };
+                      if (status === "Completed") {
+                        const user = JSON.parse(localStorage.getItem("user") || "{}");
+                        if (!followUpData.completed_by) {
+                          updates.completed_by = user.full_name || "";
+                        }
+                        if (!followUpData.completionDate) {
+                          updates.completionDate = new Date().toISOString().split("T")[0];
+                        }
+                        if (!followUpData.completionHour) {
+                          const now = new Date();
+                          updates.completionHour = (now.getHours() % 12 || 12).toString();
+                          updates.completionMinute = now.getMinutes().toString().padStart(2, "0");
+                          updates.completionPeriod = now.getHours() >= 12 ? "PM" : "AM";
+                        }
+                      }
+                      setFollowUpData({
+                        ...followUpData,
+                        ...updates,
+                      });
+                    }}
+                  >
+                    <option value="Pending">Pending</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Reschedule">Reschedule</option>
+                    <option value="Cancelled">Cancelled</option>
+                  </select>
+                </div>
+
+                {followUpData.followup_status === "Completed" && (
+                  <>
+                    <div className="space-y-2">
+                      <label className="text-[14px] font-bold text-primary tracking-widest ml-1">
+                        Follow Conclusion Brief
+                      </label>
+                      <textarea
+                        placeholder="Update the conclusion brief..."
+                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium shadow-sm focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none resize-none"
+                        value={followUpData.follow_brief || ""}
+                        onChange={(e) =>
+                          setFollowUpData({
+                            ...followUpData,
+                            follow_brief: e.target.value,
+                          })
+                        }
+                        rows="3"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-[14px] font-bold text-primary tracking-widest ml-1">
+                        Completed By
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. John Doe"
+                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium shadow-sm focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none"
+                        value={followUpData.completed_by || ""}
+                        onChange={(e) =>
+                          setFollowUpData({
+                            ...followUpData,
+                            completed_by: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div className="space-y-2">
+                        <label className="text-[14px] font-bold text-primary tracking-widest ml-1">
+                          Completion Date
+                        </label>
+                        <DatePicker
+                          value={followUpData.completionDate}
+                          onChange={(val) =>
+                            setFollowUpData({
+                              ...followUpData,
+                              completionDate: val,
+                            })
+                          }
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-[14px] font-bold text-primary tracking-widest ml-1">
+                          Completion Time
+                        </label>
+                        <div className="flex gap-2 relative">
+                          <select
+                            className="flex-1 px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold shadow-sm focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none"
+                            value={followUpData.completionHour}
+                            onChange={(e) =>
+                              setFollowUpData({
+                                ...followUpData,
+                                completionHour: e.target.value,
+                              })
+                            }
+                          >
+                            {Array.from({ length: 12 }, (_, i) => i + 1).map((h) => (
+                              <option key={`comp-hour-${h}`} value={String(h).padStart(2, "0")}>
+                                {String(h).padStart(2, "0")}
+                              </option>
+                            ))}
+                          </select>
+                          <select
+                            className="flex-1 px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold shadow-sm focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none"
+                            value={followUpData.completionMinute}
+                            onChange={(e) =>
+                              setFollowUpData({
+                                ...followUpData,
+                                completionMinute: e.target.value,
+                              })
+                            }
+                          >
+                            {Array.from({ length: 60 }, (_, i) => i).map((m) => (
+                              <option key={`comp-min-${m}`} value={String(m).padStart(2, "0")}>
+                                {String(m).padStart(2, "0")}
+                              </option>
+                            ))}
+                          </select>
+                          <select
+                            className="w-[96px] px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold shadow-sm focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none"
+                            value={followUpData.completionPeriod}
+                            onChange={(e) =>
+                              setFollowUpData({
+                                ...followUpData,
+                                completionPeriod: e.target.value,
+                              })
+                            }
+                          >
+                            <option value="AM">AM</option>
+                            <option value="PM">PM</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                <div className="pt-2 shrink-0">
                   <button
                     type="submit"
-                    className="w-full py-2.5 bg-primary text-white rounded-xl hover:bg-slate-800 text-[13px] font-bold tracking-[0.2em] transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2"
+                    className="w-full py-2.5 bg-primary text-white rounded-2xl text-[13px] font-bold tracking-[0.25em] shadow-xl active:scale-[0.97] transition-all hover:bg-[#1e2e5e] hover:shadow-2xl flex items-center justify-center gap-3"
                   >
                     <MessageSquare size={16} />
-                    Save & View Conversations
+                    Create Follow-up
                   </button>
                 </div>
               </form>

@@ -628,7 +628,7 @@ const ClientDetail = ({
               </div>
             </div>
           </div>
-          {/* <div className="flex items-center gap-2 md:gap-3 shrink-0 pr-2">
+          <div className="flex items-center gap-2 md:gap-3 shrink-0 pr-2">
             <button
               onClick={() => setShowEditModal(true)}
               className="p-2 md:p-2.5 bg-white border border-slate-200 rounded-lg md:rounded-xl text-slate-400 hover:text-primary hover:border-primary hover:bg-slate-50 transition-all active:scale-95 shadow-sm flex items-center gap-2"
@@ -663,7 +663,7 @@ const ClientDetail = ({
                 <span className="hidden sm:inline text-xs font-bold tracking-widest uppercase">Restore</span>
               </button>
             )}
-          </div> */}
+          </div>
         </div>
         <div className="flex-1 flex flex-col md:flex-row">
           {/* Edit Lead Modal */}
@@ -1534,26 +1534,39 @@ const ClientDetail = ({
               {activeTab === "overview" && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 animate-fade-in text-start">
                   {isLead ? (
-                    /* Lead Overview - Show only Lead Status */
-                    <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 group relative overflow-hidden hover:shadow-md hover:border-secondary/30 transition-all">
-                      <div className="w-8 h-8 bg-secondary/10 text-secondary rounded-xl flex items-center justify-center mb-3 group-hover:bg-secondary group-hover:text-white transition-all border border-secondary/20">
-                        <Zap size={16} strokeWidth={2.5} />
+                    <>
+                      <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 group relative overflow-hidden hover:shadow-md hover:border-secondary/30 transition-all">
+                        <div className="w-8 h-8 bg-secondary/10 text-secondary rounded-xl flex items-center justify-center mb-3 group-hover:bg-secondary group-hover:text-white transition-all border border-secondary/20">
+                          <Zap size={16} strokeWidth={2.5} />
+                        </div>
+                        <h3 className="text-[14px] font-bold text-slate-400 tracking-widest mb-1">
+                          Lead Status
+                        </h3>
+                        <p
+                          className={`text-lg font-bold tracking-tight  ${
+                            client.leadType === "Hot"
+                              ? "text-error"
+                              : client.leadType === "Warm"
+                                ? "text-warning"
+                                : "text-info"
+                          }`}
+                        >
+                          {client.leadType || "Warm"}
+                        </p>
                       </div>
-                      <h3 className="text-[14px] font-bold text-slate-400  tracking-widest mb-1">
-                        Lead Status
-                      </h3>
-                      <p
-                        className={`text-lg font-bold tracking-tight  ${
-                          client.leadType === "Hot"
-                            ? "text-error"
-                            : client.leadType === "Warm"
-                              ? "text-warning"
-                              : "text-info"
-                        }`}
-                      >
-                        {client.leadType || "Warm"}
-                      </p>
-                    </div>
+
+                      <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 group relative overflow-hidden hover:shadow-md hover:border-secondary/30 transition-all">
+                        <div className="w-8 h-8 bg-info/10 text-info rounded-xl flex items-center justify-center mb-3 group-hover:bg-info group-hover:text-white transition-all border border-info/20">
+                          <UserCheck size={16} strokeWidth={2.5} />
+                        </div>
+                        <h3 className="text-[14px] font-bold text-slate-400 tracking-widest mb-1">
+                          Created By
+                        </h3>
+                        <p className="text-lg font-bold tracking-tight text-primary truncate">
+                          {client.createdByName || "System"}
+                        </p>
+                      </div>
+                    </>
                   ) : (
                     /* Client Overview - Show Client Status and Project Billing Currency */
                     <>

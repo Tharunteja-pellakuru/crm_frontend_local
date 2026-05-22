@@ -404,6 +404,8 @@ function AppRoutes() {
               : new Date().toISOString().split("T")[0],
             avatar: `https://picsum.photos/100/100?random=${lead.lead_id || Math.floor(Math.random() * 100)}`,
             enquiry_id: lead.enquiry_id,
+            createdByName: lead.created_by_name || null,
+            convertedByName: lead.converted_by_name || null,
           };
         });
 
@@ -2252,6 +2254,7 @@ function AppRoutes() {
               clients={clients}
               loading={leadsLoading}
               onSelectLead={handleClientSelect}
+              onAddFollowUp={handleAddFollowUp}
               onDeleteLead={handleDeleteLead}
               onOnboardLead={handleOnboardClient}
               onDismissLead={handleDismissLead}
