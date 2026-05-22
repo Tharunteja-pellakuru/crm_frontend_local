@@ -37,6 +37,11 @@ import {
   Share2,
   Users,
   Pencil,
+  Facebook,
+  Instagram,
+  Twitter,
+  Linkedin,
+  MessageCircle,
 } from "lucide-react";
 import favIcon from "../../assets/fav-icon.png";
 import DatePicker from "../../components/ui/DatePicker";
@@ -50,6 +55,18 @@ import {
 } from "../../services/aiService";
 import { BASE_URL } from "../../constants/config";
 import { getAuthHeaders } from "../../utils/auth";
+
+const getSourceIcon = (source) => {
+  if (!source) return <Share2 size={10} />;
+  const s = source.toLowerCase();
+  if (s.includes("facebook") || s.includes("fb")) return <Facebook size={10} />;
+  if (s.includes("instagram") || s.includes("ig")) return <Instagram size={10} />;
+  if (s.includes("twitter") || s.includes("x")) return <Twitter size={10} />;
+  if (s.includes("linkedin")) return <Linkedin size={10} />;
+  if (s.includes("whatsapp") || s.includes("sms") || s.includes("message")) return <MessageCircle size={10} />;
+  if (s.includes("web") || s.includes("site") || s.includes("online")) return <Globe size={10} />;
+  return <Share2 size={10} />;
+};
 
 const EnquiryList = ({
   enquiries,
@@ -116,6 +133,8 @@ const EnquiryList = ({
   // available as `model.modelId` on the objects in `aiModels`.
   const [selectedAiModel, setSelectedAiModel] = useState("");
   const [leadModalOpen, setLeadModalOpen] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [selectedEnquiry, setSelectedEnquiry] = useState(null);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [isFilterPopupOpen, setIsFilterPopupOpen] = useState(false);
@@ -193,7 +212,6 @@ const EnquiryList = ({
     };
   }, [isFilterPopupOpen]);
 
-  const [selectedEnquiry, setSelectedEnquiry] = useState(null);
   const [promoteFormData, setPromoteFormData] = useState({
     name: "",
     email: "",
@@ -233,7 +251,7 @@ const EnquiryList = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Lock scroll when any modal is open
-  useScrollLock(leadModalOpen || holdModalOpen || showSimulateForm || showDeleteAllModal || showEditForm);
+  useScrollLock(leadModalOpen || holdModalOpen || showSimulateForm || showDeleteAllModal || showEditForm || showDetailsModal);
 
   // Auto-select default model for AI Analysis
   useEffect(() => {
@@ -667,15 +685,21 @@ const EnquiryList = ({
     }
   };
 
+  const totalEnquiriesCount = enquiries.filter(e => e.status !== "dismissed" && e.status !== "irrelevant").length;
+  const inboxCount = enquiries.filter(e => e.status === "new" || e.status === "read").length;
+  const holdCount = enquiries.filter(e => e.status === "hold").length;
+  const convertedCount = enquiries.filter(e => e.status === "converted").length;
+
   return (
-    <div className="w-full relative flex flex-col">
+    <div className="w-full relative">
       <div className="space-y-5 animate-fade-in w-full">
+        {/* Header */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
           <div className="max-w-2xl">
-            <h2 className="text-base md:text-lg lg:text-xl font-bold text-[#18254D] tracking-tight mb-1 flex items-center gap-2">
+            <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-primary tracking-tight mb-2 flex items-center gap-2">
               Enquiry Hub
             </h2>
-            <p className="text-[11px] md:text-xs text-textMuted font-medium leading-relaxed">
+            <p className="text-xs md:text-sm text-textMuted font-medium leading-relaxed">
               Manage and qualify all incoming business enquiries.
             </p>
           </div>
@@ -683,64 +707,109 @@ const EnquiryList = ({
             {activeTab === "dismissed" && totalInTabCount > 0 && (
               <button
                 onClick={() => setShowDeleteAllModal(true)}
-                className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-[#FFF1F2] text-[#F43F5E] border border-[#FFE4E6] rounded-xl hover:bg-[#FFE4E6] transition-all text-xs font-bold tracking-wider shadow-sm btn-animated active:scale-95 group"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-[#FFF1F2] text-[#F43F5E] border border-[#FFE4E6] rounded-2xl hover:bg-[#FFE4E6] transition-all text-[13px] font-bold tracking-wider shadow-sm active:scale-95 group"
               >
-                <Trash2
-                  size={14}
-                  strokeWidth={2.5}
-                  className="group-hover:scale-110 transition-transform"
-                />
+                <Trash2 size={16} strokeWidth={2.5} className="group-hover:scale-110 transition-transform" />
                 Clear All
               </button>
             )}
             <button
               onClick={() => setShowSimulateForm(true)}
-              className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-[#18254D] text-white rounded-xl hover:bg-slate-800 transition-all text-xs font-bold tracking-wider shadow-md btn-animated active:scale-95 group"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-[#18254D] text-white rounded-2xl hover:bg-slate-800 transition-all text-[13px] font-bold tracking-wider shadow-lg active:scale-95 group"
             >
-              <Plus
-                size={14}
-                strokeWidth={2.5}
-                className="group-hover:rotate-90 transition-transform"
-              />
+              <Plus size={16} strokeWidth={2.5} className="group-hover:rotate-90 transition-transform" />
               New Enquiry
             </button>
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm relative z-[80]">
-          <div className="flex flex-col md:flex-row md:justify-between gap-4 w-full items-center">
+        {/* Stat Cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          {/* Total Card */}
+          <div className="bg-white p-3 sm:p-5 rounded-2xl shadow-sm border border-slate-200 hover:-translate-y-1 hover:shadow-md transition-all duration-300">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <div className="p-2 sm:p-3 rounded-full bg-slate-100 text-slate-500 shrink-0">
+                <Inbox className="w-5 h-5 sm:w-6 sm:h-6" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-slate-500 text-[10px] sm:text-xs font-semibold truncate">Total Active</h3>
+                <p className="text-lg sm:text-2xl font-bold text-[#18254D] leading-none mt-1">{totalEnquiriesCount}</p>
+              </div>
+            </div>
+          </div>
+          {/* Inbox Card */}
+          <div className="bg-white p-3 sm:p-5 rounded-2xl shadow-sm border border-slate-200 hover:-translate-y-1 hover:shadow-md transition-all duration-300">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <div className="p-2 sm:p-3 rounded-full bg-blue-50 text-blue-500 shrink-0">
+                <Mail className="w-5 h-5 sm:w-6 sm:h-6" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-slate-500 text-[10px] sm:text-xs font-semibold truncate">Inbox</h3>
+                <p className="text-lg sm:text-2xl font-bold text-[#18254D] leading-none mt-1">{inboxCount}</p>
+              </div>
+            </div>
+          </div>
+          {/* On Hold Card */}
+          <div className="bg-white p-3 sm:p-5 rounded-2xl shadow-sm border border-slate-200 hover:-translate-y-1 hover:shadow-md transition-all duration-300">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <div className="p-2 sm:p-3 rounded-full bg-amber-50 text-amber-500 shrink-0">
+                <PauseCircle className="w-5 h-5 sm:w-6 sm:h-6" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-slate-500 text-[10px] sm:text-xs font-semibold truncate">On Hold</h3>
+                <p className="text-lg sm:text-2xl font-bold text-[#18254D] leading-none mt-1">{holdCount}</p>
+              </div>
+            </div>
+          </div>
+          {/* Converted Card */}
+          <div className="bg-white p-3 sm:p-5 rounded-2xl shadow-sm border border-slate-200 hover:-translate-y-1 hover:shadow-md transition-all duration-300">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <div className="p-2 sm:p-3 rounded-full bg-green-50 text-green-500 shrink-0">
+                <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-slate-500 text-[10px] sm:text-xs font-semibold truncate">Converted</h3>
+                <p className="text-lg sm:text-2xl font-bold text-[#18254D] leading-none mt-1">{convertedCount}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Control Bar */}
+        <div className="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm relative z-[60]">
+          <div className="flex flex-col md:flex-row gap-2 w-full items-center">
             {/* 1. Search Bar */}
-            <div className="relative w-full md:w-64 flex-none border border-slate-200 rounded-xl overflow-hidden group transition-all focus-within:ring-4 focus-within:ring-[#18254D]/5 focus-within:border-[#18254D]/20">
+            <div className="relative w-full md:w-64 flex-none transition-all duration-300 md:order-1">
               <Search
                 size={16}
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors"
-                strokeWidth={2.5}
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
               />
               <input
                 type="text"
                 placeholder="Search enquiries..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full h-[38px] pl-11 pr-4 bg-slate-50/50 border border-transparent rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400/80 focus:outline-none transition-all"
+                className="w-full h-[38px] pl-11 pr-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all"
               />
             </div>
 
             {/* 2. Filters Button */}
-            <div className="relative w-full md:w-auto flex-none" ref={filterButtonRef}>
+            <div className="relative w-full md:w-auto flex-none md:ml-auto md:order-3" ref={filterButtonRef}>
               <button
                 onClick={() => setIsFilterPopupOpen(!isFilterPopupOpen)}
-                className={`w-full md:w-auto h-[38px] flex items-center justify-center gap-2.5 px-6 py-2 rounded-xl text-[12px] font-bold tracking-wider transition-all shadow-sm active:scale-95 group border btn-animated ${startDate || endDate || aiAnalysisEnabled
-                    ? "bg-slate-50 border-[#18254D]/30 text-[#18254D]"
-                    : "bg-slate-50 border-slate-200/70 text-[#18254D] hover:bg-white hover:border-slate-300 shadow-slate-200/50"
-                  }`}
+                className={`w-full md:w-auto h-[38px] flex items-center justify-center gap-2.5 px-6 py-2 rounded-xl text-[12px] font-bold tracking-widest transition-all shadow-sm active:scale-95 group border ${
+                  startDate || endDate || aiAnalysisEnabled
+                    ? "bg-indigo-50 border-indigo-500 text-indigo-600"
+                    : "bg-slate-50 border-slate-100 text-[#18254D] hover:bg-white hover:border-slate-200 shadow-slate-200/50"
+                }`}
               >
                 <Filter
                   size={14}
-                  className={startDate || endDate || aiAnalysisEnabled ? "text-[#18254D]" : "text-slate-400"}
+                  className={startDate || endDate || aiAnalysisEnabled ? "text-indigo-600" : "text-slate-400"}
                 />
                 <span>FILTERS</span>
                 {(startDate || endDate || aiAnalysisEnabled) && (
-                  <span className="flex items-center justify-center w-4 h-4 bg-[#18254D] text-white text-[9px] font-black rounded-full ml-1 shadow-sm">
+                  <span className="flex items-center justify-center w-5 h-5 bg-indigo-600 text-white text-[10px] font-black rounded-full ml-1 shadow-sm">
                     {[!!startDate, !!endDate, aiAnalysisEnabled].filter(Boolean).length}
                   </span>
                 )}
@@ -750,6 +819,7 @@ const EnquiryList = ({
                 />
               </button>
 
+              {/* Filters Popup - Portaled */}
               {isFilterPopupOpen &&
                 createPortal(
                   <>
@@ -798,116 +868,133 @@ const EnquiryList = ({
                             <>
                               <div className="space-y-3">
                                 <label className="text-[10px] font-black text-slate-400 tracking-wider uppercase ml-1">
-                                  AI Analysis Control
+                                  AI Analysis
                                 </label>
                                 <div className="space-y-2">
-                                  {/* Toggle AI Analysis */}
-                                  <div className="flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-2xl hover:border-slate-200 transition-colors">
-                                    <div className="flex flex-col">
-                                      <span className="text-[11px] font-bold text-[#18254D]">
-                                        Enable AI Analysis
-                                      </span>
-                                      <span className="text-[9px] text-slate-400">
-                                        Qualify enquiries automatically
-                                      </span>
-                                    </div>
-                                    <button
-                                      onClick={() => {
-                                        const nextValue = !aiAnalysisEnabled;
-                                        setAiAnalysisEnabled(nextValue);
-                                        if (!nextValue) setHideIrrelevant(false);
-                                      }}
-                                      className={`relative inline-flex h-5 w-9 shrink-0 rounded-full transition-colors duration-300 ease-in-out ${aiAnalysisEnabled
-                                          ? "bg-[#18254D]"
-                                          : "bg-slate-300"
-                                        }`}
-                                    >
-                                      <span
-                                        className={`inline-block h-3.5 w-3.5 bg-white rounded-full transform transition-transform duration-300 ease-in-out ${aiAnalysisEnabled ? "translate-x-[18px]" : "translate-x-0.5"} mt-[3px] ml-0.5`}
-                                      />
-                                    </button>
-                                  </div>
-
-                                  {/* Toggle Filter Spam */}
-                                  <div
-                                    className={`flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-2xl transition-all hover:border-slate-200 ${!aiAnalysisEnabled ? "opacity-30 grayscale pointer-events-none" : ""}`}
-                                  >
-                                    <div className="flex flex-col">
-                                      <span className="text-[11px] font-bold text-[#18254D]">
-                                        Auto-Filter Spam
-                                      </span>
-                                      <span className="text-[9px] text-slate-400">
-                                        Hide irrelevant enquiries
-                                      </span>
-                                    </div>
-                                    <button
-                                      onClick={() =>
-                                        setHideIrrelevant(!hideIrrelevant)
-                                      }
-                                      className={`relative inline-flex h-5 w-9 shrink-0 rounded-full transition-colors duration-300 ease-in-out ${hideIrrelevant
-                                          ? "bg-[#18254D]"
-                                          : "bg-slate-300"
-                                        }`}
-                                    >
-                                      <span
-                                        className={`inline-block h-3.5 w-3.5 bg-white rounded-full transform transition-transform duration-300 ease-in-out ${hideIrrelevant ? "translate-x-[18px]" : "translate-x-0.5"} mt-[3px] ml-0.5`}
-                                      />
-                                    </button>
-                                  </div>
-
-                                  {/* AI Model Selection Dropdown */}
-                                  {aiAnalysisEnabled && aiModels.length > 0 && (
-                                    <div className="space-y-2 mt-2">
-                                      <SearchableDropdown
-                                        label="Model Selection"
-                                        placeholder="Select AI Model..."
-                                        options={aiModels.map(m => ({
-                                          ...m,
-                                          label: m.name,
-                                          value: m.aimodel_id
-                                        }))}
-                                        value={selectedAiModel}
-                                        onChange={setSelectedAiModel}
-                                      />
-                                      <div className="px-3 py-2 bg-slate-50 border border-slate-100 rounded-2xl">
-                                        <p className="text-[10px] text-slate-400 leading-relaxed italic">
-                                          {aiModels.find(m => m.aimodel_id === selectedAiModel)?.description || "Select a model to see its description."}
-                                        </p>
+                                  {/* AI Toggle */}
+                                  <label className="flex items-center justify-between p-3 bg-indigo-50/50 border border-indigo-100 rounded-xl cursor-pointer group hover:bg-indigo-50 transition-colors">
+                                    <div className="flex items-center gap-3">
+                                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${aiAnalysisEnabled ? "bg-indigo-500 text-white shadow-sm" : "bg-white border border-slate-200 text-slate-400"}`}>
+                                        <Sparkles size={14} />
+                                      </div>
+                                      <div>
+                                        <p className="text-[13px] font-bold text-[#18254D]">Smart Analysis</p>
+                                        <p className="text-[10px] font-medium text-slate-500">Auto-score & categorize</p>
                                       </div>
                                     </div>
+                                    <div className={`w-10 h-6 rounded-full p-1 transition-colors ${aiAnalysisEnabled ? "bg-indigo-500" : "bg-slate-200"}`}>
+                                      <div className={`w-4 h-4 bg-white rounded-full transition-transform ${aiAnalysisEnabled ? "translate-x-4" : "translate-x-0"}`} />
+                                    </div>
+                                    <input
+                                      type="checkbox"
+                                      className="hidden"
+                                      checked={aiAnalysisEnabled}
+                                      onChange={(e) => setAiAnalysisEnabled(e.target.checked)}
+                                    />
+                                  </label>
+
+                                  {/* Spam Filter Toggle */}
+                                  {aiAnalysisEnabled && (
+                                    <label className="flex items-center justify-between p-3 bg-rose-50/50 border border-rose-100 rounded-xl cursor-pointer group hover:bg-rose-50 transition-colors animate-fade-in-up">
+                                      <div className="flex items-center gap-3">
+                                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${hideIrrelevant ? "bg-rose-500 text-white shadow-sm" : "bg-white border border-slate-200 text-slate-400"}`}>
+                                          <ShieldAlert size={14} />
+                                        </div>
+                                        <div>
+                                          <p className="text-[13px] font-bold text-[#18254D]">Filter Irrelevant</p>
+                                          <p className="text-[10px] font-medium text-slate-500">Hide spam & promotions</p>
+                                        </div>
+                                      </div>
+                                      <div className={`w-10 h-6 rounded-full p-1 transition-colors ${hideIrrelevant ? "bg-rose-500" : "bg-slate-200"}`}>
+                                        <div className={`w-4 h-4 bg-white rounded-full transition-transform ${hideIrrelevant ? "translate-x-4" : "translate-x-0"}`} />
+                                      </div>
+                                      <input
+                                        type="checkbox"
+                                        className="hidden"
+                                        checked={hideIrrelevant}
+                                        onChange={(e) => setHideIrrelevant(e.target.checked)}
+                                      />
+                                    </label>
                                   )}
                                 </div>
                               </div>
 
-                              <div className="h-px bg-slate-100/50" />
+                              {/* AI Provider Settings (Only visible if AI is enabled) */}
+                              {aiAnalysisEnabled && aiModels.length > 0 && (
+                                <div className="space-y-1.5 animate-fade-in-up">
+                                  <label className="text-[10px] font-black text-slate-400 tracking-wider uppercase ml-1 flex items-center gap-1.5">
+                                    <Layout size={12} /> Model Selection
+                                  </label>
+                                  <div className="relative" ref={aiModelRef}>
+                                    <button
+                                      type="button"
+                                      onClick={() => setIsModelDropdownOpen(!isModelDropdownOpen)}
+                                      className="w-full h-11 flex items-center justify-between px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold shadow-sm hover:border-[#18254D]/30 transition-all text-[#18254D]"
+                                    >
+                                      <span className={selectedAiModel ? "text-[#18254D]" : "text-slate-400 font-medium"}>
+                                        {aiModels.find((m) => m.aimodel_id === selectedAiModel)?.name || "Default Auto"}
+                                      </span>
+                                      <ChevronDown size={14} className={`text-slate-400 transition-transform duration-200 ${isModelDropdownOpen ? "rotate-180" : ""}`} />
+                                    </button>
+
+                                    {isModelDropdownOpen && createPortal(
+                                      <>
+                                        <div className="fixed inset-0 z-[100000]" onClick={() => setIsModelDropdownOpen(false)} />
+                                        <div className="absolute bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[100001] animate-pop origin-top" style={modelDropdownStyle}>
+                                          <div className="bg-[#18254D] px-4 py-2.5 border-b border-white/10">
+                                            <p className="text-[10px] font-bold text-white/50 tracking-wider uppercase">Available Models</p>
+                                          </div>
+                                          <div className="max-h-[200px] overflow-y-auto custom-scrollbar p-1.5">
+                                            {aiModels.map((model) => (
+                                              <button
+                                                key={model.aimodel_id}
+                                                type="button"
+                                                onClick={() => {
+                                                  setSelectedAiModel(model.aimodel_id);
+                                                  setIsModelDropdownOpen(false);
+                                                }}
+                                                className={`w-full text-left px-3 py-2 text-xs font-semibold tracking-wider transition-all rounded-xl flex items-center justify-between ${selectedAiModel === model.aimodel_id ? "bg-indigo-50 text-indigo-700" : "text-[#18254D] hover:bg-slate-50"}`}
+                                              >
+                                                <span>{model.name}</span>
+                                                {model.isDefault && (
+                                                  <span className="text-[9px] bg-slate-200/50 text-slate-500 px-1.5 py-0.5 rounded-full uppercase tracking-wider">Default</span>
+                                                )}
+                                              </button>
+                                            ))}
+                                          </div>
+                                        </div>
+                                      </>,
+                                      document.body
+                                    )}
+                                  </div>
+                                  {aiAnalysisError && (
+                                    <div className="p-3 bg-red-50 border border-red-100 rounded-xl flex items-start gap-2">
+                                      <ShieldAlert size={14} className="text-red-500 shrink-0 mt-0.5" />
+                                      <p className="text-xs text-red-600 font-medium leading-relaxed">{aiAnalysisError}</p>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
                             </>
                           )}
 
                           {/* Date Range Section */}
-                          <div className="space-y-3">
-                            <label className="text-[10px] font-black text-slate-400 tracking-wider uppercase ml-1">
-                              Date Range
+                          <div className="space-y-1.5">
+                            <label className="text-[10px] font-black text-slate-400 tracking-wider uppercase ml-1 flex items-center gap-1.5">
+                              <Calendar size={12} /> Date Range
                             </label>
-                            <div className="grid grid-cols-2 gap-3">
-                              <DatePicker
-                                label="From"
-                                value={startDate}
-                                onChange={setStartDate}
-                              />
-                              <DatePicker
-                                label="To"
-                                value={endDate}
-                                onChange={setEndDate}
-                              />
+                            <div className="grid grid-cols-2 gap-2">
+                              <DatePicker label="From" value={startDate} onChange={setStartDate} />
+                              <DatePicker label="To" value={endDate} onChange={setEndDate} />
                             </div>
                           </div>
                         </div>
 
                         {/* Sticky Footer */}
-                        <div className="flex-none p-4 bg-white border-t border-slate-100 relative z-10 shadow-[0_-4px_20px_rgba(24,37,77,0.02)]">
+                        <div className="flex-none p-4 bg-slate-50/50 border-t border-slate-100 relative z-10 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
                           <button
                             onClick={() => setIsFilterPopupOpen(false)}
-                            className="w-full py-2.5 bg-[#18254D] text-white rounded-xl text-[11px] font-black tracking-wider uppercase hover:bg-slate-800 transition-all shadow-md active:scale-95 btn-animated"
+                            className="w-full py-2.5 bg-[#18254D] text-white rounded-xl text-[11px] font-black tracking-wider uppercase hover:bg-slate-800 transition-all shadow-md active:scale-95"
                           >
                             Apply Filters
                           </button>
@@ -915,398 +1002,244 @@ const EnquiryList = ({
                       </div>
                     </div>
                   </>,
-                  document.body,
+                  document.body
                 )}
             </div>
-          </div>
-        </div>
 
-        {/* Error Message Row */}
-        {aiAnalysisError && aiAnalysisEnabled && (
-          <div className="w-full mt-2 flex items-start gap-2 px-3 py-2.5 bg-[#FFF1F2] border border-[#FFE4E6] rounded-xl text-xs text-[#F43F5E] font-bold">
-            <span className="shrink-0">!</span>
-            <div className="flex-1 min-w-0">
-              <span>{aiAnalysisError}</span>
-            </div>
-            <button
-              onClick={() => setAiAnalysisError(null)}
-              className="shrink-0 text-[#F43F5E]/70 hover:text-[#F43F5E] ml-1"
-            >
-              X
-            </button>
-          </div>
-        )}
-
-        {/* AI Analysis Progress Message */}
-        {activeTab === "new" && aiAnalysisEnabled && (
-          <div className="mt-4 flex justify-center">
-            <div className="px-4 sm:px-5 py-1 sm:py-0.5 bg-slate-50 border border-slate-200/50 rounded-full shadow-sm flex flex-wrap justify-center items-center gap-2 sm:gap-3 animate-fade-in group w-full sm:w-auto min-h-[32px]">
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                  Analysis
-                </span>
-                {isAnalyzing && (
-                  <Loader2
-                    size={11}
-                    className="animate-spin text-primary"
-                    strokeWidth={3}
-                  />
-                )}
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-[#18254D]">
-                  {analyzedInTabCount} of {totalInTabCount}
-                </span>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                  Completed
-                </span>
-              </div>
-              {hideIrrelevant && spamFilteredCount > 0 && (
-                <>
-                  <div className="w-1.5 h-1.5 rounded-full bg-slate-200 mx-1" />
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                    {spamFilteredCount} Filtered
-                  </span>
-                </>
-              )}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Lead View Toggles (Enquiries) */}
-      <div className="flex justify-center my-4 w-full px-1 sm:px-0">
-        <div className="relative flex flex-nowrap bg-slate-200/50 p-0.5 rounded-xl border border-slate-200 shadow-inner leading-none w-full sm:w-auto items-center gap-0 overflow-hidden">
-          {/* Moving Indicator */}
-          <div
-            className={`absolute top-[2px] bottom-[2px] left-[2px] rounded-lg shadow-sm transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] border z-0 ${activeTab === "new"
-                ? "bg-[#EFF6FF] border-[#DBEAFE]/30"
-                : activeTab === "hold"
-                  ? "bg-[#FFF7ED] border-[#FFEDD5]/30"
-                  : activeTab === "converted"
-                    ? "bg-[#F0FDF4] border-[#DCFCE7]/30"
-                    : "bg-[#FFF1F2] border-[#FFE4E6]/30"
-              }`}
-            style={{
-              width: "calc(25% - 2px)",
-              transform: `translateX(${["new", "hold", "converted", "dismissed"].indexOf(activeTab) * 100}%)`,
-            }}
-          />
-
-          {["new", "hold", "converted", "dismissed"].map((tab) => {
-            const colors = {
-              new: "text-[#3B82F6] font-bold",
-              hold: "text-[#F97316] font-bold",
-              converted: "text-[#16A34A] font-bold",
-              dismissed: "text-[#F43F5E] font-bold",
-            };
-
-            return (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`relative z-10 flex-1 sm:flex-none px-2 sm:px-6 py-1.5 sm:py-1 rounded-lg text-[10px] sm:text-[12px] font-bold tracking-wider transition-all duration-300 flex items-center justify-center min-w-[75px] sm:min-w-[120px] h-[30px] sm:h-[36px] whitespace-nowrap active:scale-95 ${activeTab === tab
-                    ? `${colors[tab]} scale-[1.02]`
-                    : `text-slate-400 hover:text-slate-600`
-                  }`}
-              >
-                {tab === "new"
-                  ? "Inbox"
-                  : tab === "hold"
-                    ? "On Hold"
-                    : tab === "converted"
-                      ? "Converted"
-                      : "Dismissed"}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      <div
-        key={activeTab}
-        className="flex flex-col gap-4 w-full animate-fade-in duration-300"
-      >
-        {paginatedEnquiries.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-10 bg-white rounded-3xl border border-slate-200 shadow-sm w-full">
-            <Inbox size={22} className="text-slate-350 mb-2" />
-            <p className="text-xs font-bold text-slate-400 tracking-wider uppercase">
-              No enquiries
-            </p>
-          </div>
-        ) : (
-          paginatedEnquiries.map((enquiry) => (
-            <div
-              key={`enq-card-${enquiry.id}`}
-              className="group relative bg-[#FFFFFF] rounded-2xl border border-slate-200 shadow-sm hover:-translate-y-1 hover:shadow-md hover:border-slate-300/80 transition-all duration-300 p-5 w-full flex flex-col gap-4"
-            >
-              {/* Card Header: Identity and Badge */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
-                <div className="flex items-center gap-3 w-full sm:w-auto shrink-0">
-                  <div
-                    className={`w-10 h-10 shrink-0 rounded-full flex items-center justify-center font-bold text-base border shadow-sm ${activeTab === "hold"
-                        ? "bg-[#FFF7ED] text-[#F97316] border-[#FFEDD5]"
-                        : activeTab === "converted"
-                          ? "bg-[#F0FDF4] text-[#16A34A] border-[#DCFCE7]"
-                          : activeTab === "dismissed"
-                            ? "bg-[#FFF1F2] text-[#F43F5E] border-[#FFE4E6]"
-                            : "bg-[#EFF6FF] text-[#3B82F6] border-[#DBEAFE]"
-                      }`}
-                  >
-                    {enquiry.name.charAt(0).toUpperCase()}
-                  </div>
-                  <div className="flex flex-col gap-0.5 min-w-0">
-                    <h3 className="text-sm font-bold text-[#18254D] tracking-tight truncate">
-                      {enquiry.name}
-                    </h3>
-                    <div className="mt-1 px-2 py-0.5 bg-slate-50 border border-slate-200/50 rounded-md flex items-center gap-1.5 text-[10px] text-slate-400 font-bold uppercase tracking-wider whitespace-nowrap overflow-visible w-fit">
-                      <Calendar size={11} className="text-slate-400 shrink-0" />
-                      {new Date(enquiry.date).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      })}
-                    </div>
-
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0">
-                  {enquiry.createdByName && (
-                    <div className="px-2.5 py-1 bg-[#EFF6FF] border border-[#DBEAFE]/60 rounded-full flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[#3B82F6]">
-                      <UserCheck size={10} className="text-[#3B82F6] shrink-0" />
-                      <span className="text-[#93C5FD] font-bold">Created by:</span>
-                      <span>{enquiry.createdByName}</span>
-                    </div>
-                  )}
-                  {enquiry.aiAnalysis && (
-                    <div
-                      className={`px-2.5 py-1 rounded-full flex items-center gap-1.5 border text-[10px] font-bold uppercase tracking-wider ${enquiry.aiAnalysis.isRelevant
-                          ? "bg-[#F0FDF4] border-[#DCFCE7] text-[#16A34A]"
-                          : "bg-[#FFF1F2] border-[#FFE4E6] text-[#F43F5E]"
-                        }`}
-                    >
-                      {enquiry.aiAnalysis.isRelevant ? (
-                        <Sparkles size={10} className="text-[#16A34A]" />
-                      ) : (
-                        <ShieldAlert size={10} className="text-[#F43F5E]" />
+            {/* Analysis Progress / Stats (Inbox only) */}
+            {activeTab === "new" && (
+              <div className="hidden lg:flex items-center px-4 md:order-2">
+                {aiAnalysisEnabled && (
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
+                      {isAnalyzing && (
+                        <Loader2 size={12} className="animate-spin text-indigo-500" strokeWidth={3} />
                       )}
-                      <span>
-                        {enquiry.aiAnalysis.isRelevant
-                          ? (enquiry.aiAnalysis.category || "Relevant")
-                          : "Irrelevant"}
+                      <span className="text-[11px] font-bold text-slate-600">
+                        {analyzedInTabCount} of {totalInTabCount}
                       </span>
-                      {enquiry.aiAnalysis.leadScore !== undefined && (
-                        <>
-                          <div className="w-px h-2.5 bg-current opacity-20" />
-                          <span>
-                            {enquiry.aiAnalysis.leadScore}
-                          </span>
-                        </>
-                      )}
-                    </div>
-                  )}
-
-                  {activeTab === "hold" && (
-                    <div className="px-2.5 py-1 bg-[#FFF7ED] border-[#FFEDD5] rounded-full flex items-center gap-1.5">
-                      <div className="w-1.5 h-1.5 rounded-full bg-[#F97316] animate-pulse" />
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#F97316]">
-                        Reason Logged
+                      <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400">
+                        Analyzed
                       </span>
                     </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Card Content: Contact Info and Message */}
-              <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
-                {/* 1. Contact Info Column */}
-                <div className="flex flex-col sm:flex-row lg:flex-col gap-2 w-full lg:w-64 shrink-0">
-                  <div className="flex-1 flex items-center gap-2.5 p-2 bg-slate-50 border border-slate-100 rounded-xl hover:bg-white hover:border-slate-200 hover:shadow-sm transition-all group/info overflow-hidden">
-                    <div className="w-7 h-7 shrink-0 rounded-lg bg-white flex items-center justify-center shadow-sm border border-slate-100 group-hover/info:scale-110 transition-transform">
-                      <Mail size={12} className="text-slate-400" />
-                    </div>
-                    <a
-                      href={`mailto:${enquiry.email}`}
-                      className="text-xs font-semibold text-slate-500 break-all hover:text-[#18254D] transition-colors cursor-pointer"
-                    >
-                      {enquiry.email}
-                    </a>
-                  </div>
-                  <div className="flex-1 flex items-center gap-2.5 p-2 bg-slate-50 border border-slate-100 rounded-xl hover:bg-white hover:border-slate-200 hover:shadow-sm transition-all group/info overflow-hidden">
-                    <div className="w-7 h-7 shrink-0 rounded-lg bg-white flex items-center justify-center shadow-sm border border-slate-100 group-hover/info:scale-110 transition-transform">
-                      <Phone size={12} className="text-slate-400" />
-                    </div>
-                    <a
-                      href={`tel:${enquiry.phone}`}
-                      className="text-xs font-semibold text-slate-500 break-all hover:text-[#18254D] transition-colors cursor-pointer"
-                    >
-                      {enquiry.phone || "Not Provided"}
-                    </a>
-                  </div>
-                  {enquiry.website && (
-                    <div className="flex-1 flex items-center gap-2.5 p-2 bg-slate-50 border border-slate-100 rounded-xl hover:bg-white hover:border-slate-200 hover:shadow-sm transition-all group/info overflow-hidden">
-                      <div className="w-7 h-7 shrink-0 rounded-lg bg-white flex items-center justify-center shadow-sm border border-slate-100 group-hover/info:scale-110 transition-transform">
-                        <Globe size={12} className="text-slate-400" />
-                      </div>
-                      <a
-                        href={enquiry.website?.startsWith('http') ? enquiry.website : `https://${enquiry.website}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs font-semibold text-slate-500 break-all hover:text-[#18254D] transition-colors cursor-pointer"
-                      >
-                        {enquiry.website}
-                      </a>
-                    </div>
-                  )}
-                  {enquiry.source && (
-                    <div className="flex-1 flex items-center gap-2.5 p-2 bg-slate-50 border border-slate-100 rounded-xl hover:bg-white hover:border-slate-200 hover:shadow-sm transition-all group/info overflow-hidden">
-                      <div className="w-7 h-7 shrink-0 rounded-lg bg-white flex items-center justify-center shadow-sm border border-slate-100 group-hover/info:scale-110 transition-transform">
-                        <Share2 size={12} className="text-slate-400" />
-                      </div>
-                      <span className="text-xs font-semibold text-slate-500 break-all">
-                        {enquiry.source}
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                {/* 2. Message Column */}
-                <div className="flex-1 bg-slate-50/30 border border-slate-150 border-l-4 border-l-[#18254D] rounded-xl p-4 flex flex-col gap-3 relative min-w-0 overflow-hidden">
-                  <p className="text-xs font-medium text-slate-650 leading-relaxed italic break-words">
-                    "{enquiry.message}"
-                  </p>
-
-                  {(activeTab === "hold" || activeTab === "dismissed") &&
-                    enquiry.holdReason && (
-                      <div className="mt-1 space-y-1.5 border-t border-slate-100 pt-3">
-                        <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                            {activeTab === "dismissed"
-                              ? "Remark"
-                              : "Hold Reason"}
-                          </span>
-                        </div>
-                        <div
-                          className={`p-3 border rounded-xl ${activeTab === "dismissed" ? "bg-slate-50/50 border-slate-100" : "bg-[#FFF7ED]/30 border-[#FFEDD5]/50"}`}
-                        >
-                          <p
-                            className={`text-xs font-semibold leading-relaxed italic ${activeTab === "dismissed" ? "text-slate-500" : "text-[#F97316]"}`}
-                          >
-                            {enquiry.holdReason}
-                          </p>
-                        </div>
+                    {hideIrrelevant && spamFilteredCount > 0 && (
+                      <div className="flex items-center gap-2 border-l border-slate-200 pl-3">
+                        <span className="text-[11px] font-bold text-rose-500">{spamFilteredCount}</span>
+                        <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400">Hidden</span>
                       </div>
                     )}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* View Toggles */}
+        <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-2 pt-2">
+          <button onClick={() => setActiveTab("new")} className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${activeTab === "new" ? "bg-[#EFF6FF] text-[#3B82F6] border-[#DBEAFE]" : "bg-white text-[#3B82F6] border-[#DBEAFE] hover:bg-[#EFF6FF]"}`}>
+            Inbox
+          </button>
+          <button onClick={() => setActiveTab("hold")} className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${activeTab === "hold" ? "bg-[#FFF7ED] text-[#F97316] border-[#FFEDD5]" : "bg-white text-[#F97316] border-[#FFEDD5] hover:bg-[#FFF7ED]"}`}>
+            On Hold
+          </button>
+          <button onClick={() => setActiveTab("converted")} className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${activeTab === "converted" ? "bg-[#F0FDF4] text-[#16A34A] border-[#DCFCE7]" : "bg-white text-[#16A34A] border-[#DCFCE7] hover:bg-[#F0FDF4]"}`}>
+            Converted
+          </button>
+          <button onClick={() => setActiveTab("dismissed")} className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${activeTab === "dismissed" ? "bg-[#FFF1F2] text-[#F43F5E] border-[#FFE4E6]" : "bg-white text-[#F43F5E] border-[#FFE4E6] hover:bg-[#FFF1F2]"}`}>
+            Dismissed
+          </button>
+        </div>
+
+        {/* Desktop Table View */}
+        <div className="hidden lg:block bg-white rounded-3xl border border-slate-200 shadow-sm p-4 overflow-x-auto relative">
+          <div className="min-w-[1000px]">
+            <table className="w-full text-left border-separate border-spacing-y-2">
+              <thead className="bg-slate-50/50">
+                <tr>
+                  <th className="pb-3 pt-3 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100 first:border-l first:rounded-l-xl last:border-r last:rounded-r-xl w-[15%]">Enquiry Info</th>
+                  <th className="pb-3 pt-3 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100 w-[20%]">Contact Details</th>
+                  <th className="pb-3 pt-3 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100 w-[25%]">Message</th>
+                  <th className="pb-3 pt-3 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100 w-[10%]">Source</th>
+                  <th className="pb-3 pt-3 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100 w-[15%]">Created By</th>
+                  <th className="pb-3 pt-3 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100 last:border-r last:rounded-r-xl w-[15%] text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginatedEnquiries.map((enquiry) => (
+                  <tr key={enquiry.id} onClick={() => { setSelectedEnquiry(enquiry); setShowDetailsModal(true); }} className="group bg-white hover:bg-slate-50/50 transition-colors shadow-sm border border-slate-100 rounded-xl hover:shadow-md cursor-pointer">
+                    <td className="p-4 border-y border-slate-100 first:border-l first:rounded-l-xl">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-10 h-10 shrink-0 rounded-full flex items-center justify-center font-bold text-base border shadow-sm ${
+                          activeTab === "hold" ? "bg-[#FFF7ED] text-[#F97316] border-[#FFEDD5]" :
+                          activeTab === "converted" ? "bg-[#F0FDF4] text-[#16A34A] border-[#DCFCE7]" :
+                          activeTab === "dismissed" ? "bg-[#FFF1F2] text-[#F43F5E] border-[#FFE4E6]" :
+                          "bg-[#EFF6FF] text-[#3B82F6] border-[#DBEAFE]"
+                        }`}>
+                          {enquiry.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="flex flex-col min-w-0">
+                          <span className="text-[13px] font-bold text-[#18254D] truncate">{enquiry.name}</span>
+                          <span className="text-[11px] font-semibold text-slate-500 mt-0.5">
+                            {new Date(enquiry.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                          </span>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="p-4 border-y border-slate-100">
+                      <div className="flex flex-col gap-1.5 text-[12px] font-semibold text-slate-500">
+                        <div className="flex items-center gap-2 hover:text-[#18254D] transition-colors"><Mail size={12} className="text-slate-400"/> <span className="truncate">{enquiry.email || "N/A"}</span></div>
+                        <div className="flex items-center gap-2 hover:text-[#18254D] transition-colors"><Phone size={12} className="text-slate-400"/> <span className="truncate">{enquiry.phone || "N/A"}</span></div>
+                      </div>
+                    </td>
+                    <td className="p-4 border-y border-slate-100">
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-[12px] font-medium text-slate-600 line-clamp-2 italic">"{enquiry.message}"</span>
+                      </div>
+                    </td>
+                    <td className="p-4 border-y border-slate-100">
+                      <div className="flex flex-col min-w-0 items-start">
+                        {enquiry.source ? (
+                          <span className="text-[10px] font-bold text-[#18254D] bg-slate-100 px-2 py-1 rounded-md uppercase flex items-center gap-1 w-fit">{getSourceIcon(enquiry.source)} {enquiry.source}</span>
+                        ) : (
+                          <span className="text-[10px] font-medium text-slate-400 px-2 py-1">N/A</span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="p-4 border-y border-slate-100">
+                      <div className="flex flex-col gap-2 items-start">
+                        <div className="flex items-center gap-1.5 text-[12px] font-bold text-slate-600 bg-slate-50 px-2 py-1 rounded-lg border border-slate-100">
+                          <Users size={12} className="text-slate-400" />
+                          <span className="truncate max-w-[120px]">{enquiry.createdByName || "System"}</span>
+                        </div>
+                        {activeTab === "hold" && (
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-[#F97316] bg-[#FFF7ED] px-2 py-0.5 rounded border border-[#FFEDD5]">On Hold</span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="p-4 border-y border-slate-100 last:border-r last:rounded-r-xl">
+                      <div className="flex items-center justify-end gap-2">
+                        {activeTab === "new" ? (
+                          <>
+                            <button onClick={(e) => { e.stopPropagation(); openLeadModal(enquiry); }} className="p-2 bg-indigo-50 text-indigo-600 border border-indigo-100 rounded-lg hover:bg-indigo-100 transition-all active:scale-90" title="Add to Lead"><CheckCircle size={16} /></button>
+                            <button onClick={(e) => { e.stopPropagation(); openHoldModal(enquiry); }} className="p-2 bg-amber-50 text-amber-600 border border-amber-100 rounded-lg hover:bg-amber-100 transition-all active:scale-90" title="Hold"><PauseCircle size={16} /></button>
+                            <button onClick={(e) => { e.stopPropagation(); onDismiss(enquiry.id); }} className="p-2 bg-rose-50 text-rose-600 border border-rose-100 rounded-lg hover:bg-rose-100 transition-all active:scale-90" title="Dismiss"><UserX size={16} /></button>
+                            <button onClick={(e) => { e.stopPropagation(); openEditModal(enquiry); }} className="p-2 bg-slate-50 text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-100 transition-all active:scale-90" title="Edit"><Pencil size={16} /></button>
+                          </>
+                        ) : activeTab === "hold" ? (
+                          <>
+                            <button onClick={(e) => { e.stopPropagation(); onRestore(enquiry.id); }} className="p-2 bg-blue-50 text-blue-600 border border-blue-100 rounded-lg hover:bg-blue-100 transition-all active:scale-90" title="Restore"><RefreshCcw size={16} /></button>
+                            <button onClick={(e) => { e.stopPropagation(); onDismiss(enquiry.id); }} className="p-2 bg-rose-50 text-rose-600 border border-rose-100 rounded-lg hover:bg-rose-100 transition-all active:scale-90" title="Dismiss"><UserX size={16} /></button>
+                            <button onClick={(e) => { e.stopPropagation(); openEditModal(enquiry); }} className="p-2 bg-slate-50 text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-100 transition-all active:scale-90" title="Edit"><Pencil size={16} /></button>
+                          </>
+                        ) : (
+                          <>
+                            <button onClick={(e) => { e.stopPropagation(); onRestore(enquiry.id); }} className="p-2 bg-blue-50 text-blue-600 border border-blue-100 rounded-lg hover:bg-blue-100 transition-all active:scale-90" title="Restore"><RefreshCcw size={16} /></button>
+                            <button onClick={(e) => { e.stopPropagation(); onDelete(enquiry.id); }} className="p-2 bg-red-50 text-red-600 border border-red-200 rounded-lg hover:bg-red-100 transition-all active:scale-90" title="Delete Permanently"><Trash2 size={16} /></button>
+                            <button onClick={(e) => { e.stopPropagation(); openEditModal(enquiry); }} className="p-2 bg-slate-50 text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-100 transition-all active:scale-90" title="Edit"><Pencil size={16} /></button>
+                          </>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {paginatedEnquiries.length === 0 && (
+                  <tr>
+                    <td colSpan={6} className="px-10 py-32 text-center">
+                      <div className="text-slate-300 p-4 rounded-xl mb-4 flex items-center justify-center mx-auto">
+                        <Inbox size={32} strokeWidth={1.5} />
+                      </div>
+                      <p className="text-[13px] font-bold text-[#18254D] tracking-wider">No Enquiries Found</p>
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Mobile Card List View */}
+        <div className="lg:hidden grid grid-cols-1 md:grid-cols-2 gap-4">
+          {paginatedEnquiries.map((enquiry) => (
+            <div key={enquiry.id} onClick={() => { setSelectedEnquiry(enquiry); setShowDetailsModal(true); }} className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all cursor-pointer">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 shrink-0 rounded-xl flex items-center justify-center font-bold text-lg border-2 border-slate-50 shadow-md ${
+                    activeTab === "hold" ? "bg-[#FFF7ED] text-[#F97316] border-[#FFEDD5]" :
+                    activeTab === "converted" ? "bg-[#F0FDF4] text-[#16A34A] border-[#DCFCE7]" :
+                    activeTab === "dismissed" ? "bg-[#FFF1F2] text-[#F43F5E] border-[#FFE4E6]" :
+                    "bg-[#EFF6FF] text-[#3B82F6] border-[#DBEAFE]"
+                  }`}>
+                    {enquiry.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="font-bold text-sm text-[#18254D] truncate">{enquiry.name}</div>
+                    <div className="text-[10px] font-bold text-slate-400 mt-0.5">
+                      {new Date(enquiry.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-2 items-end">
+                  <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-600 bg-slate-50 px-2 py-1 rounded-lg border border-slate-100">
+                    <span className="truncate max-w-[100px]">{enquiry.createdByName || "System"}</span>
+                    <Users size={12} className="text-slate-400" />
+                  </div>
+                  {activeTab === "hold" && (
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#F97316] bg-[#FFF7ED] px-2 py-0.5 rounded border border-[#FFEDD5]">On Hold</span>
+                  )}
                 </div>
               </div>
 
-              {/* Card Footer: Actions */}
-              <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-2 lg:mt-0">
+              <div className="mb-4 space-y-2">
+                <div className="flex items-center gap-2 text-[12px] font-medium text-slate-500 hover:text-[#18254D]"><Mail size={12}/> <span className="truncate">{enquiry.email || "N/A"}</span></div>
+                <div className="flex items-center gap-2 text-[12px] font-medium text-slate-500 hover:text-[#18254D]"><Phone size={12}/> <span className="truncate">{enquiry.phone || "N/A"}</span></div>
+              </div>
+
+              <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 mb-4">
+                <p className="text-xs text-[#18254D]/80 font-medium italic line-clamp-3 mb-2">"{enquiry.message}"</p>
+                {enquiry.source ? (
+                  <span className="text-[10px] font-bold text-[#18254D] bg-white px-2 py-1 rounded-md uppercase flex items-center gap-1 w-fit border border-slate-200 shadow-sm">{getSourceIcon(enquiry.source)} {enquiry.source}</span>
+                ) : (
+                  <span className="text-[10px] font-medium text-slate-400 px-2 py-1">Source: N/A</span>
+                )}
+                {(activeTab === "hold" || activeTab === "dismissed") && enquiry.holdReason && (
+                  <div className="mt-2 pt-2 border-t border-slate-200">
+                    <p className="text-[10px] font-bold text-[#F97316] uppercase">Reason: {enquiry.holdReason}</p>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
                 {activeTab === "new" ? (
                   <>
-                    <button
-                      type="button"
-                      onClick={() => openLeadModal(enquiry)}
-                      className="w-full sm:w-auto flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2 bg-[#18254D] text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-md hover:bg-slate-800 transition-all btn-animated active:scale-95 whitespace-nowrap"
-                    >
-                      <CheckCircle
-                        strokeWidth={2.5}
-                        className="shrink-0 w-3.5 h-3.5"
-                      />
-                      Add to Lead
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => openHoldModal(enquiry)}
-                      className="w-full sm:w-auto flex-1 sm:flex-none py-2 px-4 flex items-center justify-center gap-1.5 text-slate-500 border border-slate-200 rounded-xl hover:bg-[#FFF7ED] hover:text-[#F97316] hover:border-[#FFEDD5] transition-all font-bold tracking-wider text-xs uppercase group/hold btn-animated whitespace-nowrap"
-                    >
-                      <PauseCircle className="group-hover/hold:scale-110 transition-transform shrink-0 w-3.5 h-3.5" />
-                      Hold
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => onDismiss(enquiry.id)}
-                      className="w-full sm:w-auto flex-1 sm:flex-none py-2 px-4 flex items-center justify-center gap-1.5 text-slate-400 border border-slate-250 rounded-xl hover:bg-[#FFF1F2] hover:text-[#F43F5E] hover:border-[#FFE4E6] transition-all font-bold tracking-wider text-xs uppercase group/dismiss btn-animated whitespace-nowrap"
-                    >
-                      <UserX className="group-hover/dismiss:rotate-90 transition-transform shrink-0 w-3.5 h-3.5" />
-                      Dismiss
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => openEditModal(enquiry)}
-                      className="w-full sm:w-auto flex-1 sm:flex-none py-2 px-4 flex items-center justify-center gap-1.5 text-slate-500 border border-slate-200 rounded-xl hover:bg-slate-50 transition-all font-bold tracking-wider text-xs uppercase btn-animated whitespace-nowrap"
-                    >
-                      <Pencil className="shrink-0 w-3.5 h-3.5" />
-                      Edit
-                    </button>
+                    <button onClick={(e) => { e.stopPropagation(); openLeadModal(enquiry); }} className="p-2 bg-indigo-50 text-indigo-600 border border-indigo-100 rounded-lg hover:bg-indigo-100 transition-all active:scale-90" title="Add to Lead"><CheckCircle size={16} /></button>
+                    <button onClick={(e) => { e.stopPropagation(); openHoldModal(enquiry); }} className="p-2 bg-amber-50 text-amber-600 border border-amber-100 rounded-lg hover:bg-amber-100 transition-all active:scale-90" title="Hold"><PauseCircle size={16} /></button>
+                    <button onClick={(e) => { e.stopPropagation(); onDismiss(enquiry.id); }} className="p-2 bg-rose-50 text-rose-600 border border-rose-100 rounded-lg hover:bg-rose-100 transition-all active:scale-90" title="Dismiss"><UserX size={16} /></button>
+                    <button onClick={(e) => { e.stopPropagation(); openEditModal(enquiry); }} className="p-2 bg-slate-50 text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-100 transition-all active:scale-90" title="Edit"><Pencil size={16} /></button>
                   </>
                 ) : activeTab === "hold" ? (
                   <>
-                    <button
-                      type="button"
-                      onClick={() => onRestore(enquiry.id)}
-                      className="w-full sm:w-auto flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2 bg-[#18254D] text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-md hover:bg-slate-800 transition-all btn-animated active:scale-95 whitespace-nowrap"
-                    >
-                      <RefreshCcw
-                        strokeWidth={2.5}
-                        className="shrink-0 w-3.5 h-3.5"
-                      />
-                      Restore Enquiry
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => onDismiss(enquiry.id)}
-                      className="w-full sm:w-auto flex-1 sm:flex-none py-2 px-4 flex items-center justify-center gap-1.5 text-slate-400 border border-slate-250 rounded-xl hover:bg-[#FFF1F2] hover:text-[#F43F5E] hover:border-[#FFE4E6] transition-all font-bold tracking-wider text-xs uppercase group/dismiss btn-animated whitespace-nowrap"
-                    >
-                      <UserX className="group-hover/dismiss:rotate-90 transition-transform shrink-0 w-3.5 h-3.5" />
-                      Dismiss
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => openEditModal(enquiry)}
-                      className="w-full sm:w-auto flex-1 sm:flex-none py-2 px-4 flex items-center justify-center gap-1.5 text-slate-500 border border-slate-200 rounded-xl hover:bg-slate-50 transition-all font-bold tracking-wider text-xs uppercase btn-animated whitespace-nowrap"
-                    >
-                      <Pencil className="shrink-0 w-3.5 h-3.5" />
-                      Edit
-                    </button>
+                    <button onClick={(e) => { e.stopPropagation(); onRestore(enquiry.id); }} className="p-2 bg-blue-50 text-blue-600 border border-blue-100 rounded-lg hover:bg-blue-100 transition-all active:scale-90" title="Restore"><RefreshCcw size={16} /></button>
+                    <button onClick={(e) => { e.stopPropagation(); onDismiss(enquiry.id); }} className="p-2 bg-rose-50 text-rose-600 border border-rose-100 rounded-lg hover:bg-rose-100 transition-all active:scale-90" title="Dismiss"><UserX size={16} /></button>
+                    <button onClick={(e) => { e.stopPropagation(); openEditModal(enquiry); }} className="p-2 bg-slate-50 text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-100 transition-all active:scale-90" title="Edit"><Pencil size={16} /></button>
                   </>
                 ) : (
                   <>
-                    <button
-                      type="button"
-                      onClick={() => onRestore(enquiry.id)}
-                      className="w-full sm:w-auto flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2 bg-[#18254D] text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-md hover:bg-slate-800 transition-all btn-animated active:scale-95 whitespace-nowrap"
-                    >
-                      <RefreshCcw
-                        strokeWidth={2.5}
-                        className="shrink-0 w-3.5 h-3.5"
-                      />
-                      Restore Enquiry
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => onDelete(enquiry.id)}
-                      className="w-full sm:w-auto flex-none py-2 px-4 flex items-center justify-center gap-1.5 text-slate-400 border border-slate-200 rounded-xl hover:bg-[#FFF1F2] hover:text-[#F43F5E] hover:border-[#FFE4E6] transition-all font-bold tracking-wider text-xs uppercase btn-animated whitespace-nowrap"
-                      title="Delete Permanently"
-                    >
-                      <Trash2 className="shrink-0 w-3.5 h-3.5" />
-                      <span>Delete</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => openEditModal(enquiry)}
-                      className="w-full sm:w-auto flex-1 sm:flex-none py-2 px-4 flex items-center justify-center gap-1.5 text-slate-500 border border-slate-200 rounded-xl hover:bg-slate-50 transition-all font-bold tracking-wider text-xs uppercase btn-animated whitespace-nowrap"
-                    >
-                      <Pencil className="shrink-0 w-3.5 h-3.5" />
-                      Edit
-                    </button>
+                    <button onClick={(e) => { e.stopPropagation(); onRestore(enquiry.id); }} className="p-2 bg-blue-50 text-blue-600 border border-blue-100 rounded-lg hover:bg-blue-100 transition-all active:scale-90" title="Restore"><RefreshCcw size={16} /></button>
+                    <button onClick={(e) => { e.stopPropagation(); onDelete(enquiry.id); }} className="p-2 bg-red-50 text-red-600 border border-red-200 rounded-lg hover:bg-red-100 transition-all active:scale-90" title="Delete Permanently"><Trash2 size={16} /></button>
+                    <button onClick={(e) => { e.stopPropagation(); openEditModal(enquiry); }} className="p-2 bg-slate-50 text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-100 transition-all active:scale-90" title="Edit"><Pencil size={16} /></button>
                   </>
                 )}
               </div>
             </div>
-          ))
-        )}
+          ))}
+          {paginatedEnquiries.length === 0 && (
+            <div className="col-span-1 md:col-span-2 flex flex-col items-center justify-center py-10 bg-white rounded-3xl border border-slate-200 shadow-sm w-full">
+              <Inbox size={22} className="text-slate-350 mb-2" />
+              <p className="text-xs font-bold text-slate-400 tracking-wider uppercase">No enquiries</p>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Pagination Controls */}
@@ -1843,6 +1776,128 @@ const EnquiryList = ({
           </div>,
           document.body,
         )}
+
+
+      {/* Details Modal */}
+      {showDetailsModal && selectedEnquiry && createPortal(
+        <div className="fixed inset-0 z-[999999] flex items-center justify-center p-4 sm:p-6">
+          <div
+            className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm animate-fade-in"
+            onClick={() => { setShowDetailsModal(false); setSelectedEnquiry(null); }}
+          />
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden relative z-10 animate-fade-in-up flex flex-col max-h-[90vh]">
+            <div className="flex items-center justify-between p-5 sm:p-6 border-b border-slate-100 bg-slate-50/50">
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100 font-bold text-xl shadow-sm">
+                  {selectedEnquiry.name.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <h2 className="text-lg sm:text-xl font-bold text-[#18254D]">{selectedEnquiry.name}</h2>
+                  <p className="text-xs font-medium text-slate-500 mt-0.5">
+                    {new Date(selectedEnquiry.date).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => { setShowDetailsModal(false); setSelectedEnquiry(null); }}
+                className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-all"
+              >
+                <X size={20} strokeWidth={2.5} />
+              </button>
+            </div>
+            
+            <div className="p-5 sm:p-6 overflow-y-auto custom-scrollbar flex-1 space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                  <p className="text-[10px] font-black tracking-widest text-slate-400 uppercase mb-2 flex items-center gap-1.5">
+                    <Phone size={12} /> Phone Number
+                  </p>
+                  <p className="text-sm font-semibold text-[#18254D] break-all">
+                    {selectedEnquiry.phone || "N/A"}
+                  </p>
+                </div>
+
+                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                  <p className="text-[10px] font-black tracking-widest text-slate-400 uppercase mb-2 flex items-center gap-1.5">
+                    <Mail size={12} /> Email
+                  </p>
+                  <p className="text-sm font-semibold text-[#18254D] break-all">
+                    {selectedEnquiry.email || "N/A"}
+                  </p>
+                </div>
+
+                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                  <p className="text-[10px] font-black tracking-widest text-slate-400 uppercase mb-2 flex items-center gap-1.5">
+                    <ShieldAlert size={12} /> AI Status
+                  </p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    {selectedEnquiry.aiAnalysis ? (
+                      <span className={`px-2.5 py-1 rounded-md text-[10px] font-black tracking-widest border uppercase ${selectedEnquiry.aiAnalysis.isRelevant ? "bg-[#F0FDF4] border-[#DCFCE7] text-[#16A34A]" : "bg-[#FFF1F2] border-[#FFE4E6] text-[#F43F5E]"}`}>
+                        {selectedEnquiry.aiAnalysis.isRelevant ? (selectedEnquiry.aiAnalysis.category || "Relevant") : "Irrelevant"}
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-1 rounded-md uppercase tracking-wider border border-slate-200">
+                        Pending AI
+                      </span>
+                    )}
+                    {selectedEnquiry.status === "hold" && (
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#F97316] bg-[#FFF7ED] px-2.5 py-1 rounded-md border border-[#FFEDD5]">
+                        On Hold
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                  <p className="text-[10px] font-black tracking-widest text-slate-400 uppercase mb-2 flex items-center gap-1.5">
+                    <Users size={12} /> Created By
+                  </p>
+                  <p className="text-sm font-semibold text-[#18254D] break-all">
+                    {selectedEnquiry.createdByName || "System"}
+                  </p>
+                </div>
+
+                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                  <p className="text-[10px] font-black tracking-widest text-slate-400 uppercase mb-2 flex items-center gap-1.5">
+                    <Share2 size={12} /> Source
+                  </p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    {selectedEnquiry.source ? (
+                      <span className="text-[10px] font-bold text-[#18254D] bg-white px-2 py-1 rounded-md uppercase flex items-center gap-1 border border-slate-200 shadow-sm">
+                        {getSourceIcon(selectedEnquiry.source)} {selectedEnquiry.source}
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-1 rounded-md uppercase tracking-wider border border-slate-200">
+                        N/A
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                <div className="flex items-center justify-between gap-3 mb-3">
+                  <p className="text-[10px] font-black tracking-widest text-slate-400 uppercase flex items-center gap-1.5">
+                    <MessageCircle size={12} /> Message
+                  </p>
+                </div>
+                <p className="text-sm text-[#18254D] leading-relaxed whitespace-pre-wrap font-medium">
+                  {selectedEnquiry.message || "N/A"}
+                </p>
+              </div>
+
+              {(selectedEnquiry.status === "hold" || selectedEnquiry.status === "dismissed") && selectedEnquiry.holdReason && (
+                <div className="bg-orange-50 p-4 rounded-2xl border border-orange-100">
+                  <p className="text-[10px] font-black tracking-widest text-orange-400 uppercase mb-2 flex items-center gap-1.5"><AlertTriangle size={12} /> Reason</p>
+                  <p className="text-sm font-semibold text-orange-700">{selectedEnquiry.holdReason}</p>
+                </div>
+              )}
+            </div>
+
+          </div>
+        </div>,
+        document.body
+      )}
 
       {leadModalOpen &&
         createPortal(
