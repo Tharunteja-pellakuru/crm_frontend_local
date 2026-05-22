@@ -483,11 +483,13 @@ function AppRoutes() {
           email: e.email,
           phone: e.phone_number,
           website: e.website_url,
+          source: e.source || "",
           message: e.message,
           status: e.status?.toLowerCase() || "new",
           remarks: e.remarks || "",
           holdReason: e.remarks || "",
           date: e.created_at || new Date().toISOString(),
+          createdByName: e.created_by_name || null,
         }));
         setEnquiries(transformedEnquiries);
       })
@@ -1955,6 +1957,7 @@ function AppRoutes() {
           email: data.email,
           phone_number: data.phone,
           website_url: data.website,
+          source: data.source,
           message: data.message,
           status: "New"
         }),
@@ -1968,10 +1971,12 @@ function AppRoutes() {
           email: result.enquiry.email,
           phone: result.enquiry.phone_number,
           website: result.enquiry.website_url,
+          source: result.enquiry.source || "",
           message: result.enquiry.message,
           status: result.enquiry.status.toLowerCase(),
           date: result.enquiry.created_at,
-          remarks: result.enquiry.remarks || ""
+          remarks: result.enquiry.remarks || "",
+          createdByName: result.enquiry.created_by_name || null,
         };
         setEnquiries((prev) => [newEnquiry, ...prev]);
         toast.success("Enquiry added successfully!");

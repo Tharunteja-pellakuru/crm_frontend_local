@@ -14,7 +14,7 @@ export default {
       colors: {
         primary: "#18254D",
         secondary: "#475569",
-        background: "#F6F9F4",
+        background: "#F1F2F8",
         surface: "#FFFFFF",
         textPrimary: "#1C1C1C",
         textMuted: "#64748B",

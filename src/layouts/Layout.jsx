@@ -6,8 +6,8 @@ import Footer from "./Footer";
 import Logo from "../components/ui/Logo";
 import parivartanLogo from "../assets/Parivartan_Logo.png";
 
-const Layout = ({ 
-  onLogout, enquiries, followUps, clients 
+const Layout = ({
+  onLogout, enquiries, followUps, clients
 }) => {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isPageTransitioning, setIsPageTransitioning] = useState(false);
@@ -33,7 +33,7 @@ const Layout = ({
   }, [location.pathname]);
 
   return (
-    <div className="flex min-h-screen bg-background overflow-x-hidden">
+    <div className="flex min-h-screen bg-[#F1F2F8] overflow-x-hidden">
       {/* Mobile Backdrop */}
       {isMobileSidebarOpen && (
         <div
@@ -47,8 +47,8 @@ const Layout = ({
         <Sidebar
           activeTab={activeTab}
           setActiveTab={(tab) => {
-             navigate(`/${tab}`);
-             setIsMobileSidebarOpen(false);
+            navigate(`/${tab}`);
+            setIsMobileSidebarOpen(false);
           }}
           onLogout={onLogout}
           enquiryCount={enquiries.filter(e => e.status === "new" || e.status === "read").length}
@@ -77,8 +77,8 @@ const Layout = ({
 
         {/* Scalable Content Injection */}
         <main className="flex-1 p-3 min-[1201px]:p-6 overflow-x-hidden mt-24 min-[1201px]:mt-2 flex flex-col">
-          <div 
-            key={location.pathname} 
+          <div
+            key={location.pathname}
             className="max-w-7xl mx-auto pb-8 flex-1 w-full animate-fade-in-up"
           >
             <Outlet />

@@ -34,7 +34,10 @@ import {
   UserX,
   AlertTriangle,
   Filter,
+  Share2,
+  Users,
 } from "lucide-react";
+import favIcon from "../../assets/fav-icon.png";
 import DatePicker from "../../components/ui/DatePicker";
 // CATEGORY_MAP removed - category now managed at Project level only
 import { countries } from "../../utils/countries";
@@ -124,7 +127,7 @@ const EnquiryList = ({
       const windowWidth = window.innerWidth;
       const windowHeight = window.innerHeight;
       const isMobile = windowWidth < 1024;
-      
+
       const style = {
         position: "fixed",
         zIndex: 99999,
@@ -147,7 +150,7 @@ const EnquiryList = ({
 
         const spaceBelow = windowHeight - rect.bottom - 24;
         const spaceAbove = rect.top - 24;
-        
+
         style.left = `${left}px`;
         style.width = `${popupWidth}px`;
 
@@ -202,6 +205,7 @@ const EnquiryList = ({
   const [showSimulateForm, setShowSimulateForm] = useState(false);
   const [isEnquiryStatusDropdownOpen, setIsEnquiryStatusDropdownOpen] =
     useState(false);
+  const [isSourceDropdownOpen, setIsSourceDropdownOpen] = useState(false);
   const [holdModalOpen, setHoldModalOpen] = useState(false);
   const [holdReason, setHoldReason] = useState("");
   const [formData, setFormData] = useState({
@@ -209,6 +213,7 @@ const EnquiryList = ({
     email: "",
     phone: "",
     website: "",
+    source: "",
     message: "",
   });
   const [showDeleteAllModal, setShowDeleteAllModal] = useState(false);
@@ -305,7 +310,7 @@ const EnquiryList = ({
               );
               console.log("Batch analysis results:", results);
               console.log("Original batch:", batch.map(b => ({ id: b.id, name: b.name })));
-              
+
               results.forEach((res) => {
                 const enq = batch.find((b) => b.id === res.id);
                 if (enq) {
@@ -486,7 +491,7 @@ const EnquiryList = ({
         errorMessage: "Full Name must contain only alphabets.",
       },
       email: {
-        required: true,
+        required: false,
         pattern: EMAIL_PATTERN,
         label: "Email",
         errorMessage: "Enter a valid email address.",
@@ -562,7 +567,7 @@ const EnquiryList = ({
         errorMessage: "Full Name must contain only alphabets.",
       },
       email: {
-        required: true,
+        required: false,
         pattern: EMAIL_PATTERN,
         label: "Email",
         errorMessage: "Enter a valid email address.",
@@ -583,7 +588,7 @@ const EnquiryList = ({
     try {
       await onAdd({ ...formData });
       setShowSimulateForm(false);
-      setFormData({ name: "", email: "", phone: "", website: "", message: "" });
+      setFormData({ name: "", email: "", phone: "", website: "", source: "", message: "" });
       setActiveTab("new");
     } catch (err) {
       console.error("Add Enquiry Failed:", err);
@@ -594,14 +599,14 @@ const EnquiryList = ({
   };
 
   return (
-    <div className="w-full relative">
+    <div className="w-full relative flex flex-col">
       <div className="space-y-5 animate-fade-in w-full">
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
           <div className="max-w-2xl">
-            <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-primary tracking-tight mb-1.5">
+            <h2 className="text-base md:text-lg lg:text-xl font-bold text-[#18254D] tracking-tight mb-1 flex items-center gap-2">
               Enquiry Hub
             </h2>
-            <p className="text-sm text-textMuted font-medium leading-relaxed">
+            <p className="text-[11px] md:text-xs text-textMuted font-medium leading-relaxed">
               Manage and qualify all incoming business enquiries.
             </p>
           </div>
@@ -609,10 +614,10 @@ const EnquiryList = ({
             {activeTab === "dismissed" && totalInTabCount > 0 && (
               <button
                 onClick={() => setShowDeleteAllModal(true)}
-                className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-rose-50 text-rose-600 border border-rose-200 rounded-2xl hover:bg-rose-100 transition-all text-[13px] font-bold tracking-wider shadow-sm active:scale-95 group"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-[#FFF1F2] text-[#F43F5E] border border-[#FFE4E6] rounded-xl hover:bg-[#FFE4E6] transition-all text-xs font-bold tracking-wider shadow-sm btn-animated active:scale-95 group"
               >
                 <Trash2
-                  size={16}
+                  size={14}
                   strokeWidth={2.5}
                   className="group-hover:scale-110 transition-transform"
                 />
@@ -621,10 +626,10 @@ const EnquiryList = ({
             )}
             <button
               onClick={() => setShowSimulateForm(true)}
-              className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white rounded-2xl hover:bg-slate-800 transition-all text-[13px] font-bold tracking-wider shadow-lg active:scale-95 group"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-[#18254D] text-white rounded-xl hover:bg-slate-800 transition-all text-xs font-bold tracking-wider shadow-md btn-animated active:scale-95 group"
             >
               <Plus
-                size={16}
+                size={14}
                 strokeWidth={2.5}
                 className="group-hover:rotate-90 transition-transform"
               />
@@ -633,13 +638,13 @@ const EnquiryList = ({
           </div>
         </div>
 
-        <div className="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm relative z-[80]">
+        <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm relative z-[80]">
           <div className="flex flex-col md:flex-row md:justify-between gap-4 w-full items-center">
             {/* 1. Search Bar */}
             <div className="relative w-full md:w-64 flex-none border border-slate-200 rounded-xl overflow-hidden group transition-all focus-within:ring-4 focus-within:ring-[#18254D]/5 focus-within:border-[#18254D]/20">
               <Search
                 size={16}
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-[#18254D]/40 group-focus-within:text-primary transition-colors"
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors"
                 strokeWidth={2.5}
               />
               <input
@@ -647,7 +652,7 @@ const EnquiryList = ({
                 placeholder="Search enquiries..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full h-[38px] pl-11 pr-4 bg-slate-50 border border-transparent rounded-xl text-sm font-bold text-primary placeholder:text-slate-400/80 focus:outline-none transition-all"
+                className="w-full h-[38px] pl-11 pr-4 bg-slate-50/50 border border-transparent rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400/80 focus:outline-none transition-all"
               />
             </div>
 
@@ -655,19 +660,18 @@ const EnquiryList = ({
             <div className="relative w-full md:w-auto flex-none" ref={filterButtonRef}>
               <button
                 onClick={() => setIsFilterPopupOpen(!isFilterPopupOpen)}
-                className={`w-full md:w-auto h-[38px] flex items-center justify-center gap-2.5 px-6 py-2 rounded-xl text-[12px] font-bold tracking-widest transition-all shadow-sm active:scale-95 group border ${
-                  startDate || endDate || aiAnalysisEnabled
-                    ? "bg-secondary/5 border-secondary text-secondary"
-                    : "bg-slate-50 border-slate-100 text-[#18254D] hover:bg-white hover:border-slate-200 shadow-slate-200/50"
-                }`}
+                className={`w-full md:w-auto h-[38px] flex items-center justify-center gap-2.5 px-6 py-2 rounded-xl text-[12px] font-bold tracking-wider transition-all shadow-sm active:scale-95 group border btn-animated ${startDate || endDate || aiAnalysisEnabled
+                    ? "bg-slate-50 border-[#18254D]/30 text-[#18254D]"
+                    : "bg-slate-50 border-slate-200/70 text-[#18254D] hover:bg-white hover:border-slate-300 shadow-slate-200/50"
+                  }`}
               >
                 <Filter
                   size={14}
-                  className={startDate || endDate || aiAnalysisEnabled ? "text-secondary" : "text-slate-400"}
+                  className={startDate || endDate || aiAnalysisEnabled ? "text-[#18254D]" : "text-slate-400"}
                 />
                 <span>FILTERS</span>
                 {(startDate || endDate || aiAnalysisEnabled) && (
-                  <span className="flex items-center justify-center w-5 h-5 bg-secondary text-white text-[10px] font-black rounded-full ml-1 shadow-sm">
+                  <span className="flex items-center justify-center w-4 h-4 bg-[#18254D] text-white text-[9px] font-black rounded-full ml-1 shadow-sm">
                     {[!!startDate, !!endDate, aiAnalysisEnabled].filter(Boolean).length}
                   </span>
                 )}
@@ -689,176 +693,175 @@ const EnquiryList = ({
                     >
                       <div
                         ref={filterPopupRef}
-                        className="bg-white border border-slate-200 shadow-[0_20px_50px_rgba(0,0,0,0.15)] overflow-hidden animate-fade-in-up ring-1 ring-black/5 rounded-3xl pointer-events-auto"
+                        className="bg-white border border-slate-200 shadow-[0_20px_50px_rgba(24,37,77,0.15)] overflow-hidden animate-fade-in-up ring-1 ring-black/5 rounded-3xl pointer-events-auto flex flex-col animate-pop"
                         style={filterPopupStyle}
                         onWheel={(e) => e.stopPropagation()}
                         onTouchMove={(e) => e.stopPropagation()}
                       >
-                      {/* Sticky Header */}
-                      <div className="flex-none p-4 border-b border-slate-50 flex items-center justify-between bg-white relative z-10">
-                        <div className="flex items-center gap-2">
-                          <Filter size={14} className="text-secondary" />
-                          <h3 className="text-[11px] font-black text-[#18254D] tracking-[0.2em] uppercase">
-                            Filter Enquiries
-                          </h3>
+                        {/* Sticky Header */}
+                        <div className="flex-none p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 relative z-10">
+                          <div className="flex items-center gap-2">
+                            <Filter size={14} className="text-[#18254D]" />
+                            <h3 className="text-[11px] font-black text-[#18254D] tracking-wider uppercase">
+                              Filter Enquiries
+                            </h3>
+                          </div>
+                          {(startDate || endDate || aiAnalysisEnabled) && (
+                            <button
+                              onClick={() => {
+                                setStartDate("");
+                                setEndDate("");
+                                setAiAnalysisEnabled(false);
+                                setHideIrrelevant(false);
+                                setIsFilterPopupOpen(false);
+                              }}
+                              className="text-[10px] font-black text-[#F43F5E] hover:text-[#E11D48] tracking-wider uppercase transition-colors"
+                            >
+                              Clear All
+                            </button>
+                          )}
                         </div>
-                        {(startDate || endDate || aiAnalysisEnabled) && (
-                          <button
-                            onClick={() => {
-                              setStartDate("");
-                              setEndDate("");
-                              setAiAnalysisEnabled(false);
-                              setHideIrrelevant(false);
-                              setIsFilterPopupOpen(false);
-                            }}
-                            className="text-[10px] font-black text-rose-500 hover:text-rose-600 tracking-widest uppercase transition-colors"
-                          >
-                            Clear All
-                          </button>
-                        )}
-                      </div>
 
-                      {/* Scrollable Body */}
-                      <div className="flex-1 p-5 space-y-4 overflow-y-auto custom-scrollbar">
-                        {/* AI Settings Section - Only show in Inbox tab */}
-                        {activeTab === "new" && (
-                          <>
-                            <div className="space-y-3">
-                              <label className="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase ml-1">
-                                AI Analysis Control
-                              </label>
-                              <div className="space-y-2">
-                                {/* Toggle AI Analysis */}
-                                <div className="flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-2xl hover:border-slate-200 transition-colors">
-                                  <div className="flex flex-col">
-                                    <span className="text-[11px] font-bold text-primary">
-                                      Enable AI Analysis
-                                    </span>
-                                    <span className="text-[9px] text-slate-400">
-                                      Qualify enquiries automatically
-                                    </span>
-                                  </div>
-                                  <button
-                                    onClick={() => {
-                                      const nextValue = !aiAnalysisEnabled;
-                                      setAiAnalysisEnabled(nextValue);
-                                      if (!nextValue) setHideIrrelevant(false);
-                                    }}
-                                    className={`relative inline-flex h-5 w-9 shrink-0 rounded-full transition-colors duration-300 ease-in-out ${
-                                      aiAnalysisEnabled
-                                        ? "bg-secondary"
-                                        : "bg-slate-300"
-                                    }`}
-                                  >
-                                    <span
-                                      className={`inline-block h-3.5 w-3.5 bg-white rounded-full transform transition-transform duration-300 ease-in-out ${aiAnalysisEnabled ? "translate-x-[18px]" : "translate-x-0.5"} mt-[3px] ml-0.5`}
-                                    />
-                                  </button>
-                                </div>
-
-                                {/* Toggle Filter Spam */}
-                                <div
-                                  className={`flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-2xl transition-all hover:border-slate-200 ${!aiAnalysisEnabled ? "opacity-30 grayscale pointer-events-none" : ""}`}
-                                >
-                                  <div className="flex flex-col">
-                                    <span className="text-[11px] font-bold text-primary">
-                                      Auto-Filter Spam
-                                    </span>
-                                    <span className="text-[9px] text-slate-400">
-                                      Hide irrelevant enquiries
-                                    </span>
-                                  </div>
-                                  <button
-                                    onClick={() =>
-                                      setHideIrrelevant(!hideIrrelevant)
-                                    }
-                                    className={`relative inline-flex h-5 w-9 shrink-0 rounded-full transition-colors duration-300 ease-in-out ${
-                                      hideIrrelevant
-                                        ? "bg-emerald-600"
-                                        : "bg-slate-300"
-                                    }`}
-                                  >
-                                    <span
-                                      className={`inline-block h-3.5 w-3.5 bg-white rounded-full transform transition-transform duration-300 ease-in-out ${hideIrrelevant ? "translate-x-[18px]" : "translate-x-0.5"} mt-[3px] ml-0.5`}
-                                    />
-                                  </button>
-                                </div>
-
-                                {/* AI Model Selection Dropdown */}
-                                {aiAnalysisEnabled && aiModels.length > 0 && (
-                                  <div className="space-y-2 mt-2">
-                                    <SearchableDropdown
-                                      label="Model Selection"
-                                      placeholder="Select AI Model..."
-                                      options={aiModels.map(m => ({
-                                        ...m,
-                                        label: m.name,
-                                        value: m.aimodel_id
-                                      }))}
-                                      value={selectedAiModel}
-                                      onChange={setSelectedAiModel}
-                                    />
-                                    <div className="px-3 py-2 bg-slate-50 border border-slate-100 rounded-2xl">
-                                      <p className="text-[10px] text-slate-400 leading-relaxed italic">
-                                        {aiModels.find(m => m.aimodel_id === selectedAiModel)?.description || "Select a model to see its description."}
-                                      </p>
+                        {/* Scrollable Body */}
+                        <div className="flex-1 p-5 space-y-4 overflow-y-auto custom-scrollbar">
+                          {/* AI Settings Section - Only show in Inbox tab */}
+                          {activeTab === "new" && (
+                            <>
+                              <div className="space-y-3">
+                                <label className="text-[10px] font-black text-slate-400 tracking-wider uppercase ml-1">
+                                  AI Analysis Control
+                                </label>
+                                <div className="space-y-2">
+                                  {/* Toggle AI Analysis */}
+                                  <div className="flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-2xl hover:border-slate-200 transition-colors">
+                                    <div className="flex flex-col">
+                                      <span className="text-[11px] font-bold text-[#18254D]">
+                                        Enable AI Analysis
+                                      </span>
+                                      <span className="text-[9px] text-slate-400">
+                                        Qualify enquiries automatically
+                                      </span>
                                     </div>
+                                    <button
+                                      onClick={() => {
+                                        const nextValue = !aiAnalysisEnabled;
+                                        setAiAnalysisEnabled(nextValue);
+                                        if (!nextValue) setHideIrrelevant(false);
+                                      }}
+                                      className={`relative inline-flex h-5 w-9 shrink-0 rounded-full transition-colors duration-300 ease-in-out ${aiAnalysisEnabled
+                                          ? "bg-[#18254D]"
+                                          : "bg-slate-300"
+                                        }`}
+                                    >
+                                      <span
+                                        className={`inline-block h-3.5 w-3.5 bg-white rounded-full transform transition-transform duration-300 ease-in-out ${aiAnalysisEnabled ? "translate-x-[18px]" : "translate-x-0.5"} mt-[3px] ml-0.5`}
+                                      />
+                                    </button>
                                   </div>
-                                )}
+
+                                  {/* Toggle Filter Spam */}
+                                  <div
+                                    className={`flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-2xl transition-all hover:border-slate-200 ${!aiAnalysisEnabled ? "opacity-30 grayscale pointer-events-none" : ""}`}
+                                  >
+                                    <div className="flex flex-col">
+                                      <span className="text-[11px] font-bold text-[#18254D]">
+                                        Auto-Filter Spam
+                                      </span>
+                                      <span className="text-[9px] text-slate-400">
+                                        Hide irrelevant enquiries
+                                      </span>
+                                    </div>
+                                    <button
+                                      onClick={() =>
+                                        setHideIrrelevant(!hideIrrelevant)
+                                      }
+                                      className={`relative inline-flex h-5 w-9 shrink-0 rounded-full transition-colors duration-300 ease-in-out ${hideIrrelevant
+                                          ? "bg-[#18254D]"
+                                          : "bg-slate-300"
+                                        }`}
+                                    >
+                                      <span
+                                        className={`inline-block h-3.5 w-3.5 bg-white rounded-full transform transition-transform duration-300 ease-in-out ${hideIrrelevant ? "translate-x-[18px]" : "translate-x-0.5"} mt-[3px] ml-0.5`}
+                                      />
+                                    </button>
+                                  </div>
+
+                                  {/* AI Model Selection Dropdown */}
+                                  {aiAnalysisEnabled && aiModels.length > 0 && (
+                                    <div className="space-y-2 mt-2">
+                                      <SearchableDropdown
+                                        label="Model Selection"
+                                        placeholder="Select AI Model..."
+                                        options={aiModels.map(m => ({
+                                          ...m,
+                                          label: m.name,
+                                          value: m.aimodel_id
+                                        }))}
+                                        value={selectedAiModel}
+                                        onChange={setSelectedAiModel}
+                                      />
+                                      <div className="px-3 py-2 bg-slate-50 border border-slate-100 rounded-2xl">
+                                        <p className="text-[10px] text-slate-400 leading-relaxed italic">
+                                          {aiModels.find(m => m.aimodel_id === selectedAiModel)?.description || "Select a model to see its description."}
+                                        </p>
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
                               </div>
+
+                              <div className="h-px bg-slate-100/50" />
+                            </>
+                          )}
+
+                          {/* Date Range Section */}
+                          <div className="space-y-3">
+                            <label className="text-[10px] font-black text-slate-400 tracking-wider uppercase ml-1">
+                              Date Range
+                            </label>
+                            <div className="grid grid-cols-2 gap-3">
+                              <DatePicker
+                                label="From"
+                                value={startDate}
+                                onChange={setStartDate}
+                              />
+                              <DatePicker
+                                label="To"
+                                value={endDate}
+                                onChange={setEndDate}
+                              />
                             </div>
-
-                            <div className="h-px bg-slate-100/50" />
-                          </>
-                        )}
-
-                        {/* Date Range Section */}
-                        <div className="space-y-3">
-                          <label className="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase ml-1">
-                            Date Range
-                          </label>
-                          <div className="grid grid-cols-2 gap-3">
-                            <DatePicker
-                              label="From"
-                              value={startDate}
-                              onChange={setStartDate}
-                            />
-                            <DatePicker
-                              label="To"
-                              value={endDate}
-                              onChange={setEndDate}
-                            />
                           </div>
                         </div>
-                      </div>
 
-                      {/* Sticky Footer */}
-                      <div className="flex-none p-4 bg-white border-t border-slate-50 relative z-10 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
-                        <button
-                          onClick={() => setIsFilterPopupOpen(false)}
-                          className="w-full py-2.5 bg-[#18254D] text-white rounded-2xl text-[11px] font-black tracking-[0.2em] uppercase hover:bg-slate-800 transition-all shadow-lg active:scale-95"
-                        >
-                          Apply Filters
-                        </button>
+                        {/* Sticky Footer */}
+                        <div className="flex-none p-4 bg-white border-t border-slate-100 relative z-10 shadow-[0_-4px_20px_rgba(24,37,77,0.02)]">
+                          <button
+                            onClick={() => setIsFilterPopupOpen(false)}
+                            className="w-full py-2.5 bg-[#18254D] text-white rounded-xl text-[11px] font-black tracking-wider uppercase hover:bg-slate-800 transition-all shadow-md active:scale-95 btn-animated"
+                          >
+                            Apply Filters
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </>,
+                  </>,
                   document.body,
                 )}
             </div>
           </div>
         </div>
+
         {/* Error Message Row */}
         {aiAnalysisError && aiAnalysisEnabled && (
-          <div className="w-full mt-2 flex items-start gap-2 px-3 py-2.5 bg-red-50 border border-red-200 rounded-xl text-xs text-red-600 font-bold">
+          <div className="w-full mt-2 flex items-start gap-2 px-3 py-2.5 bg-[#FFF1F2] border border-[#FFE4E6] rounded-xl text-xs text-[#F43F5E] font-bold">
             <span className="shrink-0">!</span>
             <div className="flex-1 min-w-0">
               <span>{aiAnalysisError}</span>
             </div>
             <button
               onClick={() => setAiAnalysisError(null)}
-              className="shrink-0 text-red-400 hover:text-red-600 ml-1"
+              className="shrink-0 text-[#F43F5E]/70 hover:text-[#F43F5E] ml-1"
             >
               X
             </button>
@@ -868,31 +871,31 @@ const EnquiryList = ({
         {/* AI Analysis Progress Message */}
         {activeTab === "new" && aiAnalysisEnabled && (
           <div className="mt-4 flex justify-center">
-            <div className="px-4 sm:px-5 py-1 sm:py-0.5 bg-slate-50 border border-slate-100 rounded-2xl sm:rounded-full shadow-sm flex flex-wrap justify-center items-center gap-2 sm:gap-3 animate-fade-in group w-full sm:w-auto min-h-[32px]">
+            <div className="px-4 sm:px-5 py-1 sm:py-0.5 bg-slate-50 border border-slate-200/50 rounded-full shadow-sm flex flex-wrap justify-center items-center gap-2 sm:gap-3 animate-fade-in group w-full sm:w-auto min-h-[32px]">
               <div className="flex items-center gap-2">
-                <span className="text-[12px] font-black  tracking-widest text-slate-400">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                   Analysis
                 </span>
                 {isAnalyzing && (
                   <Loader2
-                    size={12}
+                    size={11}
                     className="animate-spin text-primary"
                     strokeWidth={3}
                   />
                 )}
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-[13px] font-black  tracking-widest text-primary">
+                <span className="text-xs font-bold text-[#18254D]">
                   {analyzedInTabCount} of {totalInTabCount}
                 </span>
-                <span className="text-[12px] font-black  tracking-widest text-slate-400">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                   Completed
                 </span>
               </div>
               {hideIrrelevant && spamFilteredCount > 0 && (
                 <>
                   <div className="w-1.5 h-1.5 rounded-full bg-slate-200 mx-1" />
-                  <span className="text-[12px] font-black  tracking-widest text-secondary/60">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                     {spamFilteredCount} Filtered
                   </span>
                 </>
@@ -904,10 +907,17 @@ const EnquiryList = ({
 
       {/* Lead View Toggles (Enquiries) */}
       <div className="flex justify-center my-4 w-full px-1 sm:px-0">
-        <div className="relative flex flex-nowrap bg-slate-100/50 p-0.5 rounded-[14px] border border-slate-200 shadow-sm leading-none w-full sm:w-auto items-center gap-0 overflow-hidden">
+        <div className="relative flex flex-nowrap bg-slate-200/50 p-0.5 rounded-xl border border-slate-200 shadow-inner leading-none w-full sm:w-auto items-center gap-0 overflow-hidden">
           {/* Moving Indicator */}
           <div
-            className="absolute top-[2px] bottom-[2px] left-[2px] bg-white rounded-[11px] shadow-sm transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] border border-white/20 z-0"
+            className={`absolute top-[2px] bottom-[2px] left-[2px] rounded-lg shadow-sm transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] border z-0 ${activeTab === "new"
+                ? "bg-[#EFF6FF] border-[#DBEAFE]/30"
+                : activeTab === "hold"
+                  ? "bg-[#FFF7ED] border-[#FFEDD5]/30"
+                  : activeTab === "converted"
+                    ? "bg-[#F0FDF4] border-[#DCFCE7]/30"
+                    : "bg-[#FFF1F2] border-[#FFE4E6]/30"
+              }`}
             style={{
               width: "calc(25% - 2px)",
               transform: `translateX(${["new", "hold", "converted", "dismissed"].indexOf(activeTab) * 100}%)`,
@@ -916,21 +926,20 @@ const EnquiryList = ({
 
           {["new", "hold", "converted", "dismissed"].map((tab) => {
             const colors = {
-              new: "text-blue-600",
-              hold: "text-orange-600",
-              converted: "text-emerald-600",
-              dismissed: "text-rose-600",
+              new: "text-[#3B82F6] font-bold",
+              hold: "text-[#F97316] font-bold",
+              converted: "text-[#16A34A] font-bold",
+              dismissed: "text-[#F43F5E] font-bold",
             };
 
             return (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`relative z-10 flex-1 sm:flex-none px-2 sm:px-6 py-1.5 sm:py-1 rounded-xl text-[10px] sm:text-[12px] font-bold tracking-wider transition-all duration-300 flex items-center justify-center min-w-[75px] sm:min-w-[120px] h-[30px] sm:h-[36px] whitespace-nowrap active:scale-95 ${
-                  activeTab === tab
+                className={`relative z-10 flex-1 sm:flex-none px-2 sm:px-6 py-1.5 sm:py-1 rounded-lg text-[10px] sm:text-[12px] font-bold tracking-wider transition-all duration-300 flex items-center justify-center min-w-[75px] sm:min-w-[120px] h-[30px] sm:h-[36px] whitespace-nowrap active:scale-95 ${activeTab === tab
                     ? `${colors[tab]} scale-[1.02]`
                     : `text-slate-400 hover:text-slate-600`
-                }`}
+                  }`}
               >
                 {tab === "new"
                   ? "Inbox"
@@ -951,8 +960,8 @@ const EnquiryList = ({
       >
         {paginatedEnquiries.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-10 bg-white rounded-3xl border border-slate-200 shadow-sm w-full">
-            <Inbox size={22} className="text-slate-200 mb-2" />
-            <p className="text-[12px] font-bold text-slate-300  tracking-widest">
+            <Inbox size={22} className="text-slate-350 mb-2" />
+            <p className="text-xs font-bold text-slate-400 tracking-wider uppercase">
               No enquiries
             </p>
           </div>
@@ -960,64 +969,68 @@ const EnquiryList = ({
           paginatedEnquiries.map((enquiry) => (
             <div
               key={`enq-card-${enquiry.id}`}
-              className="group relative bg-white rounded-[1.5rem] border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-500 overflow-hidden p-4 w-full flex flex-col gap-4"
+              className="group relative bg-[#FFFFFF] rounded-2xl border border-slate-200 shadow-sm hover:-translate-y-1 hover:shadow-md hover:border-slate-300/80 transition-all duration-300 p-5 w-full flex flex-col gap-4"
             >
               {/* Card Header: Identity and Badge */}
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
                 <div className="flex items-center gap-3 w-full sm:w-auto shrink-0">
                   <div
-                    className={`w-10 h-10 shrink-0 rounded-full flex items-center justify-center text-white font-bold text-base shadow-inner ${
-                      activeTab === "hold"
-                        ? "bg-amber-500"
+                    className={`w-10 h-10 shrink-0 rounded-full flex items-center justify-center font-bold text-base border shadow-sm ${activeTab === "hold"
+                        ? "bg-[#FFF7ED] text-[#F97316] border-[#FFEDD5]"
                         : activeTab === "converted"
-                          ? "bg-emerald-600"
+                          ? "bg-[#F0FDF4] text-[#16A34A] border-[#DCFCE7]"
                           : activeTab === "dismissed"
-                            ? "bg-slate-700"
-                            : "bg-[#18254D]"
-                    }`}
+                            ? "bg-[#FFF1F2] text-[#F43F5E] border-[#FFE4E6]"
+                            : "bg-[#EFF6FF] text-[#3B82F6] border-[#DBEAFE]"
+                      }`}
                   >
-                    {enquiry.name.charAt(0)}
+                    {enquiry.name.charAt(0).toUpperCase()}
                   </div>
                   <div className="flex flex-col gap-0.5 min-w-0">
-                    <h3 className="text-base font-bold text-[#18254D] tracking-tight truncate">
+                    <h3 className="text-sm font-bold text-[#18254D] tracking-tight truncate">
                       {enquiry.name}
                     </h3>
-                    <div className="mt-1 px-2.5 py-1 bg-slate-50 border border-slate-200 rounded-full flex items-center gap-1.5 text-[12px] text-slate-500 font-bold uppercase tracking-wider whitespace-nowrap overflow-visible w-fit">
-                      <Clock size={11} className="text-slate-400 shrink-0" />
-                      {new Date(enquiry.date)
-                        .toLocaleDateString("en-GB", {
-                          day: "2-digit",
-                          month: "2-digit",
-                          year: "numeric",
-                        })
-                        .replace(/\//g, "-")}
+                    <div className="mt-1 px-2 py-0.5 bg-slate-50 border border-slate-200/50 rounded-md flex items-center gap-1.5 text-[10px] text-slate-400 font-bold uppercase tracking-wider whitespace-nowrap overflow-visible w-fit">
+                      <Calendar size={11} className="text-slate-400 shrink-0" />
+                      {new Date(enquiry.date).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
                     </div>
+
                   </div>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0">
+                  {enquiry.createdByName && (
+                    <div className="px-2.5 py-1 bg-[#EFF6FF] border border-[#DBEAFE]/60 rounded-full flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[#3B82F6]">
+                      <UserCheck size={10} className="text-[#3B82F6] shrink-0" />
+                      <span className="text-[#93C5FD] font-bold">Created by:</span>
+                      <span>{enquiry.createdByName}</span>
+                    </div>
+                  )}
                   {enquiry.aiAnalysis && (
                     <div
-                      className={`px-2.5 py-1 rounded-full flex items-center gap-1.5 border ${
-                        enquiry.aiAnalysis.isRelevant
-                          ? "bg-emerald-50 border-emerald-100 text-emerald-600"
-                          : "bg-rose-50 border-rose-100 text-rose-600"
-                      }`}
+                      className={`px-2.5 py-1 rounded-full flex items-center gap-1.5 border text-[10px] font-bold uppercase tracking-wider ${enquiry.aiAnalysis.isRelevant
+                          ? "bg-[#F0FDF4] border-[#DCFCE7] text-[#16A34A]"
+                          : "bg-[#FFF1F2] border-[#FFE4E6] text-[#F43F5E]"
+                        }`}
                     >
                       {enquiry.aiAnalysis.isRelevant ? (
-                        <Sparkles size={10} className="text-emerald-500" />
+                        <Sparkles size={10} className="text-[#16A34A]" />
                       ) : (
-                        <ShieldAlert size={10} className="text-rose-500" />
+                        <ShieldAlert size={10} className="text-[#F43F5E]" />
                       )}
-                      <span className="text-[13px] font-black uppercase tracking-widest">
+                      <span>
                         {enquiry.aiAnalysis.isRelevant
                           ? (enquiry.aiAnalysis.category || "Relevant")
                           : "Irrelevant"}
                       </span>
                       {enquiry.aiAnalysis.leadScore !== undefined && (
                         <>
-                          <div className="w-px h-2 bg-current opacity-20" />
-                          <span className="text-[13px] font-black">
+                          <div className="w-px h-2.5 bg-current opacity-20" />
+                          <span>
                             {enquiry.aiAnalysis.leadScore}
                           </span>
                         </>
@@ -1026,9 +1039,9 @@ const EnquiryList = ({
                   )}
 
                   {activeTab === "hold" && (
-                    <div className="px-2.5 py-1 bg-amber-50 border border-amber-100 rounded-full flex items-center gap-1.5">
-                      <div className="w-1 h-1 rounded-full bg-amber-500 animate-pulse" />
-                      <span className="text-[13px] font-black uppercase tracking-[0.1em] text-amber-600">
+                    <div className="px-2.5 py-1 bg-[#FFF7ED] border-[#FFEDD5] rounded-full flex items-center gap-1.5">
+                      <div className="w-1.5 h-1.5 rounded-full bg-[#F97316] animate-pulse" />
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#F97316]">
                         Reason Logged
                       </span>
                     </div>
@@ -1040,48 +1053,58 @@ const EnquiryList = ({
               <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
                 {/* 1. Contact Info Column */}
                 <div className="flex flex-col sm:flex-row lg:flex-col gap-2 w-full lg:w-64 shrink-0">
-                  <div className="flex-1 flex items-center gap-2.5 p-2 bg-slate-50/80 border border-white/50 rounded-xl hover:bg-white hover:shadow-md hover:shadow-slate-100 transition-all group/info overflow-hidden">
+                  <div className="flex-1 flex items-center gap-2.5 p-2 bg-slate-50 border border-slate-100 rounded-xl hover:bg-white hover:border-slate-200 hover:shadow-sm transition-all group/info overflow-hidden">
                     <div className="w-7 h-7 shrink-0 rounded-lg bg-white flex items-center justify-center shadow-sm border border-slate-100 group-hover/info:scale-110 transition-transform">
                       <Mail size={12} className="text-slate-400" />
                     </div>
-                    <a 
+                    <a
                       href={`mailto:${enquiry.email}`}
-                      className="text-[13px] font-semibold text-slate-500 break-all hover:text-primary transition-colors cursor-pointer"
+                      className="text-xs font-semibold text-slate-500 break-all hover:text-[#18254D] transition-colors cursor-pointer"
                     >
                       {enquiry.email}
                     </a>
                   </div>
-                  <div className="flex-1 flex items-center gap-2.5 p-2 bg-slate-50/80 border border-white/50 rounded-xl hover:bg-white hover:shadow-md hover:shadow-slate-100 transition-all group/info overflow-hidden">
+                  <div className="flex-1 flex items-center gap-2.5 p-2 bg-slate-50 border border-slate-100 rounded-xl hover:bg-white hover:border-slate-200 hover:shadow-sm transition-all group/info overflow-hidden">
                     <div className="w-7 h-7 shrink-0 rounded-lg bg-white flex items-center justify-center shadow-sm border border-slate-100 group-hover/info:scale-110 transition-transform">
                       <Phone size={12} className="text-slate-400" />
                     </div>
-                    <a 
+                    <a
                       href={`tel:${enquiry.phone}`}
-                      className="text-[13px] font-semibold text-slate-500 break-all hover:text-primary transition-colors cursor-pointer"
+                      className="text-xs font-semibold text-slate-500 break-all hover:text-[#18254D] transition-colors cursor-pointer"
                     >
                       {enquiry.phone || "Not Provided"}
                     </a>
                   </div>
                   {enquiry.website && (
-                    <div className="flex-1 flex items-center gap-2.5 p-2 bg-slate-50/80 border border-white/50 rounded-xl hover:bg-white hover:shadow-md hover:shadow-slate-100 transition-all group/info overflow-hidden">
+                    <div className="flex-1 flex items-center gap-2.5 p-2 bg-slate-50 border border-slate-100 rounded-xl hover:bg-white hover:border-slate-200 hover:shadow-sm transition-all group/info overflow-hidden">
                       <div className="w-7 h-7 shrink-0 rounded-lg bg-white flex items-center justify-center shadow-sm border border-slate-100 group-hover/info:scale-110 transition-transform">
                         <Globe size={12} className="text-slate-400" />
                       </div>
-                      <a 
+                      <a
                         href={enquiry.website?.startsWith('http') ? enquiry.website : `https://${enquiry.website}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-[13px] font-semibold text-slate-500 break-all hover:text-secondary transition-colors cursor-pointer"
+                        className="text-xs font-semibold text-slate-500 break-all hover:text-[#18254D] transition-colors cursor-pointer"
                       >
                         {enquiry.website}
                       </a>
                     </div>
                   )}
+                  {enquiry.source && (
+                    <div className="flex-1 flex items-center gap-2.5 p-2 bg-slate-50 border border-slate-100 rounded-xl hover:bg-white hover:border-slate-200 hover:shadow-sm transition-all group/info overflow-hidden">
+                      <div className="w-7 h-7 shrink-0 rounded-lg bg-white flex items-center justify-center shadow-sm border border-slate-100 group-hover/info:scale-110 transition-transform">
+                        <Share2 size={12} className="text-slate-400" />
+                      </div>
+                      <span className="text-xs font-semibold text-slate-500 break-all">
+                        {enquiry.source}
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 {/* 2. Message Column */}
-                <div className="flex-1 bg-slate-50/50 rounded-[1rem] p-4 flex flex-col gap-3 relative min-w-0 overflow-hidden">
-                  <p className="text-xs font-bold text-[#18254D] leading-relaxed italic opacity-90 break-words">
+                <div className="flex-1 bg-slate-50/30 border border-slate-150 border-l-4 border-l-[#18254D] rounded-xl p-4 flex flex-col gap-3 relative min-w-0 overflow-hidden">
+                  <p className="text-xs font-medium text-slate-650 leading-relaxed italic break-words">
                     "{enquiry.message}"
                   </p>
 
@@ -1089,17 +1112,17 @@ const EnquiryList = ({
                     enquiry.holdReason && (
                       <div className="mt-1 space-y-1.5 border-t border-slate-100 pt-3">
                         <div className="flex items-center gap-2">
-                          <span className="text-[13px] font-black text-slate-300 uppercase tracking-widest">
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                             {activeTab === "dismissed"
                               ? "Remark"
                               : "Hold Reason"}
                           </span>
                         </div>
                         <div
-                          className={`p-3 border rounded-xl ${activeTab === "dismissed" ? "bg-slate-50/50 border-slate-200/50" : "bg-amber-50/50 border-amber-100/50"}`}
+                          className={`p-3 border rounded-xl ${activeTab === "dismissed" ? "bg-slate-50/50 border-slate-100" : "bg-[#FFF7ED]/30 border-[#FFEDD5]/50"}`}
                         >
                           <p
-                            className={`text-[13px] font-bold leading-relaxed italic ${activeTab === "dismissed" ? "text-slate-500" : "text-amber-600"}`}
+                            className={`text-xs font-semibold leading-relaxed italic ${activeTab === "dismissed" ? "text-slate-500" : "text-[#F97316]"}`}
                           >
                             {enquiry.holdReason}
                           </p>
@@ -1116,28 +1139,28 @@ const EnquiryList = ({
                     <button
                       type="button"
                       onClick={() => openLeadModal(enquiry)}
-                      className="w-full sm:w-auto flex-1 sm:flex-none flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-5 lg:px-4 py-2 sm:py-2.5 lg:py-2 bg-[#18254D] text-white rounded-full text-[11px] sm:text-[14px] lg:text-[13px] font-black uppercase tracking-wider sm:tracking-widest shadow-lg shadow-primary/10 hover:shadow-primary/30 hover:-translate-y-0.5 transition-all active:scale-95 whitespace-nowrap"
+                      className="w-full sm:w-auto flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2 bg-[#18254D] text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-md hover:bg-slate-800 transition-all btn-animated active:scale-95 whitespace-nowrap"
                     >
                       <CheckCircle
                         strokeWidth={2.5}
-                        className="shrink-0 w-3.5 h-3.5 sm:w-3.5 sm:h-3.5"
+                        className="shrink-0 w-3.5 h-3.5"
                       />
                       Add to Lead
                     </button>
                     <button
                       type="button"
                       onClick={() => openHoldModal(enquiry)}
-                      className="w-full sm:w-auto flex-1 sm:flex-none py-2 sm:py-2.5 lg:py-2 px-3 sm:px-4 lg:px-3 flex items-center justify-center gap-1.5 sm:gap-2 text-slate-400 border border-slate-200 rounded-full hover:bg-amber-50 hover:text-amber-500 hover:border-amber-200 transition-all font-bold tracking-wider text-[11px] sm:text-[14px] lg:text-[13px] uppercase group/hold whitespace-nowrap"
+                      className="w-full sm:w-auto flex-1 sm:flex-none py-2 px-4 flex items-center justify-center gap-1.5 text-slate-500 border border-slate-200 rounded-xl hover:bg-[#FFF7ED] hover:text-[#F97316] hover:border-[#FFEDD5] transition-all font-bold tracking-wider text-xs uppercase group/hold btn-animated whitespace-nowrap"
                     >
-                      <PauseCircle className="group-hover/hold:scale-110 transition-transform shrink-0 w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                      <PauseCircle className="group-hover/hold:scale-110 transition-transform shrink-0 w-3.5 h-3.5" />
                       Hold
                     </button>
                     <button
                       type="button"
                       onClick={() => onDismiss(enquiry.id)}
-                      className="w-full sm:w-auto flex-1 sm:flex-none py-2 sm:py-2.5 lg:py-2 px-3 sm:px-4 lg:px-3 flex items-center justify-center gap-1.5 sm:gap-2 text-slate-400 border border-slate-200 rounded-full hover:bg-rose-50 hover:text-rose-500 hover:border-rose-200 transition-all font-bold tracking-wider text-[11px] sm:text-[14px] lg:text-[13px] uppercase group/dismiss whitespace-nowrap"
+                      className="w-full sm:w-auto flex-1 sm:flex-none py-2 px-4 flex items-center justify-center gap-1.5 text-slate-400 border border-slate-250 rounded-xl hover:bg-[#FFF1F2] hover:text-[#F43F5E] hover:border-[#FFE4E6] transition-all font-bold tracking-wider text-xs uppercase group/dismiss btn-animated whitespace-nowrap"
                     >
-                      <UserX className="group-hover/dismiss:rotate-90 transition-transform shrink-0 w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                      <UserX className="group-hover/dismiss:rotate-90 transition-transform shrink-0 w-3.5 h-3.5" />
                       Dismiss
                     </button>
                   </>
@@ -1146,20 +1169,20 @@ const EnquiryList = ({
                     <button
                       type="button"
                       onClick={() => onRestore(enquiry.id)}
-                      className="w-full sm:w-auto flex-1 sm:flex-none flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-5 lg:px-4 py-2 sm:py-2.5 lg:py-2 bg-[#18254D] text-white rounded-full text-[11px] sm:text-[14px] lg:text-[13px] font-black uppercase tracking-wider sm:tracking-widest shadow-lg hover:-translate-y-0.5 transition-all active:scale-95 whitespace-nowrap"
+                      className="w-full sm:w-auto flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2 bg-[#18254D] text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-md hover:bg-slate-800 transition-all btn-animated active:scale-95 whitespace-nowrap"
                     >
                       <RefreshCcw
                         strokeWidth={2.5}
-                        className="shrink-0 w-3.5 h-3.5 sm:w-3.5 sm:h-3.5"
+                        className="shrink-0 w-3.5 h-3.5"
                       />
                       Restore Enquiry
                     </button>
                     <button
                       type="button"
                       onClick={() => onDismiss(enquiry.id)}
-                      className="w-full sm:w-auto flex-1 sm:flex-none py-2 sm:py-2.5 lg:py-2 px-3 sm:px-4 lg:px-3 flex items-center justify-center gap-1.5 sm:gap-2 text-slate-400 border border-slate-200 rounded-full hover:bg-rose-50 hover:text-rose-500 hover:border-rose-200 transition-all font-bold tracking-wider text-[11px] sm:text-[14px] lg:text-[13px] uppercase group/dismiss whitespace-nowrap"
+                      className="w-full sm:w-auto flex-1 sm:flex-none py-2 px-4 flex items-center justify-center gap-1.5 text-slate-400 border border-slate-250 rounded-xl hover:bg-[#FFF1F2] hover:text-[#F43F5E] hover:border-[#FFE4E6] transition-all font-bold tracking-wider text-xs uppercase group/dismiss btn-animated whitespace-nowrap"
                     >
-                      <UserX className="group-hover/dismiss:rotate-90 transition-transform shrink-0 w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                      <UserX className="group-hover/dismiss:rotate-90 transition-transform shrink-0 w-3.5 h-3.5" />
                       Dismiss
                     </button>
                   </>
@@ -1168,22 +1191,22 @@ const EnquiryList = ({
                     <button
                       type="button"
                       onClick={() => onRestore(enquiry.id)}
-                      className="w-full sm:w-auto flex-1 sm:flex-none flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-5 lg:px-4 py-2 sm:py-2.5 lg:py-2 bg-[#18254D] text-white rounded-full text-[11px] sm:text-[14px] lg:text-[13px] font-black uppercase tracking-wider sm:tracking-widest shadow-lg hover:-translate-y-0.5 transition-all active:scale-95 whitespace-nowrap"
+                      className="w-full sm:w-auto flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2 bg-[#18254D] text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-md hover:bg-slate-800 transition-all btn-animated active:scale-95 whitespace-nowrap"
                     >
                       <RefreshCcw
                         strokeWidth={2.5}
-                        className="shrink-0 w-3.5 h-3.5 sm:w-3.5 sm:h-3.5"
+                        className="shrink-0 w-3.5 h-3.5"
                       />
                       Restore Enquiry
                     </button>
                     <button
                       type="button"
                       onClick={() => onDelete(enquiry.id)}
-                      className="w-full sm:w-auto flex-none py-2 sm:py-2.5 lg:py-2 px-3 sm:px-4 lg:px-3 flex items-center justify-center gap-1.5 sm:gap-2 text-slate-300 border border-slate-100 rounded-full hover:bg-rose-50 hover:text-rose-500 hover:border-rose-200 transition-all font-bold tracking-wider text-[11px] sm:text-[14px] lg:text-[13px] uppercase whitespace-nowrap"
+                      className="w-full sm:w-auto flex-none py-2 px-4 flex items-center justify-center gap-1.5 text-slate-400 border border-slate-200 rounded-xl hover:bg-[#FFF1F2] hover:text-[#F43F5E] hover:border-[#FFE4E6] transition-all font-bold tracking-wider text-xs uppercase btn-animated whitespace-nowrap"
                       title="Delete Permanently"
                     >
-                      <Trash2 className="shrink-0 w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                      <span className="sm:hidden lg:inline-block">Delete</span>
+                      <Trash2 className="shrink-0 w-3.5 h-3.5" />
+                      <span>Delete</span>
                     </button>
                   </>
                 )}
@@ -1193,38 +1216,99 @@ const EnquiryList = ({
         )}
       </div>
 
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2 mt-8 mb-4">
+          <button
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+            className="p-2.5 rounded-xl border border-slate-200 bg-white text-slate-400 hover:text-[#18254D] hover:border-[#18254D] disabled:opacity-30 disabled:hover:border-slate-200 disabled:hover:text-slate-400 transition-all shadow-sm active:scale-95 btn-animated"
+          >
+            <ChevronLeft size={16} strokeWidth={2.5} />
+          </button>
+
+          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-2xl shadow-inner mx-2">
+            {[...Array(totalPages)].map((_, i) => {
+              const pageNum = i + 1;
+              if (
+                totalPages > 7 &&
+                pageNum !== 1 &&
+                pageNum !== totalPages &&
+                Math.abs(pageNum - currentPage) > 1
+              ) {
+                if (pageNum === 2 || pageNum === totalPages - 1) {
+                  return (
+                    <span
+                      key={`ellipsis-${pageNum}-${i}`}
+                      className="text-slate-350 px-1 font-bold"
+                    >
+                      .
+                    </span>
+                  );
+                }
+                return null;
+              }
+
+              return (
+                <button
+                  key={pageNum}
+                  onClick={() => setCurrentPage(pageNum)}
+                  className={`min-w-[32px] h-8 flex items-center justify-center rounded-lg text-sm font-black transition-all ${currentPage === pageNum
+                      ? "bg-[#18254D] text-white shadow-lg shadow-slate-300 scale-110"
+                      : "text-slate-400 hover:text-[#18254D] hover:bg-white"
+                    }`}
+                >
+                  {pageNum}
+                </button>
+              );
+            })}
+          </div>
+
+          <button
+            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+            className="p-2.5 rounded-xl border border-slate-200 bg-white text-slate-400 hover:text-[#18254D] hover:border-[#18254D] disabled:opacity-30 disabled:hover:border-slate-200 disabled:hover:text-slate-400 transition-all shadow-sm active:scale-95 btn-animated"
+          >
+            <ChevronRight size={16} strokeWidth={2.5} />
+          </button>
+        </div>
+      )}
+
+
       {showSimulateForm &&
         createPortal(
           <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[99999] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
-            <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-slate-200 overflow-hidden animate-fade-in relative flex flex-col max-h-[90vh]">
-              <button
-                onClick={() => setShowSimulateForm(false)}
-                className="absolute top-6 right-6 p-2.5 bg-white/10 hover:bg-white/20 text-white rounded-2xl transition-all z-20"
-                title="Close"
-              >
-                <X size={20} strokeWidth={3} />
-              </button>
-              <div className="bg-primary p-6 text-white shrink-0">
-                <h3 className="text-2xl font-bold tracking-tight mb-1">
-                  New Enquiry
-                </h3>
-                <p className="text-slate-400 text-[13px] font-bold  tracking-widest">
-                  Manual Entry
-                </p>
+            <div className="absolute inset-0" onClick={() => setShowSimulateForm(false)} />
+            <div className="relative z-10 bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-slate-100 overflow-hidden animate-pop flex flex-col max-h-[90vh]">
+              <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 shrink-0">
+                <div>
+                  <h3 className="text-base font-bold text-[#18254D] tracking-tight">
+                    New Enquiry
+                  </h3>
+                  <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider mt-0.5">
+                    Manual Entry
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowSimulateForm(false)}
+                  className="p-1.5 hover:bg-slate-200 rounded-xl text-slate-400 transition-all"
+                >
+                  <X size={18} />
+                </button>
               </div>
               <form
                 onSubmit={handleSimulateSubmit}
-                className="p-5 sm:p-7 space-y-5 overflow-y-auto no-scrollbar"
+                className="p-6 space-y-5 overflow-y-auto no-scrollbar"
               >
                 <div className="space-y-4">
                   <div className="space-y-1.5">
-                    <label className="text-[12px] font-bold text-primary tracking-widest ml-1">
+                    <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
                       Full Name <span className="text-rose-500">*</span>
                     </label>
                     <input
                       required
                       type="text"
-                      className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary/5 outline-none transition-all"
+                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200"
                       placeholder="e.g. John Doe"
                       value={formData.name}
                       onChange={(e) =>
@@ -1237,13 +1321,12 @@ const EnquiryList = ({
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                      <label className="text-[12px] font-bold text-primary tracking-widest ml-1">
-                        Email <span className="text-rose-500">*</span>
+                      <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
+                        Email
                       </label>
                       <input
-                        required
                         type="email"
-                        className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary/5 outline-none transition-all"
+                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200"
                         placeholder="e.g. john@gmail.com"
                         value={formData.email}
                         onChange={(e) =>
@@ -1252,14 +1335,14 @@ const EnquiryList = ({
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-[12px] font-bold text-primary tracking-widest ml-1">
+                      <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
                         Phone <span className="text-rose-500">*</span>
                       </label>
                       <input
                         type="tel"
                         required
-                        className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary/5 outline-none transition-all"
-                        placeholder="e.g. 9876543210 (min 10 digits)"
+                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200"
+                        placeholder="e.g. 9876543210 "
                         value={formData.phone}
                         onChange={(e) =>
                           setFormData({
@@ -1270,30 +1353,130 @@ const EnquiryList = ({
                       />
                     </div>
                   </div>
-                  <div className="space-y-1.5">
-                    <label className="text-[12px] font-bold text-primary tracking-widest ml-1">
-                      Website URL (Optional)
-                    </label>
-                    <input
-                      type="text"
-                      className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary/5 outline-none transition-all"
-                      placeholder="e.g. www.example.com"
-                      value={formData.website}
-                      onChange={(e) =>
-                        setFormData({ ...formData, website: e.target.value })
-                      }
-                    />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
+                        Website URL (Optional)
+                      </label>
+                      <input
+                        type="text"
+                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200"
+                        placeholder="e.g. www.example.com"
+                        value={formData.website}
+                        onChange={(e) =>
+                          setFormData({ ...formData, website: e.target.value })
+                        }
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
+                        Source (Optional)
+                      </label>
+                      <div className="relative">
+                        <button
+                          type="button"
+                          onClick={() => setIsSourceDropdownOpen(!isSourceDropdownOpen)}
+                          className="w-full h-10 flex items-center justify-between px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold shadow-sm hover:border-[#18254D]/30 transition-all text-[#18254D]"
+                        >
+                          <span className={formData.source ? "text-[#18254D]" : "text-slate-400 font-medium"}>
+                            {formData.source || "Select a source..."}
+                          </span>
+                          <ChevronDown
+                            size={16}
+                            className={`text-slate-400 transition-transform duration-200 ${isSourceDropdownOpen ? "rotate-180" : ""}`}
+                          />
+                        </button>
+
+                        {isSourceDropdownOpen && (
+                          <>
+                            <div
+                              className="fixed inset-0 z-[80]"
+                              onClick={() => setIsSourceDropdownOpen(false)}
+                            />
+                            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-pop origin-top">
+                              <div className="bg-[#18254D] px-4 py-2.5 border-b border-white/10">
+                                <p className="text-[10px] font-bold text-white/50 tracking-wider uppercase">
+                                  Select Source
+                                </p>
+                              </div>
+                              {/* Meta Ad */}
+                              <button
+                                type="button"
+                                onClick={() => { setFormData({ ...formData, source: "Meta Ad (Insta/FB)" }); setIsSourceDropdownOpen(false); }}
+                                className={`w-full text-left px-4 py-2.5 text-xs font-semibold tracking-wider transition-colors ${ formData.source === "Meta Ad (Insta/FB)" ? "bg-slate-100 text-[#18254D]" : "text-[#18254D] hover:bg-slate-50" }`}
+                              >
+                                <div className="flex items-center gap-2.5">
+                                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" fill="#E1306C"/>
+                                  </svg>
+                                  <span>Meta Ad (Insta/FB)</span>
+                                </div>
+                              </button>
+
+                              {/* LinkedIn */}
+                              <button
+                                type="button"
+                                onClick={() => { setFormData({ ...formData, source: "LinkedIn" }); setIsSourceDropdownOpen(false); }}
+                                className={`w-full text-left px-4 py-2.5 text-xs font-semibold tracking-wider transition-colors ${ formData.source === "LinkedIn" ? "bg-slate-100 text-[#18254D]" : "text-[#18254D] hover:bg-slate-50" }`}
+                              >
+                                <div className="flex items-center gap-2.5">
+                                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" fill="#0077B5"/>
+                                  </svg>
+                                  <span>LinkedIn</span>
+                                </div>
+                              </button>
+
+                              {/* Referral */}
+                              <button
+                                type="button"
+                                onClick={() => { setFormData({ ...formData, source: "Referral" }); setIsSourceDropdownOpen(false); }}
+                                className={`w-full text-left px-4 py-2.5 text-xs font-semibold tracking-wider transition-colors ${ formData.source === "Referral" ? "bg-slate-100 text-[#18254D]" : "text-[#18254D] hover:bg-slate-50" }`}
+                              >
+                                <div className="flex items-center gap-2.5">
+                                  <Users size={13} className="text-[#8B5CF6]" />
+                                  <span>Referral</span>
+                                </div>
+                              </button>
+
+                              {/* Selyst */}
+                              <button
+                                type="button"
+                                onClick={() => { setFormData({ ...formData, source: "Selyst" }); setIsSourceDropdownOpen(false); }}
+                                className={`w-full text-left px-4 py-2.5 text-xs font-semibold tracking-wider transition-colors ${ formData.source === "Selyst" ? "bg-slate-100 text-[#18254D]" : "text-[#18254D] hover:bg-slate-50" }`}
+                              >
+                                <div className="flex items-center gap-2.5">
+                                  <Globe size={13} className="text-[#F97316]" />
+                                  <span>Selyst</span>
+                                </div>
+                              </button>
+
+                              {/* eParivartan */}
+                              <button
+                                type="button"
+                                onClick={() => { setFormData({ ...formData, source: "eParivartan" }); setIsSourceDropdownOpen(false); }}
+                                className={`w-full text-left px-4 py-2.5 text-xs font-semibold tracking-wider transition-colors ${ formData.source === "eParivartan" ? "bg-slate-100 text-[#18254D]" : "text-[#18254D] hover:bg-slate-50" }`}
+                              >
+                                <div className="flex items-center gap-2.5">
+                                  <img src={favIcon} alt="eParivartan" className="w-3.5 h-3.5 object-contain rounded-sm" />
+                                  <span>eParivartan</span>
+                                </div>
+                              </button>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-[12px] font-bold text-primary tracking-widest ml-1">
-                      Note / Requirement Briefing{" "}
-                      <span className="text-rose-500">*</span>
+                    <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
+                      Note / Requirement Briefing <span className="text-rose-500">*</span>
                     </label>
                     <textarea
                       required
                       rows={4}
-                      className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium resize-none focus:ring-2 focus:ring-primary/5 outline-none transition-all"
-                      placeholder="Describe the enquiry or message from the lead..."
+                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200 resize-none animate-pop"
+                      placeholder="Describe the enquiry or message..."
                       value={formData.message}
                       onChange={(e) =>
                         setFormData({ ...formData, message: e.target.value })
@@ -1305,7 +1488,7 @@ const EnquiryList = ({
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full h-14 bg-[#18254D] text-white rounded-2xl text-[13px] font-bold  tracking-widest shadow-xl active:scale-[0.97] transition-all hover:bg-[#1e2e5e] hover:shadow-2xl flex items-center justify-center gap-3 group/btn disabled:opacity-70 disabled:cursor-not-allowed"
+                    className="w-full h-12 bg-[#18254D] text-white rounded-xl text-xs font-bold tracking-wider shadow-lg active:scale-[0.97] transition-all hover:bg-[#1e2e5e] hover:shadow-xl flex items-center justify-center gap-2 group/btn disabled:opacity-70 disabled:cursor-not-allowed btn-animated"
                   >
                     {isSubmitting ? (
                       <>
@@ -1316,9 +1499,9 @@ const EnquiryList = ({
                       <>
                         <span>Add Enquiry</span>
                         <Send
-                          size={16}
+                          size={14}
                           strokeWidth={2.5}
-                          className="group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1 transition-transform"
+                          className="group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform"
                         />
                       </>
                     )}
@@ -1333,35 +1516,36 @@ const EnquiryList = ({
       {leadModalOpen &&
         createPortal(
           <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[99999] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
-            <div className="bg-white w-full max-w-xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden animate-zoom-in relative flex flex-col max-h-[90vh]">
-              <div className="bg-[#18254D] px-5 py-4 flex justify-between items-center text-white shrink-0">
+            <div className="absolute inset-0" onClick={() => setLeadModalOpen(false)} />
+            <div className="relative z-10 bg-white w-full max-w-xl rounded-3xl shadow-2xl border border-slate-100 overflow-hidden animate-pop flex flex-col max-h-[90vh]">
+              <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 shrink-0">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 bg-white/10 rounded-2xl flex items-center justify-center">
-                    <Plus size={18} className="text-white" />
+                  <div className="w-8 h-8 bg-[#EFF6FF] text-[#3B82F6] rounded-xl flex items-center justify-center border border-[#DBEAFE] shadow-sm">
+                    <Plus size={16} />
                   </div>
-                  <h3 className="text-lg font-bold tracking-tight ">
+                  <h3 className="text-base font-bold text-[#18254D] tracking-tight">
                     Add to Lead
                   </h3>
                 </div>
                 <button
                   onClick={() => setLeadModalOpen(false)}
-                  className="p-1.5 hover:bg-white rounded-lg transition-colors"
+                  className="p-1.5 hover:bg-slate-200 rounded-xl text-slate-400 transition-all"
                 >
-                  <X size={20} />
+                  <X size={18} />
                 </button>
               </div>
 
-              <div className="p-5 space-y-4 overflow-y-auto no-scrollbar">
+              <div className="p-6 space-y-4 overflow-y-auto no-scrollbar">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <label className="text-[14px] font-bold text-primary tracking-widest ml-1">
+                    <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
                       Full Name <span className="text-rose-500">*</span>
                     </label>
                     <input
                       type="text"
                       required
                       placeholder="e.g. John Doe"
-                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary/5 outline-none transition-all"
+                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200"
                       value={promoteFormData.name}
                       onChange={(e) =>
                         setPromoteFormData({
@@ -1372,14 +1556,13 @@ const EnquiryList = ({
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-[14px] font-bold text-primary tracking-widest ml-1">
-                      Email ID <span className="text-rose-500">*</span>
+                    <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
+                      Email ID
                     </label>
                     <input
                       type="email"
-                      required
                       placeholder="e.g. john@gmail.com"
-                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary/5 outline-none transition-all"
+                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200"
                       value={promoteFormData.email}
                       onChange={(e) =>
                         setPromoteFormData({
@@ -1404,8 +1587,8 @@ const EnquiryList = ({
                       value={promoteFormData.country}
                       onChange={(val) => {
                         const selectedCountry = countries.find(c => c.name === val);
-                        setPromoteFormData({ 
-                          ...promoteFormData, 
+                        setPromoteFormData({
+                          ...promoteFormData,
                           country: selectedCountry ? selectedCountry.name : "",
                           countryCode: selectedCountry ? selectedCountry.code : ""
                         });
@@ -1414,14 +1597,14 @@ const EnquiryList = ({
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-[14px] font-bold text-primary tracking-widest ml-1 uppercase">
+                    <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
                       Phone Number <span className="text-rose-500">*</span>
                     </label>
                     <input
                       type="tel"
                       required
                       placeholder="e.g. 9876543210"
-                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary/5 outline-none transition-all"
+                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200"
                       value={promoteFormData.phone}
                       onChange={(e) =>
                         setPromoteFormData({
@@ -1432,13 +1615,13 @@ const EnquiryList = ({
                     />
                   </div>
                   <div className="space-y-1.5 md:col-span-2">
-                    <label className="text-[14px] font-bold text-primary tracking-widest ml-1 uppercase">
+                    <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
                       Website URL (Optional)
                     </label>
                     <input
                       type="text"
                       placeholder="e.g. www.google.com"
-                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary/5 outline-none transition-all"
+                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200"
                       value={promoteFormData.website}
                       onChange={(e) =>
                         setPromoteFormData({
@@ -1451,7 +1634,7 @@ const EnquiryList = ({
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[14px] font-bold text-primary tracking-widest ml-1 uppercase">
+                  <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
                     Lead Status <span className="text-rose-500">*</span>
                   </label>
                   <div className="relative">
@@ -1462,16 +1645,15 @@ const EnquiryList = ({
                           !isEnquiryStatusDropdownOpen,
                         )
                       }
-                      className="w-full h-[46px] flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold shadow-sm hover:border-secondary transition-all"
+                      className="w-full h-10 flex items-center justify-between px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold shadow-sm hover:border-[#18254D]/30 transition-all text-[#18254D]"
                     >
-                      <span className="text-primary truncate">
+                      <span>
                         {promoteFormData.leadType || "Select Status"}
                       </span>
                       <ChevronDown
                         size={16}
-                        className={`text-slate-400 transition-transform ${
-                          isEnquiryStatusDropdownOpen ? "rotate-180" : ""
-                        }`}
+                        className={`text-slate-400 transition-transform ${isEnquiryStatusDropdownOpen ? "rotate-180" : ""
+                          }`}
                       />
                     </button>
 
@@ -1481,9 +1663,9 @@ const EnquiryList = ({
                           className="fixed inset-0 z-[80]"
                           onClick={() => setIsEnquiryStatusDropdownOpen(false)}
                         />
-                        <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top">
-                          <div className="bg-[#18254D] px-4 py-3 border-b border-white/10">
-                            <p className="text-[14px] font-bold text-white/50  tracking-widest">
+                        <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-pop origin-top">
+                          <div className="bg-[#18254D] px-4 py-2.5 border-b border-white/10">
+                            <p className="text-[10px] font-bold text-white/50 tracking-wider uppercase">
                               Select Status
                             </p>
                           </div>
@@ -1498,21 +1680,20 @@ const EnquiryList = ({
                                 });
                                 setIsEnquiryStatusDropdownOpen(false);
                               }}
-                              className={`w-full text-left px-4 py-2.5 text-[12px] font-bold  tracking-widest transition-colors ${
-                                promoteFormData.leadType === status
-                                  ? "bg-slate-100 text-secondary"
+                              className={`w-full text-left px-4 py-2.5 text-xs font-semibold tracking-wider transition-colors ${promoteFormData.leadType === status
+                                  ? "bg-slate-100 text-[#18254D]"
                                   : "text-[#18254D] hover:bg-slate-50"
-                              }`}
+                                }`}
                             >
                               <div className="flex items-center gap-2">
                                 {status === "Hot" && (
-                                  <Flame size={12} className="text-error" />
+                                  <Flame size={12} className="text-[#F43F5E]" />
                                 )}
                                 {status === "Warm" && (
-                                  <Sun size={12} className="text-warning" />
+                                  <Sun size={12} className="text-[#F97316]" />
                                 )}
                                 {status === "Cold" && (
-                                  <Snowflake size={12} className="text-info" />
+                                  <Snowflake size={12} className="text-[#3B82F6]" />
                                 )}
                                 <span>{status}</span>
                               </div>
@@ -1525,13 +1706,13 @@ const EnquiryList = ({
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[14px] font-bold text-primary tracking-widest ml-1">
+                  <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
                     Enquiry Message / Note
                   </label>
                   <textarea
                     rows={3}
-                    placeholder="Enter briefing or message from the Lead..."
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium resize-none focus:ring-2 focus:ring-primary/5 outline-none transition-all"
+                    placeholder="Enter briefing or message..."
+                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200 resize-none"
                     value={promoteFormData.notes}
                     onChange={(e) =>
                       setPromoteFormData({
@@ -1546,7 +1727,7 @@ const EnquiryList = ({
                   type="button"
                   onClick={confirmLeadConversion}
                   disabled={isSubmitting}
-                  className="w-full h-12 bg-[#18254D] text-white rounded-2xl text-[13px] font-bold  tracking-widest shadow-lg active:scale-[0.98] transition-all hover:bg-slate-800 flex items-center justify-center gap-3 disabled:opacity-70 disabled:cursor-not-allowed"
+                  className="w-full h-12 bg-[#18254D] text-white rounded-xl text-xs font-bold tracking-wider shadow-lg active:scale-[0.98] transition-all hover:bg-slate-800 flex items-center justify-center gap-2 btn-animated disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                   {isSubmitting ? (
                     <>
@@ -1563,91 +1744,37 @@ const EnquiryList = ({
           document.body,
         )}
 
-      {/* Pagination Controls */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2 mt-8 mb-4">
-          <button
-            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            disabled={currentPage === 1}
-            className="p-2.5 rounded-xl border border-slate-200 bg-white text-slate-400 hover:text-primary hover:border-primary disabled:opacity-30 disabled:hover:border-slate-200 disabled:hover:text-slate-400 transition-all shadow-sm active:scale-95"
-          >
-            <ChevronLeft size={16} strokeWidth={2.5} />
-          </button>
-
-          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-2xl shadow-inner mx-2">
-            {[...Array(totalPages)].map((_, i) => {
-              const pageNum = i + 1;
-              // Show a limited range of pages if there are many
-              if (
-                totalPages > 7 &&
-                pageNum !== 1 &&
-                pageNum !== totalPages &&
-                Math.abs(pageNum - currentPage) > 1
-              ) {
-                if (pageNum === 2 || pageNum === totalPages - 1) {
-                  return (
-                    <span
-                      key={`ellipsis-${pageNum}-${i}`}
-                      className="text-slate-300 px-1 font-bold"
-                    >
-                      .
-                    </span>
-                  );
-                }
-                return null;
-              }
-
-              return (
-                <button
-                  key={pageNum}
-                  onClick={() => setCurrentPage(pageNum)}
-                  className={`min-w-[32px] h-8 flex items-center justify-center rounded-lg text-[12px] font-black transition-all ${
-                    currentPage === pageNum
-                      ? "bg-[#18254D] text-white shadow-lg shadow-slate-300 scale-110"
-                      : "text-slate-400 hover:text-primary hover:bg-white"
-                  }`}
-                >
-                  {pageNum}
-                </button>
-              );
-            })}
-          </div>
-
-          <button
-            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-            disabled={currentPage === totalPages}
-            className="p-2.5 rounded-xl border border-slate-200 bg-white text-slate-400 hover:text-primary hover:border-primary disabled:opacity-30 disabled:hover:border-slate-200 disabled:hover:text-slate-400 transition-all shadow-sm active:scale-95"
-          >
-            <ChevronRight size={16} strokeWidth={2.5} />
-          </button>
-        </div>
-      )}
-
       {holdModalOpen &&
         createPortal(
           <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[99999] flex items-center justify-center p-4 overflow-y-auto">
-            <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl border border-slate-200 overflow-hidden animate-fade-in relative flex flex-col max-h-[90vh]">
-              <div className="bg-primary p-6 text-white shrink-0">
-                <div className="flex justify-between items-center mb-1">
-                  <h3 className="text-2xl font-bold tracking-tight">On Hold</h3>
-                  <button
-                    onClick={() => setHoldModalOpen(false)}
-                    className="p-1 hover:bg-white/10 rounded-lg transition-colors border border-white/10"
-                  >
-                    <X size={20} />
-                  </button>
+            <div className="absolute inset-0" onClick={() => setHoldModalOpen(false)} />
+            <div className="relative z-10 bg-white w-full max-w-md rounded-3xl shadow-2xl border border-slate-100 overflow-hidden animate-pop flex flex-col max-h-[90vh]">
+              <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 shrink-0">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-[#FFF7ED] text-[#F97316] rounded-xl flex items-center justify-center border border-[#FFEDD5] shadow-sm">
+                    <Pause size={16} />
+                  </div>
+                  <h3 className="text-base font-bold text-[#18254D] tracking-tight">
+                    On Hold
+                  </h3>
                 </div>
+                <button
+                  onClick={() => setHoldModalOpen(false)}
+                  className="p-1.5 hover:bg-slate-200 rounded-xl text-slate-400 transition-all"
+                >
+                  <X size={18} />
+                </button>
               </div>
-              <div className="p-5 sm:p-7 space-y-6 overflow-y-auto no-scrollbar">
+              <div className="p-6 space-y-6 overflow-y-auto no-scrollbar">
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <label className="text-[12px] font-bold text-primary  tracking-widest ml-1">
+                    <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
                       Hold Reason
                     </label>
                     <textarea
                       required
                       rows={4}
-                      className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium resize-none focus:ring-2 focus:ring-primary/5 outline-none transition-all placeholder:text-slate-300"
+                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-350 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200 resize-none"
                       placeholder="Enter reason for suspending this enquiry..."
                       value={holdReason}
                       onChange={(e) => setHoldReason(e.target.value)}
@@ -1659,7 +1786,7 @@ const EnquiryList = ({
                     type="button"
                     onClick={confirmHold}
                     disabled={!holdReason.trim() || isSubmitting}
-                    className="w-full h-14 lg:h-12 bg-[#18254D] text-white rounded-2xl text-xs lg:text-[11px] font-bold tracking-widest shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:grayscale hover:bg-slate-800 disabled:cursor-not-allowed"
+                    className="w-full h-12 bg-[#18254D] text-white rounded-xl text-xs font-bold tracking-wider shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 btn-animated disabled:opacity-50 disabled:grayscale hover:bg-slate-800 disabled:cursor-not-allowed"
                   >
                     {isSubmitting ? (
                       <>
@@ -1683,30 +1810,29 @@ const EnquiryList = ({
       {showDeleteAllModal &&
         createPortal(
           <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[99999] flex items-center justify-center p-4 overflow-y-auto">
-            <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl border border-slate-200 overflow-hidden animate-fade-in relative flex flex-col">
-              <div className="bg-rose-600 p-6 text-white shrink-0">
-                <div className="flex justify-between items-center mb-1">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-white/20 rounded-2xl flex items-center justify-center">
-                      <AlertTriangle size={20} className="text-white" />
-                    </div>
-                    <h3 className="text-2xl font-bold tracking-tight">
-                      Confirm Clear All
-                    </h3>
+            <div className="absolute inset-0" onClick={() => setShowDeleteAllModal(false)} />
+            <div className="relative z-10 bg-white w-full max-w-md rounded-3xl shadow-2xl border border-slate-100 overflow-hidden animate-pop flex flex-col">
+              <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 shrink-0">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-[#FFF1F2] text-[#F43F5E] rounded-xl flex items-center justify-center border border-[#FFE4E6] shadow-sm">
+                    <AlertTriangle size={16} />
                   </div>
-                  <button
-                    onClick={() => setShowDeleteAllModal(false)}
-                    className="p-1 hover:bg-white/10 rounded-lg transition-colors border border-white/10"
-                  >
-                    <X size={20} />
-                  </button>
+                  <h3 className="text-base font-bold text-[#18254D] tracking-tight">
+                    Confirm Clear All
+                  </h3>
                 </div>
+                <button
+                  onClick={() => setShowDeleteAllModal(false)}
+                  className="p-1.5 hover:bg-slate-200 rounded-xl text-slate-400 transition-all"
+                >
+                  <X size={18} />
+                </button>
               </div>
-              <div className="p-7 space-y-6">
+              <div className="p-6 space-y-6">
                 <div className="space-y-2">
-                  <p className="text-slate-600 font-medium leading-relaxed">
+                  <p className="text-slate-600 text-sm font-semibold leading-relaxed">
                     Are you sure you want to{" "}
-                    <span className="text-rose-600 font-bold underline underline-offset-4">
+                    <span className="text-[#F43F5E] font-bold underline underline-offset-4">
                       permanently delete all
                     </span>{" "}
                     dismissed enquiries? This action cannot be undone.
@@ -1716,7 +1842,7 @@ const EnquiryList = ({
                   <button
                     type="button"
                     onClick={() => setShowDeleteAllModal(false)}
-                    className="flex-1 h-12 bg-slate-100 text-slate-600 rounded-2xl text-[13px] font-bold tracking-widest hover:bg-slate-200 transition-all active:scale-[0.98]"
+                    className="flex-1 h-12 bg-slate-100 text-slate-600 rounded-xl text-xs font-bold tracking-wider hover:bg-slate-200 transition-all active:scale-[0.98] btn-animated"
                   >
                     CANCEL
                   </button>
@@ -1726,10 +1852,10 @@ const EnquiryList = ({
                       onDeleteAll();
                       setShowDeleteAllModal(false);
                     }}
-                    className="flex-1 h-12 bg-rose-600 text-white rounded-2xl text-[13px] font-bold tracking-widest shadow-lg shadow-rose-200 hover:bg-rose-700 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                    className="flex-1 h-12 bg-[#F43F5E] text-white rounded-xl text-xs font-bold tracking-wider shadow-md hover:bg-[#E11D48] transition-all active:scale-[0.98] flex items-center justify-center gap-2 btn-animated"
                   >
                     <span>DELETE ALL</span>
-                    <Trash2 size={16} />
+                    <Trash2 size={14} />
                   </button>
                 </div>
               </div>

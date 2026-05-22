@@ -245,7 +245,7 @@
 
     /* Animated Background */
     .bg-gradient-animated {
-      background: linear-gradient(-45deg, #F6F9F4, #E8F5E9, #F6F9F4, #E3F2FD);
+      background: linear-gradient(-45deg, #F1F2F8, #E8F5E9, #F1F2F8, #E3F2FD);
       background-size: 400% 400%;
       animation: gradientShift 15s ease infinite;
     }

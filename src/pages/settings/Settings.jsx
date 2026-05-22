@@ -50,7 +50,7 @@ import { CATEGORY_MAP } from "../../constants/categoryConstants";
 const Settings = ({
   aiModels = [],
   onAddAiModel,
-  onUpdateAiModel,  
+  onUpdateAiModel,
   onDeleteAiModel,
 }) => {
   const [activeTab, setActiveTab] = useState("profile");
@@ -234,11 +234,10 @@ const Settings = ({
                         onChange(optValue);
                         setActiveDropdown(null);
                       }}
-                      className={`w-full text-left px-4 sm:px-5 py-2 sm:py-3 text-[10px] sm:text-[12px] font-bold tracking-widest transition-colors flex items-center justify-between gap-2 ${
-                        optValue === value
-                          ? "bg-slate-50 text-secondary"
-                          : "text-[#18254D] hover:bg-slate-50"
-                      }`}
+                      className={`w-full text-left px-4 sm:px-5 py-2 sm:py-3 text-[10px] sm:text-[12px] font-bold tracking-widest transition-colors flex items-center justify-between gap-2 ${optValue === value
+                        ? "bg-slate-50 text-secondary"
+                        : "text-[#18254D] hover:bg-slate-50"
+                        }`}
                     >
                       <span className="truncate">{optLabel}</span>
                       {optValue === value && (
@@ -373,11 +372,11 @@ const Settings = ({
           image: data.image || profile.image,
         };
         setProfile(updatedProfile);
-        
+
         // Update admins list locally if the user is in it, to prevent "double cards" or stale data
-        setAdmins(prevAdmins => prevAdmins.map(admin => 
-          (admin.id === userId || admin.uuid === userId) 
-            ? { ...admin, image: data.image || admin.image, name: profile.full_name } 
+        setAdmins(prevAdmins => prevAdmins.map(admin =>
+          (admin.id === userId || admin.uuid === userId)
+            ? { ...admin, image: data.image || admin.image, name: profile.full_name }
             : admin
         ));
 
@@ -411,32 +410,32 @@ const Settings = ({
 
   const validateAddAdmin = () => {
     const errors = {};
-    
+
     if (!newAdmin.name.trim()) {
       errors.name = "Full name is required";
     } else if (newAdmin.name.trim().length < 2) {
       errors.name = "Name must be at least 2 characters";
     }
-    
+
     if (!newAdmin.email.trim()) {
-      errors.email = "Email is required";   
+      errors.email = "Email is required";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newAdmin.email)) {
       errors.email = "Please enter a valid email address";
     }
-    
+
     if (!newAdmin.password) {
       errors.password = "Password is required";
     } else if (newAdmin.password.length < 8) {
       errors.password = "Password must be at least 8 characters";
     }
-    
+
     setAddAdminErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
   const handleAddAdmin = async () => {
     if (!validateAddAdmin()) return;
-    
+
     setIsSubmitting(true);
     try {
       const response = await fetch(`${BASE_URL}/api/admin-users`, {
@@ -496,7 +495,7 @@ const Settings = ({
         showToastMessage(data.message || "Failed to create admin", "error");
       }
     } catch (error) {
-      console.error("Add admin error:", error);
+      console.error("Add Employee error:", error);
       showToastMessage(
         "Server error while creating admin. Check console for details.",
         "error",
@@ -595,12 +594,12 @@ const Settings = ({
           admins.map((admin) =>
             admin.id === id
               ? {
-                  ...admin,
-                  name: editAdminData.name,
-                  email: editAdminData.email,
-                  role: editAdminData.role,
-                  status: editAdminData.status,
-                }
+                ...admin,
+                name: editAdminData.name,
+                email: editAdminData.email,
+                role: editAdminData.role,
+                status: editAdminData.status,
+              }
               : admin,
           ),
         );
@@ -730,7 +729,7 @@ const Settings = ({
       if (response.ok) {
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
-        
+
         // Use window.location.href for a more direct download invocation
         window.location.href = url;
 
@@ -801,11 +800,10 @@ const Settings = ({
               <button
                 key={tab[0]}
                 onClick={() => setActiveTab(tab[0])}
-                className={`relative z-10 flex-1 sm:flex-none px-2 sm:px-6 py-2.5 sm:py-2 rounded-xl text-[10px] sm:text-[12px] font-bold tracking-wider transition-all duration-300 flex items-center justify-center min-w-[75px] sm:min-w-[120px] h-[30px] sm:h-[36px] whitespace-nowrap active:scale-95 ${
-                  activeTab === tab[0]
-                    ? "text-blue-600 scale-[1.02]"
-                    : "text-slate-400 hover:text-slate-600"
-                }`}
+                className={`relative z-10 flex-1 sm:flex-none px-2 sm:px-6 py-2.5 sm:py-2 rounded-xl text-[10px] sm:text-[12px] font-bold tracking-wider transition-all duration-300 flex items-center justify-center min-w-[75px] sm:min-w-[120px] h-[30px] sm:h-[36px] whitespace-nowrap active:scale-95 ${activeTab === tab[0]
+                  ? "text-blue-600 scale-[1.02]"
+                  : "text-slate-400 hover:text-slate-600"
+                  }`}
               >
                 {tab[1]}
               </button>
@@ -826,7 +824,7 @@ const Settings = ({
                     <div className="absolute top-0 right-0 w-96 h-96 bg-white rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
                     <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-400 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
                   </div>
-                  
+
                   <div className="relative flex flex-col md:flex-row items-center md:items-start gap-8">
                     {/* Avatar Section */}
                     <div className="relative group shrink-0">
@@ -890,7 +888,7 @@ const Settings = ({
                         }}
                       />
                     </div>
-                    
+
                     {/* Profile Info */}
                     <div className="flex-1 text-center md:text-left">
                       <div className="flex flex-col md:flex-row items-center md:items-start md:justify-between gap-4">
@@ -917,11 +915,10 @@ const Settings = ({
                         </div>
                         <button
                           onClick={() => setIsProfileEditing(!isProfileEditing)}
-                          className={`p-3 rounded-xl border transition-all duration-300 group ${
-                            isProfileEditing
-                              ? "bg-white text-[#18254D] border-white shadow-lg"
-                              : "bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white/20 hover:border-white/40"
-                          }`}
+                          className={`p-3 rounded-xl border transition-all duration-300 group ${isProfileEditing
+                            ? "bg-white text-[#18254D] border-white shadow-lg"
+                            : "bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white/20 hover:border-white/40"
+                            }`}
                           title={isProfileEditing ? "Editing..." : "Edit profile"}
                         >
                           <Edit2 size={20} />
@@ -946,7 +943,7 @@ const Settings = ({
                         </div>
                       )}
                     </div>
-                    
+
                     <div className="space-y-8">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                         {/* Full Name */}
@@ -969,14 +966,13 @@ const Settings = ({
                               })
                             }
                             disabled={!isProfileEditing}
-                            className={`w-full h-14 px-5 border-2 rounded-2xl transition-all duration-300 text-sm font-bold ${
-                              isProfileEditing
-                                ? "bg-white border-slate-200 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 focus:outline-none text-[#18254D] hover:border-slate-300"
-                                : "bg-slate-50 border-slate-100 text-slate-600 cursor-not-allowed"
-                            }`}
+                            className={`w-full h-14 px-5 border-2 rounded-2xl transition-all duration-300 text-sm font-bold ${isProfileEditing
+                              ? "bg-white border-slate-200 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 focus:outline-none text-[#18254D] hover:border-slate-300"
+                              : "bg-slate-50 border-slate-100 text-slate-600 cursor-not-allowed"
+                              }`}
                           />
                         </div>
-                        
+
                         {/* Designation */}
                         <div className="space-y-2">
                           <label className="text-xs font-bold text-slate-500 tracking-wide ml-1 flex items-center gap-2">
@@ -994,7 +990,7 @@ const Settings = ({
                             className="w-full h-14 px-5 bg-slate-50 border-2 border-slate-100 rounded-2xl text-slate-600 cursor-not-allowed text-sm font-bold"
                           />
                         </div>
-                        
+
                         {/* Email Address */}
                         <div className="space-y-2 md:col-span-2">
                           <label className="text-xs font-bold text-slate-500 tracking-wide ml-1 flex items-center gap-2">
@@ -1073,7 +1069,7 @@ const Settings = ({
                     <div className="absolute top-0 right-0 w-96 h-96 bg-white rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
                     <div className="absolute bottom-0 left-0 w-64 h-64 bg-pink-400 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
                   </div>
-                  
+
                   <div className="relative">
                     <div className="flex items-center gap-4 mb-4">
                       <div className="w-16 h-16 bg-white/10 backdrop-blur-sm rounded-2xl flex items-center justify-center border border-white/20">
@@ -1109,343 +1105,343 @@ const Settings = ({
                       </button>
                     </div>
 
-                  {/* Add AI Model Modal */}
-                  {showAddModelModal &&
-                    createPortal(
-                      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                        {/* Backdrop */}
-                        <div
-                          className="absolute inset-0 bg-[#18254D]/60 backdrop-blur-xl"
-                          onClick={() => setShowAddModelModal(false)}
-                        />
-                        {/* Modal Content */}
-                        <div className="relative w-full max-w-2xl max-h-[85vh] bg-white rounded-3xl shadow-2xl overflow-hidden animate-fade-in flex flex-col">
-                          {/* Header */}
-                          <div className="bg-gradient-to-r from-[#18254D] to-[#1e2e5e] px-6 sm:px-8 py-5 sm:py-6 flex-shrink-0">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/10 rounded-xl sm:rounded-2xl flex items-center justify-center">
-                                  <Bot size={20} className="text-white sm:hidden" />
-                                  <Bot size={24} className="text-white hidden sm:block" />
+                    {/* Add AI Model Modal */}
+                    {showAddModelModal &&
+                      createPortal(
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                          {/* Backdrop */}
+                          <div
+                            className="absolute inset-0 bg-[#18254D]/60 backdrop-blur-xl"
+                            onClick={() => setShowAddModelModal(false)}
+                          />
+                          {/* Modal Content */}
+                          <div className="relative w-full max-w-2xl max-h-[85vh] bg-white rounded-3xl shadow-2xl overflow-hidden animate-fade-in flex flex-col">
+                            {/* Header */}
+                            <div className="bg-gradient-to-r from-[#18254D] to-[#1e2e5e] px-6 sm:px-8 py-5 sm:py-6 flex-shrink-0">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/10 rounded-xl sm:rounded-2xl flex items-center justify-center">
+                                    <Bot size={20} className="text-white sm:hidden" />
+                                    <Bot size={24} className="text-white hidden sm:block" />
+                                  </div>
+                                  <div>
+                                    <h3 className="text-lg sm:text-xl font-black text-white tracking-tight">
+                                      Add AI Model
+                                    </h3>
+                                    <p className="text-xs sm:text-sm text-white/60 font-medium hidden sm:block">
+                                      Configure a new AI model for the system
+                                    </p>
+                                  </div>
                                 </div>
-                                <div>
-                                  <h3 className="text-lg sm:text-xl font-black text-white tracking-tight">
-                                    Add AI Model
-                                  </h3>
-                                  <p className="text-xs sm:text-sm text-white/60 font-medium hidden sm:block">
-                                    Configure a new AI model for the system
-                                  </p>
+                                <button
+                                  onClick={() => setShowAddModelModal(false)}
+                                  className="w-9 h-9 sm:w-10 sm:h-10 bg-white/10 hover:bg-white/20 rounded-lg sm:rounded-xl flex items-center justify-center transition-all"
+                                >
+                                  <X size={18} className="text-white sm:hidden" />
+                                  <X size={20} className="text-white hidden sm:block" />
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* Form Content - Scrollable */}
+                            <div className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-5 sm:space-y-6">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+                                <div className="space-y-2">
+                                  <label className="text-[10px] sm:text-[11px] font-black text-slate-400 tracking-widest uppercase ml-1">
+                                    Display Name *
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={newModel.name}
+                                    onChange={(e) =>
+                                      setNewModel({ ...newModel, name: e.target.value })
+                                    }
+                                    placeholder="e.g., GPT-4o Mini"
+                                    className="w-full h-[46px] sm:h-[50px] px-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 focus:outline-none transition-all text-sm font-bold text-[#18254D] placeholder:font-medium placeholder:text-slate-400"
+                                  />
+                                </div>
+                                <CustomDropdown
+                                  label="Provider"
+                                  value={newModel.provider}
+                                  field="add_ai_provider"
+                                  icon={Bot}
+                                  options={[
+                                    { value: "openai", label: "OpenAI (ChatGPT)" },
+                                    { value: "gemini", label: "Google Gemini" },
+                                    { value: "grok", label: "xAI (Grok)" },
+                                    { value: "anthropic", label: "Anthropic (Claude)" },
+                                    { value: "mistral", label: "Mistral AI" },
+                                    { value: "deepseek", label: "DeepSeek" },
+                                    { value: "llama", label: "Meta Llama (Groq)" },
+                                    { value: "groq", label: "Groq (Ultra Fast)" },
+                                    { value: "other", label: "Other" },
+                                  ]}
+                                  onChange={(val) =>
+                                    setNewModel({ ...newModel, provider: val })
+                                  }
+                                />
+                                <div className="space-y-2">
+                                  <label className="text-[10px] sm:text-[11px] font-black text-slate-400 tracking-widest uppercase ml-1">
+                                    Model ID (exact) *
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={newModel.modelId}
+                                    onChange={(e) =>
+                                      setNewModel({ ...newModel, modelId: e.target.value })
+                                    }
+                                    placeholder="e.g., gpt-4o-mini, grok-2, claude-3-haiku"
+                                    className="w-full h-[46px] sm:h-[50px] px-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 focus:outline-none transition-all text-sm font-bold text-[#18254D] placeholder:font-medium placeholder:text-slate-400"
+                                  />
+                                </div>
+                                <div className="space-y-2">
+                                  <label className="text-[10px] sm:text-[11px] font-black text-slate-400 tracking-widest uppercase ml-1 flex items-center gap-1.5">
+                                    <Key size={12} />
+                                    API Key *
+                                  </label>
+                                  <input
+                                    type="password"
+                                    value={newModel.apiKey}
+                                    onChange={(e) =>
+                                      setNewModel({ ...newModel, apiKey: e.target.value })
+                                    }
+                                    placeholder="Enter API key for this model"
+                                    className="w-full h-[46px] sm:h-[50px] px-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 focus:outline-none transition-all text-sm font-bold text-[#18254D] placeholder:font-medium placeholder:text-slate-400"
+                                  />
                                 </div>
                               </div>
+                            </div>
+
+                            {/* Footer Actions */}
+                            <div className="px-6 sm:px-8 py-4 sm:py-6 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row gap-3 flex-shrink-0">
                               <button
-                                onClick={() => setShowAddModelModal(false)}
-                                className="w-9 h-9 sm:w-10 sm:h-10 bg-white/10 hover:bg-white/20 rounded-lg sm:rounded-xl flex items-center justify-center transition-all"
+                                onClick={() => {
+                                  if (newModel.name && newModel.modelId && newModel.apiKey) {
+                                    onAddAiModel(newModel);
+                                    setNewModel({
+                                      name: "",
+                                      provider: "openai",
+                                      modelId: "",
+                                      apiKey: "",
+                                    });
+                                    setShowAddModelModal(false);
+                                  }
+                                }}
+                                disabled={!newModel.name || !newModel.modelId || !newModel.apiKey}
+                                className="flex-1 flex items-center justify-center gap-2 px-6 sm:px-8 py-3 sm:py-3.5 bg-[#1C2B5A] text-white rounded-xl hover:bg-[#1e2e5e] active:scale-95 transition-all text-[12px] sm:text-[13px] font-black tracking-widest shadow-lg shadow-[#18254D]/20 disabled:cursor-not-allowed"
                               >
-                                <X size={18} className="text-white sm:hidden" />
-                                <X size={20} className="text-white hidden sm:block" />
+                                <Check size={16} strokeWidth={3} className="sm:hidden" />
+                                <Check size={18} strokeWidth={3} className="hidden sm:block" />
+                                ADD MODEL
                               </button>
+
                             </div>
                           </div>
+                        </div>,
+                        document.body
+                      )}
 
-                          {/* Form Content - Scrollable */}
-                          <div className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-5 sm:space-y-6">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
-                              <div className="space-y-2">
-                                <label className="text-[10px] sm:text-[11px] font-black text-slate-400 tracking-widest uppercase ml-1">
-                                  Display Name *
-                                </label>
-                                <input
-                                  type="text"
-                                  value={newModel.name}
-                                  onChange={(e) =>
-                                    setNewModel({ ...newModel, name: e.target.value })
-                                  }
-                                  placeholder="e.g., GPT-4o Mini"
-                                  className="w-full h-[46px] sm:h-[50px] px-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 focus:outline-none transition-all text-sm font-bold text-[#18254D] placeholder:font-medium placeholder:text-slate-400"
-                                />
-                              </div>
-                              <CustomDropdown
-                                label="Provider"
-                                value={newModel.provider}
-                                field="add_ai_provider"
-                                icon={Bot}
-                                options={[
-                                  { value: "openai", label: "OpenAI (ChatGPT)" },
-                                  { value: "gemini", label: "Google Gemini" },
-                                  { value: "grok", label: "xAI (Grok)" },
-                                  { value: "anthropic", label: "Anthropic (Claude)" },
-                                  { value: "mistral", label: "Mistral AI" },
-                                  { value: "deepseek", label: "DeepSeek" },
-                                  { value: "llama", label: "Meta Llama (Groq)" },
-                                  { value: "groq", label: "Groq (Ultra Fast)" },
-                                  { value: "other", label: "Other" },
-                                ]}
-                                onChange={(val) =>
-                                  setNewModel({ ...newModel, provider: val })
-                                }
-                              />
-                              <div className="space-y-2">
-                                <label className="text-[10px] sm:text-[11px] font-black text-slate-400 tracking-widest uppercase ml-1">
-                                  Model ID (exact) *
-                                </label>
-                                <input
-                                  type="text"
-                                  value={newModel.modelId}
-                                  onChange={(e) =>
-                                    setNewModel({ ...newModel, modelId: e.target.value })
-                                  }
-                                  placeholder="e.g., gpt-4o-mini, grok-2, claude-3-haiku"
-                                  className="w-full h-[46px] sm:h-[50px] px-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 focus:outline-none transition-all text-sm font-bold text-[#18254D] placeholder:font-medium placeholder:text-slate-400"
-                                />
-                              </div>
-                              <div className="space-y-2">
-                                <label className="text-[10px] sm:text-[11px] font-black text-slate-400 tracking-widest uppercase ml-1 flex items-center gap-1.5">
-                                  <Key size={12} />
-                                  API Key *
-                                </label>
-                                <input
-                                  type="password"
-                                  value={newModel.apiKey}
-                                  onChange={(e) =>
-                                    setNewModel({ ...newModel, apiKey: e.target.value })
-                                  }
-                                  placeholder="Enter API key for this model"
-                                  className="w-full h-[46px] sm:h-[50px] px-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 focus:outline-none transition-all text-sm font-bold text-[#18254D] placeholder:font-medium placeholder:text-slate-400"
-                                />
+                    {/* Edit AI Model Modal */}
+                    {editingModelId &&
+                      createPortal(
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                          {/* Backdrop */}
+                          <div
+                            className="absolute inset-0 bg-[#18254D]/60 backdrop-blur-xl"
+                            onClick={() => setEditingModelId(null)}
+                          />
+                          {/* Modal Content */}
+                          <div className="relative w-full max-w-2xl max-h-[85vh] bg-white rounded-3xl shadow-2xl overflow-hidden animate-fade-in flex flex-col">
+                            {/* Header */}
+                            <div className="bg-gradient-to-r from-[#18254D] to-[#1e2e5e] px-6 sm:px-8 py-5 sm:py-6 flex-shrink-0">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/10 rounded-xl sm:rounded-2xl flex items-center justify-center">
+                                    <Edit2 size={20} className="text-white sm:hidden" />
+                                    <Edit2 size={24} className="text-white hidden sm:block" />
+                                  </div>
+                                  <div>
+                                    <h3 className="text-lg sm:text-xl font-black text-white tracking-tight">
+                                      Edit AI Model
+                                    </h3>
+                                    <p className="text-xs sm:text-sm text-white/60 font-medium hidden sm:block">
+                                      Update AI model configuration
+                                    </p>
+                                  </div>
+                                </div>
+                                <button
+                                  onClick={() => setEditingModelId(null)}
+                                  className="w-9 h-9 sm:w-10 sm:h-10 bg-white/10 hover:bg-white/20 rounded-lg sm:rounded-xl flex items-center justify-center transition-all"
+                                >
+                                  <X size={18} className="text-white sm:hidden" />
+                                  <X size={20} className="text-white hidden sm:block" />
+                                </button>
                               </div>
                             </div>
-                          </div>
 
-                          {/* Footer Actions */}
-                          <div className="px-6 sm:px-8 py-4 sm:py-6 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row gap-3 flex-shrink-0">
-                            <button
-                              onClick={() => {
-                                if (newModel.name && newModel.modelId && newModel.apiKey) {
-                                  onAddAiModel(newModel);
-                                  setNewModel({
-                                    name: "",
-                                    provider: "openai",
-                                    modelId: "",
-                                    apiKey: "",
-                                  });
-                                  setShowAddModelModal(false);
-                                }
-                              }}
-                              disabled={!newModel.name || !newModel.modelId || !newModel.apiKey}
-                              className="flex-1 flex items-center justify-center gap-2 px-6 sm:px-8 py-3 sm:py-3.5 bg-[#1C2B5A] text-white rounded-xl hover:bg-[#1e2e5e] active:scale-95 transition-all text-[12px] sm:text-[13px] font-black tracking-widest shadow-lg shadow-[#18254D]/20 disabled:cursor-not-allowed"
-                            >
-                              <Check size={16} strokeWidth={3} className=   "sm:hidden" />
-                              <Check size={18} strokeWidth={3} className="hidden sm:block" />
-                              ADD MODEL
-                            </button>
-
-                           </div>
-                        </div>
-                      </div>,
-                      document.body
-                    )}
-
-                  {/* Edit AI Model Modal */}
-                   {editingModelId &&
-                    createPortal(
-                      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                        {/* Backdrop */}
-                        <div
-                          className="absolute inset-0 bg-[#18254D]/60 backdrop-blur-xl"
-                          onClick={() => setEditingModelId(null)}
-                        />
-                        {/* Modal Content */}
-                        <div className="relative w-full max-w-2xl max-h-[85vh] bg-white rounded-3xl shadow-2xl overflow-hidden animate-fade-in flex flex-col">
-                          {/* Header */}
-                          <div className="bg-gradient-to-r from-[#18254D] to-[#1e2e5e] px-6 sm:px-8 py-5 sm:py-6 flex-shrink-0">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/10 rounded-xl sm:rounded-2xl flex items-center justify-center">
-                                  <Edit2 size={20} className="text-white sm:hidden" />
-                                  <Edit2 size={24} className="text-white hidden sm:block" />
+                            {/* Form Content - Scrollable */}
+                            <div className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-5 sm:space-y-6">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+                                <div className="space-y-2">
+                                  <label className="text-[10px] sm:text-[11px] font-black text-slate-400 tracking-widest uppercase ml-1">
+                                    Display Name *
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={editModelData.name || ""}
+                                    onChange={(e) =>
+                                      setEditModelData({ ...editModelData, name: e.target.value })
+                                    }
+                                    placeholder="e.g., GPT-4o Mini"
+                                    className="w-full h-[46px] sm:h-[50px] px-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 focus:outline-none transition-all text-sm font-bold text-[#18254D] placeholder:font-medium placeholder:text-slate-400"
+                                  />
                                 </div>
-                                <div>
-                                  <h3 className="text-lg sm:text-xl font-black text-white tracking-tight">
-                                    Edit AI Model
-                                  </h3>
-                                  <p className="text-xs sm:text-sm text-white/60 font-medium hidden sm:block">
-                                    Update AI model configuration
-                                  </p>
+                                <CustomDropdown
+                                  label="Provider"
+                                  value={editModelData.provider}
+                                  field="edit_ai_provider"
+                                  icon={Bot}
+                                  options={[
+                                    { value: "openai", label: "OpenAI (ChatGPT)" },
+                                    { value: "gemini", label: "Google Gemini" },
+                                    { value: "grok", label: "xAI (Grok)" },
+                                    { value: "anthropic", label: "Anthropic (Claude)" },
+                                    { value: "mistral", label: "Mistral AI" },
+                                    { value: "deepseek", label: "DeepSeek" },
+                                    { value: "llama", label: "Meta Llama (Groq)" },
+                                    { value: "groq", label: "Groq (Ultra Fast)" },
+                                    { value: "other", label: "Other" },
+                                  ]}
+                                  onChange={(val) =>
+                                    setEditModelData({ ...editModelData, provider: val })
+                                  }
+                                />
+                                <div className="space-y-2">
+                                  <label className="text-[10px] sm:text-[11px] font-black text-slate-400 tracking-widest uppercase ml-1">
+                                    Model ID (exact) *
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={editModelData.modelId || ""}
+                                    onChange={(e) =>
+                                      setEditModelData({ ...editModelData, modelId: e.target.value })
+                                    }
+                                    placeholder="e.g., gpt-4o-mini, grok-2, claude-3-haiku"
+                                    className="w-full h-[46px] sm:h-[50px] px-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 focus:outline-none transition-all text-sm font-bold text-[#18254D] placeholder:font-medium placeholder:text-slate-400"
+                                  />
+                                </div>
+                                <div className="space-y-2">
+                                  <label className="text-[10px] sm:text-[11px] font-black text-slate-400 tracking-widest uppercase ml-1 flex items-center gap-1.5">
+                                    <Key size={12} />
+                                    API Key *
+                                  </label>
+                                  <input
+                                    type="password"
+                                    value={editModelData.apiKey || ""}
+                                    onChange={(e) =>
+                                      setEditModelData({ ...editModelData, apiKey: e.target.value })
+                                    }
+                                    placeholder="Enter API key for this model"
+                                    className="w-full h-[46px] sm:h-[50px] px-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 focus:outline-none transition-all text-sm font-bold text-[#18254D] placeholder:font-medium placeholder:text-slate-400"
+                                  />
                                 </div>
                               </div>
+                            </div>
+
+                            {/* Footer Actions */}
+                            <div className="px-6 sm:px-8 py-4 sm:py-6 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row gap-3 flex-shrink-0">
                               <button
-                                onClick={() => setEditingModelId(null)}
-                                className="w-9 h-9 sm:w-10 sm:h-10 bg-white/10 hover:bg-white/20 rounded-lg sm:rounded-xl flex items-center justify-center transition-all"
+                                onClick={() => {
+                                  onUpdateAiModel(editModelData);
+                                  setEditingModelId(null);
+                                }}
+                                disabled={!editModelData.name || !editModelData.modelId || !editModelData.apiKey}
+                                className="flex-1 flex items-center justify-center gap-2 px-6 sm:px-8 py-3 sm:py-3.5 bg-[#18254D] text-white rounded-xl hover:bg-[#1e2e5e] active:scale-95 transition-all text-[12px] sm:text-[13px] font-black tracking-widest shadow-lg shadow-[#18254D]/20 disabled:opacity-70 disabled:cursor-not-allowed"
                               >
-                                <X size={18} className="text-white sm:hidden" />
-                                <X size={20} className="text-white hidden sm:block" />
+                                <Check size={16} strokeWidth={3} className="sm:hidden" />
+                                <Check size={18} strokeWidth={3} className="hidden sm:block" />
+                                SAVE CHANGES
                               </button>
+
                             </div>
                           </div>
+                        </div>,
+                        document.body
+                      )}
 
-                          {/* Form Content - Scrollable */}
-                          <div className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-5 sm:space-y-6">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
-                              <div className="space-y-2">
-                                <label className="text-[10px] sm:text-[11px] font-black text-slate-400 tracking-widest uppercase ml-1">
-                                  Display Name *
-                                </label>
-                                <input
-                                  type="text"
-                                  value={editModelData.name || ""}
-                                  onChange={(e) =>
-                                    setEditModelData({ ...editModelData, name: e.target.value })
-                                  }
-                                  placeholder="e.g., GPT-4o Mini"
-                                  className="w-full h-[46px] sm:h-[50px] px-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 focus:outline-none transition-all text-sm font-bold text-[#18254D] placeholder:font-medium placeholder:text-slate-400"
-                                />
-                              </div>
-                              <CustomDropdown
-                                label="Provider"
-                                value={editModelData.provider}
-                                field="edit_ai_provider"
-                                icon={Bot}
-                                options={[
-                                  { value: "openai", label: "OpenAI (ChatGPT)" },
-                                  { value: "gemini", label: "Google Gemini" },
-                                  { value: "grok", label: "xAI (Grok)" },
-                                  { value: "anthropic", label: "Anthropic (Claude)" },
-                                  { value: "mistral", label: "Mistral AI" },
-                                  { value: "deepseek", label: "DeepSeek" },
-                                  { value: "llama", label: "Meta Llama (Groq)" },
-                                  { value: "groq", label: "Groq (Ultra Fast)" },
-                                  { value: "other", label: "Other" },
-                                ]}
-                                onChange={(val) =>
-                                  setEditModelData({ ...editModelData, provider: val })
-                                }
-                              />
-                              <div className="space-y-2">
-                                <label className="text-[10px] sm:text-[11px] font-black text-slate-400 tracking-widest uppercase ml-1">
-                                  Model ID (exact) *
-                                </label>
-                                <input
-                                  type="text"
-                                  value={editModelData.modelId || ""}
-                                  onChange={(e) =>
-                                    setEditModelData({ ...editModelData, modelId: e.target.value })
-                                  }
-                                  placeholder="e.g., gpt-4o-mini, grok-2, claude-3-haiku"
-                                  className="w-full h-[46px] sm:h-[50px] px-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 focus:outline-none transition-all text-sm font-bold text-[#18254D] placeholder:font-medium placeholder:text-slate-400"
-                                />
-                              </div>
-                              <div className="space-y-2">
-                                <label className="text-[10px] sm:text-[11px] font-black text-slate-400 tracking-widest uppercase ml-1 flex items-center gap-1.5">
-                                  <Key size={12} />
-                                  API Key *
-                                </label>
-                                <input
-                                  type="password"
-                                  value={editModelData.apiKey || ""}
-                                  onChange={(e) =>
-                                    setEditModelData({ ...editModelData, apiKey: e.target.value })
-                                  }
-                                  placeholder="Enter API key for this model"
-                                  className="w-full h-[46px] sm:h-[50px] px-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 focus:outline-none transition-all text-sm font-bold text-[#18254D] placeholder:font-medium placeholder:text-slate-400"
-                                />
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Footer Actions */}
-                          <div className="px-6 sm:px-8 py-4 sm:py-6 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row gap-3 flex-shrink-0">
-                            <button
-                              onClick={() => {
-                                onUpdateAiModel(editModelData);
-                                setEditingModelId(null);
-                              }}
-                              disabled={!editModelData.name || !editModelData.modelId || !editModelData.apiKey}
-                              className="flex-1 flex items-center justify-center gap-2 px-6 sm:px-8 py-3 sm:py-3.5 bg-[#18254D] text-white rounded-xl hover:bg-[#1e2e5e] active:scale-95 transition-all text-[12px] sm:text-[13px] font-black tracking-widest shadow-lg shadow-[#18254D]/20 disabled:opacity-70 disabled:cursor-not-allowed"
-                            >
-                              <Check size={16} strokeWidth={3} className="sm:hidden" />
-                              <Check size={18} strokeWidth={3} className="hidden sm:block" />
-                              SAVE CHANGES
-                            </button>
-                            
-                          </div>
+                    {/* Models List */}
+                    <div className="space-y-3">
+                      {aiModels.length === 0 && (
+                        <div className="text-center py-12 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                          <Bot
+                            size={48}
+                            className="mx-auto text-slate-300 mb-4"
+                          />
+                          <p className="text-slate-500 font-bold text-sm">
+                            No AI models configured
+                          </p>
+                          <p className="text-slate-400 text-xs mt-1">
+                            Add a new AI model to get started
+                          </p>
                         </div>
-                      </div>,
-                      document.body
-                    )}
+                      )}
+                      {aiModels.map((model) => {
+                        const providerLabels = {
+                          openai: {
+                            label: "OpenAI",
+                            color: "bg-emerald-100 text-emerald-700",
+                            logo: openaiLogo,
+                          },
+                          gemini: {
+                            label: "Google Gemini",
+                            color: "bg-blue-100 text-blue-700",
+                            logo: geminiLogo,
+                          },
+                          grok: {
+                            label: "xAI Grok",
+                            color: "bg-orange-100 text-orange-700",
+                            logo: grokLogo,
+                          },
+                          anthropic: {
+                            label: "Anthropic",
+                            color: "bg-amber-100 text-amber-700",
+                            logo: anthropicLogo,
+                          },
+                          mistral: {
+                            label: "Mistral",
+                            color: "bg-cyan-100 text-cyan-700",
+                            logo: mistralLogo,
+                          },
+                          deepseek: {
+                            label: "DeepSeek",
+                            color: "bg-indigo-100 text-indigo-700",
+                            logo: deepseekLogo,
+                          },
+                          llama: {
+                            label: "Llama 3 (Groq)",
+                            color: "bg-orange-100/20 text-orange-800",
+                            logo: llamaLogo,
+                          },
+                          groq: {
+                            label: "Groq (Ultra Fast)",
+                            color: "bg-orange-500/10 text-orange-600",
+                            logo: groqLogo,
+                          },
+                          other: {
+                            label: "Other",
+                            color: "bg-slate-100 text-slate-700",
+                            logo: null,
+                          },
+                        };
+                        const prov =
+                          providerLabels[model.provider] || providerLabels.other;
 
-                  {/* Models List */}
-                  <div className="space-y-3">
-                    {aiModels.length === 0 && (
-                      <div className="text-center py-12 bg-slate-50 rounded-xl border border-dashed border-slate-200">
-                        <Bot
-                          size={48}
-                          className="mx-auto text-slate-300 mb-4"
-                        />
-                        <p className="text-slate-500 font-bold text-sm">
-                          No AI models configured
-                        </p>
-                        <p className="text-slate-400 text-xs mt-1">
-                          Add a new AI model to get started
-                        </p>
-                      </div>
-                    )}
-                    {aiModels.map((model) => {
-                      const providerLabels = {
-                        openai: {
-                          label: "OpenAI",
-                          color: "bg-emerald-100 text-emerald-700",
-                          logo: openaiLogo,
-                        },
-                        gemini: {
-                          label: "Google Gemini",
-                          color: "bg-blue-100 text-blue-700",
-                          logo: geminiLogo,
-                        },
-                        grok: {
-                          label: "xAI Grok",
-                          color: "bg-orange-100 text-orange-700",
-                          logo: grokLogo,
-                        },
-                        anthropic: {
-                          label: "Anthropic",
-                          color: "bg-amber-100 text-amber-700",
-                          logo: anthropicLogo,
-                        },
-                        mistral: {
-                          label: "Mistral",
-                          color: "bg-cyan-100 text-cyan-700",
-                          logo: mistralLogo,
-                        },
-                        deepseek: {
-                          label: "DeepSeek",
-                          color: "bg-indigo-100 text-indigo-700",
-                          logo: deepseekLogo,
-                        },
-                        llama: {
-                          label: "Llama 3 (Groq)",
-                          color: "bg-orange-100/20 text-orange-800",
-                          logo: llamaLogo,
-                        },
-                        groq: {
-                          label: "Groq (Ultra Fast)",
-                          color: "bg-orange-500/10 text-orange-600",
-                          logo: groqLogo,
-                        },
-                        other: {
-                          label: "Other",
-                          color: "bg-slate-100 text-slate-700",
-                          logo: null,
-                        },
-                      };
-                      const prov =
-                        providerLabels[model.provider] || providerLabels.other;
-
-                      return (
-                        <div
-                          key={model.aimodel_id}
-                          className="p-4 bg-white border border-slate-200 rounded-xl hover:border-violet-200 hover:shadow-md transition-all"
-                        >
-                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        return (
+                          <div
+                            key={model.aimodel_id}
+                            className="p-4 bg-white border border-slate-200 rounded-xl hover:border-violet-200 hover:shadow-md transition-all"
+                          >
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                               <div className="flex items-center gap-4">
                                 <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center overflow-hidden flex-shrink-0 shadow-sm">
                                   {prov.logo ? (
@@ -1507,36 +1503,35 @@ const Settings = ({
                                 )}
                               </div>
                             </div>
-                        </div>
-                      );
-                    })}
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
 
-                <div className="flex justify-end pt-4 border-t border-slate-100 hidden">
-                  <button
-                    onClick={handleAiSettingsSave}
-                    disabled={!isAiEditing}
-                    className={`flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl text-[13px] font-bold tracking-wider transition-all ${
-                      isAiEditing
+                  <div className="flex justify-end pt-4 border-t border-slate-100 hidden">
+                    <button
+                      onClick={handleAiSettingsSave}
+                      disabled={!isAiEditing}
+                      className={`flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl text-[13px] font-bold tracking-wider transition-all ${isAiEditing
                         ? "bg-primary text-white hover:bg-slate-800 active:scale-95 shadow-lg"
                         : "bg-slate-100 text-slate-400 cursor-not-allowed"
-                    }`}
-                  >
-                    {isAiSaved ? (
-                      <>
-                        <Check size={16} strokeWidth={2.5} />
-                        Saved
-                      </>
-                    ) : (
-                      <>
-                        <Save size={16} strokeWidth={2.5} />
-                        Save AI Settings
-                      </>
-                    )}
-                  </button>
+                        }`}
+                    >
+                      {isAiSaved ? (
+                        <>
+                          <Check size={16} strokeWidth={2.5} />
+                          Saved
+                        </>
+                      ) : (
+                        <>
+                          <Save size={16} strokeWidth={2.5} />
+                          Save AI Settings
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
-              </div>
               </div>
             )}
             {/* SECURITY TAB */}
@@ -1549,7 +1544,7 @@ const Settings = ({
                     <div className="absolute top-0 right-0 w-96 h-96 bg-white rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
                     <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-400 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
                   </div>
-                  
+
                   <div className="relative">
                     <div className="flex items-center gap-4 mb-4">
                       <div className="w-16 h-16 bg-white/10 backdrop-blur-sm rounded-2xl flex items-center justify-center border border-white/20">
@@ -1623,151 +1618,151 @@ const Settings = ({
 
                 {/* Password Update Modal */}
                 {showPasswordForm &&
-                    createPortal(
-                      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                        {/* Backdrop */}
-                        <div
-                          className="absolute inset-0 bg-[#18254D]/60 backdrop-blur-xl"
-                          onClick={() => setShowPasswordForm(false)}
-                        />
-                        {/* Modal Content */}
-                        <div className="relative w-full max-w-xl max-h-[85vh] bg-white rounded-3xl shadow-2xl overflow-hidden animate-fade-in flex flex-col">
-                          {/* Header */}
-                          <div className="bg-gradient-to-r from-[#18254D] to-[#1e2e5e] px-6 sm:px-8 py-5 sm:py-6 flex-shrink-0">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/10 rounded-xl sm:rounded-2xl flex items-center justify-center">
-                                  <Lock size={20} className="text-white sm:hidden" />
-                                  <Lock size={24} className="text-white hidden sm:block" />
-                                </div>
-                                <div>
-                                  <h3 className="text-lg sm:text-xl font-black text-white tracking-tight">
-                                    Update Password
-                                  </h3>
-                                  <p className="text-xs sm:text-sm text-white/60 font-medium hidden sm:block">
-                                    Change your account password
-                                  </p>
-                                </div>
+                  createPortal(
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                      {/* Backdrop */}
+                      <div
+                        className="absolute inset-0 bg-[#18254D]/60 backdrop-blur-xl"
+                        onClick={() => setShowPasswordForm(false)}
+                      />
+                      {/* Modal Content */}
+                      <div className="relative w-full max-w-xl max-h-[85vh] bg-white rounded-3xl shadow-2xl overflow-hidden animate-fade-in flex flex-col">
+                        {/* Header */}
+                        <div className="bg-gradient-to-r from-[#18254D] to-[#1e2e5e] px-6 sm:px-8 py-5 sm:py-6 flex-shrink-0">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/10 rounded-xl sm:rounded-2xl flex items-center justify-center">
+                                <Lock size={20} className="text-white sm:hidden" />
+                                <Lock size={24} className="text-white hidden sm:block" />
                               </div>
+                              <div>
+                                <h3 className="text-lg sm:text-xl font-black text-white tracking-tight">
+                                  Update Password
+                                </h3>
+                                <p className="text-xs sm:text-sm text-white/60 font-medium hidden sm:block">
+                                  Change your account password
+                                </p>
+                              </div>
+                            </div>
+                            <button
+                              onClick={() => setShowPasswordForm(false)}
+                              className="w-9 h-9 sm:w-10 sm:h-10 bg-white/10 hover:bg-white/20 rounded-lg sm:rounded-xl flex items-center justify-center transition-all"
+                            >
+                              <X size={18} className="text-white sm:hidden" />
+                              <X size={20} className="text-white hidden sm:block" />
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Form Content */}
+                        <div className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-5">
+                          <div className="space-y-2">
+                            <label className="text-[10px] sm:text-[11px] font-black text-slate-400 tracking-widest uppercase ml-1">
+                              Current Password
+                            </label>
+                            <div className="relative">
+                              <input
+                                type={showPasswords.current ? "text" : "password"}
+                                value={passwordData.currentPassword}
+                                onChange={(e) =>
+                                  setPasswordData({
+                                    ...passwordData,
+                                    currentPassword: e.target.value,
+                                  })
+                                }
+                                placeholder="Enter current password"
+                                className="w-full h-[46px] sm:h-[50px] px-4 pr-12 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#18254D]/20 focus:border-[#18254D] focus:outline-none transition-all text-sm font-bold text-[#18254D] placeholder:font-medium placeholder:text-slate-400"
+                              />
                               <button
-                                onClick={() => setShowPasswordForm(false)}
-                                className="w-9 h-9 sm:w-10 sm:h-10 bg-white/10 hover:bg-white/20 rounded-lg sm:rounded-xl flex items-center justify-center transition-all"
+                                type="button"
+                                onClick={() => setShowPasswords({ ...showPasswords, current: !showPasswords.current })}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-slate-400 hover:text-[#18254D] transition-colors"
                               >
-                                <X size={18} className="text-white sm:hidden" />
-                                <X size={20} className="text-white hidden sm:block" />
+                                {showPasswords.current ? <EyeOff size={18} /> : <Eye size={18} />}
                               </button>
                             </div>
                           </div>
-
-                          {/* Form Content */}
-                          <div className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-5">
-                            <div className="space-y-2">
-                              <label className="text-[10px] sm:text-[11px] font-black text-slate-400 tracking-widest uppercase ml-1">
-                                Current Password
-                              </label>
-                              <div className="relative">
-                                <input
-                                  type={showPasswords.current ? "text" : "password"}
-                                  value={passwordData.currentPassword}
-                                  onChange={(e) =>
-                                    setPasswordData({
-                                      ...passwordData,
-                                      currentPassword: e.target.value,
-                                    })
-                                  }
-                                  placeholder="Enter current password"
-                                  className="w-full h-[46px] sm:h-[50px] px-4 pr-12 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#18254D]/20 focus:border-[#18254D] focus:outline-none transition-all text-sm font-bold text-[#18254D] placeholder:font-medium placeholder:text-slate-400"
-                                />
-                                <button
-                                  type="button"
-                                  onClick={() => setShowPasswords({ ...showPasswords, current: !showPasswords.current })}
-                                  className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-slate-400 hover:text-[#18254D] transition-colors"
-                                >
-                                  {showPasswords.current ? <EyeOff size={18} /> : <Eye size={18} />}
-                                </button>
-                              </div>
-                            </div>
-                            <div className="space-y-2">
-                              <label className="text-[10px] sm:text-[11px] font-black text-slate-400 tracking-widest uppercase ml-1">
-                                New Password
-                              </label>
-                              <div className="relative">
-                                <input
-                                  type={showPasswords.new ? "text" : "password"}
-                                  value={passwordData.newPassword}
-                                  onChange={(e) =>
-                                    setPasswordData({
-                                      ...passwordData,
-                                      newPassword: e.target.value,
-                                    })
-                                  }
-                                  placeholder="Enter new password"
-                                  className="w-full h-[46px] sm:h-[50px] px-4 pr-12 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#18254D]/20 focus:border-[#18254D] focus:outline-none transition-all text-sm font-bold text-[#18254D] placeholder:font-medium placeholder:text-slate-400"
-                                />
-                                <button
-                                  type="button"
-                                  onClick={() => setShowPasswords({ ...showPasswords, new: !showPasswords.new })}
-                                  className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-slate-400 hover:text-[#18254D] transition-colors"
-                                >
-                                  {showPasswords.new ? <EyeOff size={18} /> : <Eye size={18} />}
-                                </button>
-                              </div>
-                            </div>
-                            <div className="space-y-2">
-                              <label className="text-[10px] sm:text-[11px] font-black text-slate-400 tracking-widest uppercase ml-1">
-                                Confirm New Password
-                              </label>
-                              <div className="relative">
-                                <input
-                                  type={showPasswords.confirm ? "text" : "password"}
-                                  value={passwordData.confirmPassword}
-                                  onChange={(e) =>
-                                    setPasswordData({
-                                      ...passwordData,
-                                      confirmPassword: e.target.value,
-                                    })
-                                  }
-                                  placeholder="Confirm new password"
-                                  className="w-full h-[46px] sm:h-[50px] px-4 pr-12 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#18254D]/20 focus:border-[#18254D] focus:outline-none transition-all text-sm font-bold text-[#18254D] placeholder:font-medium placeholder:text-slate-400"
-                                />
-                                <button
-                                  type="button"
-                                  onClick={() => setShowPasswords({ ...showPasswords, confirm: !showPasswords.confirm })}
-                                  className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-slate-400 hover:text-[#18254D] transition-colors"
-                                >
-                                  {showPasswords.confirm ? <EyeOff size={18} /> : <Eye size={18} />}
-                                </button>
-                              </div>
+                          <div className="space-y-2">
+                            <label className="text-[10px] sm:text-[11px] font-black text-slate-400 tracking-widest uppercase ml-1">
+                              New Password
+                            </label>
+                            <div className="relative">
+                              <input
+                                type={showPasswords.new ? "text" : "password"}
+                                value={passwordData.newPassword}
+                                onChange={(e) =>
+                                  setPasswordData({
+                                    ...passwordData,
+                                    newPassword: e.target.value,
+                                  })
+                                }
+                                placeholder="Enter new password"
+                                className="w-full h-[46px] sm:h-[50px] px-4 pr-12 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#18254D]/20 focus:border-[#18254D] focus:outline-none transition-all text-sm font-bold text-[#18254D] placeholder:font-medium placeholder:text-slate-400"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => setShowPasswords({ ...showPasswords, new: !showPasswords.new })}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-slate-400 hover:text-[#18254D] transition-colors"
+                              >
+                                {showPasswords.new ? <EyeOff size={18} /> : <Eye size={18} />}
+                              </button>
                             </div>
                           </div>
-
-                          {/* Footer Actions */}
-                          <div className="px-6 sm:px-8 py-4 sm:py-6 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row gap-3 flex-shrink-0">
-                            <button
-                              onClick={handleUpdatePassword}
-                              disabled={isSubmitting}
-                              className="flex-1 flex items-center justify-center gap-2 px-6 sm:px-8 py-3 sm:py-3.5 bg-[#18254D] text-white rounded-xl hover:bg-[#1e2e5e] active:scale-95 transition-all text-[12px] sm:text-[13px] font-black tracking-widest shadow-lg shadow-[#18254D]/20 disabled:opacity-70 disabled:cursor-not-allowed"
-                            >
-                              {isSubmitting ? (
-                                <>
-                                  <Loader2 size={16} className="animate-spin sm:hidden" />
-                                  <Loader2 size={18} className="animate-spin hidden sm:block" />
-                                  <span>Updating...</span>
-                                </>
-                              ) : (
-                                <>
-                                  <Save size={16} strokeWidth={3} className="sm:hidden" />
-                                  <Save size={18} strokeWidth={3} className="hidden sm:block" />
-                                  UPDATE PASSWORD
-                                </>
-                              )}
-                            </button>
-                            
+                          <div className="space-y-2">
+                            <label className="text-[10px] sm:text-[11px] font-black text-slate-400 tracking-widest uppercase ml-1">
+                              Confirm New Password
+                            </label>
+                            <div className="relative">
+                              <input
+                                type={showPasswords.confirm ? "text" : "password"}
+                                value={passwordData.confirmPassword}
+                                onChange={(e) =>
+                                  setPasswordData({
+                                    ...passwordData,
+                                    confirmPassword: e.target.value,
+                                  })
+                                }
+                                placeholder="Confirm new password"
+                                className="w-full h-[46px] sm:h-[50px] px-4 pr-12 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#18254D]/20 focus:border-[#18254D] focus:outline-none transition-all text-sm font-bold text-[#18254D] placeholder:font-medium placeholder:text-slate-400"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => setShowPasswords({ ...showPasswords, confirm: !showPasswords.confirm })}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-slate-400 hover:text-[#18254D] transition-colors"
+                              >
+                                {showPasswords.confirm ? <EyeOff size={18} /> : <Eye size={18} />}
+                              </button>
+                            </div>
                           </div>
                         </div>
-                      </div>,
-                      document.body
-                    )}
+
+                        {/* Footer Actions */}
+                        <div className="px-6 sm:px-8 py-4 sm:py-6 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row gap-3 flex-shrink-0">
+                          <button
+                            onClick={handleUpdatePassword}
+                            disabled={isSubmitting}
+                            className="flex-1 flex items-center justify-center gap-2 px-6 sm:px-8 py-3 sm:py-3.5 bg-[#18254D] text-white rounded-xl hover:bg-[#1e2e5e] active:scale-95 transition-all text-[12px] sm:text-[13px] font-black tracking-widest shadow-lg shadow-[#18254D]/20 disabled:opacity-70 disabled:cursor-not-allowed"
+                          >
+                            {isSubmitting ? (
+                              <>
+                                <Loader2 size={16} className="animate-spin sm:hidden" />
+                                <Loader2 size={18} className="animate-spin hidden sm:block" />
+                                <span>Updating...</span>
+                              </>
+                            ) : (
+                              <>
+                                <Save size={16} strokeWidth={3} className="sm:hidden" />
+                                <Save size={18} strokeWidth={3} className="hidden sm:block" />
+                                UPDATE PASSWORD
+                              </>
+                            )}
+                          </button>
+
+                        </div>
+                      </div>
+                    </div>,
+                    document.body
+                  )}
               </div>
             )}
 
@@ -1781,7 +1776,7 @@ const Settings = ({
                     <div className="absolute top-0 right-0 w-96 h-96 bg-white rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
                     <div className="absolute bottom-0 left-0 w-64 h-64 bg-green-400 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
                   </div>
-                  
+
                   <div className="relative flex flex-col md:flex-row md:items-center md:justify-between gap-6">
                     <div className="flex items-center gap-4">
                       <div className="w-16 h-16 bg-white/10 backdrop-blur-sm rounded-2xl flex items-center justify-center border border-white/20">
@@ -1794,20 +1789,20 @@ const Settings = ({
                         <p className="text-white/70 font-medium">View and manage your network of administrators</p>
                       </div>
                     </div>
-                    {/* Add Admin Button */}
+                    {/* Add Employee Button */}
                     {profile?.role !== "Admin" && (
                       <button
                         onClick={() => setShowAddAdminModal(true)}
                         className="flex items-center justify-center gap-2 px-6 py-3 bg-white text-[#18254E] rounded-xl transition-all active:scale-95 text-sm font-bold shadow-lg"
                       >
                         <Plus size={18} strokeWidth={2.5} />
-                        <span>Add Admin</span>
+                        <span>Add Employee</span>
                       </button>
                     )}
                   </div>
                 </div>
 
-                {/* Add Admin Modal */}
+                {/* Add Employee Modal */}
                 {showAddAdminModal &&
                   createPortal(
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
@@ -1863,11 +1858,10 @@ const Settings = ({
                                   }
                                 }}
                                 placeholder="Enter full name"
-                                className={`w-full h-[46px] sm:h-[50px] px-4 bg-slate-50 border rounded-xl focus:ring-2 focus:outline-none transition-all text-sm font-bold text-[#18254D] placeholder:font-medium placeholder:text-slate-400 ${
-                                  addAdminErrors.name 
-                                    ? "border-red-300 focus:border-red-400 focus:ring-red-200" 
-                                    : "border-slate-200 focus:border-[#18254D] focus:ring-[#18254D]/20"
-                                }`}
+                                className={`w-full h-[46px] sm:h-[50px] px-4 bg-slate-50 border rounded-xl focus:ring-2 focus:outline-none transition-all text-sm font-bold text-[#18254D] placeholder:font-medium placeholder:text-slate-400 ${addAdminErrors.name
+                                  ? "border-red-300 focus:border-red-400 focus:ring-red-200"
+                                  : "border-slate-200 focus:border-[#18254D] focus:ring-[#18254D]/20"
+                                  }`}
                               />
                               {addAdminErrors.name && (
                                 <p className="text-[10px] text-red-500 font-medium ml-1">{addAdminErrors.name}</p>
@@ -1887,11 +1881,10 @@ const Settings = ({
                                   }
                                 }}
                                 placeholder="Enter email address"
-                                className={`w-full h-[46px] sm:h-[50px] px-4 bg-slate-50 border rounded-xl focus:ring-2 focus:outline-none transition-all text-sm font-bold text-[#18254D] placeholder:font-medium placeholder:text-slate-400 ${
-                                  addAdminErrors.email 
-                                    ? "border-red-300 focus:border-red-400 focus:ring-red-200" 
-                                    : "border-slate-200 focus:border-[#18254D] focus:ring-[#18254D]/20"
-                                }`}
+                                className={`w-full h-[46px] sm:h-[50px] px-4 bg-slate-50 border rounded-xl focus:ring-2 focus:outline-none transition-all text-sm font-bold text-[#18254D] placeholder:font-medium placeholder:text-slate-400 ${addAdminErrors.email
+                                  ? "border-red-300 focus:border-red-400 focus:ring-red-200"
+                                  : "border-slate-200 focus:border-[#18254D] focus:ring-[#18254D]/20"
+                                  }`}
                               />
                               {addAdminErrors.email && (
                                 <p className="text-[10px] text-red-500 font-medium ml-1">{addAdminErrors.email}</p>
@@ -1906,7 +1899,7 @@ const Settings = ({
                             </label>
                             <div className="relative">
                               <input
-                                type={showAddAdminPassword ? "text" : "password"} 
+                                type={showAddAdminPassword ? "text" : "password"}
                                 value={newAdmin.password}
                                 onChange={(e) => {
                                   setNewAdmin({ ...newAdmin, password: e.target.value });
@@ -1915,11 +1908,10 @@ const Settings = ({
                                   }
                                 }}
                                 placeholder="Set a secure password"
-                                className={`w-full h-[46px] sm:h-[50px] px-4 pr-12 bg-slate-50 border rounded-xl focus:ring-2 focus:outline-none transition-all text-sm font-bold text-[#18254D] placeholder:font-medium placeholder:text-slate-400 ${
-                                  addAdminErrors.password 
-                                    ? "border-red-300 focus:border-red-400 focus:ring-red-200" 
-                                    : "border-slate-200 focus:border-[#18254D] focus:ring-[#18254D]/20"
-                                }`}
+                                className={`w-full h-[46px] sm:h-[50px] px-4 pr-12 bg-slate-50 border rounded-xl focus:ring-2 focus:outline-none transition-all text-sm font-bold text-[#18254D] placeholder:font-medium placeholder:text-slate-400 ${addAdminErrors.password
+                                  ? "border-red-300 focus:border-red-400 focus:ring-red-200"
+                                  : "border-slate-200 focus:border-[#18254D] focus:ring-[#18254D]/20"
+                                  }`}
                               />
                               <button
                                 type="button"
@@ -1989,7 +1981,7 @@ const Settings = ({
                               </>
                             )}
                           </button>
-                          
+
                         </div>
                       </div>
                     </div>,
@@ -2114,7 +2106,7 @@ const Settings = ({
                               </>
                             )}
                           </button>
-                          
+
                         </div>
                       </div>
                     </div>,
@@ -2126,129 +2118,129 @@ const Settings = ({
                   <div className="p-8 md:p-10">
                     <h4 className="text-xl font-black text-[#18254D] mb-6">Current Users ({admins.length})</h4>
 
-                  {loadingAdmins ? (
-                    <div className="flex items-center justify-center py-10">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                    </div>
-                  ) : admins.length === 0 ? (
-                    <div className="text-center py-10 text-slate-400">
-                      <Users size={48} className="mx-auto mb-3 opacity-50" />
-                      <p className="text-sm font-medium">
-                        No other administrators found
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
-                      {admins.map((admin) => (
-                        <div
-                          key={admin.id}
-                          className="group bg-white border border-slate-200/60 rounded-[28px] hover:border-blue-200 hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-500 flex flex-col overflow-hidden hover:scale-[1.01]"
-                        >
-                          {/* Card Header / Avatar Area */}
-                              <div className="p-6 flex flex-col items-center text-center relative overflow-hidden">
-                                <div className="absolute top-4 right-4 z-10">
-                                  <div
-                                    className={`w-2.5 h-2.5 rounded-full border-2 border-white shadow-sm ${admin.status === "Active" ? "bg-emerald-500" : "bg-rose-500"}`}
+                    {loadingAdmins ? (
+                      <div className="flex items-center justify-center py-10">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                      </div>
+                    ) : admins.length === 0 ? (
+                      <div className="text-center py-10 text-slate-400">
+                        <Users size={48} className="mx-auto mb-3 opacity-50" />
+                        <p className="text-sm font-medium">
+                          No other administrators found
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
+                        {admins.map((admin) => (
+                          <div
+                            key={admin.id}
+                            className="group bg-white border border-slate-200/60 rounded-[28px] hover:border-blue-200 hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-500 flex flex-col overflow-hidden hover:scale-[1.01]"
+                          >
+                            {/* Card Header / Avatar Area */}
+                            <div className="p-6 flex flex-col items-center text-center relative overflow-hidden">
+                              <div className="absolute top-4 right-4 z-10">
+                                <div
+                                  className={`w-2.5 h-2.5 rounded-full border-2 border-white shadow-sm ${admin.status === "Active" ? "bg-emerald-500" : "bg-rose-500"}`}
+                                />
+                              </div>
+
+                              <div className="relative mb-4">
+                                <div className="absolute inset-0 bg-blue-500/10 rounded-3xl blur-2xl group-hover:bg-blue-500/20 transition-all duration-500" />
+                                {admin.image ? (
+                                  <img
+                                    src={getImageUrl(admin.image)}
+                                    alt={admin.name}
+                                    className="w-20 h-20 rounded-[28px] object-cover border-4 border-white shadow-xl relative z-0"
                                   />
-                                </div>
-
-                                <div className="relative mb-4">
-                                  <div className="absolute inset-0 bg-blue-500/10 rounded-3xl blur-2xl group-hover:bg-blue-500/20 transition-all duration-500" />
-                                  {admin.image ? (
-                                    <img
-                                      src={getImageUrl(admin.image)}
-                                      alt={admin.name}
-                                      className="w-20 h-20 rounded-[28px] object-cover border-4 border-white shadow-xl relative z-0"
-                                    />
-                                  ) : (
-                                    <div className="w-20 h-20 rounded-[28px] bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center border-4 border-white shadow-xl relative z-0">
-                                      <span className="text-2xl font-black text-white">
-                                        {admin.name?.charAt(0).toUpperCase()}
-                                      </span>
-                                    </div>
-                                  )}
-                                </div>
-
-                                <h5 className="text-lg font-black text-[#18254D] tracking-tight mb-1">
-                                  {admin.name}
-                                </h5>
-                                <div className="flex items-center gap-1.5 text-slate-500 mb-4 px-3 py-1 bg-slate-50 rounded-full border border-slate-100">
-                                  <Mail size={12} strokeWidth={2.5} />
-                                  <p className="text-[11px] font-bold truncate max-w-[150px]">
-                                    {admin.email}
-                                  </p>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-2 w-full">
-                                  <div className="px-3 py-2 bg-blue-50 border border-blue-100/50 rounded-2xl flex flex-col items-center gap-1">
-                                    <span className="text-[9px] font-black text-blue-400 uppercase tracking-widest">
-                                      Role
-                                    </span>
-                                    <span className="text-[11px] font-bold text-blue-700 uppercase">
-                                      {admin.role}
+                                ) : (
+                                  <div className="w-20 h-20 rounded-[28px] bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center border-4 border-white shadow-xl relative z-0">
+                                    <span className="text-2xl font-black text-white">
+                                      {admin.name?.charAt(0).toUpperCase()}
                                     </span>
                                   </div>
-                                  <div
-                                    className={`px-3 py-2 border rounded-2xl flex flex-col items-center gap-1 ${admin.status === "Active" ? "bg-emerald-50 border-emerald-100 text-emerald-700" : "bg-rose-50 border-rose-100 text-rose-700"}`}
+                                )}
+                              </div>
+
+                              <h5 className="text-lg font-black text-[#18254D] tracking-tight mb-1">
+                                {admin.name}
+                              </h5>
+                              <div className="flex items-center gap-1.5 text-slate-500 mb-4 px-3 py-1 bg-slate-50 rounded-full border border-slate-100">
+                                <Mail size={12} strokeWidth={2.5} />
+                                <p className="text-[11px] font-bold truncate max-w-[150px]">
+                                  {admin.email}
+                                </p>
+                              </div>
+
+                              <div className="grid grid-cols-2 gap-2 w-full">
+                                <div className="px-3 py-2 bg-blue-50 border border-blue-100/50 rounded-2xl flex flex-col items-center gap-1">
+                                  <span className="text-[9px] font-black text-blue-400 uppercase tracking-widest">
+                                    Role
+                                  </span>
+                                  <span className="text-[11px] font-bold text-blue-700 uppercase">
+                                    {admin.role}
+                                  </span>
+                                </div>
+                                <div
+                                  className={`px-3 py-2 border rounded-2xl flex flex-col items-center gap-1 ${admin.status === "Active" ? "bg-emerald-50 border-emerald-100 text-emerald-700" : "bg-rose-50 border-rose-100 text-rose-700"}`}
+                                >
+                                  <span
+                                    className={`text-[9px] font-black uppercase tracking-widest ${admin.status === "Active" ? "text-emerald-400" : "text-rose-400"}`}
                                   >
-                                    <span
-                                      className={`text-[9px] font-black uppercase tracking-widest ${admin.status === "Active" ? "text-emerald-400" : "text-rose-400"}`}
+                                    Status
+                                  </span>
+                                  <span className="text-[11px] font-bold uppercase">
+                                    {admin.status}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="mt-auto px-6 pb-2 pt-2">
+                              <div className="flex justify-between">
+                                {admin.role !== "Root Admin" && (
+                                  <>
+                                    <button
+                                      onClick={() =>
+                                        handleStartEditAdmin(admin)
+                                      }
+                                      className="p-2 hover:bg-white hover:text-blue-600 hover:shadow-sm rounded-xl transition-all text-slate-400"
+                                      title="Edit Profile"
                                     >
-                                      Status
-                                    </span>
-                                    <span className="text-[11px] font-bold uppercase">
-                                      {admin.status}
-                                    </span>
-                                  </div>
-                                </div>
+                                      <Edit2 size={16} />
+                                    </button>
+                                    <button
+                                      onClick={() =>
+                                        handleDeleteAdmin(admin.id)
+                                      }
+                                      className="p-2 hover:bg-white hover:text-rose-600 hover:shadow-sm rounded-xl transition-all text-slate-400"
+                                      title="Delete Admin"
+                                    >
+                                      <Trash2 size={16} />
+                                    </button>
+                                  </>
+                                )}
                               </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
 
-                              <div className="mt-auto px-6 pb-2 pt-2">
-                                <div className="flex justify-between">
-                                  {admin.role !== "Root Admin" && (
-                                    <>
-                                        <button
-                                          onClick={() =>
-                                            handleStartEditAdmin(admin)
-                                          }
-                                          className="p-2 hover:bg-white hover:text-blue-600 hover:shadow-sm rounded-xl transition-all text-slate-400"
-                                          title="Edit Profile"
-                                        >
-                                          <Edit2 size={16} />
-                                        </button>
-                                        <button
-                                          onClick={() =>
-                                            handleDeleteAdmin(admin.id)
-                                          }
-                                          className="p-2 hover:bg-white hover:text-rose-600 hover:shadow-sm rounded-xl transition-all text-slate-400"
-                                          title="Delete Admin"
-                                        >
-                                          <Trash2 size={16} />
-                                        </button>
-                                    </>
-                                  )}
-                                </div>
-                              </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Admin Creation Toast Notification */}
-                  {showAdminToast && (
-                    <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 animate-fade-in">
-                      <div className="flex items-center gap-3 px-5 py-3 bg-primary text-white rounded-xl shadow-lg shadow-primary/30 border border-white/10 min-w-[320px]">
-                        <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center shrink-0">
-                          <Check size={14} className="text-white" />
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-xs font-bold tracking-wide text-center">
-                            {adminToastMessage}
-                          </p>
+                    {/* Admin Creation Toast Notification */}
+                    {showAdminToast && (
+                      <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 animate-fade-in">
+                        <div className="flex items-center gap-3 px-5 py-3 bg-primary text-white rounded-xl shadow-lg shadow-primary/30 border border-white/10 min-w-[320px]">
+                          <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+                            <Check size={14} className="text-white" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-xs font-bold tracking-wide text-center">
+                              {adminToastMessage}
+                            </p>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  )}
+                    )}
                   </div>
                 </div>
               </div>
@@ -2264,19 +2256,19 @@ const Settings = ({
                     <div className="absolute top-0 right-0 w-96 h-96 bg-white rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
                     <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-400 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
                   </div>
-                  
+
                   <div className="relative">
                     <div className="flex items-center gap-4 mb-4">
                       <div>
                         <h3 className="text-3xl md:text-4xl font-black text-white mb-2 tracking-tight">
-                        Data Export Center</h3>
+                          Data Export Center</h3>
                         <p className="text-white/70 font-medium">Download your CRM data in CSV format for analysis and
-                      reporting.</p>
+                          reporting.</p>
                       </div>
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {/* Enquiries Export */}
                   <div className="group bg-white border border-slate-200/60 rounded-[20px] p-6 hover:border-slate-300 hover:shadow-lg transition-all duration-300 flex flex-col">
@@ -2487,7 +2479,7 @@ const Settings = ({
                     </button>
                   </div> */}
                 </div>
-{/* 
+                {/* 
                 <div className="bg-slate-50 border border-slate-200 rounded-[20px] p-6">
                   <div className="flex items-start gap-4">
                     <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center flex-shrink-0">
