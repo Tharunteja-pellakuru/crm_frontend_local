@@ -1871,6 +1871,61 @@ function AppRoutes() {
     );
   }
 
+  async function handleEditEnquiry(updatedData) {
+    try {
+      const res = await fetch(`${BASE_URL}/api/update-enquiry/${updatedData.id}`, {
+        method: "PUT",
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          full_name: updatedData.name,
+          email: updatedData.email,
+          phone_number: updatedData.phone,
+          website_url: updatedData.website,
+          source: updatedData.source,
+          message: updatedData.message,
+        }),
+      });
+
+      if (res.ok) {
+        const result = await res.json();
+        const updatedEnquiry = {
+          id: result.enquiry.enquiry_id,
+          name: result.enquiry.full_name,
+          email: result.enquiry.email,
+          phone: result.enquiry.phone_number,
+          website: result.enquiry.website_url,
+          source: result.enquiry.source || "",
+          message: result.enquiry.message,
+          status: result.enquiry.status.toLowerCase(),
+          date: result.enquiry.created_at,
+          remarks: result.enquiry.remarks || "",
+          createdByName: result.enquiry.created_by_name || null,
+        };
+
+        setEnquiries((prev) =>
+          prev.map((e) => (e.id == updatedEnquiry.id ? updatedEnquiry : e))
+        );
+
+        // Sync leads state if this enquiry is Converted
+        if (updatedEnquiry.status === "converted") {
+          await refreshLeads();
+          await refreshClients();
+        }
+
+        toast.success("Enquiry updated successfully!");
+        return true;
+      } else {
+        const errorData = await res.json();
+        toast.error(errorData.message || "Failed to update enquiry.");
+        return false;
+      }
+    } catch (err) {
+      console.error("Error editing enquiry:", err);
+      toast.error("An error occurred while editing enquiry.");
+      return false;
+    }
+  }
+
   function handleAddEnquiry(data) {
     setEnquiries([
       {
@@ -2171,6 +2226,7 @@ function AppRoutes() {
               }}
               onUpdate={handleUpdateEnquiryStatus}
               onAdd={handleAddEnquiry}
+              onEdit={handleEditEnquiry}
             />
           }
         />

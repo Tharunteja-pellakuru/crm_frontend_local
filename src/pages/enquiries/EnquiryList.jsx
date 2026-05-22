@@ -36,6 +36,7 @@ import {
   Filter,
   Share2,
   Users,
+  Pencil,
 } from "lucide-react";
 import favIcon from "../../assets/fav-icon.png";
 import DatePicker from "../../components/ui/DatePicker";
@@ -60,6 +61,7 @@ const EnquiryList = ({
   onDeleteAll,
   onUpdate,
   onAdd,
+  onEdit,
   aiModels = [],
 }) => {
   const [activeTab, setActiveTab] = useState("new");
@@ -203,6 +205,17 @@ const EnquiryList = ({
     notes: "",
   });
   const [showSimulateForm, setShowSimulateForm] = useState(false);
+  const [showEditForm, setShowEditForm] = useState(false);
+  const [editFormData, setEditFormData] = useState({
+    id: "",
+    name: "",
+    email: "",
+    phone: "",
+    website: "",
+    source: "",
+    message: "",
+  });
+  const [isEditSourceDropdownOpen, setIsEditSourceDropdownOpen] = useState(false);
   const [isEnquiryStatusDropdownOpen, setIsEnquiryStatusDropdownOpen] =
     useState(false);
   const [isSourceDropdownOpen, setIsSourceDropdownOpen] = useState(false);
@@ -220,7 +233,7 @@ const EnquiryList = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Lock scroll when any modal is open
-  useScrollLock(leadModalOpen || holdModalOpen || showSimulateForm || showDeleteAllModal);
+  useScrollLock(leadModalOpen || holdModalOpen || showSimulateForm || showDeleteAllModal || showEditForm);
 
   // Auto-select default model for AI Analysis
   useEffect(() => {
@@ -593,6 +606,62 @@ const EnquiryList = ({
     } catch (err) {
       console.error("Add Enquiry Failed:", err);
       toast.error("Failed to add enquiry.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const openEditModal = (enquiry) => {
+    setEditFormData({
+      id: enquiry.id,
+      name: enquiry.name || "",
+      email: enquiry.email || "",
+      phone: enquiry.phone || "",
+      website: enquiry.website || "",
+      source: enquiry.source || "",
+      message: enquiry.message || "",
+    });
+    setShowEditForm(true);
+  };
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+
+    const isValid = validateForm(editFormData, {
+      name: {
+        required: true,
+        minLength: 2,
+        label: "Full Name",
+        pattern: /^[a-zA-Z\s]+$/,
+        errorMessage: "Full Name must contain only alphabets.",
+      },
+      email: {
+        required: false,
+        pattern: EMAIL_PATTERN,
+        label: "Email",
+        errorMessage: "Enter a valid email address.",
+      },
+      phone: {
+        required: true,
+        minLength: 10,
+        label: "Phone Number",
+        pattern: /^\d+$/,
+        errorMessage: "Phone Number must be at least 10 digits.",
+      },
+      message: { required: true, label: "Note / Requirement Briefing" },
+    });
+
+    if (!isValid) return;
+
+    setIsSubmitting(true);
+    try {
+      const success = await onEdit({ ...editFormData });
+      if (success) {
+        setShowEditForm(false);
+      }
+    } catch (err) {
+      console.error("Edit Enquiry Failed:", err);
+      toast.error("Failed to edit enquiry.");
     } finally {
       setIsSubmitting(false);
     }
@@ -1163,6 +1232,14 @@ const EnquiryList = ({
                       <UserX className="group-hover/dismiss:rotate-90 transition-transform shrink-0 w-3.5 h-3.5" />
                       Dismiss
                     </button>
+                    <button
+                      type="button"
+                      onClick={() => openEditModal(enquiry)}
+                      className="w-full sm:w-auto flex-1 sm:flex-none py-2 px-4 flex items-center justify-center gap-1.5 text-slate-500 border border-slate-200 rounded-xl hover:bg-slate-50 transition-all font-bold tracking-wider text-xs uppercase btn-animated whitespace-nowrap"
+                    >
+                      <Pencil className="shrink-0 w-3.5 h-3.5" />
+                      Edit
+                    </button>
                   </>
                 ) : activeTab === "hold" ? (
                   <>
@@ -1184,6 +1261,14 @@ const EnquiryList = ({
                     >
                       <UserX className="group-hover/dismiss:rotate-90 transition-transform shrink-0 w-3.5 h-3.5" />
                       Dismiss
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => openEditModal(enquiry)}
+                      className="w-full sm:w-auto flex-1 sm:flex-none py-2 px-4 flex items-center justify-center gap-1.5 text-slate-500 border border-slate-200 rounded-xl hover:bg-slate-50 transition-all font-bold tracking-wider text-xs uppercase btn-animated whitespace-nowrap"
+                    >
+                      <Pencil className="shrink-0 w-3.5 h-3.5" />
+                      Edit
                     </button>
                   </>
                 ) : (
@@ -1207,6 +1292,14 @@ const EnquiryList = ({
                     >
                       <Trash2 className="shrink-0 w-3.5 h-3.5" />
                       <span>Delete</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => openEditModal(enquiry)}
+                      className="w-full sm:w-auto flex-1 sm:flex-none py-2 px-4 flex items-center justify-center gap-1.5 text-slate-500 border border-slate-200 rounded-xl hover:bg-slate-50 transition-all font-bold tracking-wider text-xs uppercase btn-animated whitespace-nowrap"
+                    >
+                      <Pencil className="shrink-0 w-3.5 h-3.5" />
+                      Edit
                     </button>
                   </>
                 )}
@@ -1498,6 +1591,244 @@ const EnquiryList = ({
                     ) : (
                       <>
                         <span>Add Enquiry</span>
+                        <Send
+                          size={14}
+                          strokeWidth={2.5}
+                          className="group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform"
+                        />
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>,
+          document.body,
+        )}
+
+      {showEditForm &&
+        createPortal(
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[99999] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+            <div className="absolute inset-0" onClick={() => setShowEditForm(false)} />
+            <div className="relative z-10 bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-slate-100 overflow-hidden animate-pop flex flex-col max-h-[90vh]">
+              <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 shrink-0">
+                <div>
+                  <h3 className="text-base font-bold text-[#18254D] tracking-tight">
+                    Edit Enquiry
+                  </h3>
+                  <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider mt-0.5">
+                    Update details
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowEditForm(false)}
+                  className="p-1.5 hover:bg-slate-200 rounded-xl text-slate-400 transition-all"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+              <form
+                onSubmit={handleEditSubmit}
+                className="p-6 space-y-5 overflow-y-auto no-scrollbar"
+              >
+                <div className="space-y-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
+                      Full Name <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                      required
+                      type="text"
+                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200"
+                      placeholder="e.g. John Doe"
+                      value={editFormData.name}
+                      onChange={(e) =>
+                        setEditFormData({
+                          ...editFormData,
+                          name: e.target.value.replace(/[^a-zA-Z\s]/g, ""),
+                        })
+                      }
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
+                        Email
+                      </label>
+                      <input
+                        type="email"
+                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200"
+                        placeholder="e.g. john@gmail.com"
+                        value={editFormData.email}
+                        onChange={(e) =>
+                          setEditFormData({ ...editFormData, email: e.target.value })
+                        }
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
+                        Phone <span className="text-rose-500">*</span>
+                      </label>
+                      <input
+                        type="tel"
+                        required
+                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200"
+                        placeholder="e.g. 9876543210"
+                        value={editFormData.phone}
+                        onChange={(e) =>
+                          setEditFormData({
+                            ...editFormData,
+                            phone: e.target.value.replace(/\D/g, ""),
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
+                        Website URL (Optional)
+                      </label>
+                      <input
+                        type="text"
+                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200"
+                        placeholder="e.g. www.example.com"
+                        value={editFormData.website}
+                        onChange={(e) =>
+                          setEditFormData({ ...editFormData, website: e.target.value })
+                        }
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
+                        Source (Optional)
+                      </label>
+                      <div className="relative">
+                        <button
+                          type="button"
+                          onClick={() => setIsEditSourceDropdownOpen(!isEditSourceDropdownOpen)}
+                          className="w-full h-10 flex items-center justify-between px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold shadow-sm hover:border-[#18254D]/30 transition-all text-[#18254D]"
+                        >
+                          <span className={editFormData.source ? "text-[#18254D]" : "text-slate-400 font-medium"}>
+                            {editFormData.source || "Select a source..."}
+                          </span>
+                          <ChevronDown
+                            size={16}
+                            className={`text-slate-400 transition-transform duration-200 ${isEditSourceDropdownOpen ? "rotate-180" : ""}`}
+                          />
+                        </button>
+
+                        {isEditSourceDropdownOpen && (
+                          <>
+                            <div
+                              className="fixed inset-0 z-[80]"
+                              onClick={() => setIsEditSourceDropdownOpen(false)}
+                            />
+                            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-pop origin-top">
+                              <div className="bg-[#18254D] px-4 py-2.5 border-b border-white/10">
+                                <p className="text-[10px] font-bold text-white/50 tracking-wider uppercase">
+                                  Select Source
+                                </p>
+                              </div>
+                              {/* Meta Ad */}
+                              <button
+                                type="button"
+                                onClick={() => { setEditFormData({ ...editFormData, source: "Meta Ad (Insta/FB)" }); setIsEditSourceDropdownOpen(false); }}
+                                className={`w-full text-left px-4 py-2.5 text-xs font-semibold tracking-wider transition-colors ${ editFormData.source === "Meta Ad (Insta/FB)" ? "bg-slate-100 text-[#18254D]" : "text-[#18254D] hover:bg-slate-50" }`}
+                              >
+                                <div className="flex items-center gap-2.5">
+                                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" fill="#E1306C"/>
+                                  </svg>
+                                  <span>Meta Ad (Insta/FB)</span>
+                                </div>
+                              </button>
+
+                              {/* LinkedIn */}
+                              <button
+                                type="button"
+                                onClick={() => { setEditFormData({ ...editFormData, source: "LinkedIn" }); setIsEditSourceDropdownOpen(false); }}
+                                className={`w-full text-left px-4 py-2.5 text-xs font-semibold tracking-wider transition-colors ${ editFormData.source === "LinkedIn" ? "bg-slate-100 text-[#18254D]" : "text-[#18254D] hover:bg-slate-50" }`}
+                              >
+                                <div className="flex items-center gap-2.5">
+                                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.225 0h.003z" fill="#0077B5"/>
+                                  </svg>
+                                  <span>LinkedIn</span>
+                                </div>
+                              </button>
+
+                              {/* Referral */}
+                              <button
+                                type="button"
+                                onClick={() => { setEditFormData({ ...editFormData, source: "Referral" }); setIsEditSourceDropdownOpen(false); }}
+                                className={`w-full text-left px-4 py-2.5 text-xs font-semibold tracking-wider transition-colors ${ editFormData.source === "Referral" ? "bg-slate-100 text-[#18254D]" : "text-[#18254D] hover:bg-slate-50" }`}
+                              >
+                                <div className="flex items-center gap-2.5">
+                                  <Users size={13} className="text-[#8B5CF6]" />
+                                  <span>Referral</span>
+                                </div>
+                              </button>
+
+                              {/* Selyst */}
+                              <button
+                                type="button"
+                                onClick={() => { setEditFormData({ ...editFormData, source: "Selyst" }); setIsEditSourceDropdownOpen(false); }}
+                                className={`w-full text-left px-4 py-2.5 text-xs font-semibold tracking-wider transition-colors ${ editFormData.source === "Selyst" ? "bg-slate-100 text-[#18254D]" : "text-[#18254D] hover:bg-slate-50" }`}
+                              >
+                                <div className="flex items-center gap-2.5">
+                                  <Globe size={13} className="text-[#F97316]" />
+                                  <span>Selyst</span>
+                                </div>
+                              </button>
+
+                              {/* eParivartan */}
+                              <button
+                                type="button"
+                                onClick={() => { setEditFormData({ ...editFormData, source: "eParivartan" }); setIsEditSourceDropdownOpen(false); }}
+                                className={`w-full text-left px-4 py-2.5 text-xs font-semibold tracking-wider transition-colors ${ editFormData.source === "eParivartan" ? "bg-slate-100 text-[#18254D]" : "text-[#18254D] hover:bg-slate-50" }`}
+                              >
+                                <div className="flex items-center gap-2.5">
+                                  <img src={favIcon} alt="eParivartan" className="w-3.5 h-3.5 object-contain rounded-sm" />
+                                  <span>eParivartan</span>
+                                </div>
+                              </button>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
+                      Note / Requirement Briefing <span className="text-rose-500">*</span>
+                    </label>
+                    <textarea
+                      required
+                      rows={4}
+                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200 resize-none animate-pop"
+                      placeholder="Describe the enquiry or message..."
+                      value={editFormData.message}
+                      onChange={(e) =>
+                        setEditFormData({ ...editFormData, message: e.target.value })
+                      }
+                    />
+                  </div>
+                </div>
+                <div className="pt-2">
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full h-12 bg-[#18254D] text-white rounded-xl text-xs font-bold tracking-wider shadow-lg active:scale-[0.97] transition-all hover:bg-[#1e2e5e] hover:shadow-xl flex items-center justify-center gap-2 group/btn disabled:opacity-70 disabled:cursor-not-allowed btn-animated"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <span>Saving Changes...</span>
+                        <Loader2 size={16} className="animate-spin" />
+                      </>
+                    ) : (
+                      <>
+                        <span>Save Changes</span>
                         <Send
                           size={14}
                           strokeWidth={2.5}
