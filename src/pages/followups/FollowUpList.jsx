@@ -25,6 +25,8 @@ import {
   Loader2,
   User,
   Mail,
+  LayoutGrid,
+  AlertTriangle,
 } from "lucide-react";
 import SearchableDropdown from "../../components/common/SearchableDropdown";
 import {
@@ -39,6 +41,8 @@ const parseLocalDate = (dateStr) => {
   if (!dateStr) return new Date();
   if (dateStr instanceof Date) return dateStr;
   
+  // - [x] 4. Update Table Wrapper
+  // - [x] 5. Update Action Buttons with Colored Backgrounds & Tooltips
   // If the date string contains a 'T' but ends with 'Z', it might be treated as UTC.
   // If we want to treat it as local time, we should replace T with a space and remove Z.
   // This is a common fix when backends return local times as ISO UTC strings.
@@ -571,6 +575,58 @@ const FollowUpList = ({
           </div>
         </div>
 
+        {/* Stat Cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          {/* Total Card */}
+          <div className="bg-white p-3 sm:p-5 rounded-2xl shadow-sm border border-slate-200 hover:-translate-y-1 hover:shadow-md transition-all duration-300">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <div className="p-2 sm:p-3 rounded-full bg-blue-50 text-blue-500 shrink-0">
+                <LayoutGrid className="w-5 h-5 sm:w-6 sm:h-6" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-slate-500 text-[10px] sm:text-xs font-semibold truncate">Total Pending</h3>
+                <p className="text-lg sm:text-2xl font-bold text-[#18254D] leading-none mt-1">{tabCounts.All}</p>
+              </div>
+            </div>
+          </div>
+          {/* Overdue Card */}
+          <div className="bg-white p-3 sm:p-5 rounded-2xl shadow-sm border border-slate-200 hover:-translate-y-1 hover:shadow-md transition-all duration-300">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <div className="p-2 sm:p-3 rounded-full bg-rose-50 text-rose-500 shrink-0">
+                <AlertTriangle className="w-5 h-5 sm:w-6 sm:h-6" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-slate-500 text-[10px] sm:text-xs font-semibold truncate">Overdue</h3>
+                <p className="text-lg sm:text-2xl font-bold text-[#18254D] leading-none mt-1">{tabCounts.Overdue}</p>
+              </div>
+            </div>
+          </div>
+          {/* Today Card */}
+          <div className="bg-white p-3 sm:p-5 rounded-2xl shadow-sm border border-slate-200 hover:-translate-y-1 hover:shadow-md transition-all duration-300">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <div className="p-2 sm:p-3 rounded-full bg-amber-50 text-amber-500 shrink-0">
+                <Clock className="w-5 h-5 sm:w-6 sm:h-6" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-slate-500 text-[10px] sm:text-xs font-semibold truncate">Today</h3>
+                <p className="text-lg sm:text-2xl font-bold text-[#18254D] leading-none mt-1">{tabCounts.Today}</p>
+              </div>
+            </div>
+          </div>
+          {/* Upcoming Card */}
+          <div className="bg-white p-3 sm:p-5 rounded-2xl shadow-sm border border-slate-200 hover:-translate-y-1 hover:shadow-md transition-all duration-300">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <div className="p-2 sm:p-3 rounded-full bg-sky-50 text-sky-500 shrink-0">
+                <Calendar className="w-5 h-5 sm:w-6 sm:h-6" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-slate-500 text-[10px] sm:text-xs font-semibold truncate">Upcoming</h3>
+                <p className="text-lg sm:text-2xl font-bold text-[#18254D] leading-none mt-1">{tabCounts.Upcoming}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Control Bar: Filters */}
         <div className="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm relative z-[60]">
           <div className="flex flex-col md:flex-row md:justify-between gap-4 w-full items-center">
@@ -665,28 +721,10 @@ const FollowUpList = ({
                       </div>
 
                       {/* Scrollable Body */}
-                      <div className="flex-1 p-5 space-y-4 overflow-y-auto custom-scrollbar">
-                          {/* {typeFilter === "Active" && (
-                            <div className="space-y-3">
-                              <label className="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase ml-1">
-                                Project Category
-                              </label>
-                              <SearchableDropdown
-                                placeholder="Select Category..."
-                                options={["All", "Tech", "Social Media"].map(cat => ({
-                                  label: cat.toUpperCase(),
-                                  value: cat
-                                }))}
-                                value={categoryFilter}
-                                onChange={setCategoryFilter}
-                              />
-                            </div>
-                          )} */}
-
-                        {typeFilter === "Active" && <div className="h-px bg-slate-100/50" />}
+                      <div className="flex-1 p-4 space-y-2 overflow-y-auto custom-scrollbar">
 
                         {/* Priority Filter */}
-                        <div className="space-y-3">
+                        <div className="space-y-1.5">
                           <label className="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase ml-1">
                             Priority
                           </label>
@@ -701,10 +739,8 @@ const FollowUpList = ({
                           />
                         </div>
 
-                        <div className="h-px bg-slate-100/50" />
-
                         {/* Meeting Mode Filter */}
-                        <div className="space-y-3">
+                        <div className="space-y-1.5">
                           <label className="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase ml-1">
                             Meeting Mode
                           </label>
@@ -719,10 +755,8 @@ const FollowUpList = ({
                           />
                         </div>
 
-                        <div className="h-px bg-slate-100/50" />
-
                         {/* Follow Status Filter */}
-                        <div className="space-y-3">
+                        <div className="space-y-1.5">
                           <label className="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase ml-1">
                             Follow Status
                           </label>
@@ -737,14 +771,12 @@ const FollowUpList = ({
                           />
                         </div>
 
-                        <div className="h-px bg-slate-100/50" />
-
                         {/* Date Range Section */}
-                        <div className="space-y-3">
+                        <div className="space-y-1.5">
                           <label className="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase ml-1">
                             Follow-up Date Range
                           </label>
-                          <div className="grid grid-cols-2 gap-3">
+                          <div className="grid grid-cols-2 gap-2">
                             <DatePicker
                               label="From"
                               value={startDate}
@@ -776,40 +808,20 @@ const FollowUpList = ({
             </div>
           </div>
         </div>
-        <div className="flex justify-center my-4 w-full px-1 sm:px-0">
-          <div className="relative flex flex-nowrap bg-slate-100/50 p-0.5 rounded-[14px] border border-slate-200 shadow-sm leading-none w-full sm:w-auto items-center gap-0 overflow-hidden">
-            {/* Moving Indicator */}
-            <div
-              className="absolute top-[2px] bottom-[2px] left-[2px] bg-white rounded-[11px] shadow-sm transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] border border-white/20 z-0"
-              style={{
-                width: "calc(25% - 2px)",
-                transform: `translateX(${["All", "Overdue", "Today", "Upcoming"].indexOf(activeFilter) * 100}%)`,
-              }}
-            />
-
-            {["All", "Overdue", "Today", "Upcoming"].map((f) => (
-              <button
-                key={f}
-                onClick={() => setActiveFilter(f)}
-                className={`relative z-10 flex-1 sm:flex-none px-2 sm:px-5 py-2.5 sm:py-2 rounded-xl text-[10px] sm:text-[12px] font-bold tracking-wider transition-all duration-300 flex items-center justify-center gap-1.5 min-w-[75px] sm:min-w-[110px] h-[30px] sm:h-[36px] whitespace-nowrap active:scale-95 ${
-                  activeFilter === f
-                    ? "text-[#18254D] scale-[1.02]"
-                    : "text-slate-400 hover:text-[#18254D]/60"
-                }`}
-              >
-                <span>{f}</span>
-                <span
-                  className={`min-w-[18px] h-4.5 px-1.5 rounded-full text-[10px] sm:text-[12px] font-black flex items-center justify-center transition-colors duration-300 ${
-                    activeFilter === f
-                      ? "bg-[#18254D] text-white"
-                      : "bg-slate-200 text-slate-500"
-                  }`}
-                >
-                  {tabCounts[f]}
-                </span>
-              </button>
-            ))}
-          </div>
+        {/* View Toggles (Pill Style) */}
+        <div className="flex flex-wrap justify-center sm:justify-start gap-2 sm:gap-3 my-4 w-full px-1 sm:px-0">
+          <button onClick={() => setActiveFilter("All")} className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${activeFilter === "All" || !["Overdue","Today","Upcoming"].includes(activeFilter) ? "bg-[#0F172A] text-white border-[#0F172A]" : "bg-white text-[#0F172A] border-slate-200 hover:bg-slate-50"}`}>
+             <LayoutGrid size={16} /> All
+          </button>
+          <button onClick={() => setActiveFilter("Overdue")} className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${activeFilter === "Overdue" ? "bg-[#FEF2F2] text-[#E11D48] border-[#FECACA]" : "bg-white text-[#E11D48] border-[#FECACA] hover:bg-[#FEF2F2]"}`}>
+             <AlertTriangle size={16} /> Overdue
+          </button>
+          <button onClick={() => setActiveFilter("Today")} className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${activeFilter === "Today" ? "bg-[#FFF9ED] text-[#B45309] border-[#FDE68A]" : "bg-white text-[#B45309] border-[#FDE68A] hover:bg-[#FFF9ED]"}`}>
+             <Clock size={16} /> Today
+          </button>
+          <button onClick={() => setActiveFilter("Upcoming")} className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${activeFilter === "Upcoming" ? "bg-[#F0F9FF] text-[#0284C7] border-[#BAE6FD]" : "bg-white text-[#0284C7] border-[#BAE6FD] hover:bg-[#F0F9FF]"}`}>
+             <Calendar size={16} /> Upcoming
+          </button>
         </div>
 
         <div className="flex flex-col gap-3 w-full">
@@ -963,14 +975,16 @@ const FollowUpList = ({
                                 setShowCompletionModal(true);
                               }
                             }}
-                            className={`w-8 h-8 rounded-lg border transition-all flex items-center justify-center shrink-0 ${
+                            className={`w-[34px] h-[34px] rounded-[10px] border transition-all flex items-center justify-center shrink-0 active:scale-90 shadow-sm relative group/btn ${
                               f.status === "completed" 
-                                ? "bg-success border-success text-white shadow-sm shadow-success/20" 
-                                : "bg-white border-slate-200 text-slate-300 hover:border-success hover:text-success hover:bg-success/5"
+                                ? "bg-amber-50/50 border-amber-100 text-amber-500 hover:bg-amber-100" 
+                                : "bg-emerald-50/50 border-emerald-100 text-emerald-500 hover:bg-emerald-100"
                             }`}
-                            title={f.status === "completed" ? "Mark as Pending" : "Mark as Completed"}
                           >
-                            {f.status === "completed" ? <Check size={16} strokeWidth={4} /> : <CheckCircle2 size={14} strokeWidth={3} />}
+                            {f.status === "completed" ? <Clock size={16} strokeWidth={2.5} /> : <CheckCircle2 size={16} strokeWidth={2.5} />}
+                            <div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">
+                              {f.status === "completed" ? "Mark as Pending" : "Mark as Completed"}
+                            </div>
                           </button>
 
                           {f.status !== "completed" && (
@@ -979,15 +993,16 @@ const FollowUpList = ({
                                 e.stopPropagation();
                                 handleAddToCalendar(f);
                               }}
-                              className="w-8 h-8 bg-white border border-slate-200 text-slate-400 rounded-lg hover:text-blue-500 hover:border-blue-500/30 transition-all flex items-center justify-center"
-                              title="Add to Google Calendar"
+                              className="w-[34px] h-[34px] flex items-center justify-center bg-indigo-50/50 border border-indigo-100 rounded-[10px] text-indigo-500 hover:bg-indigo-100 transition-all active:scale-90 shadow-sm relative group/btn"
                             >
-                              <Calendar size={14} />
+                              <Calendar size={16} strokeWidth={2.5} />
+                              <div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">
+                                Add to Google Calendar
+                              </div>
                             </button>
                           )}
 
                           <button
-
                             onClick={(e) => {
                               e.stopPropagation();
                               let compDate = new Date().toISOString().split("T")[0];
@@ -1021,10 +1036,12 @@ const FollowUpList = ({
                               });
                               setShowAddModal(true);
                             }}
-                            className="w-8 h-8 bg-white border border-slate-200 text-slate-400 rounded-lg hover:text-primary hover:border-primary/30 transition-all flex items-center justify-center"
-                            title="Edit"
+                            className="w-[34px] h-[34px] flex items-center justify-center bg-blue-50/50 border border-blue-100 rounded-[10px] text-blue-500 hover:bg-blue-100 transition-all active:scale-90 shadow-sm relative group/btn"
                           >
-                            <Edit2 size={14} />
+                            <Edit2 size={16} />
+                            <div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">
+                              Edit
+                            </div>
                           </button>
 
                           <button
@@ -1032,10 +1049,12 @@ const FollowUpList = ({
                               e.stopPropagation();
                               onDeleteFollowUp && onDeleteFollowUp(f.id);
                             }}
-                            className="w-8 h-8 bg-white border border-slate-200 text-slate-400 rounded-lg hover:text-error hover:border-error/30 transition-all flex items-center justify-center"
-                            title="Delete"
+                            className="w-[34px] h-[34px] flex items-center justify-center bg-rose-50/50 border border-rose-100 rounded-[10px] text-rose-500 hover:bg-rose-100 transition-all active:scale-90 shadow-sm relative group/btn"
                           >
-                            <Trash2 size={14} />
+                            <Trash2 size={16} />
+                            <div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">
+                              Delete
+                            </div>
                           </button>
                         </div>
                       </div>
