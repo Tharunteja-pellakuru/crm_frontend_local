@@ -1248,12 +1248,13 @@ const EnquiryList = ({
           <button
             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
             disabled={currentPage === 1}
-            className="p-2.5 rounded-xl border border-slate-200 bg-white text-slate-400 hover:text-[#18254D] hover:border-[#18254D] disabled:opacity-30 disabled:hover:border-slate-200 disabled:hover:text-slate-400 transition-all shadow-sm active:scale-95 btn-animated"
+            aria-label="Previous page"
+            className="h-10 w-10 flex items-center justify-center rounded-full border border-[#DBEAFE] bg-white text-[#3B82F6] shadow-sm transition-all duration-200 hover:bg-[#EFF6FF] hover:border-[#93C5FD] hover:text-[#2563EB] active:scale-95 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-300 disabled:hover:bg-slate-100 disabled:hover:border-slate-200 disabled:hover:text-slate-300"
           >
-            <ChevronLeft size={16} strokeWidth={2.5} />
+            <ChevronLeft size={17} strokeWidth={2.75} />
           </button>
 
-          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-2xl shadow-inner mx-2">
+          <div className="flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-200 rounded-full shadow-sm mx-2">
             {[...Array(totalPages)].map((_, i) => {
               const pageNum = i + 1;
               if (
@@ -1279,9 +1280,9 @@ const EnquiryList = ({
                 <button
                   key={pageNum}
                   onClick={() => setCurrentPage(pageNum)}
-                  className={`min-w-[32px] h-8 flex items-center justify-center rounded-lg text-sm font-black transition-all ${currentPage === pageNum
-                      ? "bg-[#18254D] text-white shadow-lg shadow-slate-300 scale-110"
-                      : "text-slate-400 hover:text-[#18254D] hover:bg-white"
+                  className={`min-w-8 h-8 px-2 flex items-center justify-center rounded-full text-[12px] font-black transition-all duration-200 ${currentPage === pageNum
+                      ? "bg-[#18254D] text-white shadow-md shadow-slate-300 scale-110"
+                      : "text-slate-500 hover:text-[#18254D] hover:bg-[#EFF6FF]"
                     }`}
                 >
                   {pageNum}
@@ -1293,9 +1294,10 @@ const EnquiryList = ({
           <button
             onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
             disabled={currentPage === totalPages}
-            className="p-2.5 rounded-xl border border-slate-200 bg-white text-slate-400 hover:text-[#18254D] hover:border-[#18254D] disabled:opacity-30 disabled:hover:border-slate-200 disabled:hover:text-slate-400 transition-all shadow-sm active:scale-95 btn-animated"
+            aria-label="Next page"
+            className="h-10 w-10 flex items-center justify-center rounded-full border border-[#DBEAFE] bg-white text-[#3B82F6] shadow-sm transition-all duration-200 hover:bg-[#EFF6FF] hover:border-[#93C5FD] hover:text-[#2563EB] active:scale-95 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-300 disabled:hover:bg-slate-100 disabled:hover:border-slate-200 disabled:hover:text-slate-300"
           >
-            <ChevronRight size={16} strokeWidth={2.5} />
+            <ChevronRight size={17} strokeWidth={2.75} />
           </button>
         </div>
       )}
