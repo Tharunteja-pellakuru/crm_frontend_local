@@ -169,8 +169,13 @@ function Sidebar({
                   </span>
                   {!isCollapsed && (
                     <span
-                      style={{ fontFamily: 'Inter, system-ui, sans-serif', fontSize: '14.8px', fontWeight: 500, lineHeight: '14.8px' }}
-                      className={`${isActive ? "text-[rgb(2,192,206)]" : ""}`}
+                      style={{
+                        fontFamily: "Inter, system-ui, sans-serif",
+                        fontSize: "14.8px",
+                        fontWeight: 500,
+                        lineHeight: "14.8px",
+                      }}
+                      className={isActive ? "text-[rgb(2,192,206)]" : "text-slate-500"}
                     >
                       {item.label}
                     </span>

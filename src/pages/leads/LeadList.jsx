@@ -29,12 +29,15 @@ import {
   Paperclip,
   UserX,
   RotateCcw,
-  MessageSquare,
+  BellRing,
   Clock,
   Calendar,
   AlertTriangle,
   User,
   Pencil,
+  LayoutGrid,
+  XCircle,
+  CheckCircle2,
 } from "lucide-react";
 import DatePicker from "../../components/ui/DatePicker";
 import { countries } from "../../utils/countries";
@@ -688,20 +691,12 @@ const LeadList = ({
     return (
       <div className="flex flex-col">
         <div className="flex items-center gap-2 text-primary">
-          <Phone size={12} className="text-secondary" />
-          <span className="text-xs font-bold whitespace-nowrap">
+          <Phone size={14} className="text-secondary" />
+          <span className="text-[13px] font-bold whitespace-nowrap">
             {countryCode ? `${countryCode} ` : ""}
             {phone || "N/A"}
           </span>
         </div>
-        {lead.email && (
-          <div className="flex items-center gap-2 text-slate-400 mt-1">
-            <Mail size={12} />
-            <span className="text-[12px] font-bold truncate max-w-[150px]">
-              {lead.email}
-            </span>
-          </div>
-        )}
       </div>
     );
   };
@@ -896,6 +891,23 @@ const LeadList = ({
     );
   }
 
+  const viewLeads = (leads || []).filter((lead) => {
+    if (!lead || typeof lead !== "object") return false;
+    if (leadView === "Pending") {
+      if (lead.isConverted || lead.status === "Dismissed") return false;
+    } else if (leadView === "Converted") {
+      if (!lead.isConverted || lead.status === "Dismissed") return false;
+    } else if (leadView === "Dismissed") {
+      if (lead.status !== "Dismissed") return false;
+    }
+    return true;
+  });
+
+  const totalLeadsCount = viewLeads.length;
+  const hotLeadsCount = viewLeads.filter((l) => l.leadType === "Hot").length;
+  const warmLeadsCount = viewLeads.filter((l) => l.leadType === "Warm").length;
+  const coldLeadsCount = viewLeads.filter((l) => l.leadType === "Cold").length;
+
   return (
     <div className="w-full relative">
       <div className="space-y-5 animate-fade-in w-full">
@@ -912,7 +924,7 @@ const LeadList = ({
           <div className="w-full lg:w-auto">
             <button
               onClick={() => setShowAddModal(true)}
-              className="w-full lg:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white rounded-2xl hover:bg-slate-800 transition-all text-[13px] font-bold  tracking-wider shadow-lg active:scale-95 group"
+              className="w-full lg:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white rounded-2xl hover:bg-slate-800 transition-all text-[13px] font-bold tracking-wider shadow-lg active:scale-95 group"
             >
               <Plus
                 size={16}
@@ -921,6 +933,58 @@ const LeadList = ({
               />
               Add Lead
             </button>
+          </div>
+        </div>
+
+        {/* Stat Cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          {/* Total Card */}
+          <div className="bg-white p-3 sm:p-5 rounded-2xl shadow-sm border border-slate-200 hover:-translate-y-1 hover:shadow-md transition-all duration-300">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <div className="p-2 sm:p-3 rounded-full bg-blue-50 text-blue-500 shrink-0">
+                <Briefcase className="w-5 h-5 sm:w-6 sm:h-6" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-slate-500 text-[10px] sm:text-xs font-semibold truncate">Total Leads</h3>
+                <p className="text-lg sm:text-2xl font-bold text-[#18254D] leading-none mt-1">{totalLeadsCount}</p>
+              </div>
+            </div>
+          </div>
+          {/* Hot Card */}
+          <div className="bg-white p-3 sm:p-5 rounded-2xl shadow-sm border border-slate-200 hover:-translate-y-1 hover:shadow-md transition-all duration-300">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <div className="p-2 sm:p-3 rounded-full bg-rose-50 text-rose-500 shrink-0">
+                <Flame className="w-5 h-5 sm:w-6 sm:h-6" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-slate-500 text-[10px] sm:text-xs font-semibold truncate">Hot Leads</h3>
+                <p className="text-lg sm:text-2xl font-bold text-[#18254D] leading-none mt-1">{hotLeadsCount}</p>
+              </div>
+            </div>
+          </div>
+          {/* Warm Card */}
+          <div className="bg-white p-3 sm:p-5 rounded-2xl shadow-sm border border-slate-200 hover:-translate-y-1 hover:shadow-md transition-all duration-300">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <div className="p-2 sm:p-3 rounded-full bg-amber-50 text-amber-500 shrink-0">
+                <Sun className="w-5 h-5 sm:w-6 sm:h-6" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-slate-500 text-[10px] sm:text-xs font-semibold truncate">Warm Leads</h3>
+                <p className="text-lg sm:text-2xl font-bold text-[#18254D] leading-none mt-1">{warmLeadsCount}</p>
+              </div>
+            </div>
+          </div>
+          {/* Cold Card */}
+          <div className="bg-white p-3 sm:p-5 rounded-2xl shadow-sm border border-slate-200 hover:-translate-y-1 hover:shadow-md transition-all duration-300">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <div className="p-2 sm:p-3 rounded-full bg-sky-50 text-sky-500 shrink-0">
+                <Snowflake className="w-5 h-5 sm:w-6 sm:h-6" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-slate-500 text-[10px] sm:text-xs font-semibold truncate">Cold Leads</h3>
+                <p className="text-lg sm:text-2xl font-bold text-[#18254D] leading-none mt-1">{coldLeadsCount}</p>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -1012,37 +1076,52 @@ const LeadList = ({
                       </div>
 
                       {/* Scrollable Body */}
-                      <div className="flex-1 p-5 space-y-4 overflow-y-auto custom-scrollbar">
+                      <div className="flex-1 p-4 space-y-2 overflow-y-auto custom-scrollbar">
                         {leadView === "Pending" && (
                           <>
                             {/* Lead Status Section */}
-                            <div className="space-y-3">
+                            <div className="space-y-1.5">
                               <label className="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase ml-1">
                                 Lead Status
                               </label>
                               <SearchableDropdown
                                 placeholder="Select Lead Status..."
                                 options={[
-                                  { label: "ALL", value: "All" },
-                                  { label: "HOT", value: "Hot" },
-                                  { label: "WARM", value: "Warm" },
-                                  { label: "COLD", value: "Cold" },
+                                  { 
+                                    label: <div className="flex items-center gap-2 text-slate-600"><LayoutGrid size={14} /> ALL</div>, 
+                                    name: "ALL",
+                                    value: "All" 
+                                  },
+                                  { 
+                                    label: <div className="flex items-center gap-2 text-red-500"><Flame size={14} /> HOT</div>, 
+                                    name: "HOT",
+                                    value: "Hot" 
+                                  },
+                                  { 
+                                    label: <div className="flex items-center gap-2 text-amber-500"><Sun size={14} /> WARM</div>, 
+                                    name: "WARM",
+                                    value: "Warm" 
+                                  },
+                                  { 
+                                    label: <div className="flex items-center gap-2 text-blue-500"><Snowflake size={14} /> COLD</div>, 
+                                    name: "COLD",
+                                    value: "Cold" 
+                                  },
                                 ]}
                                 value={leadTypeFilter}
                                 onChange={setLeadTypeFilter}
                               />
                             </div>
 
-                            <div className="h-px bg-slate-100/50" />
                           </>
                         )}
 
                         {/* Date Range Section */}
-                        <div className="space-y-3">
+                        <div className="space-y-1.5">
                           <label className="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase ml-1">
                             Date Range
                           </label>
-                          <div className="grid grid-cols-2 gap-3">
+                          <div className="grid grid-cols-2 gap-2">
                             <DatePicker
                               label="From"
                               value={startDate}
@@ -1075,62 +1154,42 @@ const LeadList = ({
           </div>
         </div>
 
-        {/* Lead View Toggles */}
-        <div className="flex justify-center my-4 w-full px-1 sm:px-0">
-          <div className="relative flex flex-nowrap bg-slate-100/50 p-0.5 rounded-[14px] border border-slate-200 shadow-sm leading-none w-full sm:w-auto items-center gap-0 overflow-hidden">
-            {/* Moving Indicator */}
-            <div
-              className="absolute top-[2px] bottom-[2px] left-[2px] bg-white rounded-[11px] shadow-sm transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] border border-white/20 z-0"
-              style={{
-                width: "calc(33.333% - 2px)",
-                transform: `translateX(${["Pending", "Converted", "Dismissed"].indexOf(leadView) * 100}%)`,
-              }}
-            />
-
-            {["Pending", "Converted", "Dismissed"].map((view) => {
-              const colors = {
-                Pending: "text-blue-600",
-                Converted: "text-emerald-600",
-                Dismissed: "text-rose-600",
-              };
-
-              return (
-                <button
-                  key={view}
-                  onClick={() => setLeadView(view)}
-                  className={`relative z-10 flex-1 sm:flex-none px-2 sm:px-5 py-2.5 sm:py-2 rounded-xl text-[10px] sm:text-[12px] font-bold tracking-wider transition-all duration-300 flex items-center justify-center min-w-[75px] sm:min-w-[110px] h-[30px] sm:h-[36px] whitespace-nowrap active:scale-95 ${
-                    leadView === view
-                      ? `${colors[view]} scale-[1.02]`
-                      : "text-slate-400 hover:text-slate-600"
-                  }`}
-                >
-                  {view}
-                </button>
-              );
-            })}
-          </div>
+        {/* Lead View Toggles (Pill Style) */}
+        <div className="flex flex-wrap justify-center sm:justify-start gap-2 sm:gap-3 my-4 w-full px-1 sm:px-0">
+          <button onClick={() => setLeadView("All")} className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${leadView === "All" || !["Pending","Converted","Dismissed"].includes(leadView) ? "bg-[#0F172A] text-white border-[#0F172A]" : "bg-white text-[#0F172A] border-slate-200 hover:bg-slate-50"}`}>
+             <LayoutGrid size={16} /> All
+          </button>
+          <button onClick={() => setLeadView("Pending")} className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${leadView === "Pending" ? "bg-[#FFF9ED] text-[#B45309] border-[#FDE68A]" : "bg-white text-[#B45309] border-[#FDE68A] hover:bg-[#FFF9ED]"}`}>
+             <Clock size={16} /> Pending
+          </button>
+          <button onClick={() => setLeadView("Converted")} className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${leadView === "Converted" ? "bg-[#ECFDF5] text-[#059669] border-[#A7F3D0]" : "bg-white text-[#059669] border-[#A7F3D0] hover:bg-[#ECFDF5]"}`}>
+             <CheckCircle2 size={16} /> Converted
+          </button>
+          <button onClick={() => setLeadView("Dismissed")} className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${leadView === "Dismissed" ? "bg-[#FEF2F2] text-[#E11D48] border-[#FECACA]" : "bg-white text-[#E11D48] border-[#FECACA] hover:bg-[#FEF2F2]"}`}>
+             <XCircle size={16} /> Dismissed
+          </button>
         </div>
 
         {/* Main List */}
         <div className="hidden lg:block bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden w-full">
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[1000px] border-collapse">
+          <div className="w-full">
+            <table className="w-full border-collapse">
               <thead>
                 <tr className="bg-slate-50/50">
-                  <th className="px-6 py-4 text-left text-[12px] font-bold text-slate-400  tracking-widest border-b border-slate-100">
+                  <th className="px-6 py-5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
                     Lead Name
                   </th>
-                  <th className="px-6 py-4 text-left text-[12px] font-bold text-slate-400  tracking-widest border-b border-slate-100">
+                  <th className="px-6 py-5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
                     Contact Details
                   </th>
-                  <th className="px-6 py-4 text-left text-[12px] font-bold text-slate-400  tracking-widest border-b border-slate-100">
+                  <th className="px-6 py-5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
                     Lead Status
                   </th>
-                  <th className="px-6 py-4 text-left text-[12px] font-bold text-slate-400  tracking-widest border-b border-slate-100">
+                  <th className="px-6 py-5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
                     Created By
                   </th>
-                  <th className="px-6 py-4 text-right text-[12px] font-bold text-slate-400  tracking-widest border-b border-slate-100">
-                    Control
+                  <th className="px-6 py-5 text-right text-[11px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                    Actions
                   </th>
                 </tr>
               </thead>
@@ -1153,44 +1212,42 @@ const LeadList = ({
                           lead.status !== "Dismissed" ? "pointer" : "default",
                       }}
                     >
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-6">
-                          <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-primary flex items-center justify-center text-white font-bold text-xl border-2 border-slate-50 shadow-lg shrink-0">
-                            {lead.name.charAt(0).toUpperCase()}
+                      <td className="px-6 py-5">
+                        <div className="flex flex-col min-w-0">
+                          <div className="font-bold text-[13px] text-[#18254D] tracking-tight leading-none mb-1 group-hover:text-secondary transition-colors">
+                            {lead.name}
                           </div>
-                          <div className="min-w-0 flex items-center gap-4">
-                            <div className="font-bold text-sm text-primary tracking-tight leading-none group-hover:text-secondary transition-colors">
-                              {lead.name}
-                            </div>
+                          <div className="text-[12px] text-slate-400">
+                            {lead.email || "No email provided"}
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-5">
                         {renderContactDetails(lead)}
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-5">
                         {lead.status === "Lead" ? (
                           <span
-                            className={`px-3 py-1 rounded-xl text-[14px] font-bold border flex items-center gap-2 shadow-sm transition-all w-fit ${status.className}`}
+                            className={`px-2.5 py-1 rounded-full text-[11px] font-bold border flex items-center gap-1.5 shadow-sm transition-all w-fit ${status.className}`}
                           >
                             {status.icon}
                             {status.label}
                           </span>
                         ) : (
                           <span
-                            className={`px-3 py-1 rounded-xl text-[14px] font-bold border flex items-center gap-2 shadow-sm transition-all w-fit ${status.className}`}
+                            className={`px-2.5 py-1 rounded-full text-[11px] font-bold border flex items-center gap-1.5 shadow-sm transition-all w-fit ${status.className}`}
                           >
                             {status.icon}
                             {status.label}
                           </span>
                         )}
                       </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm font-medium text-slate-600">
+                      <td className="px-6 py-5">
+                        <div className="text-[12px] font-semibold text-slate-600">
                           {lead.createdByName || "System"}
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-right">
+                      <td className="px-6 py-5 text-right">
                         <div
                           className="flex justify-end gap-3"
                           onClick={(e) => e.stopPropagation()}
@@ -1201,10 +1258,12 @@ const LeadList = ({
                                 e.stopPropagation();
                                 handleOpenFollowUpModal(lead);
                               }}
-                              className="p-2.5 bg-indigo-50/60 border border-indigo-200/60 rounded-lg text-indigo-500/80 hover:text-indigo-600 hover:border-indigo-500 hover:bg-indigo-50 transition-all active:scale-90 shadow-sm"
-                              title="Add Follow Up"
+                              className="w-[34px] h-[34px] flex items-center justify-center bg-indigo-50/50 border border-indigo-100 rounded-[10px] text-indigo-500 hover:bg-indigo-100 transition-all active:scale-90 shadow-sm relative group/btn"
                             >
-                              <MessageSquare size={18} />
+                              <BellRing size={16} />
+                              <div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">
+                                Add Follow Up
+                              </div>
                             </button>
                           )}
                           {leadView === "Converted" ? (
@@ -1237,10 +1296,12 @@ const LeadList = ({
                                 });
                                 setShowEditModal(true);
                               }}
-                              className="p-2.5 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-blue-500 hover:border-blue-500 hover:bg-blue-50 transition-all active:scale-90 shadow-sm"
-                              title="Edit Lead"
+                              className="w-[34px] h-[34px] flex items-center justify-center bg-blue-50/50 border border-blue-100 rounded-[10px] text-blue-500 hover:bg-blue-100 transition-all active:scale-90 shadow-sm relative group/btn"
                             >
-                              <Pencil size={18} />
+                              <Pencil size={16} />
+                              <div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">
+                                Edit Lead
+                              </div>
                             </button>
                           ) : (
                             <>
@@ -1277,10 +1338,12 @@ const LeadList = ({
                                     });
                                     setShowOnboardModal(true);
                                   }}
-                                  className="p-2.5 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-emerald-500 hover:border-emerald-500 hover:bg-emerald-50 transition-all active:scale-90 shadow-sm"
-                                  title="Convert to Client"
+                                  className="w-[34px] h-[34px] flex items-center justify-center bg-emerald-50/50 border border-emerald-100 rounded-[10px] text-emerald-500 hover:bg-emerald-100 transition-all active:scale-90 shadow-sm relative group/btn"
                                 >
-                                  <UserCheck size={18} />
+                                  <UserCheck size={16} />
+                                  <div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">
+                                    Convert to Client
+                                  </div>
                                 </button>
                               )}
                               {lead.status === "Lead" && onEditLead && (
@@ -1313,10 +1376,12 @@ const LeadList = ({
                                     });
                                     setShowEditModal(true);
                                   }}
-                                  className="p-2.5 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-blue-500 hover:border-blue-500 hover:bg-blue-50 transition-all active:scale-90 shadow-sm"
-                                  title="Edit Lead"
+                                  className="w-[34px] h-[34px] flex items-center justify-center bg-blue-50/50 border border-blue-100 rounded-[10px] text-blue-500 hover:bg-blue-100 transition-all active:scale-90 shadow-sm relative group/btn"
                                 >
-                                  <Pencil size={18} />
+                                  <Pencil size={16} />
+                                  <div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">
+                                    Edit Lead
+                                  </div>
                                 </button>
                               )}
                               {onDismissLead &&
@@ -1327,10 +1392,12 @@ const LeadList = ({
                                       e.stopPropagation();
                                       onDismissLead(lead.lead_id);
                                     }}
-                                    className="p-2.5 bg-amber-50/50 border border-amber-200/50 rounded-lg text-amber-500/70 hover:text-amber-600 hover:border-amber-500 hover:bg-amber-50 transition-all active:scale-90 shadow-sm"
-                                    title="Dismiss Lead"
+                                    className="w-[34px] h-[34px] flex items-center justify-center bg-[#FFF9ED] border border-[#FDE68A] rounded-[10px] text-[#F59E0B] hover:text-[#D97706] hover:border-[#FCD34D] transition-all active:scale-90 shadow-sm relative group/btn"
                                   >
-                                    <UserX size={18} />
+                                    <UserX size={16} />
+                                    <div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">
+                                      Dismiss Lead
+                                    </div>
                                   </button>
                                 )}
                               {onRestoreLead && lead.status === "Dismissed" && (
@@ -1340,10 +1407,12 @@ const LeadList = ({
                                       e.stopPropagation();
                                       onRestoreLead(lead.lead_id);
                                     }}
-                                    className="p-2.5 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-blue-500 hover:border-blue-500 hover:bg-blue-50 transition-all active:scale-90 shadow-sm"
-                                    title="Restore Lead"
+                                    className="w-[34px] h-[34px] flex items-center justify-center bg-blue-50/50 border border-blue-100 rounded-[10px] text-blue-500 hover:bg-blue-100 transition-all active:scale-90 shadow-sm relative group/btn"
                                   >
-                                    <RotateCcw size={18} />
+                                    <RotateCcw size={16} />
+                                    <div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">
+                                      Restore Lead
+                                    </div>
                                   </button>
                                   {onDeleteLead && (
                                     <button
@@ -1352,10 +1421,12 @@ const LeadList = ({
                                         setLeadToDelete(lead);
                                         setShowDeleteModal(true);
                                       }}
-                                      className="p-2.5 bg-rose-50/50 border border-rose-200/50 rounded-lg text-rose-500/70 hover:text-rose-600 hover:border-rose-500 hover:bg-rose-50 transition-all active:scale-90 shadow-sm"
-                                      title="Delete Lead"
+                                      className="w-[34px] h-[34px] flex items-center justify-center bg-[#FEF2F2] border border-[#FECACA] rounded-[10px] text-[#EF4444] hover:text-[#DC2626] hover:border-[#FCA5A5] transition-all active:scale-90 shadow-sm relative group/btn"
                                     >
-                                      <Trash2 size={18} />
+                                      <Trash2 size={16} />
+                                      <div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">
+                                        Delete Lead
+                                      </div>
                                     </button>
                                   )}
                                 </div>
@@ -1468,7 +1539,7 @@ const LeadList = ({
                         className="p-2 bg-indigo-50 text-indigo-600 border border-indigo-100 rounded-lg hover:bg-indigo-100 transition-all active:scale-90"
                         title="Add Follow Up"
                       >
-                        <MessageSquare size={16} />
+                        <BellRing size={16} />
                       </button>
                     )}
                     {leadView === "Converted" ? (
@@ -1698,26 +1769,26 @@ const LeadList = ({
         createPortal(
           <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[99999] flex items-start justify-center p-4 sm:p-6 overflow-y-auto no-scrollbar">
             <div className="bg-white w-full max-w-xl rounded-xl shadow-2xl border border-slate-200 overflow-hidden animate-fade-in my-auto flex flex-col max-h-[90vh]">
-              <div className="bg-primary p-4 text-white relative shrink-0">
+              <div className="bg-[#18254D] p-5 text-white relative shrink-0">
                 <button
                   onClick={() => setShowAddModal(false)}
-                  className="absolute top-4 right-4 p-1.5 hover:bg-white/10 rounded-xl transition-colors"
+                  className="absolute top-5 right-5 w-[30px] h-[30px] flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-full transition-colors"
                 >
-                  <X size={18} strokeWidth={3} />
+                  <X size={16} strokeWidth={2.5} />
                 </button>
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-secondary/10 rounded-xl flex items-center justify-center shadow-lg border border-secondary/20">
+                  <div className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center shadow-sm border border-white/10">
                     <UserPlus
                       size={18}
-                      className="text-secondary"
-                      strokeWidth={3}
+                      className="text-slate-300"
+                      strokeWidth={2}
                     />
                   </div>
                   <div>
-                    <h3 className="text-base font-bold tracking-tighter leading-none">
+                    <h3 className="text-[15px] font-bold tracking-tighter leading-none">
                       New Lead
                     </h3>
-                    <p className="text-slate-400 text-[14px] font-bold  tracking-widest mt-0.5">
+                    <p className="text-slate-300 text-[13px] font-bold tracking-widest mt-1">
                       Lead Details
                     </p>
                   </div>
@@ -3435,7 +3506,7 @@ const LeadList = ({
                     type="submit"
                     className="w-full py-2.5 bg-primary text-white rounded-2xl text-[13px] font-bold tracking-[0.25em] shadow-xl active:scale-[0.97] transition-all hover:bg-[#1e2e5e] hover:shadow-2xl flex items-center justify-center gap-3"
                   >
-                    <MessageSquare size={16} />
+                    <BellRing size={16} />
                     Create Follow-up
                   </button>
                 </div>

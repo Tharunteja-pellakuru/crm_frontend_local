@@ -2,18 +2,16 @@ function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="w-full text-slate-500 text-sm mt-auto pt-4 animate-fade-in duration-300">
-      <div className="max-w-7xl mx-auto bg-white border border-slate-200 shadow-sm rounded-2xl px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
-        <div className="font-medium text-center md:text-left text-slate-600">
-          © {year} <span className="text-[#18254D] font-semibold">Parivartan CRM</span>. All Rights Reserved.
+    <footer className="w-full mt-auto pt-4 pb-2 border-t border-slate-200">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-[13px] font-medium text-slate-500">
+        <div>
+          {year} © eParivartan - CRM
         </div>
-        <div className="hidden md:flex items-center justify-center font-medium bg-slate-100 px-3 py-1 rounded-lg text-xs text-slate-600 border border-slate-200">
-          Version 1.0
-        </div>
-        <div className="flex flex-wrap justify-center gap-4 md:gap-6 font-medium text-slate-500">
-          <a href="/" className="hover:text-[#18254D]">Privacy Policy</a>
-          <a href="/" className="hover:text-[#18254D]">Terms</a>
-          <a href="/" className="hover:text-[#18254D]">Support</a>
+
+        <div className="flex items-center gap-6">
+          <a href="/" className="hover:text-slate-800 transition-colors">About</a>
+          <a href="/" className="hover:text-slate-800 transition-colors">Support</a>
+          <a href="/" className="hover:text-slate-800 transition-colors">Contact Us</a>
         </div>
       </div>
     </footer>

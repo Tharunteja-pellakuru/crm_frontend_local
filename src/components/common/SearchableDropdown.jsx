@@ -77,10 +77,10 @@ const SearchableDropdown = ({
     }
     
     return (
-      (option.name || "").toLowerCase().includes(term) ||
-      (option.label || "").toLowerCase().includes(term) ||
-      (option.code || "").toLowerCase().includes(term) ||
-      (option.value || "").toLowerCase().includes(term)
+      (typeof option.name === "string" && option.name.toLowerCase().includes(term)) ||
+      (typeof option.label === "string" && option.label.toLowerCase().includes(term)) ||
+      (typeof option.code === "string" && option.code.toLowerCase().includes(term)) ||
+      (typeof option.value === "string" && option.value.toLowerCase().includes(term))
     );
   });
 

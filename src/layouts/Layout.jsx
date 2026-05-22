@@ -64,7 +64,7 @@ const Layout = ({
       </div>
 
       {/* Main Container */}
-      <div className={`flex-1 flex flex-col min-[1201px]:ml-[290px] w-full min-[1201px]:w-[calc(100%-290px)] transition-all duration-300 ease-smooth ${isPageTransitioning ? "opacity-0 translate-y-4" : "opacity-100 translate-y-0"}`}>
+      <div className={`flex-1 min-w-0 flex flex-col min-[1201px]:ml-[240px] transition-all duration-300 ease-smooth ${isPageTransitioning ? "opacity-0 translate-y-4" : "opacity-100 translate-y-0"}`}>
         <header className="min-[1201px]:hidden flex items-center justify-between bg-white text-slate-800 p-5 fixed top-0 left-0 right-0 z-[100] shadow-md h-24 animate-fade-in-down border-b border-slate-200">
           <img src={parivartanLogo} alt="Parivartan" style={{ width: 180 }} className="h-auto object-contain" />
           <button
@@ -76,10 +76,10 @@ const Layout = ({
         </header>
 
         {/* Scalable Content Injection */}
-        <main className="flex-1 p-3 min-[1201px]:p-6 overflow-x-hidden mt-24 min-[1201px]:mt-2 flex flex-col">
+        <main className="flex-1 p-3 min-[1201px]:px-8 min-[1201px]:py-6 min-w-0 overflow-x-hidden mt-24 min-[1201px]:mt-2 flex flex-col">
           <div
             key={location.pathname}
-            className="max-w-7xl mx-auto pb-8 flex-1 w-full animate-fade-in-up"
+            className="w-full min-w-0 pb-8 flex-1 animate-fade-in-up"
           >
             <Outlet />
           </div>
