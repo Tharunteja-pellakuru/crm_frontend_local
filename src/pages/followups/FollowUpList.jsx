@@ -27,6 +27,8 @@ import {
   Mail,
   LayoutGrid,
   AlertTriangle,
+  Folder,
+  AlignLeft,
 } from "lucide-react";
 import SearchableDropdown from "../../components/common/SearchableDropdown";
 import {
@@ -41,8 +43,11 @@ const parseLocalDate = (dateStr) => {
   if (!dateStr) return new Date();
   if (dateStr instanceof Date) return dateStr;
   
-  // - [x] 4. Update Table Wrapper
-  // - [x] 5. Update Action Buttons with Colored Backgrounds & Tooltips
+  // - [x] 2. Add Desktop Table Wrapper (`hidden lg:block`)
+  // - [x] 3. Implement Table Header matching Leads page
+  // - [x] 4. Map Follow-up data to Table Rows (`<tr>`)
+  // - [x] 5. Migrate Action Buttons to Table Rows
+  // - [x] 6. Verify layout responsiveness
   // If the date string contains a 'T' but ends with 'Z', it might be treated as UTC.
   // If we want to treat it as local time, we should replace T with a space and remove Z.
   // This is a common fix when backends return local times as ISO UTC strings.
@@ -112,6 +117,8 @@ const FollowUpList = ({
   const [isModeDropdownOpen, setIsModeDropdownOpen] = useState(false);
   const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
   const [showCompletionModal, setShowCompletionModal] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [selectedFollowUpForDetails, setSelectedFollowUpForDetails] = useState(null);
   const [completionBrief, setCompletionBrief] = useState("");
   const [completingFollowUpId, setCompletingFollowUpId] = useState(null);
   const [completionDate, setCompletionDate] = useState(
@@ -152,6 +159,7 @@ const FollowUpList = ({
       };
 
       if (isMobile) {
+        // - [x] 1. Preserve Mobile Layout (Wrap existing cards in `lg:hidden`)
         // Mobile styles: Centering handled by the Flexbox wrapper in JSX
         const popupWidth = Math.min(windowWidth - 32, 400);
         style.width = `${popupWidth}px`;
@@ -205,7 +213,7 @@ const FollowUpList = ({
   }, [isFilterPopupOpen]);
 
   // Lock scroll when any modal is open
-  useScrollLock(showAddModal || showCompletionModal);
+  useScrollLock(showAddModal || showCompletionModal || showDetailsModal);
 
   const getClientById = (id, leadId, projectId) => {
     if (!id && !leadId && !projectId) return null;
@@ -465,7 +473,7 @@ const FollowUpList = ({
       const client = getClientById(f.clientId, f.leadId, f.projectId);
       const eventData = {
         title: `Follow-up: ${f.title}`,
-        description: `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n 📋 FOLLOW-UP DETAILS\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n 📌 TITLE:     ${f.title}\n 👤 CLIENT:    ${client?.name || "N/A"}\n 🏢 COMPANY:   ${client?.company || "N/A"}\n 📞 MODE:      ${f.followup_mode || "Call"}\n\n ──────────────────────────────\n 📝 DESCRIPTION:\n ${f.description || "No description provided."}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nGenerated via Parivartan CRM`,
+        description: `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n 📋 Follow-up Title\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n 📌 TITLE:     ${f.title}\n 👤 CLIENT:    ${client?.name || "N/A"}\n 🏢 COMPANY:   ${client?.company || "N/A"}\n 📞 MODE:      ${f.followup_mode || "Call"}\n\n ──────────────────────────────\n 📝 DESCRIPTION:\n ${f.description || "No description provided."}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nGenerated via Parivartan CRM`,
         start: startTime,
         end: endTime
       };
@@ -824,11 +832,12 @@ const FollowUpList = ({
           </button>
         </div>
 
-        <div className="flex flex-col gap-3 w-full">
+        {/* Mobile/Tablet Card List View */}
+        <div className="lg:hidden grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
           {filteredFollowUps.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 bg-white rounded-2xl border border-slate-200 shadow-sm w-full">
+            <div className="col-span-1 md:col-span-2 flex flex-col items-center justify-center py-16 bg-white rounded-2xl border border-slate-200 shadow-sm w-full">
               <Bell size={24} className="text-slate-100 mb-3" />
-              <p className="text-[13px] font-bold text-primary  tracking-wider">
+              <p className="text-[13px] font-bold text-primary tracking-wider">
                 No Active Tasks
               </p>
             </div>
@@ -840,229 +849,397 @@ const FollowUpList = ({
               const timeframe = f.status === "completed" ? "Completed" : (overdue ? "Overdue" : (isFToday ? "Today" : "Upcoming"));
               
               return (
-                  <div
-                    key={f.id}
-                    className={`group relative p-4 rounded-xl border transition-all hover:shadow-md flex flex-col md:flex-row items-start gap-4 ${
-                      f.status === "completed" 
-                        ? "bg-slate-50/50 border-slate-100 opacity-80" 
-                        : f.priority === 'High'
-                          ? "bg-error/[0.06] border-error/20 shadow-sm shadow-error/5"
-                          : f.priority === 'Medium'
-                            ? "bg-warning/[0.06] border-warning/20 shadow-sm shadow-warning/5"
-                            : "bg-info/[0.06] border-info/20 shadow-sm shadow-info/5"
-                    }`}
-                  >
-                    {/* Left Icon Box */}
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-white shadow-sm shrink-0 ${
-                      f.status === 'completed' ? 'bg-success' : f.priority === 'High' ? 'bg-error' : f.priority === 'Medium' ? 'bg-warning' : 'bg-info'
-                    }`}>
-                      {f.status === 'completed' ? (
-                        <Check size={18} strokeWidth={3} />
-                      ) : (
-                        f.followup_mode?.toLowerCase() === 'call' ? <Phone size={18} strokeWidth={2.5} /> : 
-                        f.followup_mode?.toLowerCase() === 'meeting' ? <Calendar size={18} strokeWidth={2.5} /> : 
-                        f.followup_mode?.toLowerCase() === 'whatsapp' ? <MessageSquare size={18} strokeWidth={2.5} /> :
-                        <Mail size={18} strokeWidth={2.5} />
-                      )}
+                <div
+                  key={`mobile-${f.id}`}
+                  onClick={() => {
+                    setSelectedFollowUpForDetails(f);
+                    setShowDetailsModal(true);
+                  }}
+                  className={`bg-white p-4 rounded-2xl border transition-all ${
+                    f.status === "completed"
+                      ? "border-slate-100 opacity-80 shadow-none cursor-pointer"
+                      : "border-slate-200 shadow-sm hover:shadow-md active:scale-[0.98] cursor-pointer"
+                  }`}
+                >
+                  {/* Top row: Icon, Title, Status */}
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-lg border-2 border-slate-50 shadow-md shrink-0 ${
+                        f.status === 'completed' ? 'bg-success' : f.priority === 'High' ? 'bg-error' : f.priority === 'Medium' ? 'bg-warning' : 'bg-info'
+                      }`}>
+                        {f.title.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="min-w-0">
+                        <div className={`font-bold text-sm truncate ${f.status === 'completed' ? 'text-slate-400 line-through' : 'text-primary'}`}>
+                          {f.title}
+                        </div>
+                      </div>
                     </div>
+                    <span className={`px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border flex items-center gap-1.5 shadow-sm ${getPriorityBadge(f.priority)}`}>
+                      {f.priority} Priority
+                    </span>
+                  </div>
 
-                    <div className="flex-1 min-w-0 flex flex-col">
-                      {/* Top row: Status badges and Timeframe */}
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className={`text-[10px] md:text-[11px] font-black tracking-widest px-2 py-0.5 rounded-md border uppercase ${getPriorityBadge(f.priority)}`}>
-                            {f.priority} Priority
-                          </span>
-                          <span className={`px-2 py-0.5 rounded-md text-[10px] md:text-[11px] font-black tracking-widest uppercase border ${getModeBadge(f.followup_mode)}`}>
-                            {f.followup_mode}
-                          </span>
-                          {overdue && f.status !== 'completed' && (
-                            <span className="text-[10px] md:text-[11px] font-black tracking-widest uppercase text-error bg-error/10 px-2 py-0.5 rounded-md border border-error/20">
-                              Overdue
-                            </span>
-                          )}
-                        </div>
-                        {f.status !== 'completed' && (
-                          <span className="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase hidden md:block">
-                            {timeframe}
-                          </span>
-                        )}
+                  {/* Second Row: Lead Name */}
+                  <div className="mb-4 rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-[12px] font-medium text-slate-500">
+                    Lead Name: <span className="font-semibold text-slate-700">{client?.name || "No Client"}</span>
+                  </div>
+
+                  {/* Third Row: Due Date and Mode */}
+                  <div className="space-y-3 mb-4">
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="flex items-center gap-2 text-[12px] font-medium text-slate-600 bg-white p-2 rounded-lg border border-slate-100 shadow-sm">
+                        <Calendar size={14} className="text-slate-400" />
+                        {parseLocalDate(f.dueDate).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" })}
                       </div>
-
-                      {/* Title and Client */}
-                      <h4
-                        className={`text-[14px] font-bold text-primary tracking-tight mb-1 cursor-pointer hover:text-secondary transition-colors ${f.status === "completed" ? "line-through opacity-60" : ""}`}
-                        onClick={() => client && onSelectClient && onSelectClient(client)}
-                      >
-                        {f.title}
-                        <span className="text-slate-300 font-medium mx-2">|</span>
-                        <span className="text-secondary">{client?.name || "No Client"}</span>
-                        {client?.status !== "Lead" && client?.status !== "Dismissed" && f.projectName && (
-                          <>
-                            <span className="text-slate-300 font-medium mx-2">|</span>
-                            <span className="text-secondary/70">{f.projectName}</span>
-                          </>
-                        )}
-                      </h4>
-
-                      {/* Description */}
-                      {f.description && (
-                        <p className={`text-[12px] font-medium leading-relaxed mb-4 ${f.status === 'completed' ? 'text-slate-400' : 'text-slate-500'} line-clamp-2`}>
-                          {f.description}
-                        </p>
-                      )}
-
-                      {/* Completion Data for Completed Tasks */}
-                      {f.status === "completed" && (f.completed_at || f.completed_by || f.follow_brief) && (
-                        <div className="mb-4 space-y-3">
-                          <div className="flex flex-wrap items-center gap-2">
-                            {f.completed_at && (
-                              <div className="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-success bg-success/5 px-2 py-1 rounded-md border border-success/10 uppercase">
-                                <CheckCircle2 size={12} strokeWidth={3} />
-                                Completed: {parseLocalDate(f.completed_at).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })} {parseLocalDate(f.completed_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
-                              </div>
-                            )}
-                            {f.completed_by && (
-                              <div className="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-slate-400 bg-slate-50 px-2 py-1 rounded-md border border-slate-100 uppercase">
-                                <User size={12} strokeWidth={3} />
-                                By: {f.completed_by}
-                              </div>
-                            )}
-                          </div>
-                          {f.follow_brief && (
-                            <div className="p-3 bg-slate-50 border border-slate-100 rounded-lg">
-                              <p className="text-[10px] font-black text-slate-400 tracking-widest uppercase mb-1 opacity-60">
-                                Conclusion Brief
-                              </p>
-                              <p className="text-[12px] text-primary font-medium leading-relaxed">
-                                {f.follow_brief}
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      )}
-
-                      {/* Bottom row: Meta and Actions */}
-                      <div className={`mt-auto pt-3 border-t flex items-center justify-between gap-2 ${f.status === 'completed' ? 'border-slate-100' : 'border-slate-50'}`}>
-                        <div className="flex items-center gap-2 md:gap-4 min-w-0 flex-1">
-                          <div className={`flex items-center gap-1.5 text-[10px] md:text-[11px] font-bold tracking-widest uppercase shrink-0 ${f.status === 'completed' ? 'text-slate-300' : 'text-slate-400'}`}>
-                            <Calendar size={11} className="opacity-70" />
-                            <span className="truncate">
-                              Scheduled: {parseLocalDate(f.dueDate).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" })}
-                            </span>
-                          </div>
-                          <div className={`flex items-center gap-1.5 text-[10px] md:text-[11px] font-bold tracking-widest uppercase shrink-0 ${f.status === 'completed' ? 'text-slate-300' : 'text-secondary'}`}>
-                            <Clock size={11} className="opacity-70" />
-                            <span>
-                              Time: {parseLocalDate(f.dueDate).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true })}
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-1.5 md:gap-2 shrink-0">
-                          <button
-                            onClick={() => {
-                              if (f.status === "completed") {
-                                onToggleStatus(f.id);
-                              } else {
-                                const now = new Date();
-                                setCompletionDate(now.toLocaleDateString("en-CA"));
-                                setCompletionHour((now.getHours() % 12 || 12).toString());
-                                setCompletionMinute(now.getMinutes().toString().padStart(2, "0"));
-                                setCompletionPeriod(now.getHours() >= 12 ? "PM" : "AM");
-                                setCompletingFollowUpId(f.id);
-                                setCompletionBrief("");
-                                setShowCompletionModal(true);
-                              }
-                            }}
-                            className={`w-[34px] h-[34px] rounded-[10px] border transition-all flex items-center justify-center shrink-0 active:scale-90 shadow-sm relative group/btn ${
-                              f.status === "completed" 
-                                ? "bg-amber-50/50 border-amber-100 text-amber-500 hover:bg-amber-100" 
-                                : "bg-emerald-50/50 border-emerald-100 text-emerald-500 hover:bg-emerald-100"
-                            }`}
-                          >
-                            {f.status === "completed" ? <Clock size={16} strokeWidth={2.5} /> : <CheckCircle2 size={16} strokeWidth={2.5} />}
-                            <div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">
-                              {f.status === "completed" ? "Mark as Pending" : "Mark as Completed"}
-                            </div>
-                          </button>
-
-                          {f.status !== "completed" && (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleAddToCalendar(f);
-                              }}
-                              className="w-[34px] h-[34px] flex items-center justify-center bg-indigo-50/50 border border-indigo-100 rounded-[10px] text-indigo-500 hover:bg-indigo-100 transition-all active:scale-90 shadow-sm relative group/btn"
-                            >
-                              <Calendar size={16} strokeWidth={2.5} />
-                              <div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">
-                                Add to Google Calendar
-                              </div>
-                            </button>
-                          )}
-
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              let compDate = new Date().toISOString().split("T")[0];
-                              let compHr = "12";
-                              let compMin = "00";
-                              let compPrd = "PM";
-
-                              if (f.status === "completed" && f.completed_at) {
-                                const cd = parseLocalDate(f.completed_at);
-                                if (!isNaN(cd.getTime())) {
-                                  compDate = `${cd.getFullYear()}-${(cd.getMonth() + 1).toString().padStart(2, "0")}-${cd.getDate().toString().padStart(2, "0")}`;
-                                  compHr = (cd.getHours() % 12 || 12).toString();
-                                  compMin = cd.getMinutes().toString().padStart(2, "0");
-                                  compPrd = cd.getHours() >= 12 ? "PM" : "AM";
-                                }
-                              }
-
-                              const d = f.dueDate ? parseLocalDate(f.dueDate) : new Date();
-                              setFormData({
-                                ...f,
-                                followup_status: f.status || f.followup_status || "pending",
-                                followup_date: `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")}`,
-                                timeHour: (d.getHours() % 12 || 12).toString(),
-                                timeMinute: d.getMinutes().toString().padStart(2, "0"),
-                                timePeriod: d.getHours() >= 12 ? "PM" : "AM",
-                                completed_by: f.completed_by || "",
-                                completionDate: compDate,
-                                completionHour: compHr,
-                                completionMinute: compMin,
-                                completionPeriod: compPrd,
-                              });
-                              setShowAddModal(true);
-                            }}
-                            className="w-[34px] h-[34px] flex items-center justify-center bg-blue-50/50 border border-blue-100 rounded-[10px] text-blue-500 hover:bg-blue-100 transition-all active:scale-90 shadow-sm relative group/btn"
-                          >
-                            <Edit2 size={16} />
-                            <div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">
-                              Edit
-                            </div>
-                          </button>
-
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onDeleteFollowUp && onDeleteFollowUp(f.id);
-                            }}
-                            className="w-[34px] h-[34px] flex items-center justify-center bg-rose-50/50 border border-rose-100 rounded-[10px] text-rose-500 hover:bg-rose-100 transition-all active:scale-90 shadow-sm relative group/btn"
-                          >
-                            <Trash2 size={16} />
-                            <div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">
-                              Delete
-                            </div>
-                          </button>
-                        </div>
+                      <div className="flex items-center gap-2 text-[12px] font-medium text-slate-600 bg-white p-2 rounded-lg border border-slate-100 shadow-sm">
+                        <Clock size={14} className="text-slate-400" />
+                        {parseLocalDate(f.dueDate).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true })}
                       </div>
+                    </div>
+                    
+                    <div className="flex items-center justify-between px-1">
+                      <span className={`px-2 py-0.5 rounded-md text-[10px] font-black tracking-widest uppercase border ${getModeBadge(f.followup_mode)}`}>
+                        {f.followup_mode}
+                      </span>
+                      {f.status === "completed" && f.completed_at && (
+                        <span className="text-[10px] font-black tracking-widest uppercase text-success">
+                          Completed
+                        </span>
+                      )}
                     </div>
                   </div>
+
+                  {/* Bottom row: View Details and Actions */}
+                  <div className="flex items-center justify-between pt-3 border-t border-slate-100">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedFollowUpForDetails(f);
+                        setShowDetailsModal(true);
+                      }}
+                      className="flex items-center gap-1 text-[12px] font-bold text-secondary uppercase tracking-widest hover:text-secondary/80 transition-colors"
+                    >
+                      View Details
+                      <ChevronRight size={14} />
+                    </button>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (f.status === "completed") {
+                            onToggleStatus(f.id);
+                          } else {
+                            const now = new Date();
+                            setCompletionDate(now.toLocaleDateString("en-CA"));
+                            setCompletionHour((now.getHours() % 12 || 12).toString());
+                            setCompletionMinute(now.getMinutes().toString().padStart(2, "0"));
+                            setCompletionPeriod(now.getHours() >= 12 ? "PM" : "AM");
+                            setCompletingFollowUpId(f.id);
+                            setCompletionBrief("");
+                            setShowCompletionModal(true);
+                          }
+                        }}
+                        className={`w-8 h-8 rounded-[8px] border transition-all flex items-center justify-center shrink-0 active:scale-90 shadow-sm ${
+                          f.status === "completed" 
+                            ? "bg-amber-50/50 border-amber-100 text-amber-500 hover:bg-amber-100" 
+                            : "bg-emerald-50/50 border-emerald-100 text-emerald-500 hover:bg-emerald-100"
+                        }`}
+                      >
+                        {f.status === "completed" ? <Clock size={14} strokeWidth={2.5} /> : <CheckCircle2 size={14} strokeWidth={2.5} />}
+                      </button>
+
+                      {f.status !== "completed" && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleAddToCalendar(f);
+                          }}
+                          className="w-8 h-8 flex items-center justify-center bg-indigo-50/50 border border-indigo-100 rounded-[8px] text-indigo-500 hover:bg-indigo-100 transition-all active:scale-90 shadow-sm"
+                        >
+                          <Calendar size={14} strokeWidth={2.5} />
+                        </button>
+                      )}
+
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          let compDate = new Date().toISOString().split("T")[0];
+                          let compHr = "12";
+                          let compMin = "00";
+                          let compPrd = "PM";
+
+                          if (f.status === "completed" && f.completed_at) {
+                            const cd = parseLocalDate(f.completed_at);
+                            if (!isNaN(cd.getTime())) {
+                              compDate = `${cd.getFullYear()}-${(cd.getMonth() + 1).toString().padStart(2, "0")}-${cd.getDate().toString().padStart(2, "0")}`;
+                              compHr = (cd.getHours() % 12 || 12).toString();
+                              compMin = cd.getMinutes().toString().padStart(2, "0");
+                              compPrd = cd.getHours() >= 12 ? "PM" : "AM";
+                            }
+                          }
+
+                          const d = f.dueDate ? parseLocalDate(f.dueDate) : new Date();
+                          setFormData({
+                            ...f,
+                            followup_status: f.status || f.followup_status || "pending",
+                            followup_date: `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")}`,
+                            timeHour: (d.getHours() % 12 || 12).toString(),
+                            timeMinute: d.getMinutes().toString().padStart(2, "0"),
+                            timePeriod: d.getHours() >= 12 ? "PM" : "AM",
+                            completed_by: f.completed_by || "",
+                            completionDate: compDate,
+                            completionHour: compHr,
+                            completionMinute: compMin,
+                            completionPeriod: compPrd,
+                          });
+                          setShowAddModal(true);
+                        }}
+                        className="w-8 h-8 flex items-center justify-center bg-blue-50/50 border border-blue-100 rounded-[8px] text-blue-500 hover:bg-blue-100 transition-all active:scale-90 shadow-sm"
+                      >
+                        <Edit2 size={14} />
+                      </button>
+
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onDeleteFollowUp && onDeleteFollowUp(f.id);
+                        }}
+                        className="w-8 h-8 flex items-center justify-center bg-rose-50/50 border border-rose-100 rounded-[8px] text-rose-500 hover:bg-rose-100 transition-all active:scale-90 shadow-sm"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
               );
             })
           )}
+        </div>
+
+        {/* Desktop View: Table List */}
+        <div className="hidden lg:block bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden w-full">
+          <div className="w-full">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="bg-slate-50/50">
+                  <th className="px-6 py-5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 w-[25%]">
+                    Follow-up Title
+                  </th>
+                  <th className="px-6 py-5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 w-[20%]">
+                    Lead Name
+                  </th>
+                  <th className="px-6 py-5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 w-[20%]">
+                    Status & Mode
+                  </th>
+                  <th className="px-6 py-5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 w-[15%]">
+                    Due Date
+                  </th>
+                  <th className="px-6 py-5 text-right text-[11px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 w-[20%]">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {filteredFollowUps.length === 0 ? (
+                  <tr>
+                    <td colSpan="5" className="py-16 text-center">
+                      <div className="flex flex-col items-center justify-center">
+                        <Bell size={24} className="text-slate-200 mb-3" />
+                        <p className="text-[13px] font-bold text-slate-400 tracking-wider">
+                          No Active Tasks
+                        </p>
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  currentFollowUps.map((f, index) => {
+                    const client = getClientById(f.clientId, f.leadId, f.projectId);
+                    const overdue = isOverdue(f.dueDate) && f.status === "pending";
+                    const isFToday = isToday(f.dueDate) && f.status === "pending";
+                    const timeframe = f.status === "completed" ? "Completed" : (overdue ? "Overdue" : (isFToday ? "Today" : "Upcoming"));
+
+                    return (
+                      <tr 
+                        key={`desktop-${f.id}`} 
+                        onClick={() => {
+                          setSelectedFollowUpForDetails(f);
+                          setShowDetailsModal(true);
+                        }}
+                        className={`group transition-all hover:bg-slate-50/50 cursor-pointer ${f.status === "completed" ? "opacity-70 bg-slate-50/30" : ""}`}
+                      >
+                        {/* Col 1: Details */}
+                        <td className="px-6 py-4 align-top">
+                          <h4
+                            className={`text-[13px] font-bold text-primary tracking-tight mb-1 cursor-pointer hover:text-secondary transition-colors ${f.status === "completed" ? "line-through opacity-60" : ""}`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              client && onSelectClient && onSelectClient(client);
+                            }}
+                          >
+                            {f.title}
+                          </h4>
+
+                        </td>
+
+                        {/* Col 2: Lead Name */}
+                        <td className="px-6 py-4 align-top">
+                          <div className="flex flex-col gap-1">
+                            <span className="text-[13px] font-bold text-secondary">
+                              {client?.name || "No Client"}
+                            </span>
+                            {client?.status !== "Lead" && client?.status !== "Dismissed" && f.projectName && (
+                              <span className="text-[12px] font-medium text-slate-400">
+                                {f.projectName}
+                              </span>
+                            )}
+                          </div>
+                        </td>
+
+                        {/* Col 3: Status & Mode */}
+                        <td className="px-6 py-4 align-top">
+                          <div className="flex flex-col items-start gap-2">
+                            <span className={`text-[10px] font-black tracking-widest px-2 py-0.5 rounded-md border uppercase ${getPriorityBadge(f.priority)}`}>
+                              {f.priority} Priority
+                            </span>
+                            <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-500 uppercase tracking-widest">
+                              {f.followup_mode?.toLowerCase() === 'call' ? <Phone size={12} strokeWidth={2.5} /> : 
+                               f.followup_mode?.toLowerCase() === 'meeting' ? <Calendar size={12} strokeWidth={2.5} /> : 
+                               f.followup_mode?.toLowerCase() === 'whatsapp' ? <MessageSquare size={12} strokeWidth={2.5} /> :
+                               <Mail size={12} strokeWidth={2.5} />}
+                              <span>{f.followup_mode}</span>
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* Col 4: Due Date */}
+                        <td className="px-6 py-4 align-top">
+                          <div className="flex flex-col gap-1.5">
+                            <div className="flex items-center gap-1.5 text-[11px] font-bold tracking-widest uppercase text-slate-400">
+                              <Calendar size={12} className="opacity-70" />
+                              <span>{parseLocalDate(f.dueDate).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" })}</span>
+                            </div>
+                            <div className="flex items-center gap-1.5 text-[11px] font-bold tracking-widest uppercase text-secondary">
+                              <Clock size={12} className="opacity-70" />
+                              <span>{parseLocalDate(f.dueDate).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true })}</span>
+                            </div>
+
+                            {f.status === "completed" && f.completed_at && (
+                              <span className="text-[10px] font-black tracking-widest uppercase text-success w-fit mt-1">
+                                Completed
+                              </span>
+                            )}
+                          </div>
+                        </td>
+
+                        {/* Col 5: Actions */}
+                        <td className="px-6 py-4 align-top">
+                          <div className="flex items-center justify-end gap-1.5">
+                            <button
+                              onClick={() => {
+                                if (f.status === "completed") {
+                                  onToggleStatus(f.id);
+                                } else {
+                                  const now = new Date();
+                                  setCompletionDate(now.toLocaleDateString("en-CA"));
+                                  setCompletionHour((now.getHours() % 12 || 12).toString());
+                                  setCompletionMinute(now.getMinutes().toString().padStart(2, "0"));
+                                  setCompletionPeriod(now.getHours() >= 12 ? "PM" : "AM");
+                                  setCompletingFollowUpId(f.id);
+                                  setCompletionBrief("");
+                                  setShowCompletionModal(true);
+                                }
+                              }}
+                              className={`w-[34px] h-[34px] rounded-[10px] border transition-all flex items-center justify-center shrink-0 active:scale-90 shadow-sm relative group/btn ${
+                                f.status === "completed" 
+                                  ? "bg-amber-50/50 border-amber-100 text-amber-500 hover:bg-amber-100" 
+                                  : "bg-emerald-50/50 border-emerald-100 text-emerald-500 hover:bg-emerald-100"
+                              }`}
+                            >
+                              {f.status === "completed" ? <Clock size={16} strokeWidth={2.5} /> : <CheckCircle2 size={16} strokeWidth={2.5} />}
+                              <div className="absolute bottom-[calc(100%+8px)] right-0 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">
+                                {f.status === "completed" ? "Mark as Pending" : "Mark as Completed"}
+                              </div>
+                            </button>
+
+                            {f.status !== "completed" && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleAddToCalendar(f);
+                                }}
+                                className="w-[34px] h-[34px] flex items-center justify-center bg-indigo-50/50 border border-indigo-100 rounded-[10px] text-indigo-500 hover:bg-indigo-100 transition-all active:scale-90 shadow-sm relative group/btn"
+                              >
+                                <Calendar size={16} strokeWidth={2.5} />
+                                <div className="absolute bottom-[calc(100%+8px)] right-0 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">
+                                  Add to Google Calendar
+                                </div>
+                              </button>
+                            )}
+
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                let compDate = new Date().toISOString().split("T")[0];
+                                let compHr = "12";
+                                let compMin = "00";
+                                let compPrd = "PM";
+
+                                if (f.status === "completed" && f.completed_at) {
+                                  const cd = parseLocalDate(f.completed_at);
+                                  if (!isNaN(cd.getTime())) {
+                                    compDate = `${cd.getFullYear()}-${(cd.getMonth() + 1).toString().padStart(2, "0")}-${cd.getDate().toString().padStart(2, "0")}`;
+                                    compHr = (cd.getHours() % 12 || 12).toString();
+                                    compMin = cd.getMinutes().toString().padStart(2, "0");
+                                    compPrd = cd.getHours() >= 12 ? "PM" : "AM";
+                                  }
+                                }
+
+                                const d = f.dueDate ? parseLocalDate(f.dueDate) : new Date();
+                                setFormData({
+                                  ...f,
+                                  followup_status: f.status || f.followup_status || "pending",
+                                  followup_date: `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")}`,
+                                  timeHour: (d.getHours() % 12 || 12).toString(),
+                                  timeMinute: d.getMinutes().toString().padStart(2, "0"),
+                                  timePeriod: d.getHours() >= 12 ? "PM" : "AM",
+                                  completed_by: f.completed_by || "",
+                                  completionDate: compDate,
+                                  completionHour: compHr,
+                                  completionMinute: compMin,
+                                  completionPeriod: compPrd,
+                                });
+                                setShowAddModal(true);
+                              }}
+                              className="w-[34px] h-[34px] flex items-center justify-center bg-blue-50/50 border border-blue-100 rounded-[10px] text-blue-500 hover:bg-blue-100 transition-all active:scale-90 shadow-sm relative group/btn"
+                            >
+                              <Edit2 size={16} />
+                              <div className="absolute bottom-[calc(100%+8px)] right-0 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">
+                                Edit
+                              </div>
+                            </button>
+
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onDeleteFollowUp && onDeleteFollowUp(f.id);
+                              }}
+                              className="w-[34px] h-[34px] flex items-center justify-center bg-rose-50/50 border border-rose-100 rounded-[10px] text-rose-500 hover:bg-rose-100 transition-all active:scale-90 shadow-sm relative group/btn"
+                            >
+                              <Trash2 size={16} />
+                              <div className="absolute bottom-[calc(100%+8px)] right-0 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">
+                                Delete
+                              </div>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
 
         {/* Pagination Controls */}
@@ -1123,6 +1300,198 @@ const FollowUpList = ({
             </button>
           </div>
         )}
+
+        {/* Details Modal */}
+        {showDetailsModal && selectedFollowUpForDetails && createPortal(
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[99999] flex items-center justify-center p-4">
+            <div className="bg-white w-full max-w-lg rounded-xl shadow-2xl border border-slate-200 animate-fade-in relative z-[100000] overflow-hidden flex flex-col max-h-[90vh]">
+              <div className="bg-primary p-5 text-white relative flex items-center justify-between shrink-0">
+                <h3 className="text-base font-bold tracking-wide">
+                  Follow-up Title
+                </h3>
+                <button
+                  onClick={() => {
+                    setShowDetailsModal(false);
+                    setSelectedFollowUpForDetails(null);
+                  }}
+                  className="p-1 hover:bg-white/10 rounded-md transition-colors"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+              <div className="p-6 overflow-y-auto space-y-6">
+                {(() => {
+                  const modalClient = getClientById(selectedFollowUpForDetails.clientId, selectedFollowUpForDetails.leadId, selectedFollowUpForDetails.projectId);
+                  return (
+                    <>
+                      {/* Header Section */}
+                      <div className="flex flex-col gap-3">
+                        <div className="flex items-start justify-between gap-4">
+                          <h4 className="text-xl font-black text-primary leading-tight">
+                            {selectedFollowUpForDetails.title}
+                          </h4>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className={`text-[10px] font-black tracking-widest px-2.5 py-1 rounded-md border uppercase shadow-sm ${getPriorityBadge(selectedFollowUpForDetails.priority)}`}>
+                            {selectedFollowUpForDetails.priority} Priority
+                          </span>
+                          <span className={`px-2.5 py-1 rounded-md text-[10px] font-black tracking-widest uppercase border shadow-sm ${getModeBadge(selectedFollowUpForDetails.followup_mode)}`}>
+                            {selectedFollowUpForDetails.followup_mode}
+                          </span>
+                          <span className={`px-2.5 py-1 rounded-md text-[10px] font-black tracking-widest uppercase border shadow-sm ${selectedFollowUpForDetails.status === "completed" ? "bg-success/10 text-success border-success/20" : "bg-slate-100 text-slate-500 border-slate-200"}`}>
+                            {selectedFollowUpForDetails.status}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Schedule Card */}
+                        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden group">
+                          <div className="absolute -top-4 -right-4 p-3 opacity-5 text-slate-800">
+                            <Calendar size={80} />
+                          </div>
+                          <p className="text-[10px] font-black tracking-widest text-slate-400 uppercase mb-3">Schedule Info</p>
+                          <div className="space-y-3 relative z-10">
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-500 shrink-0">
+                                <Calendar size={14} />
+                              </div>
+                              <div>
+                                <p className="text-[10px] font-bold text-slate-400 uppercase">Date</p>
+                                <p className="text-[13px] font-bold text-slate-700">
+                                  {selectedFollowUpForDetails.dueDate ? parseLocalDate(selectedFollowUpForDetails.dueDate).toLocaleDateString([], { month: "long", day: "numeric", year: "numeric" }) : "N/A"}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center text-amber-500 shrink-0">
+                                <Clock size={14} />
+                              </div>
+                              <div>
+                                <p className="text-[10px] font-bold text-slate-400 uppercase">Time</p>
+                                <p className="text-[13px] font-bold text-slate-700">
+                                  {selectedFollowUpForDetails.dueDate ? parseLocalDate(selectedFollowUpForDetails.dueDate).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true }) : "N/A"}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Client Card */}
+                        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden group">
+                          <div className="absolute -top-4 -right-4 p-3 opacity-5 text-slate-800">
+                            <User size={80} />
+                          </div>
+                          <p className="text-[10px] font-black tracking-widest text-slate-400 uppercase mb-3">Client Details</p>
+                          <div className="space-y-3 relative z-10">
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-500 font-bold text-xs shrink-0 border border-blue-100">
+                                {modalClient?.name?.charAt(0).toUpperCase() || "?"}
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <p className="text-[10px] font-bold text-slate-400 uppercase">Name</p>
+                                <p className="text-[13px] font-bold text-slate-700 truncate" title={modalClient?.name || "No Client"}>
+                                  {modalClient?.name || "No Client"}
+                                </p>
+                              </div>
+                            </div>
+                            {(modalClient?.phone || modalClient?.email) && (
+                              <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-500 shrink-0 border border-slate-100">
+                                  <Phone size={14} />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <p className="text-[10px] font-bold text-slate-400 uppercase">Contact</p>
+                                  <p className="text-[12px] font-bold text-slate-700 truncate" title={modalClient?.phone || modalClient?.email}>
+                                    {modalClient?.phone || modalClient?.email}
+                                  </p>
+                                </div>
+                              </div>
+                            )}
+                            {selectedFollowUpForDetails.projectName && (
+                              <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center text-purple-500 shrink-0 border border-purple-100">
+                                  <Folder size={14} />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <p className="text-[10px] font-bold text-slate-400 uppercase">Project</p>
+                                  <p className="text-[12px] font-bold text-slate-700 truncate" title={selectedFollowUpForDetails.projectName}>
+                                    {selectedFollowUpForDetails.projectName}
+                                  </p>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Description block */}
+                      {selectedFollowUpForDetails.description && (
+                        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm relative">
+                          <p className="text-[10px] font-black tracking-widest text-slate-400 uppercase mb-3 flex items-center gap-2">
+                            <AlignLeft size={14} /> Description
+                          </p>
+                          <p className="text-[13px] text-slate-700 leading-relaxed whitespace-pre-wrap font-medium">
+                            {selectedFollowUpForDetails.description}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Completion Block */}
+                      {selectedFollowUpForDetails.status === "completed" && (
+                        <div className="bg-success/5 border border-success/20 rounded-xl p-5 shadow-sm">
+                          <div className="flex items-center gap-2 mb-4">
+                            <CheckCircle2 size={16} className="text-success" strokeWidth={3} />
+                            <h5 className="text-[12px] font-black tracking-widest text-success uppercase">Completion Report</h5>
+                          </div>
+                          
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                            {selectedFollowUpForDetails.completed_at && (
+                              <div>
+                                <p className="text-[10px] font-bold text-success/70 uppercase mb-1">Completed On</p>
+                                <p className="text-[12px] font-bold text-success">
+                                  {parseLocalDate(selectedFollowUpForDetails.completed_at).toLocaleDateString([], { month: 'long', day: 'numeric', year: 'numeric' })} at {parseLocalDate(selectedFollowUpForDetails.completed_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
+                                </p>
+                              </div>
+                            )}
+                            {selectedFollowUpForDetails.completed_by && (
+                              <div>
+                                <p className="text-[10px] font-bold text-success/70 uppercase mb-1">Completed By</p>
+                                <p className="text-[12px] font-bold text-success">
+                                  {selectedFollowUpForDetails.completed_by}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+
+                          {selectedFollowUpForDetails.follow_brief && (
+                            <div className="bg-white/60 p-4 rounded-lg border border-success/10 mt-2">
+                              <p className="text-[10px] font-black tracking-widest text-success/70 uppercase mb-2">Conclusion Brief</p>
+                              <p className="text-[13px] text-slate-800 font-medium leading-relaxed whitespace-pre-wrap">
+                                {selectedFollowUpForDetails.follow_brief}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
+              </div>
+              {/* <div className="p-4 border-t border-slate-100 bg-slate-50 flex justify-end shrink-0">
+                <button
+                  onClick={() => {
+                    setShowDetailsModal(false);
+                    setSelectedFollowUpForDetails(null);
+                  }}
+                  className="px-5 py-2 text-sm font-bold text-slate-500 hover:text-slate-700 hover:bg-slate-200/50 rounded-lg transition-colors"
+                >
+                  Close
+                </button>
+              </div> */}
+            </div>
+          </div>
+        , document.body)}
 
         {/* Completion Brief Modal */}
         {showCompletionModal &&
@@ -1378,7 +1747,7 @@ const FollowUpList = ({
                 </h3>
                 <p className="text-slate-400 text-[14px] font-bold  tracking-widest">
                   {formData.id
-                    ? "Update follow-up details"
+                    ? "Update Follow-up Title"
                     : "Create a new follow-up task"}
                 </p>
               </div>
