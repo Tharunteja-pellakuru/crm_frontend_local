@@ -753,8 +753,7 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
               <h3 className="text-base font-bold text-[#18254D]">Tasks</h3>
               <button
                 onClick={() => {
-                  setViewAllTab("Pending");
-                  setShowViewAllModal(true);
+                  onNavigate("followups");
                 }}
                 className="text-xs font-semibold text-teal-500 hover:text-teal-600 flex items-center gap-1"
               >
