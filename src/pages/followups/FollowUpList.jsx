@@ -27,6 +27,7 @@ import {
   Mail,
   LayoutGrid,
   AlertTriangle,
+  Zap,
   Folder,
   AlignLeft,
 } from "lucide-react";
@@ -493,26 +494,63 @@ const FollowUpList = ({
 
     switch (p) {
       case "High":
-        return "bg-error/10 text-error border-error/20";
+        return "bg-[#FFFBEB] text-[#D97706] border-[#FDE68A]";
       case "Medium":
-        return "bg-warning/10 text-warning border-warning/20";
+        return "bg-[#EFF6FF] text-[#2563EB] border-[#BFDBFE]";
       case "Low":
-        return "bg-info/10 text-info border-info/20";
+        return "bg-[#ECFDF5] text-[#059669] border-[#A7F3D0]";
+      default:
+        return "bg-slate-50 text-slate-500 border-slate-200";
+    }
+  };
+
+  const getPriorityIcon = (p) => {
+    switch (p) {
+      case "High":
+        return Zap;
+      case "Medium":
+        return AlertTriangle;
+      case "Low":
+        return CheckCircle2;
+      default:
+        return AlertTriangle;
     }
   };
 
   const getModeBadge = (mode) => {
     switch (mode?.toLowerCase()) {
       case "call":
-        return "bg-success/10 text-success border-success/20";
+        return "bg-[#ECFDF5] text-[#059669] border-[#A7F3D0]";
       case "email":
-        return "bg-info/10 text-info border-info/20";
+        return "bg-[#EFF6FF] text-[#2563EB] border-[#BFDBFE]";
       case "meeting":
-        return "bg-secondary/10 text-secondary border-secondary/20";
+        return "bg-[#F5F3FF] text-[#7C3AED] border-[#DDD6FE]";
       case "whatsapp":
-        return "bg-emerald-500/10 text-emerald-600 border-emerald-500/20";
+        return "bg-[#F0FDF4] text-[#16A34A] border-[#BBF7D0]";
       default:
         return "bg-slate-50 text-slate-500 border-slate-200";
+    }
+  };
+
+  const getStatusBadge = (status) => {
+    switch ((status || "").toLowerCase()) {
+      case "completed":
+        return "bg-[#ECFDF5] text-[#059669] border-[#A7F3D0]";
+      case "pending":
+        return "bg-[#FFFBEB] text-[#D97706] border-[#FDE68A]";
+      default:
+        return "bg-slate-50 text-slate-500 border-slate-200";
+    }
+  };
+
+  const getStatusIcon = (status) => {
+    switch ((status || "").toLowerCase()) {
+      case "completed":
+        return CheckCircle2;
+      case "pending":
+        return Bell;
+      default:
+        return Bell;
     }
   };
 
@@ -533,7 +571,7 @@ const FollowUpList = ({
       <div className="space-y-5 animate-fade-in w-full">
         <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
           <div className="flex flex-col items-start max-w-2xl text-left">
-            <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-primary tracking-tight mb-2">
+            <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-primary tracking-tight mb-2">
               {typeFilter === "Active"
                 ? "Reference Follow-Ups"
                 : typeFilter === "Lead"
@@ -875,8 +913,9 @@ const FollowUpList = ({
                         </div>
                       </div>
                     </div>
-                    <span className={`px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border flex items-center gap-1.5 shadow-sm ${getPriorityBadge(f.priority)}`}>
-                      {f.priority} Priority
+                    <span className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[12px] font-black uppercase tracking-[0.18em] border shadow-sm ${getPriorityBadge(f.priority)}`}>
+                      {React.createElement(getPriorityIcon(f.priority), { size: 12, strokeWidth: 2.2 })}
+                      {f.priority}
                     </span>
                   </div>
 
@@ -889,18 +928,28 @@ const FollowUpList = ({
                   <div className="space-y-3 mb-4">
                     <div className="grid grid-cols-2 gap-2">
                       <div className="flex items-center gap-2 text-[12px] font-medium text-slate-600 bg-white p-2 rounded-lg border border-slate-100 shadow-sm">
-                        <Calendar size={14} className="text-slate-400" />
+                        <Calendar size={12} className="text-slate-400" />
                         {parseLocalDate(f.dueDate).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" })}
                       </div>
                       <div className="flex items-center gap-2 text-[12px] font-medium text-slate-600 bg-white p-2 rounded-lg border border-slate-100 shadow-sm">
-                        <Clock size={14} className="text-slate-400" />
+                        <Clock size={12} className="text-slate-400" />
                         {parseLocalDate(f.dueDate).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true })}
                       </div>
                     </div>
                     
                     <div className="flex items-center justify-between px-1">
-                      <span className={`px-2 py-0.5 rounded-md text-[10px] font-black tracking-widest uppercase border ${getModeBadge(f.followup_mode)}`}>
-                        {f.followup_mode}
+                      <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold border flex items-center gap-1.5 shadow-sm transition-all w-fit whitespace-nowrap ${getModeBadge(f.followup_mode)}`}>
+                        {React.createElement(
+                          f.followup_mode?.toLowerCase() === "call"
+                            ? Phone
+                            : f.followup_mode?.toLowerCase() === "meeting"
+                              ? Calendar
+                              : f.followup_mode?.toLowerCase() === "whatsapp"
+                                ? MessageSquare
+                                : Mail,
+                          { size: 10, strokeWidth: 2.1 },
+                        )}
+                          <span className="whitespace-nowrap">{f.followup_mode}</span>
                       </span>
                       {f.status === "completed" && f.completed_at && (
                         <span className="text-[10px] font-black tracking-widest uppercase text-success">
@@ -1020,22 +1069,25 @@ const FollowUpList = ({
         {/* Desktop View: Table List */}
         <div className="hidden lg:block bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden w-full">
           <div className="w-full">
-            <table className="w-full border-collapse">
+            <table className="w-full border-collapse table-fixed">
               <thead>
                 <tr className="bg-slate-50/50">
-                  <th className="px-6 py-5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 w-[25%]">
-                    Follow-up Title
+                  <th className="px-6 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 w-[22%]">
+                    Title
                   </th>
-                  <th className="px-6 py-5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 w-[20%]">
+                  <th className="px-6 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 w-[18%]">
                     Lead Name
                   </th>
-                  <th className="px-6 py-5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 w-[20%]">
-                    Status & Mode
+                  <th className="px-6 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 w-[14%]">
+                    Mode
                   </th>
-                  <th className="px-6 py-5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 w-[15%]">
+                  <th className="px-6 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 w-[16%]">
                     Due Date
                   </th>
-                  <th className="px-6 py-5 text-right text-[11px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 w-[20%]">
+                  <th className="px-6 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 w-[12%]">
+                    Due Time
+                  </th>
+                  <th className="px-6 py-5 text-right text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 w-[20%]">
                     Actions
                   </th>
                 </tr>
@@ -1043,7 +1095,7 @@ const FollowUpList = ({
               <tbody className="divide-y divide-slate-100">
                 {filteredFollowUps.length === 0 ? (
                   <tr>
-                    <td colSpan="5" className="py-16 text-center">
+                    <td colSpan="6" className="py-16 text-center">
                       <div className="flex flex-col items-center justify-center">
                         <Bell size={24} className="text-slate-200 mb-3" />
                         <p className="text-[13px] font-bold text-slate-400 tracking-wider">
@@ -1066,12 +1118,12 @@ const FollowUpList = ({
                           setSelectedFollowUpForDetails(f);
                           setShowDetailsModal(true);
                         }}
-                        className={`group transition-all hover:bg-slate-50/50 cursor-pointer ${f.status === "completed" ? "opacity-70 bg-slate-50/30" : ""}`}
+                        className={`group bg-white hover:bg-slate-50/50 transition-colors shadow-sm border border-slate-100 rounded-xl hover:shadow-md cursor-pointer ${f.status === "completed" ? "opacity-70 bg-slate-50/30" : ""}`}
                       >
                         {/* Col 1: Details */}
-                        <td className="px-6 py-4 align-top">
+                        <td className="p-4 border-y border-slate-100 first:border-l first:rounded-l-xl align-top">
                           <h4
-                            className={`text-[13px] font-bold text-primary tracking-tight mb-1 cursor-pointer hover:text-secondary transition-colors ${f.status === "completed" ? "line-through opacity-60" : ""}`}
+                            className={`text-[13px] font-bold text-[#18254D] tracking-tight mb-1 cursor-pointer hover:text-secondary transition-colors ${f.status === "completed" ? "line-through opacity-60" : ""}`}
                             onClick={(e) => {
                               e.stopPropagation();
                               client && onSelectClient && onSelectClient(client);
@@ -1079,11 +1131,10 @@ const FollowUpList = ({
                           >
                             {f.title}
                           </h4>
-
                         </td>
 
                         {/* Col 2: Lead Name */}
-                        <td className="px-6 py-4 align-top">
+                        <td className="p-4 border-y border-slate-100 align-top">
                           <div className="flex flex-col gap-1">
                             <span className="text-[13px] font-bold text-secondary">
                               {client?.name || "No Client"}
@@ -1096,47 +1147,49 @@ const FollowUpList = ({
                           </div>
                         </td>
 
-                        {/* Col 3: Status & Mode */}
-                        <td className="px-6 py-4 align-top">
-                          <div className="flex flex-col items-start gap-2">
-                            <span className={`text-[10px] font-black tracking-widest px-2 py-0.5 rounded-md border uppercase ${getPriorityBadge(f.priority)}`}>
-                              {f.priority} Priority
-                            </span>
-                            <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-500 uppercase tracking-widest">
-                              {f.followup_mode?.toLowerCase() === 'call' ? <Phone size={12} strokeWidth={2.5} /> : 
-                               f.followup_mode?.toLowerCase() === 'meeting' ? <Calendar size={12} strokeWidth={2.5} /> : 
-                               f.followup_mode?.toLowerCase() === 'whatsapp' ? <MessageSquare size={12} strokeWidth={2.5} /> :
-                               <Mail size={12} strokeWidth={2.5} />}
-                              <span>{f.followup_mode}</span>
-                            </div>
-                          </div>
+                        {/* Col 3: Mode */}
+                        <td className="p-4 border-y border-slate-100 align-top">
+                          <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold border flex items-center gap-1.5 shadow-sm transition-all w-fit whitespace-nowrap ${getModeBadge(f.followup_mode)}`}>
+                            {React.createElement(
+                              f.followup_mode?.toLowerCase() === "call"
+                                ? Phone
+                                : f.followup_mode?.toLowerCase() === "meeting"
+                                  ? Calendar
+                                  : f.followup_mode?.toLowerCase() === "whatsapp"
+                                    ? MessageSquare
+                                    : Mail,
+                              { size: 10, strokeWidth: 2.1 },
+                            )}
+                            <span className="whitespace-nowrap">{f.followup_mode || "N/A"}</span>
+                          </span>
                         </td>
 
                         {/* Col 4: Due Date */}
-                        <td className="px-6 py-4 align-top">
-                          <div className="flex flex-col gap-1.5">
-                            <div className="flex items-center gap-1.5 text-[11px] font-bold tracking-widest uppercase text-slate-400">
-                              <Calendar size={12} className="opacity-70" />
-                              <span>{parseLocalDate(f.dueDate).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" })}</span>
-                            </div>
-                            <div className="flex items-center gap-1.5 text-[11px] font-bold tracking-widest uppercase text-secondary">
-                              <Clock size={12} className="opacity-70" />
-                              <span>{parseLocalDate(f.dueDate).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true })}</span>
-                            </div>
-
-                            {f.status === "completed" && f.completed_at && (
-                              <span className="text-[10px] font-black tracking-widest uppercase text-success w-fit mt-1">
-                                Completed
-                              </span>
-                            )}
+                        <td className="p-4 border-y border-slate-100 align-top whitespace-nowrap">
+                          <div className="flex items-center gap-1.5 text-[11px] font-bold tracking-widest uppercase text-slate-400 whitespace-nowrap">
+                            <Calendar size={12} className="opacity-70" />
+                            <span className="whitespace-nowrap">
+                              {parseLocalDate(f.dueDate).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" })}
+                            </span>
                           </div>
                         </td>
 
-                        {/* Col 5: Actions */}
-                        <td className="px-6 py-4 align-top">
+                        {/* Col 5: Due Time */}
+                        <td className="p-4 border-y border-slate-100 align-top whitespace-nowrap">
+                          <div className="flex items-center gap-1.5 text-[11px] font-bold tracking-widest uppercase text-secondary whitespace-nowrap">
+                            <Clock size={12} className="opacity-70" />
+                            <span className="whitespace-nowrap">
+                              {parseLocalDate(f.dueDate).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true })}
+                            </span>
+                          </div>
+                        </td>
+
+                        {/* Col 6: Actions */}
+                        <td className="p-4 border-y border-slate-100 last:border-r last:rounded-r-xl align-top">
                           <div className="flex items-center justify-end gap-1.5">
                             <button
-                              onClick={() => {
+                              onClick={(e) => {
+                                e.stopPropagation();
                                 if (f.status === "completed") {
                                   onToggleStatus(f.id);
                                 } else {
@@ -1147,6 +1200,7 @@ const FollowUpList = ({
                                   setCompletionPeriod(now.getHours() >= 12 ? "PM" : "AM");
                                   setCompletingFollowUpId(f.id);
                                   setCompletionBrief("");
+                                  setShowDetailsModal(false);
                                   setShowCompletionModal(true);
                                 }
                               }}
@@ -1303,57 +1357,51 @@ const FollowUpList = ({
 
         {/* Details Modal */}
         {showDetailsModal && selectedFollowUpForDetails && createPortal(
-          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[99999] flex items-center justify-center p-4">
-            <div className="bg-white w-full max-w-lg rounded-xl shadow-2xl border border-slate-200 animate-fade-in relative z-[100000] overflow-hidden flex flex-col max-h-[90vh]">
-              <div className="bg-primary p-5 text-white relative flex items-center justify-between shrink-0">
-                <h3 className="text-base font-bold tracking-wide">
-                  Follow-up Title
-                </h3>
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[99999] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+            <div
+              className="absolute inset-0"
+              onClick={() => {
+                setShowDetailsModal(false);
+                setSelectedFollowUpForDetails(null);
+              }}
+            />
+            <div className="relative z-10 bg-white w-full max-w-2xl rounded-3xl shadow-2xl border border-slate-100 overflow-hidden animate-fade-in flex flex-col max-h-[90vh]">
+              <div className="p-6 sm:p-7 border-b border-slate-100 flex items-start justify-between gap-4 bg-white shrink-0">
+                  <div className="min-w-0">
+                    <h3 className="text-base font-bold text-[#18254D] tracking-tight">
+                      {selectedFollowUpForDetails.title || "Follow-up"}
+                    </h3>
+                    <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider mt-0.5">
+                      Follow-up Details
+                    </p>
+                  </div>
                 <button
                   onClick={() => {
                     setShowDetailsModal(false);
                     setSelectedFollowUpForDetails(null);
                   }}
-                  className="p-1 hover:bg-white/10 rounded-md transition-colors"
+                  className="w-10 h-10 flex items-center justify-center rounded-2xl text-slate-400 hover:bg-slate-200/60 hover:text-slate-600 transition-colors shrink-0"
                 >
-                  <X size={20} />
+                  <X size={22} />
                 </button>
               </div>
-              <div className="p-6 overflow-y-auto space-y-6">
+              <div className="p-6 sm:p-7 overflow-y-auto space-y-6">
                 {(() => {
                   const modalClient = getClientById(selectedFollowUpForDetails.clientId, selectedFollowUpForDetails.leadId, selectedFollowUpForDetails.projectId);
                   return (
                     <>
-                      {/* Header Section */}
-                      <div className="flex flex-col gap-3">
-                        <div className="flex items-start justify-between gap-4">
-                          <h4 className="text-xl font-black text-primary leading-tight">
-                            {selectedFollowUpForDetails.title}
-                          </h4>
-                        </div>
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className={`text-[10px] font-black tracking-widest px-2.5 py-1 rounded-md border uppercase shadow-sm ${getPriorityBadge(selectedFollowUpForDetails.priority)}`}>
-                            {selectedFollowUpForDetails.priority} Priority
-                          </span>
-                          <span className={`px-2.5 py-1 rounded-md text-[10px] font-black tracking-widest uppercase border shadow-sm ${getModeBadge(selectedFollowUpForDetails.followup_mode)}`}>
-                            {selectedFollowUpForDetails.followup_mode}
-                          </span>
-                          <span className={`px-2.5 py-1 rounded-md text-[10px] font-black tracking-widest uppercase border shadow-sm ${selectedFollowUpForDetails.status === "completed" ? "bg-success/10 text-success border-success/20" : "bg-slate-100 text-slate-500 border-slate-200"}`}>
-                            {selectedFollowUpForDetails.status}
-                          </span>
-                        </div>
-                      </div>
-
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Schedule Card */}
-                        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden group">
+                        <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 shadow-sm relative overflow-hidden group">
                           <div className="absolute -top-4 -right-4 p-3 opacity-5 text-slate-800">
                             <Calendar size={80} />
                           </div>
-                          <p className="text-[10px] font-black tracking-widest text-slate-400 uppercase mb-3">Schedule Info</p>
+                          <p className="text-[10px] font-black tracking-widest text-slate-400 uppercase mb-3 flex items-center gap-1.5">
+                            <Calendar size={12} /> Schedule Info
+                          </p>
                           <div className="space-y-3 relative z-10">
                             <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-500 shrink-0">
+                              <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-500 shrink-0 border border-indigo-100">
                                 <Calendar size={14} />
                               </div>
                               <div>
@@ -1364,7 +1412,7 @@ const FollowUpList = ({
                               </div>
                             </div>
                             <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center text-amber-500 shrink-0">
+                              <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center text-amber-500 shrink-0 border border-amber-100">
                                 <Clock size={14} />
                               </div>
                               <div>
@@ -1378,11 +1426,11 @@ const FollowUpList = ({
                         </div>
 
                         {/* Client Card */}
-                        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden group">
+                        <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 shadow-sm relative overflow-hidden group">
                           <div className="absolute -top-4 -right-4 p-3 opacity-5 text-slate-800">
                             <User size={80} />
                           </div>
-                          <p className="text-[10px] font-black tracking-widest text-slate-400 uppercase mb-3">Client Details</p>
+                          <p className="text-[10px] font-black tracking-widest text-slate-400 uppercase mb-3">Lead Details</p>
                           <div className="space-y-3 relative z-10">
                             <div className="flex items-center gap-3">
                               <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-500 font-bold text-xs shrink-0 border border-blue-100">
@@ -1402,7 +1450,7 @@ const FollowUpList = ({
                                 </div>
                                 <div className="min-w-0 flex-1">
                                   <p className="text-[10px] font-bold text-slate-400 uppercase">Contact</p>
-                                  <p className="text-[12px] font-bold text-slate-700 truncate" title={modalClient?.phone || modalClient?.email}>
+                                  <p className="text-[13px] font-bold text-slate-700 truncate" title={modalClient?.phone || modalClient?.email}>
                                     {modalClient?.phone || modalClient?.email}
                                   </p>
                                 </div>
@@ -1415,7 +1463,7 @@ const FollowUpList = ({
                                 </div>
                                 <div className="min-w-0 flex-1">
                                   <p className="text-[10px] font-bold text-slate-400 uppercase">Project</p>
-                                  <p className="text-[12px] font-bold text-slate-700 truncate" title={selectedFollowUpForDetails.projectName}>
+                                  <p className="text-[13px] font-bold text-slate-700 truncate" title={selectedFollowUpForDetails.projectName}>
                                     {selectedFollowUpForDetails.projectName}
                                   </p>
                                 </div>
@@ -1427,11 +1475,11 @@ const FollowUpList = ({
 
                       {/* Description block */}
                       {selectedFollowUpForDetails.description && (
-                        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm relative">
-                          <p className="text-[10px] font-black tracking-widest text-slate-400 uppercase mb-3 flex items-center gap-2">
-                            <AlignLeft size={14} /> Description
+                        <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 shadow-sm relative">
+                          <p className="text-[10px] font-black tracking-widest text-slate-400 uppercase mb-3 flex items-center gap-1.5">
+                            <AlignLeft size={12} /> Description
                           </p>
-                          <p className="text-[13px] text-slate-700 leading-relaxed whitespace-pre-wrap font-medium">
+                          <p className="text-sm text-[#18254D] leading-relaxed whitespace-pre-wrap font-medium">
                             {selectedFollowUpForDetails.description}
                           </p>
                         </div>
@@ -1439,13 +1487,13 @@ const FollowUpList = ({
 
                       {/* Completion Block */}
                       {selectedFollowUpForDetails.status === "completed" && (
-                        <div className="bg-success/5 border border-success/20 rounded-xl p-5 shadow-sm">
+                        <div className="bg-success/5 border border-success/20 rounded-2xl p-4 shadow-sm">
                           <div className="flex items-center gap-2 mb-4">
-                            <CheckCircle2 size={16} className="text-success" strokeWidth={3} />
+                            <CheckCircle2 size={14} className="text-success" strokeWidth={3} />
                             <h5 className="text-[12px] font-black tracking-widest text-success uppercase">Completion Report</h5>
                           </div>
                           
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
                             {selectedFollowUpForDetails.completed_at && (
                               <div>
                                 <p className="text-[10px] font-bold text-success/70 uppercase mb-1">Completed On</p>
@@ -1465,7 +1513,7 @@ const FollowUpList = ({
                           </div>
 
                           {selectedFollowUpForDetails.follow_brief && (
-                            <div className="bg-white/60 p-4 rounded-lg border border-success/10 mt-2">
+                            <div className="bg-white/60 p-3 rounded-2xl border border-success/10 mt-2">
                               <p className="text-[10px] font-black tracking-widest text-success/70 uppercase mb-2">Conclusion Brief</p>
                               <p className="text-[13px] text-slate-800 font-medium leading-relaxed whitespace-pre-wrap">
                                 {selectedFollowUpForDetails.follow_brief}
@@ -1496,46 +1544,45 @@ const FollowUpList = ({
         {/* Completion Brief Modal */}
         {showCompletionModal &&
           createPortal(
-            <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xl z-[99999] flex items-center justify-center p-4">
-              <div className="bg-white w-full max-w-md rounded-xl shadow-2xl border border-slate-200 animate-fade-in relative z-[100000]">
-                <div className="bg-primary p-4 text-white relative rounded-t-xl">
+            <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[99999] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+              <div
+                className="absolute inset-0"
+                onClick={() => {
+                  setShowCompletionModal(false);
+                  setCompletingFollowUpId(null);
+                  setCompletionBrief("");
+                }}
+              />
+              <div className="relative z-10 bg-white w-full max-w-md rounded-3xl shadow-2xl border border-slate-100 overflow-hidden animate-fade-in flex flex-col max-h-[90vh]">
+                <div className="p-6 sm:p-7 border-b border-slate-100 flex items-start justify-between gap-4 bg-white shrink-0">
+                  <div className="min-w-0">
+                    <h3 className="text-base font-bold text-[#18254D] tracking-tight">
+                      Mark as Completed
+                    </h3>
+                    <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider mt-0.5">
+                      Follow-up Conclusion
+                    </p>
+                  </div>
                   <button
                     onClick={() => {
                       setShowCompletionModal(false);
                       setCompletingFollowUpId(null);
                       setCompletionBrief("");
                     }}
-                    className="absolute top-4 right-4 p-1.5 hover:bg-white/10 rounded-xl transition-colors"
+                    className="w-10 h-10 flex items-center justify-center rounded-2xl text-slate-400 hover:bg-slate-100/80 hover:text-slate-600 transition-colors shrink-0"
                   >
-                    <X size={18} strokeWidth={3} />
+                    <X size={22} strokeWidth={2.5} />
                   </button>
-                  <div className="flex items-center gap-3 pr-8">
-                    <div className="w-8 h-8 bg-secondary/20 rounded-xl flex items-center justify-center border border-secondary/30">
-                      <CheckCircle2
-                        size={18}
-                        strokeWidth={3}
-                        className="text-secondary"
-                      />
-                    </div>
-                    <div>
-                      <h3 className="text-base font-bold tracking-tighter leading-none">
-                        Mark as Completed
-                      </h3>
-                      <p className="text-secondary text-[14px] font-bold  tracking-widest mt-0.5">
-                        Follow-up Conclusion
-                      </p>
-                    </div>
-                  </div>
                 </div>
-                <div className="p-5 space-y-4 max-h-[70vh] overflow-y-auto custom-scrollbar">
+                <div className="p-6 sm:p-7 space-y-5 overflow-y-auto no-scrollbar">
                   <div className="space-y-1.5">
-                    <label className="text-[14px] font-bold text-primary  tracking-widest ml-1">
+                    <label className="text-[10px] font-black text-slate-400 tracking-[0.18em] uppercase ml-1">
                       Conclusion Brief <span className="text-error">*</span>
                     </label>
                     <textarea
                       autoFocus
                       placeholder="Write a brief conclusion about this follow-up..."
-                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium shadow-sm focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none resize-none"
+                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200 resize-none"
                       value={completionBrief}
                       onChange={(e) => setCompletionBrief(e.target.value)}
                       rows="3"
@@ -1544,7 +1591,7 @@ const FollowUpList = ({
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div className="space-y-1.5">
-                      <label className="text-[14px] font-bold text-primary tracking-widest ml-1">
+                      <label className="text-[10px] font-black text-slate-400 tracking-[0.18em] uppercase ml-1">
                         Completion Date <span className="text-error">*</span>
                       </label>
                       <DatePicker
@@ -1553,7 +1600,7 @@ const FollowUpList = ({
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-[14px] font-bold text-primary tracking-widest ml-1">
+                      <label className="text-[10px] font-black text-slate-400 tracking-[0.18em] uppercase ml-1">
                         Completion Time <span className="text-error">*</span>
                       </label>
                       <div className="flex gap-2">
@@ -1562,7 +1609,7 @@ const FollowUpList = ({
                           <button
                             type="button"
                             onClick={() => setIsCompHourOpen(!isCompHourOpen)}
-                            className="w-full flex items-center justify-between px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold shadow-sm"
+                            className="w-full flex items-center justify-between px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] shadow-sm hover:bg-white hover:border-[#18254D]/20 transition-all"
                           >
                             <span>{completionHour.padStart(2, "0")}</span>
                             <ChevronDown size={12} />
@@ -1580,7 +1627,7 @@ const FollowUpList = ({
                                       );
                                       setIsCompHourOpen(false);
                                     }}
-                                    className="w-full text-left px-3 py-1.5 text-[12px] hover:bg-slate-50"
+                                    className="w-full text-left px-4 py-2.5 text-[12px] hover:bg-slate-50"
                                   >
                                     {h.toString().padStart(2, "0")}
                                   </button>
@@ -1594,7 +1641,7 @@ const FollowUpList = ({
                           <button
                             type="button"
                             onClick={() => setIsCompMinOpen(!isCompMinOpen)}
-                            className="w-full flex items-center justify-between px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold shadow-sm"
+                            className="w-full flex items-center justify-between px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] shadow-sm hover:bg-white hover:border-[#18254D]/20 transition-all"
                           >
                             <span>{completionMinute}</span>
                             <ChevronDown size={12} />
@@ -1612,7 +1659,7 @@ const FollowUpList = ({
                                       );
                                       setIsCompMinOpen(false);
                                     }}
-                                    className={`w-full text-left px-3 py-1.5 text-[12px] hover:bg-slate-50 ${completionMinute === m.toString().padStart(2, "0") ? "bg-slate-100 text-secondary font-bold" : ""}`}
+                                    className={`w-full text-left px-4 py-2.5 text-[12px] hover:bg-slate-50 ${completionMinute === m.toString().padStart(2, "0") ? "bg-slate-100 text-secondary font-bold" : ""}`}
                                   >
                                     {m.toString().padStart(2, "0")}
                                   </button>
@@ -1628,7 +1675,7 @@ const FollowUpList = ({
                             onClick={() =>
                               setIsCompPeriodOpen(!isCompPeriodOpen)
                             }
-                            className="w-full flex items-center justify-between px-2 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold shadow-sm"
+                            className="w-full flex items-center justify-between px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] shadow-sm hover:bg-white hover:border-[#18254D]/20 transition-all"
                           >
                             <span>{completionPeriod}</span>
                             <ChevronDown size={12} />
@@ -1643,7 +1690,7 @@ const FollowUpList = ({
                                     setCompletionPeriod(p);
                                     setIsCompPeriodOpen(false);
                                   }}
-                                  className="w-full text-left px-3 py-1.5 text-[12px] hover:bg-slate-50"
+                                  className="w-full text-left px-4 py-2.5 text-[12px] hover:bg-slate-50"
                                 >
                                   {p}
                                 </button>
@@ -1656,12 +1703,12 @@ const FollowUpList = ({
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[14px] font-bold text-primary  tracking-widest ml-1">
+                    <label className="text-[10px] font-black text-slate-400 tracking-[0.18em] uppercase ml-1">
                       Completed By <span className="text-error">*</span>
                     </label>
                     <input
                       type="text"
-                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium shadow-sm focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none"
+                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200"
                       value={completedBy}
                       onChange={(e) => setCompletedBy(e.target.value)}
                     />
@@ -1704,7 +1751,7 @@ const FollowUpList = ({
                         setCompletingFollowUpId(null);
                         setCompletionBrief("");
                       }}
-                      className="w-full py-3 bg-[#18254D] text-white rounded-xl text-[13px] font-bold  tracking-[0.25em] shadow-xl active:scale-[0.97] transition-all hover:bg-[#1e2e5e] hover:shadow-2xl flex items-center justify-center gap-3"
+                      className="w-full py-3 bg-[#18254D] text-white rounded-2xl text-[13px] font-bold tracking-[0.2em] shadow-lg active:scale-[0.97] transition-all hover:bg-[#1e2e5e] flex items-center justify-center gap-2"
                     >
                       Complete
                     </button>
@@ -1718,9 +1765,36 @@ const FollowUpList = ({
 
       {showAddModal &&
         createPortal(
-          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[99999] flex items-center justify-center p-4 overflow-y-auto custom-scrollbar">
-            <div className="bg-white w-full max-w-lg rounded-xl shadow-2xl border border-slate-200 animate-fade-in my-auto max-h-[90vh] flex flex-col">
-              <div className="bg-primary p-4 text-white relative rounded-t-xl">
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[99999] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+            <div
+              className="absolute inset-0"
+              onClick={() => {
+                setShowAddModal(false);
+                setFormData({
+                  clientId: "",
+                  title: "",
+                  description: "",
+                  followup_date: new Date().toLocaleDateString("en-CA"),
+                  followup_mode: "call",
+                  followup_status: "pending",
+                  follow_brief: "",
+                  priority: "Medium",
+                  timeHour: "12",
+                  timeMinute: "00",
+                  timePeriod: "PM",
+                });
+              }}
+            />
+            <div className="relative z-10 bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-slate-100 overflow-hidden animate-fade-in flex flex-col max-h-[90vh]">
+              <div className="p-6 sm:p-7 border-b border-slate-100 flex items-start justify-between gap-4 bg-white shrink-0">
+                <div className="min-w-0">
+                  <h3 className="text-base font-bold text-[#18254D] tracking-tight">
+                    {formData.id ? "Edit Follow Up" : "Add Follow Up"}
+                  </h3>
+                  <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider mt-0.5">
+                    {formData.id ? "Update Entry" : "Manual Entry"}
+                  </p>
+                </div>
                 <button
                   onClick={() => {
                     setShowAddModal(false);
@@ -1738,24 +1812,16 @@ const FollowUpList = ({
                       timePeriod: "PM",
                     });
                   }}
-                  className="absolute top-4 right-4 p-1.5 hover:bg-white/10 rounded-xl transition-colors"
+                  className="w-10 h-10 flex items-center justify-center rounded-2xl text-slate-400 hover:bg-slate-100/80 hover:text-slate-600 transition-colors shrink-0"
                 >
-                  <X size={18} strokeWidth={3} />
+                  <X size={22} strokeWidth={2.5} />
                 </button>
-                <h3 className="text-base font-bold tracking-tighter mb-0.5">
-                  {formData.id ? "Edit Follow Up" : "Add Follow Up"}
-                </h3>
-                <p className="text-slate-400 text-[14px] font-bold  tracking-widest">
-                  {formData.id
-                    ? "Update Follow-up Title"
-                    : "Create a new follow-up task"}
-                </p>
               </div>
-              <form onSubmit={handleSubmit} className="p-4 space-y-2 overflow-y-auto no-scrollbar">
-                <div className="space-y-2">
+              <form onSubmit={handleSubmit} className="p-6 sm:p-7 space-y-5 overflow-y-auto no-scrollbar">
+                <div className="space-y-4">
                   {typeFilter === "Active" ? (
                     <div className="space-y-1.5">
-                      <label className="text-[14px] font-bold text-primary tracking-widest ml-1">
+                      <label className="text-[10px] font-black text-slate-400 tracking-[0.18em] uppercase ml-1">
                         Select Project
                       </label>
                       <div className="relative">
@@ -1764,9 +1830,9 @@ const FollowUpList = ({
                           onClick={() =>
                             setIsProjectDropdownOpen(!isProjectDropdownOpen)
                           }
-                          className="w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium shadow-sm hover:border-secondary transition-all"
+                          className="w-full flex items-center justify-between px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] shadow-sm hover:bg-white hover:border-[#18254D]/20 transition-all"
                         >
-                          <span className="text-primary truncate max-w-[90%]">
+                          <span className="truncate max-w-[90%]">
                             {formData.projectId
                               ? projects.find((p) => p.id == formData.projectId)
                                   ?.name
@@ -1785,29 +1851,22 @@ const FollowUpList = ({
                               onClick={() => setIsProjectDropdownOpen(false)}
                             />
                             <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top max-h-80 flex flex-col">
-                              <div className="sticky top-0 bg-[#18254D] z-10">
-                                <div className="px-4 py-3 border-b border-white/10">
-                                  <p className="text-[14px] font-bold text-white/50 tracking-widest">
-                                    Select Project
-                                  </p>
-                                </div>
-                                <div className="p-2 border-b border-slate-100 bg-slate-50">
-                                  <div className="relative">
-                                    <Search
-                                      className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-                                      size={14}
-                                    />
-                                    <input
-                                      type="text"
-                                      placeholder="Search projects..."
-                                      className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-xs font-medium focus:outline-none focus:border-secondary transition-colors"
-                                      value={projectSearchTerm}
-                                      onChange={(e) =>
-                                        setProjectSearchTerm(e.target.value)
-                                      }
-                                      autoFocus
-                                    />
-                                  </div>
+                              <div className="p-3 border-b border-slate-100 bg-slate-50">
+                                <div className="relative">
+                                  <Search
+                                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                                    size={14}
+                                  />
+                                  <input
+                                    type="text"
+                                    placeholder="Search projects..."
+                                    className="w-full pl-9 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-[#18254D]/20 focus:ring-4 focus:ring-[#18254D]/5 transition-all"
+                                    value={projectSearchTerm}
+                                    onChange={(e) =>
+                                      setProjectSearchTerm(e.target.value)
+                                    }
+                                    autoFocus
+                                  />
                                 </div>
                               </div>
                               <div className="overflow-y-auto max-h-60">
@@ -1875,7 +1934,7 @@ const FollowUpList = ({
                     </div>
                   ) : (
                     <div className="space-y-1.5">
-                      <label className="text-[14px] font-bold text-primary tracking-widest ml-1">
+                      <label className="text-[10px] font-black text-slate-400 tracking-[0.18em] uppercase ml-1">
                         {typeFilter === "Lead"
                           ? "Lead Name"
                           : "Target Identity"}{" "}
@@ -1887,9 +1946,9 @@ const FollowUpList = ({
                           onClick={() =>
                             setIsClientDropdownOpen(!isClientDropdownOpen)
                           }
-                          className="w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium shadow-sm hover:border-secondary transition-all"
+                          className="w-full flex items-center justify-between px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] shadow-sm hover:bg-white hover:border-[#18254D]/20 transition-all"
                         >
-                          <span className="text-primary truncate max-w-[90%]">
+                          <span className="truncate max-w-[90%]">
                             {formData.clientId
                               ? clients.find((c) => c.id == formData.clientId)
                                   ?.name
@@ -1910,32 +1969,22 @@ const FollowUpList = ({
                               onClick={() => setIsClientDropdownOpen(false)}
                             />
                             <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top max-h-80 flex flex-col">
-                              <div className="sticky top-0 bg-[#18254D] z-10">
-                                <div className="px-4 py-3 border-b border-white/10">
-                                  <p className="text-[14px] font-bold text-white/50 tracking-widest">
-                                    Select{" "}
-                                    {typeFilter === "Lead"
-                                      ? "Lead"
-                                      : "Client/Lead"}
-                                  </p>
-                                </div>
-                                <div className="p-2 border-b border-slate-100 bg-slate-50">
-                                  <div className="relative">
-                                    <Search
-                                      className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-                                      size={14}
-                                    />
-                                    <input
-                                      type="text"
-                                      placeholder="Search..."
-                                      className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-xs font-medium focus:outline-none focus:border-secondary transition-colors"
-                                      value={clientSearchTerm}
-                                      onChange={(e) =>
-                                        setClientSearchTerm(e.target.value)
-                                      }
-                                      autoFocus
-                                    />
-                                  </div>
+                              <div className="p-3 border-b border-slate-100 bg-slate-50">
+                                <div className="relative">
+                                  <Search
+                                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                                    size={14}
+                                  />
+                                  <input
+                                    type="text"
+                                    placeholder="Search..."
+                                    className="w-full pl-9 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-[#18254D]/20 focus:ring-4 focus:ring-[#18254D]/5 transition-all"
+                                    value={clientSearchTerm}
+                                    onChange={(e) =>
+                                      setClientSearchTerm(e.target.value)
+                                    }
+                                    autoFocus
+                                  />
                                 </div>
                               </div>
                               <div className="overflow-y-auto max-h-60">
@@ -2013,7 +2062,7 @@ const FollowUpList = ({
                   )}
 
                   <div className="space-y-1.5">
-                    <label className="text-[14px] font-bold text-primary  tracking-widest ml-1">
+                    <label className="text-[10px] font-black text-slate-400 tracking-[0.18em] uppercase ml-1">
                       Task Title <span className="text-error">*</span>
                     </label>
                     <input
@@ -2021,7 +2070,7 @@ const FollowUpList = ({
                       type="text"
                       disabled={formData.followup_status === "completed"}
                       placeholder="e.g. Discuss project scope"
-                      className={`w-full px-3.5 py-2.5 border rounded-xl text-sm font-medium shadow-sm focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none ${formData.followup_status === "completed" ? "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed" : "bg-slate-50 border-slate-200"}`}
+                      className={`w-full px-4 py-2.5 border rounded-xl text-sm font-semibold text-[#18254D] shadow-sm focus:ring-4 focus:ring-[#18254D]/5 focus:border-[#18254D]/20 focus:outline-none transition-all ${formData.followup_status === "completed" ? "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed" : "bg-slate-50 border-slate-200 hover:bg-white"}`}
                       value={formData.title}
                       onChange={(e) =>
                         setFormData({ ...formData, title: e.target.value })
@@ -2030,13 +2079,13 @@ const FollowUpList = ({
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[14px] font-bold text-primary  tracking-widest ml-1">
+                    <label className="text-[10px] font-black text-slate-400 tracking-[0.18em] uppercase ml-1">
                       Description <span className="text-error">*</span>
                     </label>
                     <textarea
                       disabled={formData.followup_status === "completed"}
                       placeholder="Add details about your follow-up..."
-                      className={`w-full px-3.5 py-2.5 border rounded-xl text-sm font-medium shadow-sm focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none resize-none ${formData.followup_status === "completed" ? "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed" : "bg-slate-50 border-slate-200"}`}
+                      className={`w-full px-4 py-2.5 border rounded-xl text-sm font-semibold text-[#18254D] shadow-sm focus:ring-4 focus:ring-[#18254D]/5 focus:border-[#18254D]/20 focus:outline-none resize-none transition-all ${formData.followup_status === "completed" ? "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed" : "bg-slate-50 border-slate-200 hover:bg-white"}`}
                       value={formData.description}
                       onChange={(e) =>
                         setFormData({
@@ -2050,7 +2099,7 @@ const FollowUpList = ({
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div className="space-y-1.5">
-                      <label className="text-[14px] font-bold text-primary  tracking-widest ml-1">
+                      <label className="text-[10px] font-black text-slate-400 tracking-[0.18em] uppercase ml-1">
                         Follow-up Date <span className="text-error">*</span>
                       </label>
                       <DatePicker
@@ -2063,7 +2112,7 @@ const FollowUpList = ({
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="text-[14px] font-bold text-primary  tracking-widest ml-1">
+                      <label className="text-[10px] font-black text-slate-400 tracking-[0.18em] uppercase ml-1">
                         Follow-up Time (12h){" "}
                         <span className="text-error">*</span>
                       </label>
@@ -2076,7 +2125,7 @@ const FollowUpList = ({
                             onClick={() =>
                               setIsHourDropdownOpen(!isHourDropdownOpen)
                             }
-                            className={`w-full flex items-center justify-between px-3 py-2.5 border rounded-xl text-sm font-bold shadow-sm transition-all ${formData.followup_status === "completed" ? "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed" : "bg-slate-50 border-slate-200 hover:border-secondary"}`}
+                            className={`w-full flex items-center justify-between px-4 py-2.5 border rounded-xl text-sm font-semibold text-[#18254D] shadow-sm transition-all ${formData.followup_status === "completed" ? "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed" : "bg-slate-50 border-slate-200 hover:bg-white hover:border-[#18254D]/20"}`}
                           >
                             <span>{formData.timeHour.padStart(2, "0")}</span>
                             {formData.followup_status !== "completed" && (
@@ -2107,7 +2156,7 @@ const FollowUpList = ({
                                       });
                                       setIsHourDropdownOpen(false);
                                     }}
-                                    className={`w-full text-left px-4 py-2 text-[12px] font-bold tracking-widest transition-colors ${formData.timeHour === h.toString() ? "bg-slate-100 text-secondary" : "text-[#18254D] hover:bg-slate-50"}`}
+                                    className={`w-full text-left px-4 py-2.5 text-[12px] font-bold tracking-widest transition-colors ${formData.timeHour === h.toString() ? "bg-slate-100 text-secondary" : "text-[#18254D] hover:bg-slate-50"}`}
                                   >
                                     {h.toString().padStart(2, "0")}
                                   </button>
@@ -2125,7 +2174,7 @@ const FollowUpList = ({
                             onClick={() =>
                               setIsMinuteDropdownOpen(!isMinuteDropdownOpen)
                             }
-                            className={`w-full flex items-center justify-between px-3 py-2.5 border rounded-xl text-sm font-bold shadow-sm transition-all ${formData.followup_status === "completed" ? "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed" : "bg-slate-50 border-slate-200 hover:border-secondary"}`}
+                            className={`w-full flex items-center justify-between px-4 py-2.5 border rounded-xl text-sm font-semibold text-[#18254D] shadow-sm transition-all ${formData.followup_status === "completed" ? "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed" : "bg-slate-50 border-slate-200 hover:bg-white hover:border-[#18254D]/20"}`}
                           >
                             <span>{formData.timeMinute}</span>
                             {formData.followup_status !== "completed" && (
@@ -2156,7 +2205,7 @@ const FollowUpList = ({
                                         });
                                         setIsMinuteDropdownOpen(false);
                                       }}
-                                      className={`w-full text-left px-4 py-2 text-[12px] font-bold tracking-widest transition-colors ${formData.timeMinute === m.toString().padStart(2, "0") ? "bg-slate-100 text-secondary" : "text-[#18254D] hover:bg-slate-50"}`}
+                                      className={`w-full text-left px-4 py-2.5 text-[12px] font-bold tracking-widest transition-colors ${formData.timeMinute === m.toString().padStart(2, "0") ? "bg-slate-100 text-secondary" : "text-[#18254D] hover:bg-slate-50"}`}
                                     >
                                       {m.toString().padStart(2, "0")}
                                     </button>
@@ -2175,7 +2224,7 @@ const FollowUpList = ({
                             onClick={() =>
                               setIsPeriodDropdownOpen(!isPeriodDropdownOpen)
                             }
-                            className={`w-full flex items-center justify-between px-3 py-2.5 border rounded-xl text-sm font-bold shadow-sm transition-all ${formData.followup_status === "completed" ? "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed" : "bg-slate-50 border-slate-200 hover:border-secondary"}`}
+                            className={`w-full flex items-center justify-between px-4 py-2.5 border rounded-xl text-sm font-semibold text-[#18254D] shadow-sm transition-all ${formData.followup_status === "completed" ? "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed" : "bg-slate-50 border-slate-200 hover:bg-white hover:border-[#18254D]/20"}`}
                           >
                             <span>{formData.timePeriod}</span>
                             {formData.followup_status !== "completed" && (
@@ -2203,7 +2252,7 @@ const FollowUpList = ({
                                       });
                                       setIsPeriodDropdownOpen(false);
                                     }}
-                                    className={`w-full text-left px-4 py-2.5 text-[12px] font-bold tracking-widest transition-colors ${formData.timePeriod === p ? "bg-slate-100 text-secondary" : "text-[#18254D] hover:bg-slate-50"}`}
+                                        className={`w-full text-left px-4 py-2.5 text-[12px] font-bold tracking-widest transition-colors ${formData.timePeriod === p ? "bg-slate-100 text-secondary" : "text-[#18254D] hover:bg-slate-50"}`}
                                   >
                                     {p}
                                   </button>
@@ -2217,7 +2266,7 @@ const FollowUpList = ({
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[14px] font-bold text-primary  tracking-widest ml-1">
+                    <label className="text-[10px] font-black text-slate-400 tracking-[0.18em] uppercase ml-1">
                       Priority <span className="text-error">*</span>
                     </label>
                     <div className="relative">
@@ -2226,10 +2275,10 @@ const FollowUpList = ({
                         onClick={() =>
                           setIsPriorityDropdownOpen(!isPriorityDropdownOpen)
                         }
-                        className="w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold shadow-sm hover:border-secondary transition-all"
+                        className="w-full flex items-center justify-between px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] shadow-sm hover:bg-white hover:border-[#18254D]/20 transition-all"
                       >
                         <span
-                          className={`capitalize ${getPriorityBadge(formData.priority)} px-2 py-0.5 rounded text-[12px]`}
+                          className={`capitalize ${getPriorityBadge(formData.priority)} px-2.5 py-1 rounded-md text-[12px]`}
                         >
                           {formData.priority}
                         </span>
@@ -2264,7 +2313,7 @@ const FollowUpList = ({
                     </div>
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-[14px] font-bold text-primary  tracking-widest ml-1">
+                    <label className="text-[10px] font-black text-slate-400 tracking-[0.18em] uppercase ml-1">
                       Follow-up Mode <span className="text-error">*</span>
                     </label>
                     <div className="relative">
@@ -2273,9 +2322,9 @@ const FollowUpList = ({
                         onClick={() =>
                           setIsModeDropdownOpen(!isModeDropdownOpen)
                         }
-                        className="w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold shadow-sm hover:border-secondary transition-all"
+                        className="w-full flex items-center justify-between px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] shadow-sm hover:bg-white hover:border-[#18254D]/20 transition-all"
                       >
-                        <span className="text-primary capitalize">
+                        <span className="capitalize">
                           {formData.followup_mode}
                         </span>
                         <ChevronDown
@@ -2291,8 +2340,8 @@ const FollowUpList = ({
                             onClick={() => setIsModeDropdownOpen(false)}
                           />
                           <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-down origin-bottom">
-                            <div className="bg-[#18254D] px-4 py-3 border-b border-white/10">
-                              <p className="text-[14px] font-bold text-white  tracking-widest">
+                            <div className="px-4 py-3 border-b border-slate-100 bg-slate-50">
+                              <p className="text-[10px] font-black text-slate-400 tracking-[0.18em] uppercase">
                                 Select Mode
                               </p>
                             </div>
@@ -2308,7 +2357,7 @@ const FollowUpList = ({
                                     });
                                     setIsModeDropdownOpen(false);
                                   }}
-                                  className={`w-full text-left px-4 py-2.5 text-[12px] font-bold  tracking-widest transition-colors capitalize ${
+                                  className={`w-full text-left px-4 py-2.5 text-[12px] font-bold tracking-widest transition-colors capitalize ${
                                     formData.followup_mode === mode
                                       ? "bg-slate-100 text-secondary"
                                       : "text-[#18254D] hover:bg-slate-50"
@@ -2327,12 +2376,12 @@ const FollowUpList = ({
                   {formData.followup_status === "completed" && (
                     <>
                       <div className="space-y-1.5">
-                        <label className="text-[14px] font-bold text-primary tracking-widest ml-1">
+                        <label className="text-[10px] font-black text-slate-400 tracking-[0.18em] uppercase ml-1">
                           Follow Conclusion Brief
                         </label>
                         <textarea
                           placeholder="Update the conclusion brief..."
-                          className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium shadow-sm focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none resize-none"
+                          className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 shadow-sm focus:ring-4 focus:ring-[#18254D]/5 focus:border-[#18254D]/20 focus:bg-white focus:outline-none resize-none transition-all"
                           value={formData.follow_brief || ""}
                           onChange={(e) =>
                             setFormData({
@@ -2345,13 +2394,13 @@ const FollowUpList = ({
                       </div>
 
                       <div className="space-y-1.5">
-                        <label className="text-[14px] font-bold text-primary tracking-widest ml-1">
+                        <label className="text-[10px] font-black text-slate-400 tracking-[0.18em] uppercase ml-1">
                           Completed By
                         </label>
                         <input
                           type="text"
                           placeholder="e.g. John Doe"
-                          className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium shadow-sm focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none"
+                          className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 shadow-sm focus:ring-4 focus:ring-[#18254D]/5 focus:border-[#18254D]/20 focus:bg-white focus:outline-none transition-all"
                           value={formData.completed_by || ""}
                           onChange={(e) =>
                             setFormData({
@@ -2364,7 +2413,7 @@ const FollowUpList = ({
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div className="space-y-1.5">
-                          <label className="text-[14px] font-bold text-primary tracking-widest ml-1">
+                          <label className="text-[10px] font-black text-slate-400 tracking-[0.18em] uppercase ml-1">
                             Completion Date
                           </label>
                           <DatePicker
@@ -2376,7 +2425,7 @@ const FollowUpList = ({
                         </div>
 
                         <div className="space-y-1.5">
-                          <label className="text-[14px] font-bold text-primary tracking-widest ml-1">
+                          <label className="text-[10px] font-black text-slate-400 tracking-[0.18em] uppercase ml-1">
                             Completion Time
                           </label>
                           <div className="flex gap-2 relative">
@@ -2387,7 +2436,7 @@ const FollowUpList = ({
                                 onClick={() =>
                                   setIsCompHourOpen(!isCompHourOpen)
                                 }
-                                className="w-full flex items-center justify-between px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold shadow-sm hover:border-secondary transition-all"
+                                className="w-full flex items-center justify-between px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] shadow-sm hover:bg-white hover:border-[#18254D]/20 transition-all"
                               >
                                 <span>
                                   {formData.completionHour.padStart(2, "0")}
@@ -2418,7 +2467,7 @@ const FollowUpList = ({
                                           });
                                           setIsCompHourOpen(false);
                                         }}
-                                        className={`w-full text-left px-4 py-2 text-[12px] font-bold tracking-widest transition-colors ${formData.completionHour === h.toString() ? "bg-slate-100 text-secondary" : "text-[#18254D] hover:bg-slate-50"}`}
+                                        className={`w-full text-left px-4 py-2.5 text-[12px] font-bold tracking-widest transition-colors ${formData.completionHour === h.toString() ? "bg-slate-100 text-secondary" : "text-[#18254D] hover:bg-slate-50"}`}
                                       >
                                         {h.toString().padStart(2, "0")}
                                       </button>
@@ -2433,7 +2482,7 @@ const FollowUpList = ({
                               <button
                                 type="button"
                                 onClick={() => setIsCompMinOpen(!isCompMinOpen)}
-                                className="w-full flex items-center justify-between px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold shadow-sm hover:border-secondary transition-all"
+                                className="w-full flex items-center justify-between px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] shadow-sm hover:bg-white hover:border-[#18254D]/20 transition-all"
                               >
                                 <span>{formData.completionMinute}</span>
                                 <ChevronDown
@@ -2464,7 +2513,7 @@ const FollowUpList = ({
                                           });
                                           setIsCompMinOpen(false);
                                         }}
-                                        className={`w-full text-left px-4 py-2 text-[12px] font-bold tracking-widest transition-colors ${formData.completionMinute === m.toString().padStart(2, "0") ? "bg-slate-100 text-secondary" : "text-[#18254D] hover:bg-slate-50"}`}
+                                        className={`w-full text-left px-4 py-2.5 text-[12px] font-bold tracking-widest transition-colors ${formData.completionMinute === m.toString().padStart(2, "0") ? "bg-slate-100 text-secondary" : "text-[#18254D] hover:bg-slate-50"}`}
                                       >
                                         {m.toString().padStart(2, "0")}
                                       </button>
@@ -2481,7 +2530,7 @@ const FollowUpList = ({
                                 onClick={() =>
                                   setIsCompPeriodOpen(!isCompPeriodOpen)
                                 }
-                                className="w-full flex items-center justify-between px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold shadow-sm hover:border-secondary transition-all"
+                                className="w-full flex items-center justify-between px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] shadow-sm hover:bg-white hover:border-[#18254D]/20 transition-all"
                               >
                                 <span>{formData.completionPeriod}</span>
                                 <ChevronDown
@@ -2523,7 +2572,7 @@ const FollowUpList = ({
                   )}
 
                   <div className="space-y-1.5">
-                    <label className="text-[14px] font-bold text-primary  tracking-widest ml-1">
+                    <label className="text-[10px] font-black text-slate-400 tracking-[0.18em] uppercase ml-1">
                       Follow-up Status <span className="text-error">*</span>
                     </label>
                     <div className="relative">
@@ -2532,9 +2581,9 @@ const FollowUpList = ({
                         onClick={() =>
                           setIsStatusDropdownOpen(!isStatusDropdownOpen)
                         }
-                        className="w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold shadow-sm hover:border-secondary transition-all"
+                        className="w-full flex items-center justify-between px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] shadow-sm hover:bg-white hover:border-[#18254D]/20 transition-all"
                       >
-                        <span className="text-primary capitalize">
+                        <span className="capitalize">
                           {formData.followup_status}
                         </span>
                         <ChevronDown
@@ -2550,8 +2599,8 @@ const FollowUpList = ({
                             onClick={() => setIsStatusDropdownOpen(false)}
                           />
                           <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-down origin-bottom">
-                            <div className="bg-[#18254D] px-4 py-3 border-b border-white/10">
-                              <p className="text-[14px] font-bold text-white/50  tracking-widest">
+                            <div className="px-4 py-3 border-b border-slate-100 bg-slate-50">
+                              <p className="text-[10px] font-black text-slate-400 tracking-[0.18em] uppercase">
                                 Select Status
                               </p>
                             </div>
@@ -2597,7 +2646,7 @@ const FollowUpList = ({
                                     });
                                     setIsStatusDropdownOpen(false);
                                   }}
-                                  className={`w-full text-left px-4 py-2.5 text-[12px] font-bold  tracking-widest transition-colors capitalize ${
+                                  className={`w-full text-left px-4 py-2.5 text-[12px] font-bold tracking-widest transition-colors capitalize ${
                                     formData.followup_status === status
                                       ? "bg-slate-100 text-secondary"
                                       : "text-[#18254D] hover:bg-slate-50"
@@ -2617,7 +2666,7 @@ const FollowUpList = ({
                 <div className="pt-1 shrink-0">
                   <button
                     type="submit"
-                    className="w-full py-2.5 bg-[#18254D] text-white rounded-xl text-[13px] font-bold tracking-[0.2em] shadow-lg active:scale-[0.97] transition-all hover:bg-[#1e2e5e] flex items-center justify-center gap-2"
+                    className="w-full py-3 bg-[#18254D] text-white rounded-2xl text-[13px] font-bold tracking-[0.2em] shadow-lg active:scale-[0.97] transition-all hover:bg-[#1e2e5e] flex items-center justify-center gap-2"
                   >
                     {formData.id ? "Save Changes" : "Create Follow-up"}
                   </button>

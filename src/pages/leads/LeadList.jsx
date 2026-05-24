@@ -1768,27 +1768,27 @@ const LeadList = ({
       {showAddModal &&
         createPortal(
           <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[99999] flex items-start justify-center p-4 sm:p-6 overflow-y-auto no-scrollbar">
-            <div className="bg-white w-full max-w-xl rounded-xl shadow-2xl border border-slate-200 overflow-hidden animate-fade-in my-auto flex flex-col max-h-[90vh]">
-              <div className="bg-[#18254D] p-5 text-white relative shrink-0">
+            <div className="relative z-10 bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-slate-100 overflow-hidden animate-pop flex flex-col max-h-[90vh]">
+              <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 shrink-0">
                 <button
                   onClick={() => setShowAddModal(false)}
-                  className="absolute top-5 right-5 w-[30px] h-[30px] flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-full transition-colors"
+                  className="p-1.5 hover:bg-slate-200 rounded-xl text-slate-400 transition-all"
                 >
-                  <X size={16} strokeWidth={2.5} />
+                  <X size={18} />
                 </button>
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center shadow-sm border border-white/10">
+                  <div className="w-8 h-8 bg-[#EFF6FF] text-[#3B82F6] rounded-xl flex items-center justify-center border border-[#DBEAFE] shadow-sm">
                     <UserPlus
-                      size={18}
-                      className="text-slate-300"
-                      strokeWidth={2}
+                      size={16}
+                      className="text-[#3B82F6]"
+                      strokeWidth={2.5}
                     />
                   </div>
                   <div>
-                    <h3 className="text-[15px] font-bold tracking-tighter leading-none">
+                    <h3 className="text-base font-bold text-[#18254D] tracking-tight">
                       New Lead
                     </h3>
-                    <p className="text-slate-300 text-[13px] font-bold tracking-widest mt-1">
+                    <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider mt-0.5">
                       Lead Details
                     </p>
                   </div>
@@ -2019,27 +2019,27 @@ const LeadList = ({
       {showOnboardModal &&
         createPortal(
           <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[99999] flex items-start justify-center p-4 sm:p-6 overflow-y-auto no-scrollbar">
-            <div className="bg-white w-full max-w-xl rounded-xl shadow-2xl border border-slate-200 overflow-hidden animate-fade-in my-auto flex flex-col max-h-[90vh]">
-              <div className="bg-primary p-4 text-white relative shrink-0">
+            <div className="relative z-10 bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-slate-100 overflow-hidden animate-pop flex flex-col max-h-[90vh]">
+              <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 shrink-0">
                 <button
                   onClick={() => setShowOnboardModal(false)}
-                  className="absolute top-4 right-4 p-1.5 hover:bg-white/10 rounded-xl transition-colors"
+                  className="p-1.5 hover:bg-slate-200 rounded-xl text-slate-400 transition-all"
                 >
-                  <X size={18} strokeWidth={3} />
+                  <X size={18} />
                 </button>
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-secondary/10 rounded-xl flex items-center justify-center shadow-lg border border-secondary/20">
+                  <div className="w-8 h-8 bg-[#EFF6FF] text-[#3B82F6] rounded-xl flex items-center justify-center border border-[#DBEAFE] shadow-sm">
                     <UserCheck
-                      size={18}
-                      className="text-secondary"
-                      strokeWidth={3}
+                      size={16}
+                      className="text-[#3B82F6]"
+                      strokeWidth={2.5}
                     />
                   </div>
                   <div>
-                    <h3 className="text-base font-bold tracking-tighter leading-none">
+                    <h3 className="text-base font-bold text-[#18254D] tracking-tight">
                       Convert to Client
                     </h3>
-                    <p className="text-secondary text-[14px] font-bold  tracking-widest mt-0.5">
+                    <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider mt-0.5">
                       Onboard Lead to Active Status
                     </p>
                   </div>
@@ -2854,27 +2854,27 @@ const LeadList = ({
       {showEditConvertedModal &&
         createPortal(
           <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[99999] flex items-start justify-center p-4 sm:p-6 overflow-y-auto no-scrollbar">
-            <div className="bg-white w-full max-w-xl rounded-xl shadow-2xl border border-slate-200 overflow-hidden animate-fade-in my-auto flex flex-col max-h-[90vh]">
-              <div className="bg-primary p-4 text-white relative shrink-0">
+            <div className="relative z-10 bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-slate-100 overflow-hidden animate-pop flex flex-col max-h-[90vh]">
+              <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 shrink-0">
                 <button
                   onClick={() => setShowEditConvertedModal(false)}
-                  className="absolute top-4 right-4 p-1.5 hover:bg-white/10 rounded-xl transition-colors"
+                  className="p-1.5 hover:bg-slate-200 rounded-xl text-slate-400 transition-all"
                 >
-                  <X size={18} strokeWidth={3} />
+                  <X size={18} />
                 </button>
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-secondary/10 rounded-xl flex items-center justify-center shadow-lg border border-secondary/20">
+                  <div className="w-8 h-8 bg-[#EFF6FF] text-[#3B82F6] rounded-xl flex items-center justify-center border border-[#DBEAFE] shadow-sm">
                     <Pencil
-                      size={18}
-                      className="text-secondary"
-                      strokeWidth={3}
+                      size={16}
+                      className="text-[#3B82F6]"
+                      strokeWidth={2.5}
                     />
                   </div>
                   <div>
-                    <h3 className="text-base font-bold tracking-tighter leading-none">
+                    <h3 className="text-base font-bold text-[#18254D] tracking-tight">
                       Edit Lead
                     </h3>
-                    <p className="text-slate-400 text-[14px] font-bold  tracking-widest mt-0.5">
+                    <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider mt-0.5">
                       Lead Details
                     </p>
                   </div>
@@ -3117,20 +3117,22 @@ const LeadList = ({
       {showFollowUpModal &&
         createPortal(
           <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[99999] flex items-center justify-center p-4 overflow-y-auto custom-scrollbar">
-            <div className="bg-white w-full max-w-lg rounded-xl shadow-2xl border border-slate-200 animate-fade-in my-auto max-h-[90vh] flex flex-col">
-              <div className="bg-primary p-4 text-white relative rounded-t-xl">
+            <div className="relative z-10 bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-slate-100 overflow-hidden animate-pop flex flex-col max-h-[90vh]">
+              <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 shrink-0">
                 <button
                   onClick={resetFollowUpModal}
-                  className="absolute top-4 right-4 p-1.5 hover:bg-white/10 rounded-xl transition-colors"
+                  className="p-1.5 hover:bg-slate-200 rounded-xl text-slate-400 transition-all"
                 >
-                  <X size={18} strokeWidth={3} />
+                  <X size={18} />
                 </button>
-                <h3 className="text-base font-bold tracking-tighter mb-0.5">
+                <div>
+                  <h3 className="text-base font-bold text-[#18254D] tracking-tight">
                   Follow Up
-                </h3>
-                <p className="text-slate-400 text-[14px] font-bold  tracking-widest">
-                  {followUpLeadName}
-                </p>
+                  </h3>
+                  <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider mt-0.5">
+                    {followUpLeadName}
+                  </p>
+                </div>
               </div>
               <form
                 onSubmit={async (e) => {
@@ -3520,15 +3522,15 @@ const LeadList = ({
       {showDeleteModal && leadToDelete &&
         createPortal(
           <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[99999] flex items-start justify-center p-4 animate-fade-in overflow-y-auto no-scrollbar py-20">
-            <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 overflow-hidden animate-scale-in my-auto">
+            <div className="relative z-10 bg-white w-full max-w-md rounded-3xl shadow-2xl border border-slate-100 overflow-hidden animate-pop my-auto">
               <div className="p-6 text-center">
                 <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-Black-100 shadow-sm">
                   <AlertTriangle size={32} className="text-[#18254E]" />
                 </div>
-                <h3 className="text-xl font-bold text-primary mb-2">
+                <h3 className="text-base font-bold text-[#18254D] tracking-tight mb-1">
                   Confirm Deletion
                 </h3>
-                <p className="text-slate-500 text-sm font-medium leading-relaxed px-4">
+                <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider leading-relaxed px-4">
                   Are you sure you want to delete the lead 
                   <span className="text-primary font-bold"> "{leadToDelete.name}"</span>? 
                   This action cannot be undone and all associated data will be removed.
