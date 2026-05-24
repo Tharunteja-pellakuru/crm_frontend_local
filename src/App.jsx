@@ -299,6 +299,7 @@ function AppRoutes() {
         country: c.client_country || c.country || "India",
         state: c.client_state || c.state || "",
         currency: c.client_currency || c.currency || "INR",
+        createdByName: c.created_by_name || null,
         lead_id: c.lead_id,
         isConverted: !!c.lead_id,
         avatar: `https://picsum.photos/100/100?random=${c.client_id || c.id}`,

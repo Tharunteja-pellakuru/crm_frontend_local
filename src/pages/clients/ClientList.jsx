@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { toast } from "react-hot-toast";
 import { createPortal } from "react-dom";
+import { useSearchParams } from "react-router-dom";
 import { useScrollLock } from "../../hooks/useScrollLock";
 import { useSearch } from "../../hooks/useSearch";
 import {
@@ -24,6 +25,9 @@ import {
   ChevronDown,
   UserCheck,
   Users,
+  LayoutGrid,
+  BellRing,
+  UserMinus,
   Upload,
   Paperclip,
   UserX,
@@ -69,7 +73,21 @@ const ClientList = ({
   const [currentPage, setCurrentPage] = useState(1);
   const RECORDS_PER_PAGE = 10;
   const { searchTerm, setSearchTerm } = useSearch(setCurrentPage);
-  const [filterStatus, setFilterStatus] = useState("Active");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const filterStatus = searchParams.get("view") || "Active";
+  const setFilterStatus = (value) => {
+    const nextParams = new URLSearchParams(searchParams);
+    if (!value || value === "Active") {
+      nextParams.delete("view");
+    } else {
+      nextParams.set("view", value);
+    }
+    setSearchParams(nextParams, { replace: true });
+    setCurrentPage(1);
+  };
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterStatus]);
   const [leadTypeFilter, setLeadTypeFilter] = useState("All");
   const [isFilterPopupOpen, setIsFilterPopupOpen] = useState(false);
 
@@ -548,6 +566,51 @@ const ClientList = ({
     );
   };
 
+  const handleOpenFollowUpModal = (client) => {
+    if (!client) return;
+
+    const clientId = client.lead_id || client.id;
+    setFollowUpLeadId(clientId);
+    setFollowUpLeadName(client.name || client.client_name || "Client");
+    setFollowUpData({
+      type: "Call",
+      description: "",
+      date: new Date().toISOString().split("T")[0],
+      time: new Date().toTimeString().split(" ")[0].substring(0, 5),
+    });
+    setShowFollowUpModal(true);
+  };
+
+  const handleClientStatusUpdate = (client, clientStatus) => {
+    if (!onUpdateClient || !client) return;
+
+    onUpdateClient(client.id, {
+      organisationName:
+        client.company ||
+        client.organisation_name ||
+        client.organisationName ||
+        "",
+      name: client.name || client.client_name || "",
+      country: client.country || client.client_country || "",
+      state: client.state || client.client_state || "",
+      currency: client.currency || client.client_currency || "",
+      clientStatus,
+      status: clientStatus,
+    });
+  };
+
+  const allClientRecords = (clients || []).filter(Boolean);
+  const totalClientsCount = allClientRecords.length;
+  const activeClientsCount = allClientRecords.filter(
+    (client) => client.status === "Active",
+  ).length;
+  const inactiveClientsCount = allClientRecords.filter(
+    (client) => client.status === "Inactive",
+  ).length;
+  const dismissedClientsCount = allClientRecords.filter(
+    (client) => client.status === "Dismissed",
+  ).length;
+
   return (
     <div className="w-full relative">
       <div className="space-y-5 animate-fade-in w-full">
@@ -561,10 +624,10 @@ const ClientList = ({
               Manage your network of clients and strategic partnerships.
             </p>
           </div>
-          <div className="w-full lg:w-auto">
-            {/* <button
+          {/* <div className="w-full lg:w-auto">
+            <button
               onClick={() => setShowAddModal(true)}
-              className="w-full lg:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white rounded-2xl hover:bg-slate-800 transition-all text-[13px] font-bold  tracking-wider shadow-lg active:scale-95 group"
+              className="w-full lg:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white rounded-2xl hover:bg-slate-800 transition-all text-[13px] font-bold tracking-wider shadow-lg active:scale-95 group"
             >
               <Plus
                 size={16}
@@ -572,25 +635,89 @@ const ClientList = ({
                 className="group-hover:rotate-90 transition-transform"
               />
               Add Client
-            </button> */}
+            </button>
+          </div> */}
+        </div>
+
+        {/* Stat Cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div className="bg-white p-3 sm:p-5 rounded-2xl shadow-sm border border-slate-200 hover:-translate-y-1 hover:shadow-md transition-all duration-300">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <div className="p-2 sm:p-3 rounded-full bg-blue-50 text-blue-500 shrink-0">
+                <Briefcase className="w-5 h-5 sm:w-6 sm:h-6" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-slate-500 text-[10px] sm:text-xs font-semibold truncate">
+                  Total Clients
+                </h3>
+                <p className="text-lg sm:text-2xl font-bold text-[#18254D] leading-none mt-1">
+                  {totalClientsCount}
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="bg-white p-3 sm:p-5 rounded-2xl shadow-sm border border-slate-200 hover:-translate-y-1 hover:shadow-md transition-all duration-300">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <div className="p-2 sm:p-3 rounded-full bg-emerald-50 text-emerald-500 shrink-0">
+                <UserCheck className="w-5 h-5 sm:w-6 sm:h-6" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-slate-500 text-[10px] sm:text-xs font-semibold truncate">
+                  Active Clients
+                </h3>
+                <p className="text-lg sm:text-2xl font-bold text-[#18254D] leading-none mt-1">
+                  {activeClientsCount}
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="bg-white p-3 sm:p-5 rounded-2xl shadow-sm border border-slate-200 hover:-translate-y-1 hover:shadow-md transition-all duration-300">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <div className="p-2 sm:p-3 rounded-full bg-amber-50 text-amber-500 shrink-0">
+                <Users className="w-5 h-5 sm:w-6 sm:h-6" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-slate-500 text-[10px] sm:text-xs font-semibold truncate">
+                  Inactive Clients
+                </h3>
+                <p className="text-lg sm:text-2xl font-bold text-[#18254D] leading-none mt-1">
+                  {inactiveClientsCount}
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="bg-white p-3 sm:p-5 rounded-2xl shadow-sm border border-slate-200 hover:-translate-y-1 hover:shadow-md transition-all duration-300">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <div className="p-2 sm:p-3 rounded-full bg-slate-100 text-slate-500 shrink-0">
+                <UserX className="w-5 h-5 sm:w-6 sm:h-6" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-slate-500 text-[10px] sm:text-xs font-semibold truncate">
+                  Dismissed Clients
+                </h3>
+                <p className="text-lg sm:text-2xl font-bold text-[#18254D] leading-none mt-1">
+                  {dismissedClientsCount}
+                </p>
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Control Bar: Filters */}
         <div className="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm relative z-[60]">
-          <div className="flex flex-col md:flex-row md:justify-between gap-4 w-full items-center">
+          <div className="flex flex-col md:flex-row md:justify-between gap-2 w-full items-center">
             {/* 1. Search Bar */}
             <div className="relative w-full md:w-64 flex-none transition-all duration-300">
               <Search
                 size={16}
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-[#18254D]/40"
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
               />
               <input
                 type="text"
                 placeholder={`Search ${title.toLowerCase()}...`}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full h-[38px] pl-11 pr-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium text-[#18254D] focus:outline-none focus:ring-4 focus:ring-[#18254D]/10 focus:border-[#18254D]/20 transition-all placeholder:text-[#18254D]/30"
+                className="w-full h-[38px] pl-11 pr-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium focus:outline-none focus:ring-4 focus:ring-secondary/10 focus:border-secondary transition-all"
               />
             </div>
 
@@ -608,12 +735,16 @@ const ClientList = ({
               >
                 <Filter
                   size={14}
-                  className={startDate || endDate ? "text-secondary" : "text-slate-400"}
+                  className={
+                    startDate || endDate
+                      ? "text-secondary"
+                      : "text-slate-400"
+                  }
                 />
                 <span>FILTERS</span>
-                {(startDate || endDate || (title === "Clients" ? filterStatus !== "Active" : leadView !== "Pending")) && (
+                {(startDate || endDate) && (
                   <span className="flex items-center justify-center w-5 h-5 bg-secondary text-white text-[10px] font-black rounded-full ml-1 shadow-sm">
-                    {[!!startDate, !!endDate, (title === "Clients" ? filterStatus !== "Active" : leadView !== "Pending")].filter(Boolean).length}
+                    {[!!startDate, !!endDate].filter(Boolean).length}
                   </span>
                 )}
                 <ChevronDown
@@ -642,16 +773,14 @@ const ClientList = ({
                         <div className="flex items-center gap-2">
                           <Filter size={14} className="text-secondary" />
                           <h3 className="text-[11px] font-black text-[#18254D] tracking-[0.2em] uppercase">
-                            Filter {title}
+                            Filter Clients
                           </h3>
                         </div>
-                        {(startDate || endDate || (title === "Clients" ? filterStatus !== "Active" : leadView !== "Pending")) && (
+                        {(startDate || endDate) && (
                           <button
                             onClick={() => {
                               setStartDate("");
                               setEndDate("");
-                              if (title === "Clients") setFilterStatus("Active");
-                              else setLeadView("Pending");
                               setIsFilterPopupOpen(false);
                             }}
                             className="text-[10px] font-black text-rose-500 hover:text-rose-600 tracking-widest uppercase transition-colors"
@@ -682,38 +811,6 @@ const ClientList = ({
                           </div>
                         </div>
 
-                        {/* Status Section */}
-                        <div className="space-y-3">
-                          <label className="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase ml-1">
-                            {title === "Clients" ? "Client Status" : "Lead Status"}
-                          </label>
-                          <SearchableDropdown
-                            placeholder={title === "Clients" ? "Select Status..." : "Select View..."}
-                            options={
-                              title === "Clients"
-                                ? [
-                                    { label: "ACTIVE", value: "Active" },
-                                    { label: "ALL CLIENTS", value: "All" },
-                                    { label: "INACTIVE", value: "Inactive" },
-                                    { label: "DISMISSED", value: "Dismissed" },
-                                  ]
-                                : [
-                                    { label: "PENDING", value: "Pending" },
-                                    { label: "CONVERTED", value: "Converted" },
-                                    { label: "DISMISSED", value: "Dismissed" },
-                                  ]
-                            }
-                            value={title === "Clients" ? filterStatus : leadView}
-                            onChange={(val) => {
-                              if (title === "Clients") {
-                                setFilterStatus(val);
-                              } else {
-                                setLeadView(val);
-                              }
-                              setCurrentPage(1);
-                            }}
-                          />
-                        </div>
                       </div>
 
                       {/* Sticky Footer */}
@@ -734,62 +831,102 @@ const ClientList = ({
           </div>
         </div>
 
+        {/* Client View Toggles (Pill Style) */}
+        <div className="flex flex-wrap justify-center sm:justify-start gap-2 sm:gap-3 w-full px-1 sm:px-0">
+          <button
+            onClick={() => setFilterStatus("All")}
+            className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${filterStatus === "All" ? "bg-[#0F172A] text-white border-[#0F172A]" : "bg-white text-[#0F172A] border-slate-200 hover:bg-slate-50"}`}
+          >
+            <LayoutGrid size={16} />
+            All
+          </button>
+          <button
+            onClick={() => setFilterStatus("Active")}
+            className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${filterStatus === "Active" ? "bg-[#ECFDF5] text-[#059669] border-[#A7F3D0]" : "bg-white text-[#059669] border-[#A7F3D0] hover:bg-[#ECFDF5]"}`}
+          >
+            <UserCheck size={16} />
+            Active
+          </button>
+          <button
+            onClick={() => setFilterStatus("Inactive")}
+            className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${filterStatus === "Inactive" ? "bg-[#FFF7ED] text-[#C2410C] border-[#FDBA74]" : "bg-white text-[#C2410C] border-[#FDBA74] hover:bg-[#FFF7ED]"}`}
+          >
+            <Users size={16} />
+            Inactive
+          </button>
+          <button
+            onClick={() => setFilterStatus("Dismissed")}
+            className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${filterStatus === "Dismissed" ? "bg-[#FEF2F2] text-[#E11D48] border-[#FECACA]" : "bg-white text-[#E11D48] border-[#FECACA] hover:bg-[#FEF2F2]"}`}
+          >
+            <UserX size={16} />
+            Dismissed
+          </button>
+        </div>
+
 
 
         {/* Main List */}
         <div className="hidden lg:block bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden w-full">
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[1000px] border-collapse">
+          <div className="w-full">
+            <table className="w-full border-collapse">
               <thead>
                 <tr className="bg-slate-50/50">
-                  <th className="px-6 py-4 text-left text-[12px] font-bold text-slate-400  tracking-widest border-b border-slate-100">
+                  <th className="px-6 py-5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
                     Client Name
                   </th>
-                  <th className="px-6 py-4 text-left text-[12px] font-bold text-slate-400  tracking-widest border-b border-slate-100">
+                  <th className="px-6 py-5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
                     Contact Details
                   </th>
-                  <th className="px-6 py-4 text-left text-[12px] font-bold text-slate-400  tracking-widest border-b border-slate-100">
+                  <th className="px-6 py-5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
                     Client Category
                   </th>
-                  <th className="px-6 py-4 text-center text-[12px] font-bold text-slate-400  tracking-widest border-b border-slate-100">
-                    Status
+                  <th className="px-6 py-5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                    Created By
                   </th>
-                  <th className="px-6 py-4 text-right text-[12px] font-bold text-slate-400  tracking-widest border-b border-slate-100">
-                    Control
+                  <th className="px-6 py-5 text-right text-[11px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                    Actions
                   </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {currentClients.map((client) => {
+                {currentClients.map((client, index) => {
                   const status = getStatusBadge(client);
                   return (
                     <tr
                       key={client.id || `client-table-${index}`}
-                      onClick={() => onSelectClient(client)}
-                      className="group hover:bg-slate-50/50 cursor-pointer transition-all"
+                      onClick={() =>
+                        client.status !== "Dismissed" && onSelectClient(client)
+                      }
+                      className={`group transition-all ${
+                        client.status === "Dismissed"
+                          ? "bg-slate-50/30 opacity-80 cursor-default"
+                          : "hover:bg-slate-50/50 cursor-pointer"
+                      }`}
+                      style={{
+                        cursor:
+                          client.status !== "Dismissed" ? "pointer" : "default",
+                      }}
                     >
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-6">
-                          <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-primary flex items-center justify-center text-white font-bold text-xl border-2 border-slate-50 shadow-lg shrink-0">
-                            {client.name.charAt(0).toUpperCase()}
+                      <td className="px-6 py-5">
+                        <div className="flex flex-col min-w-0">
+                          <div className="font-bold text-[13px] text-[#18254D] tracking-tight leading-none mb-1 group-hover:text-secondary transition-colors">
+                            {client.name}
                           </div>
-                          <div className="min-w-0">
-                            <div className="font-bold text-sm text-primary tracking-tight leading-none mb-1 group-hover:text-secondary transition-colors">
-                              {client.name}
-                            </div>
+                          <div className="text-[12px] text-slate-400">
+                            {client.email || "No email provided"}
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-5">
                         {renderContactDetails(client)}
                       </td>
-                      
-                      <td className="px-6 py-4">
+
+                      <td className="px-6 py-5">
                         <div className="flex items-center gap-2">
                           <div
                             className={`w-2 h-2 rounded-full ${client.projectCategory === 1 ? "bg-secondary" : client.projectCategory === 2 ? "bg-blue-400" : client.projectCategory === 3 ? "bg-purple-400" : "bg-slate-300"}`}
                           />
-                          <span className="text-sm font-bold text-primary">
+                          <span className="text-[12px] font-semibold text-slate-600">
                             {(() => {
                               const catName =
                                 CATEGORY_MAP[client.projectCategory] ||
@@ -811,33 +948,31 @@ const ClientList = ({
                           </span>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
-                        <div className="flex justify-center">
-                          {client.status === "Lead" ? (
-                            <div className="flex flex-col items-center w-full">
-                              <span
-                                className={`px-4 py-1.5 rounded-xl text-[12px] font-bold border  flex items-center gap-2 shadow-sm transition-all ${status.className}`}
-                              >
-                                {status.icon}
-                                {status.label}
-                              </span>
-                            </div>
-                          ) : (
-                            <div className="flex flex-col items-center w-full">
-                              <span
-                                className={`px-2 py-0.5 rounded-md text-[10px] font-bold tracking-widest leading-none ${client.status === "Active" ? "bg-emerald-50 text-emerald-600 border border-emerald-100" : "bg-slate-100 text-slate-400 border border-slate-200"}`}
-                              >
-                                {(client.status || "Active").toUpperCase()}
-                              </span>
-                            </div>
-                          )}
+                      <td className="px-6 py-5">
+                        <div className="text-[12px] font-semibold text-slate-600">
+                          {client.createdByName || "System"}
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-right">
+                      <td className="px-6 py-5 text-right">
                         <div
                           className="flex justify-end gap-3"
                           onClick={(e) => e.stopPropagation()}
                         >
+                          {onAddActivity && client.status !== "Dismissed" && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleOpenFollowUpModal(client);
+                              }}
+                              className="w-[34px] h-[34px] flex items-center justify-center bg-indigo-50/50 border border-indigo-100 rounded-[10px] text-indigo-500 hover:bg-indigo-100 transition-all active:scale-90 shadow-sm relative group/btn"
+                              title="Add Follow Up"
+                            >
+                              <BellRing size={16} />
+                              <div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">
+                                Add Follow Up
+                              </div>
+                            </button>
+                          )}
                           {onOnboardClient && client.status === "Lead" && (
                             <button
                               onClick={(e) => {
@@ -862,84 +997,133 @@ const ClientList = ({
                                 });
                                 setShowOnboardModal(true);
                               }}
-                              className="p-2.5 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-emerald-500 hover:border-emerald-500 hover:bg-emerald-50 transition-all active:scale-90 shadow-sm"
+                              className="w-[34px] h-[34px] flex items-center justify-center bg-emerald-50/50 border border-emerald-100 rounded-[10px] text-emerald-500 hover:bg-emerald-100 transition-all active:scale-90 shadow-sm relative group/btn"
                               title="Convert to Client"
                             >
-                              <UserCheck size={18} />
+                              <UserCheck size={16} />
+                              <div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">
+                                Convert to Client
+                              </div>
                             </button>
                           )}
-                          {onDeleteClient &&
-                            (title !== "Leads" || leadView === "Dismissed") && (
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  onDeleteClient(client.id);
-                                }}
-                                className="p-2.5 bg-white border border-slate-200 rounded-lg text-slate-300 hover:text-error hover:border-error hover:bg-error/5 transition-all active:scale-90 shadow-sm"
-                                title={title === "Clients" ? "Delete Client" : "Delete"}
-                              >
-                                <Trash2 size={18} />
-                              </button>
-                            )}
-                          {onDismissLead && title === "Leads" &&
-                            (client.status === "Lead" || client.isConverted) &&
-                            client.status !== "Dismissed" && (
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  onDismissLead(client.id);
-                                }}
-                                className="p-2.5 bg-white border border-slate-200 rounded-lg text-slate-300 hover:text-amber-500 hover:border-amber-500 hover:bg-amber-50 transition-all active:scale-90 shadow-sm"
-                                title="Dismiss Lead"
-                              >
-                                <UserX size={18} />
-                              </button>
-                            )}
-                          {onUpdateClient && title === "Clients" &&
-                            client.status !== "Dismissed" && (
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  onUpdateClient(client.id, {
-                                    organisationName: client.company || client.organisation_name || client.organisationName || "",
-                                    name: client.name || client.client_name || "",
-                                    country: client.country || client.client_country || "",
-                                    state: client.state || client.client_state || "",
-                                    currency: client.currency || client.client_currency || "",
-                                    clientStatus: "Dismissed",
-                                    status: "Dismissed",
-                                  });
-                                }}
-                                className="p-2.5 bg-white border border-slate-200 rounded-lg text-slate-300 hover:text-amber-500 hover:border-amber-500 hover:bg-amber-50 transition-all active:scale-90 shadow-sm"
-                                title="Dismiss Client"
-                              >
-                                <UserX size={18} />
-                              </button>
-                            )}
-                          {onRestoreLead &&
-                            client.isConverted &&
-                            client.status !== "Dismissed" && (
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  onRestoreLead(client.id);
-                                }}
-                                className="p-2.5 bg-white border border-slate-200 rounded-lg text-slate-300 hover:text-blue-500 hover:border-blue-500 hover:bg-blue-50 transition-all active:scale-90 shadow-sm"
-                                title="Revert as Lead"
-                              >
-                                <RotateCcw size={18} />
-                              </button>
-                            )}
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
                               handleEditClick(client);
                             }}
-                            className="p-2.5 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-primary hover:border-primary hover:bg-slate-50 transition-all active:scale-90 shadow-sm"
+                            className="w-[34px] h-[34px] flex items-center justify-center bg-blue-50/50 border border-blue-100 rounded-[10px] text-blue-500 hover:bg-blue-100 transition-all active:scale-90 shadow-sm relative group/btn"
                             title="Edit Client"
                           >
-                            <Pencil size={18} />
+                            <Pencil size={16} />
+                            <div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">
+                              Edit Client
+                            </div>
                           </button>
+                          {onUpdateClient && client.status === "Active" && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleClientStatusUpdate(client, "Inactive");
+                              }}
+                              className="w-[34px] h-[34px] flex items-center justify-center bg-[#FFF7ED] border border-[#FDBA74] rounded-[10px] text-[#F97316] hover:text-[#EA580C] hover:border-[#FB923C] transition-all active:scale-90 shadow-sm relative group/btn"
+                              title="Mark Inactive"
+                            >
+                              <UserMinus size={16} />
+                              <div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">
+                                Mark Inactive
+                              </div>
+                            </button>
+                          )}
+                          {onUpdateClient && client.status === "Inactive" && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleClientStatusUpdate(client, "Active");
+                              }}
+                              className="w-[34px] h-[34px] flex items-center justify-center bg-emerald-50/50 border border-emerald-100 rounded-[10px] text-emerald-500 hover:bg-emerald-100 transition-all active:scale-90 shadow-sm relative group/btn"
+                              title="Mark Active"
+                            >
+                              <UserCheck size={16} />
+                              <div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">
+                                Mark Active
+                              </div>
+                            </button>
+                          )}
+                          {onUpdateClient && client.status === "Dismissed" && (
+                            <>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleClientStatusUpdate(client, "Active");
+                                }}
+                                className="w-[34px] h-[34px] flex items-center justify-center bg-emerald-50/50 border border-emerald-100 rounded-[10px] text-emerald-500 hover:bg-emerald-100 transition-all active:scale-90 shadow-sm relative group/btn"
+                                title="Mark Active"
+                              >
+                                <UserCheck size={16} />
+                                <div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">
+                                  Mark Active
+                                </div>
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleClientStatusUpdate(client, "Inactive");
+                                }}
+                                className="w-[34px] h-[34px] flex items-center justify-center bg-[#FFF7ED] border border-[#FDBA74] rounded-[10px] text-[#F97316] hover:text-[#EA580C] hover:border-[#FB923C] transition-all active:scale-90 shadow-sm relative group/btn"
+                                title="Mark Inactive"
+                              >
+                                <UserMinus size={16} />
+                                <div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">
+                                  Mark Inactive
+                                </div>
+                              </button>
+                            </>
+                          )}
+                          {onUpdateClient && client.status !== "Dismissed" && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleClientStatusUpdate(client, "Dismissed");
+                              }}
+                              className="w-[34px] h-[34px] flex items-center justify-center bg-[#FFF9ED] border border-[#FDE68A] rounded-[10px] text-[#F59E0B] hover:text-[#D97706] hover:border-[#FCD34D] transition-all active:scale-90 shadow-sm relative group/btn"
+                              title="Dismiss Client"
+                            >
+                              <UserX size={16} />
+                              <div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">
+                                Dismiss Client
+                              </div>
+                            </button>
+                          )}
+                          {client.status === "Dismissed" && onRestoreLead && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onRestoreLead(client.id);
+                              }}
+                              className="w-[34px] h-[34px] flex items-center justify-center bg-blue-50/50 border border-blue-100 rounded-[10px] text-blue-500 hover:bg-blue-100 transition-all active:scale-90 shadow-sm relative group/btn"
+                              title="Restore Client"
+                            >
+                              <RotateCcw size={16} />
+                              <div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">
+                                Restore Client
+                              </div>
+                            </button>
+                          )}
+                          {client.status === "Dismissed" && onDeleteClient && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onDeleteClient(client.id);
+                              }}
+                              className="w-[34px] h-[34px] flex items-center justify-center bg-[#FEF2F2] border border-[#FECACA] rounded-[10px] text-[#EF4444] hover:text-[#DC2626] hover:border-[#FCA5A5] transition-all active:scale-90 shadow-sm relative group/btn"
+                              title="Delete Client"
+                            >
+                              <Trash2 size={16} />
+                              <div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">
+                                Delete Client
+                              </div>
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -964,7 +1148,7 @@ const ClientList = ({
 
         {/* Mobile Card List View */}
         <div className="lg:hidden grid grid-cols-1 md:grid-cols-2 gap-4">
-          {currentClients.map((client) => {
+          {currentClients.map((client, index) => {
             const status = getStatusBadge(client);
             return (
               <div
@@ -1092,27 +1276,66 @@ const ClientList = ({
                     >
                       <Pencil size={16} />
                     </button>
-                    {onUpdateClient && title === "Clients" &&
-                      client.status !== "Dismissed" && (
+                    {onUpdateClient && client.status === "Active" && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleClientStatusUpdate(client, "Inactive");
+                        }}
+                        className="p-2 bg-orange-50 text-orange-600 border border-orange-100 rounded-lg hover:bg-orange-100 transition-all active:scale-90"
+                        title="Mark Inactive"
+                      >
+                        <UserMinus size={16} />
+                      </button>
+                    )}
+                    {onUpdateClient && client.status === "Inactive" && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleClientStatusUpdate(client, "Active");
+                        }}
+                        className="p-2 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-lg hover:bg-emerald-100 transition-all active:scale-90"
+                        title="Mark Active"
+                      >
+                        <UserCheck size={16} />
+                      </button>
+                    )}
+                    {onUpdateClient && client.status === "Dismissed" && (
+                      <>
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            onUpdateClient(client.id, {
-                              organisationName: client.company || client.organisation_name || client.organisationName || "",
-                              name: client.name || client.client_name || "",
-                              country: client.country || client.client_country || "",
-                              state: client.state || client.client_state || "",
-                              currency: client.currency || client.client_currency || "",
-                              clientStatus: "Dismissed",
-                              status: "Dismissed",
-                            });
+                            handleClientStatusUpdate(client, "Active");
                           }}
-                          className="p-2 bg-amber-50 text-amber-600 border border-amber-100 rounded-lg hover:bg-amber-100 transition-all active:scale-90"
-                          title="Dismiss Client"
+                          className="p-2 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-lg hover:bg-emerald-100 transition-all active:scale-90"
+                          title="Mark Active"
                         >
-                          <UserX size={16} />
+                          <UserCheck size={16} />
                         </button>
-                      )}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleClientStatusUpdate(client, "Inactive");
+                          }}
+                          className="p-2 bg-orange-50 text-orange-600 border border-orange-100 rounded-lg hover:bg-orange-100 transition-all active:scale-90"
+                          title="Mark Inactive"
+                        >
+                          <UserMinus size={16} />
+                        </button>
+                      </>
+                    )}
+                    {onUpdateClient && client.status !== "Dismissed" && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleClientStatusUpdate(client, "Dismissed");
+                        }}
+                        className="p-2 bg-amber-50 text-amber-600 border border-amber-100 rounded-lg hover:bg-amber-100 transition-all active:scale-90"
+                        title="Dismiss Client"
+                      >
+                        <UserX size={16} />
+                      </button>
+                    )}
                     {onDismissLead && title === "Leads" &&
                       (client.status === "Lead" || client.isConverted) &&
                       client.status !== "Dismissed" && (
