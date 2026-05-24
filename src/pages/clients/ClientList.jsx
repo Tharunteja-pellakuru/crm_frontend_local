@@ -134,7 +134,6 @@ const ClientList = ({
     currency: "INR",
   });
 
-
   const [formData, setFormData] = useState({
     name: "",
     company: "",
@@ -235,7 +234,7 @@ const ClientList = ({
     return () => {
       window.removeEventListener("scroll", handleScrollResize, true);
       window.removeEventListener("resize", handleScrollResize);
-    };
+    }
   }, [isFilterPopupOpen]);
 
   const handleEditClick = (client) => {
@@ -624,19 +623,6 @@ const ClientList = ({
               Manage your network of clients and strategic partnerships.
             </p>
           </div>
-          {/* <div className="w-full lg:w-auto">
-            <button
-              onClick={() => setShowAddModal(true)}
-              className="w-full lg:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white rounded-2xl hover:bg-slate-800 transition-all text-[13px] font-bold tracking-wider shadow-lg active:scale-95 group"
-            >
-              <Plus
-                size={16}
-                strokeWidth={2.5}
-                className="group-hover:rotate-90 transition-transform"
-              />
-              Add Client
-            </button>
-          </div> */}
         </div>
 
         {/* Stat Cards */}
@@ -721,8 +707,6 @@ const ClientList = ({
               />
             </div>
 
-
-
             {/* 2. Filters Button */}
             <div className="relative w-full md:w-auto flex-none" ref={filterButtonRef}>
               <button
@@ -765,14 +749,14 @@ const ClientList = ({
                       className={`${window.innerWidth < 1024 ? "fixed inset-0 flex items-center justify-center p-4 z-[99999] pointer-events-none" : ""}`}
                     >
                       <div
-                        className="bg-white border border-slate-200 shadow-[0_20px_50px_rgba(0,0,0,0.15)] overflow-hidden animate-fade-in-up ring-1 ring-black/5 rounded-3xl pointer-events-auto"
+                        className="bg-white border border-slate-200 shadow-[0_20px_50px_rgba(24,37,77,0.15)] overflow-hidden animate-fade-in-up ring-1 ring-black/5 rounded-3xl pointer-events-auto flex flex-col animate-pop"
                         style={filterPopupStyle}
                       >
                       {/* Sticky Header */}
-                      <div className="flex-none p-4 border-b border-slate-50 flex items-center justify-between bg-white relative z-10">
+                      <div className="flex-none p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 relative z-10">
                         <div className="flex items-center gap-2">
-                          <Filter size={14} className="text-secondary" />
-                          <h3 className="text-[11px] font-black text-[#18254D] tracking-[0.2em] uppercase">
+                          <Filter size={14} className="text-[#18254D]" />
+                          <h3 className="text-[11px] font-black text-[#18254D] tracking-wider uppercase">
                             Filter Clients
                           </h3>
                         </div>
@@ -783,7 +767,7 @@ const ClientList = ({
                               setEndDate("");
                               setIsFilterPopupOpen(false);
                             }}
-                            className="text-[10px] font-black text-rose-500 hover:text-rose-600 tracking-widest uppercase transition-colors"
+                            className="text-[10px] font-black text-[#F43F5E] hover:text-[#E11D48] tracking-wider uppercase transition-colors"
                           >
                             Clear All
                           </button>
@@ -794,8 +778,8 @@ const ClientList = ({
                       <div className="flex-1 p-5 space-y-4 overflow-y-auto custom-scrollbar">
                         {/* Date Range Section */}
                         <div className="space-y-3">
-                          <label className="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase ml-1">
-                            Joined Date Range
+                          <label className="text-[10px] font-black text-slate-400 tracking-wider uppercase ml-1 flex items-center gap-1.5">
+                            <Calendar size={12} /> Joined Date Range
                           </label>
                           <div className="grid grid-cols-2 gap-3">
                             <DatePicker
@@ -814,10 +798,10 @@ const ClientList = ({
                       </div>
 
                       {/* Sticky Footer */}
-                      <div className="flex-none p-4 bg-white border-t border-slate-50 relative z-10 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
+                      <div className="flex-none p-4 bg-slate-50/50 border-t border-slate-100 relative z-10 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
                         <button
                           onClick={() => setIsFilterPopupOpen(false)}
-                          className="w-full py-2.5 bg-[#18254D] text-white rounded-2xl text-[11px] font-black tracking-[0.2em] uppercase hover:bg-slate-800 transition-all shadow-lg active:scale-95"
+                          className="w-full py-2.5 bg-[#18254D] text-white rounded-xl text-[11px] font-black tracking-wider uppercase hover:bg-slate-800 transition-all shadow-md active:scale-95"
                         >
                           Apply Filters
                         </button>
@@ -863,32 +847,30 @@ const ClientList = ({
           </button>
         </div>
 
-
-
         {/* Main List */}
-        <div className="hidden lg:block bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden w-full">
+        <div className="hidden lg:block bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden w-full">
           <div className="w-full">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="bg-slate-50/50">
-                  <th className="px-6 py-5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
+            <table className="w-full border-collapse border-separate border-spacing-y-2">
+              <thead className="bg-slate-50/50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100 first:border-l first:rounded-l-xl">
                     Client Name
                   </th>
-                  <th className="px-6 py-5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                  <th className="px-6 py-3 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">
                     Contact Details
                   </th>
-                  <th className="px-6 py-5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                  <th className="px-6 py-3 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">
                     Client Category
                   </th>
-                  <th className="px-6 py-5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                  <th className="px-6 py-3 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">
                     Created By
                   </th>
-                  <th className="px-6 py-5 text-right text-[11px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                  <th className="px-6 py-3 text-right text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100 last:border-r last:rounded-r-xl">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody>
                 {currentClients.map((client, index) => {
                   const status = getStatusBadge(client);
                   return (
@@ -900,33 +882,33 @@ const ClientList = ({
                       className={`group transition-all ${
                         client.status === "Dismissed"
                           ? "bg-slate-50/30 opacity-80 cursor-default"
-                          : "hover:bg-slate-50/50 cursor-pointer"
+                          : "bg-white hover:bg-slate-50/50 cursor-pointer shadow-sm border border-slate-100 rounded-xl hover:shadow-md"
                       }`}
                       style={{
                         cursor:
                           client.status !== "Dismissed" ? "pointer" : "default",
                       }}
                     >
-                      <td className="px-6 py-5">
+                      <td className="px-6 py-4 border-y border-slate-100 first:border-l first:rounded-l-xl">
                         <div className="flex flex-col min-w-0">
                           <div className="font-bold text-[13px] text-[#18254D] tracking-tight leading-none mb-1 group-hover:text-secondary transition-colors">
                             {client.name}
                           </div>
-                          <div className="text-[12px] text-slate-400">
+                          <div className="text-[12px] text-slate-400 font-medium">
                             {client.email || "No email provided"}
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-5">
+                      <td className="px-6 py-4 border-y border-slate-100">
                         {renderContactDetails(client)}
                       </td>
 
-                      <td className="px-6 py-5">
+                      <td className="px-6 py-4 border-y border-slate-100">
                         <div className="flex items-center gap-2">
                           <div
                             className={`w-2 h-2 rounded-full ${client.projectCategory === 1 ? "bg-secondary" : client.projectCategory === 2 ? "bg-blue-400" : client.projectCategory === 3 ? "bg-purple-400" : "bg-slate-300"}`}
                           />
-                          <span className="text-[12px] font-semibold text-slate-600">
+                          <span className="text-[12px] font-bold text-slate-600">
                             {(() => {
                               const catName =
                                 CATEGORY_MAP[client.projectCategory] ||
@@ -948,14 +930,15 @@ const ClientList = ({
                           </span>
                         </div>
                       </td>
-                      <td className="px-6 py-5">
-                        <div className="text-[12px] font-semibold text-slate-600">
-                          {client.createdByName || "System"}
+                      <td className="px-6 py-4 border-y border-slate-100">
+                        <div className="flex items-center gap-1.5 text-[12px] font-bold text-slate-600 bg-slate-50 px-2 py-1 rounded-lg border border-slate-100 w-fit">
+                          <Users size={12} className="text-slate-400" />
+                          <span className="truncate max-w-[120px]">{client.createdByName || "System"}</span>
                         </div>
                       </td>
-                      <td className="px-6 py-5 text-right">
+                      <td className="px-6 py-4 border-y border-slate-100 last:border-r last:rounded-r-xl text-right">
                         <div
-                          className="flex justify-end gap-3"
+                          className="flex justify-end gap-2"
                           onClick={(e) => e.stopPropagation()}
                         >
                           {onAddActivity && client.status !== "Dismissed" && (
@@ -964,13 +947,10 @@ const ClientList = ({
                                 e.stopPropagation();
                                 handleOpenFollowUpModal(client);
                               }}
-                              className="w-[34px] h-[34px] flex items-center justify-center bg-indigo-50/50 border border-indigo-100 rounded-[10px] text-indigo-500 hover:bg-indigo-100 transition-all active:scale-90 shadow-sm relative group/btn"
+                              className="p-2 bg-indigo-50 text-indigo-600 border border-indigo-100 rounded-lg hover:bg-indigo-100 transition-all active:scale-90"
                               title="Add Follow Up"
                             >
                               <BellRing size={16} />
-                              <div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">
-                                Add Follow Up
-                              </div>
                             </button>
                           )}
                           {onOnboardClient && client.status === "Lead" && (
@@ -997,13 +977,10 @@ const ClientList = ({
                                 });
                                 setShowOnboardModal(true);
                               }}
-                              className="w-[34px] h-[34px] flex items-center justify-center bg-emerald-50/50 border border-emerald-100 rounded-[10px] text-emerald-500 hover:bg-emerald-100 transition-all active:scale-90 shadow-sm relative group/btn"
+                              className="p-2 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-lg hover:bg-emerald-100 transition-all active:scale-90"
                               title="Convert to Client"
                             >
                               <UserCheck size={16} />
-                              <div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">
-                                Convert to Client
-                              </div>
                             </button>
                           )}
                           <button
@@ -1011,13 +988,10 @@ const ClientList = ({
                               e.stopPropagation();
                               handleEditClick(client);
                             }}
-                            className="w-[34px] h-[34px] flex items-center justify-center bg-blue-50/50 border border-blue-100 rounded-[10px] text-blue-500 hover:bg-blue-100 transition-all active:scale-90 shadow-sm relative group/btn"
+                            className="p-2 bg-blue-50 text-blue-600 border border-blue-100 rounded-lg hover:bg-blue-100 transition-all active:scale-90"
                             title="Edit Client"
                           >
                             <Pencil size={16} />
-                            <div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">
-                              Edit Client
-                            </div>
                           </button>
                           {onUpdateClient && client.status === "Active" && (
                             <button
@@ -1025,13 +999,10 @@ const ClientList = ({
                                 e.stopPropagation();
                                 handleClientStatusUpdate(client, "Inactive");
                               }}
-                              className="w-[34px] h-[34px] flex items-center justify-center bg-[#FFF7ED] border border-[#FDBA74] rounded-[10px] text-[#F97316] hover:text-[#EA580C] hover:border-[#FB923C] transition-all active:scale-90 shadow-sm relative group/btn"
+                              className="p-2 bg-orange-50 text-orange-600 border border-orange-100 rounded-lg hover:bg-orange-100 transition-all active:scale-90"
                               title="Mark Inactive"
                             >
                               <UserMinus size={16} />
-                              <div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">
-                                Mark Inactive
-                              </div>
                             </button>
                           )}
                           {onUpdateClient && client.status === "Inactive" && (
@@ -1040,13 +1011,10 @@ const ClientList = ({
                                 e.stopPropagation();
                                 handleClientStatusUpdate(client, "Active");
                               }}
-                              className="w-[34px] h-[34px] flex items-center justify-center bg-emerald-50/50 border border-emerald-100 rounded-[10px] text-emerald-500 hover:bg-emerald-100 transition-all active:scale-90 shadow-sm relative group/btn"
+                              className="p-2 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-lg hover:bg-emerald-100 transition-all active:scale-90"
                               title="Mark Active"
                             >
                               <UserCheck size={16} />
-                              <div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">
-                                Mark Active
-                              </div>
                             </button>
                           )}
                           {onUpdateClient && client.status === "Dismissed" && (
@@ -1056,26 +1024,20 @@ const ClientList = ({
                                   e.stopPropagation();
                                   handleClientStatusUpdate(client, "Active");
                                 }}
-                                className="w-[34px] h-[34px] flex items-center justify-center bg-emerald-50/50 border border-emerald-100 rounded-[10px] text-emerald-500 hover:bg-emerald-100 transition-all active:scale-90 shadow-sm relative group/btn"
+                                className="p-2 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-lg hover:bg-emerald-100 transition-all active:scale-90"
                                 title="Mark Active"
                               >
                                 <UserCheck size={16} />
-                                <div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">
-                                  Mark Active
-                                </div>
                               </button>
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleClientStatusUpdate(client, "Inactive");
                                 }}
-                                className="w-[34px] h-[34px] flex items-center justify-center bg-[#FFF7ED] border border-[#FDBA74] rounded-[10px] text-[#F97316] hover:text-[#EA580C] hover:border-[#FB923C] transition-all active:scale-90 shadow-sm relative group/btn"
+                                className="p-2 bg-orange-50 text-orange-600 border border-orange-100 rounded-lg hover:bg-orange-100 transition-all active:scale-90"
                                 title="Mark Inactive"
                               >
                                 <UserMinus size={16} />
-                                <div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">
-                                  Mark Inactive
-                                </div>
                               </button>
                             </>
                           )}
@@ -1085,13 +1047,10 @@ const ClientList = ({
                                 e.stopPropagation();
                                 handleClientStatusUpdate(client, "Dismissed");
                               }}
-                              className="w-[34px] h-[34px] flex items-center justify-center bg-[#FFF9ED] border border-[#FDE68A] rounded-[10px] text-[#F59E0B] hover:text-[#D97706] hover:border-[#FCD34D] transition-all active:scale-90 shadow-sm relative group/btn"
+                              className="p-2 bg-rose-50 text-rose-600 border border-rose-100 rounded-lg hover:bg-rose-100 transition-all active:scale-90"
                               title="Dismiss Client"
                             >
                               <UserX size={16} />
-                              <div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">
-                                Dismiss Client
-                              </div>
                             </button>
                           )}
                           {client.status === "Dismissed" && onRestoreLead && (
@@ -1100,13 +1059,10 @@ const ClientList = ({
                                 e.stopPropagation();
                                 onRestoreLead(client.id);
                               }}
-                              className="w-[34px] h-[34px] flex items-center justify-center bg-blue-50/50 border border-blue-100 rounded-[10px] text-blue-500 hover:bg-blue-100 transition-all active:scale-90 shadow-sm relative group/btn"
+                              className="p-2 bg-blue-50 text-blue-600 border border-blue-100 rounded-lg hover:bg-blue-100 transition-all active:scale-90"
                               title="Restore Client"
                             >
                               <RotateCcw size={16} />
-                              <div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">
-                                Restore Client
-                              </div>
                             </button>
                           )}
                           {client.status === "Dismissed" && onDeleteClient && (
@@ -1115,13 +1071,10 @@ const ClientList = ({
                                 e.stopPropagation();
                                 onDeleteClient(client.id);
                               }}
-                              className="w-[34px] h-[34px] flex items-center justify-center bg-[#FEF2F2] border border-[#FECACA] rounded-[10px] text-[#EF4444] hover:text-[#DC2626] hover:border-[#FCA5A5] transition-all active:scale-90 shadow-sm relative group/btn"
+                              className="p-2 bg-red-50 text-red-600 border border-red-200 rounded-lg hover:bg-red-100 transition-all active:scale-90"
                               title="Delete Client"
                             >
                               <Trash2 size={16} />
-                              <div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">
-                                Delete Client
-                              </div>
                             </button>
                           )}
                         </div>
@@ -1132,12 +1085,12 @@ const ClientList = ({
                 {filteredClients.length === 0 && (
                   <tr>
                     <td colSpan={5} className="px-10 py-32 text-center">
-                      <div className=" text-slate-300 p-4 rounded-xl mb-4  flex items-center justify-center mx-auto">
+                      <div className="text-slate-300 p-4 rounded-xl mb-4 flex items-center justify-center mx-auto">
                         <Users size={32} strokeWidth={1.5} />
                       </div>
-                      <p className="text-[13px] font-bold text-primary  tracking-wider">
-                No Active Clients
-              </p>
+                      <p className="text-[13px] font-bold text-[#18254D] tracking-wider">
+                        No Clients Found
+                      </p>
                     </td>
                   </tr>
                 )}
@@ -1154,22 +1107,22 @@ const ClientList = ({
               <div
                 key={client.id || `client-mobile-${index}`}
                 onClick={() => onSelectClient(client)}
-                className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all active:scale-[0.98]"
+                className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all cursor-pointer"
               >
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white font-bold text-lg border-2 border-slate-50 shadow-md shrink-0">
+                    <div className="w-10 h-10 shrink-0 rounded-xl bg-[#EFF6FF] text-[#3B82F6] border-[#DBEAFE] flex items-center justify-center font-bold text-lg border shadow-md">
                       {client.name.charAt(0).toUpperCase()}
                     </div>
                     <div className="min-w-0">
-                      <div className="font-bold text-sm text-primary truncate">
+                      <div className="font-bold text-sm text-[#18254D] truncate">
                         {client.name}
                       </div>
                       <div className="flex items-center gap-1.5 mt-0.5">
                         <div
                           className={`w-1.5 h-1.5 rounded-full ${client.projectCategory === 1 ? "bg-secondary" : client.projectCategory === 2 ? "bg-blue-400" : client.projectCategory === 3 ? "bg-purple-400" : "bg-slate-300"}`}
                         />
-                        <span className="text-[12px] font-bold text-slate-400 uppercase tracking-wider">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                           {CATEGORY_MAP[client.projectCategory] ||
                             client.industry ||
                             "Other"}
@@ -1178,10 +1131,10 @@ const ClientList = ({
                     </div>
                   </div>
                   <span
-                    className={`px-2 py-0.5 rounded-md text-[10px] font-bold border flex items-center gap-1 shadow-sm leading-none ${status.className}`}
+                    className={`px-2 py-1 rounded-md text-[10px] font-bold border flex items-center gap-1 shadow-sm uppercase ${status.className}`}
                   >
                     {status.icon}
-                    {status.label.toUpperCase()}
+                    {status.label}
                   </span>
                 </div>
 
@@ -1189,12 +1142,8 @@ const ClientList = ({
                   {client.status === "Lead" ? (
                     <div className="space-y-3">
                       <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                        <p className="text-xs text-primary/80 font-medium italic line-clamp-2">
-                          "
-                          {client.notes ||
-                            client.industry ||
-                            "No notes available"}
-                          "
+                        <p className="text-xs text-[#18254D]/80 font-medium italic line-clamp-2">
+                          "{client.notes || client.industry || "No notes available"}"
                         </p>
                       </div>
                       <div className="px-1">
@@ -1215,7 +1164,7 @@ const ClientList = ({
                         e.stopPropagation();
                         onSelectClient(client);
                       }}
-                      className="flex items-center gap-1 text-[12px] font-bold text-secondary uppercase tracking-widest hover:text-secondary/80 transition-colors"
+                      className="flex items-center gap-1 text-[11px] font-bold text-secondary uppercase tracking-wider hover:text-secondary/80 transition-colors"
                     >
                       View Details
                       <ChevronRight size={14} />
@@ -1260,7 +1209,7 @@ const ClientList = ({
                             e.stopPropagation();
                             onDeleteClient(client.id);
                           }}
-                          className="p-2 bg-rose-50 text-rose-600 border border-rose-100 rounded-lg hover:bg-rose-100 transition-all active:scale-90"
+                          className="p-2 bg-red-50 text-red-600 border border-red-200 rounded-lg hover:bg-red-100 transition-all active:scale-90"
                           title="Delete"
                         >
                           <Trash2 size={16} />
@@ -1271,7 +1220,7 @@ const ClientList = ({
                         e.stopPropagation();
                         handleEditClick(client);
                       }}
-                      className="p-2 bg-slate-50 text-slate-600 border border-slate-100 rounded-lg hover:bg-slate-100 transition-all active:scale-90"
+                      className="p-2 bg-slate-50 text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-100 transition-all active:scale-90"
                       title="Edit Client"
                     >
                       <Pencil size={16} />
@@ -1330,7 +1279,7 @@ const ClientList = ({
                           e.stopPropagation();
                           handleClientStatusUpdate(client, "Dismissed");
                         }}
-                        className="p-2 bg-amber-50 text-amber-600 border border-amber-100 rounded-lg hover:bg-amber-100 transition-all active:scale-90"
+                        className="p-2 bg-rose-50 text-rose-600 border border-rose-100 rounded-lg hover:bg-rose-100 transition-all active:scale-90"
                         title="Dismiss Client"
                       >
                         <UserX size={16} />
@@ -1344,7 +1293,7 @@ const ClientList = ({
                             e.stopPropagation();
                             onDismissLead(client.id);
                           }}
-                          className="p-2 bg-amber-50 text-amber-600 border border-amber-100 rounded-lg hover:bg-amber-100 transition-all active:scale-90"
+                          className="p-2 bg-rose-50 text-rose-600 border border-rose-100 rounded-lg hover:bg-rose-100 transition-all active:scale-90"
                           title="Dismiss Lead"
                         >
                           <UserX size={16} />
@@ -1357,13 +1306,9 @@ const ClientList = ({
           })}
 
           {filteredClients.length === 0 && (
-            <div className="col-span-full text-center py-10 bg-slate-50 rounded-2xl border border-dashed border-slate-300">
-              <div className=" text-slate-300 p-4 rounded-xl mb-4  flex items-center justify-center mx-auto">
-                        <Users size={32} strokeWidth={1.5} />
-                      </div>
-                      <p className="text-[13px] font-bold text-primary  tracking-wider">
-                No Active Clients
-              </p>
+            <div className="col-span-full flex flex-col items-center justify-center py-10 bg-white rounded-3xl border border-slate-200 shadow-sm w-full">
+              <Users size={22} className="text-slate-350 mb-2" />
+              <p className="text-xs font-bold text-slate-400 tracking-wider uppercase">No clients</p>
             </div>
           )}
         </div>
@@ -1374,12 +1319,12 @@ const ClientList = ({
             <button
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              className="p-2.5 rounded-xl border border-slate-200 bg-white text-slate-400 hover:text-primary hover:border-primary disabled:opacity-30 disabled:hover:border-slate-200 disabled:hover:text-slate-400 transition-all shadow-sm active:scale-95"
+              className="h-10 w-10 flex items-center justify-center rounded-full border border-[#DBEAFE] bg-white text-[#3B82F6] shadow-sm transition-all duration-200 hover:bg-[#EFF6FF] hover:border-[#93C5FD] hover:text-[#2563EB] active:scale-95 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-300 disabled:hover:bg-slate-100 disabled:hover:border-slate-200 disabled:hover:text-slate-300"
             >
-              <ChevronLeft size={16} strokeWidth={2.5} />
+              <ChevronLeft size={17} strokeWidth={2.75} />
             </button>
 
-            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-2xl shadow-inner mx-2">
+            <div className="flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-200 rounded-full shadow-sm mx-2">
               {[...Array(totalPages)].map((_, i) => {
                 const pageNum = i + 1;
                 if (
@@ -1392,7 +1337,7 @@ const ClientList = ({
                     return (
                       <span
                         key={`ellipsis-${pageNum}-${i}`}
-                        className="text-slate-300 px-1 font-bold"
+                        className="text-slate-350 px-1 font-bold"
                       >
                         .
                       </span>
@@ -1405,10 +1350,10 @@ const ClientList = ({
                   <button
                     key={pageNum}
                     onClick={() => setCurrentPage(pageNum)}
-                    className={`min-w-[32px] h-8 flex items-center justify-center rounded-lg text-sm font-black transition-all ${
+                    className={`min-w-8 h-8 px-2 flex items-center justify-center rounded-full text-[12px] font-black transition-all duration-200 ${
                       currentPage === pageNum
-                        ? "bg-[#18254D] text-white shadow-lg shadow-slate-300 scale-110"
-                        : "text-slate-400 hover:text-primary hover:bg-white"
+                        ? "bg-[#18254D] text-white shadow-md shadow-slate-300 scale-110"
+                        : "text-slate-500 hover:text-[#18254D] hover:bg-[#EFF6FF]"
                     }`}
                   >
                     {pageNum}
@@ -1420,60 +1365,57 @@ const ClientList = ({
             <button
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
-              className="p-2.5 rounded-xl border border-slate-200 bg-white text-slate-400 hover:text-primary hover:border-primary disabled:opacity-30 disabled:hover:border-slate-200 disabled:hover:text-slate-400 transition-all shadow-sm active:scale-95"
+              className="h-10 w-10 flex items-center justify-center rounded-full border border-[#DBEAFE] bg-white text-[#3B82F6] shadow-sm transition-all duration-200 hover:bg-[#EFF6FF] hover:border-[#93C5FD] hover:text-[#2563EB] active:scale-95 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-300 disabled:hover:bg-slate-100 disabled:hover:border-slate-200 disabled:hover:text-slate-300"
             >
-              <ChevronRight size={16} strokeWidth={2.5} />
+              <ChevronRight size={17} strokeWidth={2.75} />
             </button>
           </div>
         )}
       </div>
 
       {/* Add Modal */}
-      {showAddModal && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[100] flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white w-full max-w-xl rounded-xl shadow-2xl border border-slate-200 overflow-hidden animate-fade-in my-auto flex flex-col">
-            <div className="bg-primary p-4 text-white relative">
-              <button
-                onClick={() => setShowAddModal(false)}
-                className="absolute top-4 right-4 p-1.5 hover:bg-white/10 rounded-xl transition-colors"
-              >
-                <X size={18} strokeWidth={3} />
-              </button>
+      {showAddModal && createPortal(
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[99999] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+          <div className="absolute inset-0" onClick={() => setShowAddModal(false)} />
+          <div className="relative z-10 bg-white w-full max-w-xl rounded-3xl shadow-2xl border border-slate-100 overflow-hidden animate-pop flex flex-col max-h-[90vh]">
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 shrink-0">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-secondary/10 rounded-xl flex items-center justify-center shadow-lg border border-secondary/20">
-                  <UserPlus
-                    size={18}
-                    className="text-secondary"
-                    strokeWidth={3}
-                  />
+                <div className="w-8 h-8 bg-[#EFF6FF] text-[#3B82F6] rounded-xl flex items-center justify-center border border-[#DBEAFE] shadow-sm">
+                  <UserPlus size={16} />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold tracking-tighter leading-none">
+                  <h3 className="text-base font-bold text-[#18254D] tracking-tight">
                     New {title === "Leads" ? "Lead" : "Client"}
                   </h3>
-                  <p className="text-slate-400 text-[14px] font-bold  tracking-widest mt-0.5">
+                  <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider mt-0.5">
                     {title === "Leads" ? "Lead Details" : "Client Details"}
                   </p>
                 </div>
               </div>
+              <button
+                onClick={() => setShowAddModal(false)}
+                className="p-1.5 hover:bg-slate-200 rounded-xl text-slate-400 transition-all"
+              >
+                <X size={18} />
+              </button>
             </div>
 
             <form
               onSubmit={handleSubmit}
-              className="p-4 md:p-5 space-y-4 max-h-[65vh] overflow-y-auto"
+              className="p-6 space-y-5 overflow-y-auto no-scrollbar"
             >
               {title === "Leads" ? (
                 /* ADD LEAD FIELDS */
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                      CLIENT NAME
+                    <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
+                      CLIENT NAME <span className="text-rose-500">*</span>
                     </label>
                     <input
                       required
                       type="text"
-                      placeholder="Anand Kumar"
-                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
+                      placeholder="e.g. John Doe"
+                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200"
                       value={formData.name}
                       onChange={(e) =>
                         setFormData({ ...formData, name: e.target.value })
@@ -1482,14 +1424,14 @@ const ClientList = ({
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                      EMAIL ID
+                    <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
+                      EMAIL ID <span className="text-rose-500">*</span>
                     </label>
                     <input
                       required
                       type="email"
-                      placeholder="anand.kumar@fintech.in"
-                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
+                      placeholder="e.g. john@gmail.com"
+                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200"
                       value={formData.email}
                       onChange={(e) =>
                         setFormData({ ...formData, email: e.target.value })
@@ -1498,14 +1440,14 @@ const ClientList = ({
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                      PHONE NUMBER
+                    <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
+                      PHONE NUMBER <span className="text-rose-500">*</span>
                     </label>
                     <input
                       required
                       type="tel"
-                      placeholder="+91 98765 43210"
-                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
+                      placeholder="e.g. 9876543210"
+                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200"
                       value={formData.phone}
                       onChange={(e) =>
                         setFormData({
@@ -1517,13 +1459,13 @@ const ClientList = ({
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
+                    <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
                       WEBSITE URL
                     </label>
                     <input
                       type="url"
-                      placeholder="https://www.company.com"
-                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
+                      placeholder="e.g. https://www.company.com"
+                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200"
                       value={formData.website}
                       onChange={(e) =>
                         setFormData({ ...formData, website: e.target.value })
@@ -1531,8 +1473,8 @@ const ClientList = ({
                     />
                   </div>
 
-                  <div className="md:col-span-2 space-y-2">
-                    <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
+                  <div className="md:col-span-2 space-y-1.5">
+                    <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
                       LEAD CATEGORY
                     </label>
                     <div className="flex gap-2">
@@ -1543,10 +1485,10 @@ const ClientList = ({
                           onClick={() =>
                             setFormData({ ...formData, projectCategory: catId })
                           }
-                          className={`flex-1 flex items-center justify-center p-2.5 border-2 rounded-xl transition-all font-bold  text-[12px] tracking-widest ${
+                          className={`flex-1 py-2.5 px-3 rounded-xl border text-[12px] font-bold tracking-wider transition-all ${
                             formData.projectCategory === catId
-                              ? "border-primary bg-primary/5 text-primary shadow-sm"
-                              : "border-slate-100 text-slate-400 hover:border-slate-200"
+                              ? "bg-indigo-50 text-indigo-700 border-indigo-200 shadow-sm"
+                              : "bg-white border-slate-200 text-slate-400 hover:border-slate-300 hover:bg-slate-50"
                           }`}
                         >
                           {CATEGORY_MAP[catId]}
@@ -1555,11 +1497,11 @@ const ClientList = ({
                     </div>
                   </div>
 
-                  <div className="md:col-span-2 space-y-2">
-                    <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
+                  <div className="md:col-span-2 space-y-1.5">
+                    <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
                       LEAD STATUS
                     </label>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                       {["Hot", "Warm", "Cold"].map((type) => (
                         <button
                           key={`status-type-${type}`}
@@ -1570,14 +1512,14 @@ const ClientList = ({
                               leadType: type,
                             })
                           }
-                          className={`flex flex-col items-center justify-center gap-1 py-2 rounded-xl border-2 transition-all ${
+                          className={`flex items-center justify-center gap-2 py-2.5 rounded-xl border transition-all ${
                             formData.leadType === type
                               ? type === "Hot"
-                                ? "bg-error/5 border-error text-error shadow-lg shadow-error/10 scale-[1.02]"
+                                ? "bg-rose-50 border-rose-200 text-rose-600 shadow-sm scale-[1.02]"
                                 : type === "Warm"
-                                  ? "bg-warning/5 border-warning text-warning shadow-lg shadow-warning/10 scale-[1.02]"
-                                  : "bg-info/5 border-info text-info shadow-lg shadow-info/10 scale-[1.02]"
-                              : "bg-slate-50 border-slate-100 text-slate-400 grayscale opacity-60 hover:opacity-100 hover:grayscale-0"
+                                  ? "bg-orange-50 border-orange-200 text-orange-600 shadow-sm scale-[1.02]"
+                                  : "bg-blue-50 border-blue-200 text-blue-600 shadow-sm scale-[1.02]"
+                              : "bg-slate-50 border-slate-200 text-slate-400 grayscale opacity-70 hover:opacity-100 hover:grayscale-0 hover:bg-white"
                           }`}
                         >
                           {type === "Hot" ? (
@@ -1587,7 +1529,7 @@ const ClientList = ({
                           ) : (
                             <Snowflake size={14} strokeWidth={2.5} />
                           )}
-                          <span className="text-[13px] font-bold  tracking-widest">
+                          <span className="text-[12px] font-bold tracking-wider">
                             {type}
                           </span>
                         </button>
@@ -1595,14 +1537,14 @@ const ClientList = ({
                     </div>
                   </div>
 
-                  <div className="md:col-span-2 space-y-2">
-                    <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
+                  <div className="md:col-span-2 space-y-1.5">
+                    <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
                       NOTE
                     </label>
                     <textarea
                       rows={3}
                       placeholder="Add any additional context..."
-                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium resize-none shadow-sm"
+                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200 resize-none"
                       value={formData.notes || formData.industry}
                       onChange={(e) =>
                         setFormData({
@@ -1616,58 +1558,27 @@ const ClientList = ({
                 </div>
               ) : (
                 /* ADD CLIENT FIELDS */
-                <>
+                <div className="space-y-5">
                   {/* CLIENT DETAILS HEADING */}
                   <div className="flex items-center gap-2 pt-1">
-                    <div className="h-[2px] w-6 bg-secondary rounded-full" />
-                    <h4 className="text-[13px] font-bold text-[#18254D]  tracking-[0.2em]">
+                    <div className="h-[2px] w-6 bg-indigo-500 rounded-full" />
+                    <h4 className="text-[11px] font-black text-[#18254D] tracking-widest uppercase">
                       Client Details
                     </h4>
                     <div className="h-[2px] flex-1 bg-slate-100 rounded-full" />
                   </div>
 
-                  {/* CLIENT TYPE */}
-                  <div className="space-y-2 pb-1">
-                    <label className="text-[14px] font-bold text-[#18254D]  tracking-widest ml-1">
-                      CLIENT TYPE
-                    </label>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <label className="flex-1 flex items-center gap-2.5 p-3 bg-white border-2 border-[#18254D] rounded-xl cursor-pointer transition-all group shadow-sm">
-                        <div className="relative flex items-center justify-center">
-                          <input
-                            type="radio"
-                            name="clientType"
-                            value="New"
-                            checked={formData.clientType === "New"}
-                            readOnly
-                            className="peer appearance-none w-5 h-5 border-2 border-[#18254D] rounded-full checked:border-[#18254D] transition-all"
-                          />
-                          <div className="absolute w-2.5 h-2.5 bg-[#18254D] rounded-full" />
-                        </div>
-                        <div>
-                          <p className="text-xs font-bold text-[#18254D] leading-none">
-                            New Client
-                          </p>
-                          <p className="text-[13px] text-slate-400 font-bold mt-0.5">
-                            First-time engagement
-                          </p>
-                        </div>
-                      </label>
-                      {/* EXISTING CLIENT REMOVED */}
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* NAME & EMAIL */}
                     <div className="space-y-1.5">
-                      <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                        CLIENT NAME
+                      <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
+                        CLIENT NAME <span className="text-rose-500">*</span>
                       </label>
                       <input
                         required
                         type="text"
-                        placeholder="Anand Kumar"
-                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
+                        placeholder="e.g. John Doe"
+                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200"
                         value={formData.name}
                         onChange={(e) =>
                           setFormData({ ...formData, name: e.target.value })
@@ -1676,14 +1587,14 @@ const ClientList = ({
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                        EMAIL ID
+                      <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
+                        EMAIL ID <span className="text-rose-500">*</span>
                       </label>
                       <input
                         required
                         type="email"
-                        placeholder="anand.kumar@fintech.in"
-                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
+                        placeholder="e.g. john@gmail.com"
+                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200"
                         value={formData.email}
                         onChange={(e) =>
                           setFormData({ ...formData, email: e.target.value })
@@ -1693,14 +1604,14 @@ const ClientList = ({
 
                     {/* PHONE & STATUS */}
                     <div className="space-y-1.5">
-                      <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                        PHONE NUMBER
+                      <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
+                        PHONE NUMBER <span className="text-rose-500">*</span>
                       </label>
                       <input
                         required
                         type="tel"
-                        placeholder="+91 98765 43210"
-                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
+                        placeholder="e.g. 9876543210"
+                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200"
                         value={formData.phone}
                         onChange={(e) =>
                           setFormData({
@@ -1712,13 +1623,14 @@ const ClientList = ({
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1 uppercase">
-                        ORGANISATION NAME
+                      <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
+                        ORGANISATION NAME <span className="text-rose-500">*</span>
                       </label>
                       <input
+                        required
                         type="text"
                         placeholder="e.g. Acme Corp"
-                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
+                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200"
                         value={formData.organisationName || ""}
                         onChange={(e) =>
                           setFormData({
@@ -1764,13 +1676,13 @@ const ClientList = ({
                       />
                     ) : (
                       <div className="space-y-1.5">
-                        <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1 uppercase">
+                        <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
                           CLIENT STATE
                         </label>
                         <input
                           type="text"
                           placeholder="e.g. State/Province"
-                          className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
+                          className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200"
                           value={formData.state || ""}
                           onChange={(e) =>
                             setFormData({
@@ -1796,46 +1708,64 @@ const ClientList = ({
                     />
 
                     <div className="space-y-1.5">
-                      <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1 uppercase">
+                      <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
                         CLIENT STATUS
                       </label>
-                      <select
-                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
-                        value={formData.clientStatus || "Active"}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            clientStatus: e.target.value,
-                          })
-                        }
-                      >
-                        <option value="Active">Active</option>
-                        <option value="Inactive">Inactive</option>
-                        <option value="Dismissed">Dismissed</option>
-                      </select>
+                      <div className="relative">
+                        <button
+                          type="button"
+                          onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
+                          className="w-full h-10 flex items-center justify-between px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold shadow-sm hover:border-[#18254D]/30 transition-all text-[#18254D]"
+                        >
+                          <span>{formData.clientStatus || "Active"}</span>
+                          <ChevronDown size={16} className={`text-slate-400 transition-transform duration-200 ${isStatusDropdownOpen ? "rotate-180" : ""}`} />
+                        </button>
+                        {isStatusDropdownOpen && (
+                          <>
+                            <div className="fixed inset-0 z-[80]" onClick={() => setIsStatusDropdownOpen(false)} />
+                            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-pop origin-top">
+                              <div className="bg-[#18254D] px-4 py-2.5 border-b border-white/10">
+                                <p className="text-[10px] font-bold text-white/50 tracking-wider uppercase">Select Status</p>
+                              </div>
+                              {["Active", "Inactive", "Dismissed"].map((status) => (
+                                <button
+                                  key={status}
+                                  type="button"
+                                  onClick={() => {
+                                    setFormData({ ...formData, clientStatus: status });
+                                    setIsStatusDropdownOpen(false);
+                                  }}
+                                  className={`w-full text-left px-4 py-2.5 text-xs font-semibold tracking-wider transition-colors ${formData.clientStatus === status ? "bg-slate-100 text-[#18254D]" : "text-[#18254D] hover:bg-slate-50"}`}
+                                >
+                                  {status}
+                                </button>
+                              ))}
+                            </div>
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
 
                   {/* PROJECT DETAILS HEADING */}
                   <div className="flex items-center gap-2 pt-3">
-                    <div className="h-[2px] w-6 bg-secondary rounded-full" />
-                    <h4 className="text-[13px] font-bold text-[#18254D]  tracking-[0.2em]">
+                    <div className="h-[2px] w-6 bg-indigo-500 rounded-full" />
+                    <h4 className="text-[11px] font-black text-[#18254D] tracking-widest uppercase">
                       Project Details
                     </h4>
                     <div className="h-[2px] flex-1 bg-slate-100 rounded-full" />
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* PROJECT NAME & STATUS */}
                     <div className="space-y-1.5">
-                      <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
+                      <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
                         PROJECT NAME
                       </label>
                       <input
-                        required
                         type="text"
                         placeholder="e.g. Website Redesign"
-                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
+                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200"
                         value={formData.projectName}
                         onChange={(e) =>
                           setFormData({
@@ -1847,57 +1777,34 @@ const ClientList = ({
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
+                      <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
                         PROJECT STATUS
                       </label>
                       <div className="relative">
                         <button
                           type="button"
-                          onClick={() =>
-                            setIsStatusDropdownOpen(!isStatusDropdownOpen)
-                          }
-                          className="w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium hover:border-secondary transition-all"
+                          onClick={() => setIsPriorityDropdownOpen(!isPriorityDropdownOpen)}
+                          className="w-full h-[42px] flex items-center justify-between px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold shadow-sm hover:border-[#18254D]/30 transition-all text-[#18254D]"
                         >
-                          <span className="text-primary">
-                            {formData.projectStatus}
-                          </span>
-                          <ChevronDown
-                            size={16}
-                            className={`text-slate-400 transition-transform ${isStatusDropdownOpen ? "rotate-180" : ""}`}
-                          />
+                          <span>{formData.projectStatus}</span>
+                          <ChevronDown size={16} className={`text-slate-400 transition-transform duration-200 ${isPriorityDropdownOpen ? "rotate-180" : ""}`} />
                         </button>
-
-                        {isStatusDropdownOpen && (
+                        {isPriorityDropdownOpen && (
                           <>
-                            <div
-                              className="fixed inset-0 z-[80]"
-                              onClick={() => setIsStatusDropdownOpen(false)}
-                            />
-                            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top">
-                              <div className="bg-[#18254D] px-4 py-3 border-b border-white/10">
-                                <p className="text-[14px] font-bold text-white/50  tracking-widest">
-                                  Select Status
-                                </p>
+                            <div className="fixed inset-0 z-[80]" onClick={() => setIsPriorityDropdownOpen(false)} />
+                            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-pop origin-top">
+                              <div className="bg-[#18254D] px-4 py-2.5 border-b border-white/10">
+                                <p className="text-[10px] font-bold text-white/50 tracking-wider uppercase">Select Status</p>
                               </div>
-                              {(formData.projectCategory === 1
-                                ? ["Planning", "In Progress", "Testing", "Live"]
-                                : ["Planning", "In Progress", "Completed"]
-                              ).map((status) => (
+                              {(formData.projectCategory === 1 ? ["Planning", "In Progress", "Testing", "Live"] : ["Planning", "In Progress", "Completed"]).map((status) => (
                                 <button
                                   key={status}
                                   type="button"
                                   onClick={() => {
-                                    setFormData({
-                                      ...formData,
-                                      projectStatus: status,
-                                    });
-                                    setIsStatusDropdownOpen(false);
+                                    setFormData({ ...formData, projectStatus: status });
+                                    setIsPriorityDropdownOpen(false);
                                   }}
-                                  className={`w-full text-left px-4 py-2.5 text-[12px] font-bold  tracking-widest transition-colors ${
-                                    formData.projectStatus === status
-                                      ? "bg-slate-100 text-secondary"
-                                      : "text-[#18254D] hover:bg-slate-50"
-                                  }`}
+                                  className={`w-full text-left px-4 py-2.5 text-xs font-semibold tracking-wider transition-colors ${formData.projectStatus === status ? "bg-slate-100 text-[#18254D]" : "text-[#18254D] hover:bg-slate-50"}`}
                                 >
                                   {status}
                                 </button>
@@ -1908,25 +1815,22 @@ const ClientList = ({
                       </div>
                     </div>
 
-                    <div className="space-y-2">
-                      <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                        LEAD CATEGORY
+                    <div className="md:col-span-2 space-y-1.5">
+                      <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
+                        PROJECT CATEGORY
                       </label>
                       <div className="flex gap-2">
                         {[1, 2, 3].map((catId) => (
                           <button
-                            key={catId}
+                            key={`cat-${catId}`}
                             type="button"
                             onClick={() =>
-                              setFormData({
-                                ...formData,
-                                projectCategory: catId,
-                              })
+                              setFormData({ ...formData, projectCategory: catId })
                             }
-                            className={`flex-1 flex items-center justify-center p-2.5 border-2 rounded-xl transition-all font-bold  text-[12px] tracking-widest ${
+                            className={`flex-1 py-2.5 px-3 rounded-xl border text-[12px] font-bold tracking-wider transition-all ${
                               formData.projectCategory === catId
-                                ? "border-primary bg-primary/5 text-primary shadow-sm"
-                                : "border-slate-100 text-slate-400 hover:border-slate-200"
+                                ? "bg-indigo-50 text-indigo-700 border-indigo-200 shadow-sm"
+                                : "bg-white border-slate-200 text-slate-400 hover:border-slate-300 hover:bg-slate-50"
                             }`}
                           >
                             {CATEGORY_MAP[catId]}
@@ -1935,74 +1839,14 @@ const ClientList = ({
                       </div>
                     </div>
 
-                    <div className="space-y-1.5">
-                      <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                        PROJECT PRIORITY
-                      </label>
-                      <div className="relative">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setIsPriorityDropdownOpen(!isPriorityDropdownOpen)
-                          }
-                          className="w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium hover:border-secondary transition-all"
-                        >
-                          <span className="text-primary">
-                            {formData.projectPriority}
-                          </span>
-                          <ChevronDown
-                            size={16}
-                            className={`text-slate-400 transition-transform ${isPriorityDropdownOpen ? "rotate-180" : ""}`}
-                          />
-                        </button>
-
-                        {isPriorityDropdownOpen && (
-                          <>
-                            <div
-                              className="fixed inset-0 z-[80]"
-                              onClick={() => setIsPriorityDropdownOpen(false)}
-                            />
-                            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top">
-                              <div className="bg-[#18254D] px-4 py-3 border-b border-white/10">
-                                <p className="text-[14px] font-bold text-white/50  tracking-widest">
-                                  Select Priority
-                                </p>
-                              </div>
-                              {["High", "Medium", "Low"].map((level) => (
-                                <button
-                                  key={level}
-                                  type="button"
-                                  onClick={() => {
-                                    setFormData({
-                                      ...formData,
-                                      projectPriority: level,
-                                    });
-                                    setIsPriorityDropdownOpen(false);
-                                  }}
-                                  className={`w-full text-left px-4 py-2.5 text-[12px] font-bold  tracking-widest transition-colors ${
-                                    formData.projectPriority === level
-                                      ? "bg-slate-100 text-secondary"
-                                      : "text-[#18254D] hover:bg-slate-50"
-                                  }`}
-                                >
-                                  {level}
-                                </button>
-                              ))}
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* PROJECT DESCRIPTION */}
-                    <div className="space-y-1.5 md:col-span-2">
-                      <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
+                    <div className="md:col-span-2 space-y-1.5">
+                      <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
                         PROJECT DESCRIPTION
                       </label>
                       <textarea
                         rows={2}
                         placeholder="Brief overview of the project scope..."
-                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-bold resize-none shadow-sm"
+                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200 resize-none"
                         value={formData.projectDescription}
                         onChange={(e) =>
                           setFormData({
@@ -2012,171 +1856,86 @@ const ClientList = ({
                         }
                       />
                     </div>
-
-                    {/* PROJECT BUDGET */}
-                    <div className="space-y-1.5 md:col-span-2">
-                      <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1 flex items-center gap-1.5">
-                        PROJECT BUDGET
-                      </label>
-                      <div className="relative">
-                        <input
-                          type="number"
-                          placeholder="e.g. 50000"
-                          className="w-full pl-8 pr-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium shadow-sm"
-                          value={formData.budget || ""}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              budget: parseInt(e.target.value) || 0,
-                            })
-                          }
-                        />
-                      </div>
-                    </div>
-
-                    {/* DATES */}
-                    <div className="space-y-1.5">
-                      <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                        ONBOARDING DATE
-                      </label>
-                      <DatePicker
-                        value={formData.onboardingDate}
-                        onChange={(val) =>
-                          setFormData({
-                            ...formData,
-                            onboardingDate: val,
-                          })
-                        }
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                        DEADLINE (TENTATIVE)
-                      </label>
-                      <DatePicker
-                        value={formData.deadline}
-                        onChange={(val) =>
-                          setFormData({
-                            ...formData,
-                            deadline: val,
-                          })
-                        }
-                      />
-                    </div>
-
-                    {/* SCOPE DOCUMENT */}
-                    <div className="space-y-1.5 md:col-span-2">
-                      <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                        SCOPE DOCUMENT
-                      </label>
-                      <div className="relative group">
-                        <input
-                          type="file"
-                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                          onChange={(e) => {
-                            const file = e.target.files[0];
-                            if (file) {
-                              setFormData({
-                                ...formData,
-                                scopeDocument: file.name,
-                              });
-                            }
-                          }}
-                        />
-                        <div className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl group-hover:border-secondary group-hover:bg-secondary/5 transition-all flex items-center gap-3 shadow-sm">
-                          <div className="p-2 bg-white border border-slate-200 rounded-lg shadow-sm">
-                            <Upload size={16} className="text-secondary" />
-                          </div>
-                          <span
-                            className={`text-sm font-bold ${formData.scopeDocument ? "text-[#18254D]" : "text-slate-400"}`}
-                          >
-                            {formData.scopeDocument ||
-                              "Click to upload scope document (PDF, DOCX)"}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
                   </div>
-                </>
+                </div>
               )}
 
               <div className="pt-2">
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full py-2.5 bg-[#18254D] text-white rounded-2xl text-[13px] font-bold  tracking-[0.25em] shadow-xl active:scale-[0.97] transition-all hover:bg-[#1e2e5e] hover:shadow-2xl flex items-center justify-center gap-3 group/btn disabled:opacity-70 disabled:cursor-not-allowed"
+                  className="w-full h-12 bg-[#18254D] text-white rounded-xl text-xs font-bold tracking-wider shadow-lg active:scale-[0.97] transition-all hover:bg-[#1e2e5e] hover:shadow-xl flex items-center justify-center gap-2 group/btn disabled:opacity-70 disabled:cursor-not-allowed btn-animated"
                 >
                   {isSubmitting ? (
                     <>
-                      <span>ADDING CLIENT...</span>
-                      <Loader2 size={18} className="animate-spin" />
+                      <span>ADDING...</span>
+                      <Loader2 size={16} className="animate-spin" />
                     </>
                   ) : (
                     <>
+                      <span>ADD {title === "Leads" ? "LEAD" : "CLIENT"}</span>
                       <UserPlus
-                        size={20}
-                        className="group-hover/btn:translate-x-1 transition-transform"
+                        size={14}
+                        strokeWidth={2.5}
+                        className="group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform"
                       />
-                      <span>ADD CLIENT</span>
                     </>
                   )}
                 </button>
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
+
       {/* Onboard Modal */}
-      {showOnboardModal && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[100] flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white w-full max-w-xl rounded-xl shadow-2xl border border-slate-200 overflow-hidden animate-fade-in my-auto flex flex-col">
-            <div className="bg-primary p-4 text-white relative">
-              <button
-                onClick={() => setShowOnboardModal(false)}
-                className="absolute top-4 right-4 p-1.5 hover:bg-white/10 rounded-xl transition-colors"
-              >
-                <X size={18} strokeWidth={3} />
-              </button>
+      {showOnboardModal && createPortal(
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[99999] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+          <div className="absolute inset-0" onClick={() => setShowOnboardModal(false)} />
+          <div className="relative z-10 bg-white w-full max-w-xl rounded-3xl shadow-2xl border border-slate-100 overflow-hidden animate-pop flex flex-col max-h-[90vh]">
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 shrink-0">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-secondary/10 rounded-xl flex items-center justify-center shadow-lg border border-secondary/20">
-                  <UserCheck
-                    size={18}
-                    className="text-secondary"
-                    strokeWidth={3}
-                  />
+                <div className="w-8 h-8 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center border border-emerald-100 shadow-sm">
+                  <UserCheck size={16} />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold tracking-tighter leading-none">
+                  <h3 className="text-base font-bold text-[#18254D] tracking-tight">
                     Convert to Client
                   </h3>
-                  <p className="text-secondary text-[14px] font-bold  tracking-widest mt-0.5">
+                  <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider mt-0.5">
                     Onboard Lead to Active Status
                   </p>
                 </div>
               </div>
+              <button
+                onClick={() => setShowOnboardModal(false)}
+                className="p-1.5 hover:bg-slate-200 rounded-xl text-slate-400 transition-all"
+              >
+                <X size={18} />
+              </button>
             </div>
 
-            <form onSubmit={handleOnboardSubmit} className="p-5 space-y-4">
+            <form onSubmit={handleOnboardSubmit} className="p-6 space-y-5 overflow-y-auto no-scrollbar">
               {/* CLIENT DETAILS HEADING */}
-              <div className="flex items-center gap-3 pt-2">
-                <div className="h-[2px] w-8 bg-secondary rounded-full" />
-                <h4 className="text-[14px] font-bold text-[#18254D]  tracking-[0.2em]">
+              <div className="flex items-center gap-2 pt-1">
+                <div className="h-[2px] w-6 bg-emerald-500 rounded-full" />
+                <h4 className="text-[11px] font-black text-[#18254D] tracking-widest uppercase">
                   Client Details
                 </h4>
                 <div className="h-[2px] flex-1 bg-slate-100 rounded-full" />
               </div>
 
               {/* CLIENT TYPE */}
-              <div className="space-y-3 pb-2">
-                <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
                   CLIENT TYPE
                 </label>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <label
                     className={`flex-1 flex items-center gap-3 p-4 bg-white border-2 rounded-xl cursor-pointer transition-all group shadow-sm ${
                       onboardingData.clientType === "New"
-                        ? "border-[#18254D]"
+                        ? "border-[#18254D] bg-slate-50/50"
                         : "border-slate-100"
                     }`}
                   >
@@ -2192,13 +1951,11 @@ const ClientList = ({
                             clientType: "New",
                           })
                         }
-                        className="peer appearance-none w-6 h-6 border-2 border-slate-200 rounded-full checked:border-[#18254D] transition-all"
+                        className="peer appearance-none w-5 h-5 border-2 border-slate-300 rounded-full checked:border-[#18254D] transition-all"
                       />
                       <div
-                        className={`absolute w-3 h-3 bg-[#18254D] rounded-full transition-transform ${
-                          onboardingData.clientType === "New"
-                            ? "scale-100"
-                            : "scale-0"
+                        className={`absolute w-2.5 h-2.5 bg-[#18254D] rounded-full transition-transform ${
+                          onboardingData.clientType === "New" ? "scale-100" : "scale-0"
                         }`}
                       />
                     </div>
@@ -2206,7 +1963,7 @@ const ClientList = ({
                       <p className="text-sm font-bold text-[#18254D] leading-none">
                         New Client
                       </p>
-                      <p className="text-[14px] text-slate-400 font-bold mt-1">
+                      <p className="text-[11px] text-slate-400 font-semibold mt-1">
                         First-time engagement
                       </p>
                     </div>
@@ -2215,7 +1972,7 @@ const ClientList = ({
                   <label
                     className={`flex-1 flex items-center gap-3 p-4 bg-white border-2 rounded-xl cursor-pointer transition-all group shadow-sm ${
                       onboardingData.clientType === "Existing Client"
-                        ? "border-[#18254D]"
+                        ? "border-[#18254D] bg-slate-50/50"
                         : "border-slate-100"
                     }`}
                   >
@@ -2224,22 +1981,18 @@ const ClientList = ({
                         type="radio"
                         name="onboardClientType"
                         value="Existing Client"
-                        checked={
-                          onboardingData.clientType === "Existing Client"
-                        }
+                        checked={onboardingData.clientType === "Existing Client"}
                         onChange={() =>
                           setOnboardingData({
                             ...onboardingData,
                             clientType: "Existing Client",
                           })
                         }
-                        className="peer appearance-none w-6 h-6 border-2 border-slate-200 rounded-full checked:border-[#18254D] transition-all"
+                        className="peer appearance-none w-5 h-5 border-2 border-slate-300 rounded-full checked:border-[#18254D] transition-all"
                       />
                       <div
-                        className={`absolute w-3 h-3 bg-[#18254D] rounded-full transition-transform ${
-                          onboardingData.clientType === "Existing Client"
-                            ? "scale-100"
-                            : "scale-0"
+                        className={`absolute w-2.5 h-2.5 bg-[#18254D] rounded-full transition-transform ${
+                          onboardingData.clientType === "Existing Client" ? "scale-100" : "scale-0"
                         }`}
                       />
                     </div>
@@ -2247,7 +2000,7 @@ const ClientList = ({
                       <p className="text-sm font-bold text-[#18254D] leading-none">
                         Existing Client
                       </p>
-                      <p className="text-[14px] text-slate-400 font-bold mt-1">
+                      <p className="text-[11px] text-slate-400 font-semibold mt-1">
                         Returning or Converted
                       </p>
                     </div>
@@ -2255,112 +2008,86 @@ const ClientList = ({
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <div className="space-y-2 relative">
-                  <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                    CLIENT NAME
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1.5 relative">
+                  <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
+                    CLIENT NAME <span className="text-rose-500">*</span>
                   </label>
                   <div className="relative">
                     {onboardingData.clientType === "Existing Client" ? (
                       <div className="relative">
-                        <div
-                          className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-100 rounded-2xl focus-within:ring-4 focus-within:ring-secondary/10 focus-within:border-secondary transition-all cursor-pointer flex items-center justify-between shadow-sm shadow-slate-200/50 group"
-                          onClick={() =>
-                            setIsClientDropdownOpen(!isClientDropdownOpen)
-                          }
+                        <button
+                          type="button"
+                          className="w-full h-10 flex items-center justify-between px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold shadow-sm hover:border-[#18254D]/30 transition-all text-[#18254D]"
+                          onClick={() => setIsClientDropdownOpen(!isClientDropdownOpen)}
                         >
-                          <span
-                            className={`text-sm font-bold  tracking-tight ${onboardingData.name ? "text-primary" : "text-slate-400"}`}
-                          >
+                          <span className={`truncate ${onboardingData.name ? "text-[#18254D]" : "text-slate-400"}`}>
                             {onboardingData.name || "Select an existing client"}
                           </span>
                           <ChevronDown
                             size={16}
-                            strokeWidth={3}
-                            className={`text-slate-400 transition-transform duration-300 ${isClientDropdownOpen ? "rotate-180" : ""}`}
+                            className={`text-slate-400 transition-transform duration-200 ${isClientDropdownOpen ? "rotate-180" : ""}`}
                           />
-                        </div>
+                        </button>
 
                         {isClientDropdownOpen && (
-                          <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-2xl shadow-2xl z-[110] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-                            <div className="p-3 border-b border-slate-100 bg-slate-50/50">
-                              <div className="relative">
-                                <Search
-                                  size={14}
-                                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-                                />
-                                <input
-                                  type="text"
-                                  placeholder="Search by name..."
-                                  className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary"
-                                  value={clientSearchQuery}
-                                  onChange={(e) =>
-                                    setClientSearchQuery(e.target.value)
-                                  }
-                                  onClick={(e) => e.stopPropagation()}
-                                  autoFocus
-                                />
+                          <>
+                            <div className="fixed inset-0 z-[80]" onClick={() => setIsClientDropdownOpen(false)} />
+                            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-pop origin-top">
+                              <div className="p-3 border-b border-slate-100 bg-slate-50/50">
+                                <div className="relative">
+                                  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                                  <input
+                                    type="text"
+                                    placeholder="Search by name..."
+                                    className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#18254D]/20 focus:border-[#18254D]/30"
+                                    value={clientSearchQuery}
+                                    onChange={(e) => setClientSearchQuery(e.target.value)}
+                                    onClick={(e) => e.stopPropagation()}
+                                    autoFocus
+                                  />
+                                </div>
+                              </div>
+                              <div className="max-h-[200px] overflow-y-auto p-1.5 custom-scrollbar">
+                                {allClients
+                                  .filter((c) => c.status === "Active" && c.name.toLowerCase().includes(clientSearchQuery.toLowerCase()))
+                                  .map((client) => (
+                                    <button
+                                      key={client.id}
+                                      type="button"
+                                      className="w-full text-left px-3 py-2 hover:bg-slate-50 rounded-xl cursor-pointer group transition-colors flex flex-col gap-0.5"
+                                      onClick={() => {
+                                        setOnboardingData({
+                                          ...onboardingData,
+                                          name: client.name,
+                                          email: client.email,
+                                          phone: client.phone,
+                                          existingClientId: client.id,
+                                        });
+                                        setIsClientDropdownOpen(false);
+                                        setClientSearchQuery("");
+                                      }}
+                                    >
+                                      <span className="text-sm font-bold text-[#18254D]">{client.name}</span>
+                                      <span className="text-[11px] text-slate-400 font-semibold">{client.company || client.email}</span>
+                                    </button>
+                                  ))}
+                                {allClients.filter((c) => c.status !== "Lead" && c.name.toLowerCase().includes(clientSearchQuery.toLowerCase())).length === 0 && (
+                                  <div className="p-4 text-center">
+                                    <p className="text-[11px] font-bold text-slate-400">No clients found</p>
+                                  </div>
+                                )}
                               </div>
                             </div>
-                            <div className="max-h-[200px] overflow-y-auto p-2">
-                              {allClients
-                                .filter(
-                                  (c) =>
-                                    c.status === "Active" &&
-                                    c.name
-                                      .toLowerCase()
-                                      .includes(
-                                        clientSearchQuery.toLowerCase(),
-                                      ),
-                                )
-                                .map((client) => (
-                                  <div
-                                    key={client.id}
-                                    className="px-4 py-3 hover:bg-slate-50 rounded-xl cursor-pointer group transition-colors"
-                                    onClick={() => {
-                                      setOnboardingData({
-                                        ...onboardingData,
-                                        name: client.name,
-                                        email: client.email,
-                                        phone: client.phone,
-                                        existingClientId: client.id,
-                                      });
-                                      setIsClientDropdownOpen(false);
-                                      setClientSearchQuery("");
-                                    }}
-                                  >
-                                    <p className="text-sm font-bold text-[#18254D] group-hover:text-secondary transition-colors">
-                                      {client.name}
-                                    </p>
-                                    <p className="text-[12px] text-slate-400 font-bold mt-0.5">
-                                      {client.company || client.email}
-                                    </p>
-                                  </div>
-                                ))}
-                              {allClients.filter(
-                                (c) =>
-                                  c.status !== "Lead" &&
-                                  c.name
-                                    .toLowerCase()
-                                    .includes(clientSearchQuery.toLowerCase()),
-                              ).length === 0 && (
-                                <div className="p-6 text-center">
-                                  <p className="text-xs font-bold text-slate-400">
-                                    No clients found matching "
-                                    {clientSearchQuery}"
-                                  </p>
-                                </div>
-                              )}
-                            </div>
-                          </div>
+                          </>
                         )}
                       </div>
                     ) : (
                       <input
                         required
                         type="text"
-                        placeholder="e.g. Anand Kumar"
-                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
+                        placeholder="e.g. John Doe"
+                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200"
                         value={onboardingData.name}
                         onChange={(e) =>
                           setOnboardingData({
@@ -2373,15 +2100,15 @@ const ClientList = ({
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                    EMAIL ID
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
+                    EMAIL ID <span className="text-rose-500">*</span>
                   </label>
                   <input
                     required
                     type="email"
-                    placeholder="e.g. anand.kumar@fintech.in"
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
+                    placeholder="e.g. john@gmail.com"
+                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200"
                     value={onboardingData.email}
                     onChange={(e) =>
                       setOnboardingData({
@@ -2392,15 +2119,15 @@ const ClientList = ({
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                    PHONE NUMBER
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
+                    PHONE NUMBER <span className="text-rose-500">*</span>
                   </label>
                   <input
                     required
                     type="tel"
-                    placeholder="+91 98765 43210"
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
+                    placeholder="e.g. 9876543210"
+                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200"
                     value={onboardingData.phone}
                     onChange={(e) =>
                       setOnboardingData({
@@ -2411,14 +2138,15 @@ const ClientList = ({
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1 uppercase">
-                    ORGANISATION NAME
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
+                    ORGANISATION NAME <span className="text-rose-500">*</span>
                   </label>
                   <input
+                    required
                     type="text"
                     placeholder="e.g. Acme Corp"
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
+                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200"
                     value={onboardingData.organisationName}
                     onChange={(e) =>
                       setOnboardingData({
@@ -2463,14 +2191,14 @@ const ClientList = ({
                     placeholder="Select State"
                   />
                 ) : (
-                  <div className="space-y-2">
-                    <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1 uppercase">
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
                       CLIENT STATE
                     </label>
                     <input
                       type="text"
                       placeholder="e.g. State/Province"
-                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
+                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200"
                       value={onboardingData.state}
                       onChange={(e) =>
                         setOnboardingData({
@@ -2495,46 +2223,65 @@ const ClientList = ({
                   placeholder="Select Currency"
                 />
 
-                <div className="space-y-2">
-                  <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1 uppercase">
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
                     CLIENT STATUS
                   </label>
-                  <select
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
-                    value={onboardingData.clientStatus}
-                    onChange={(e) =>
-                      setOnboardingData({
-                        ...onboardingData,
-                        clientStatus: e.target.value,
-                      })
-                    }
-                  >
-                    <option value="Active">Active</option>
-                    <option value="Inactive">Inactive</option>
-                    <option value="Dismissed">Dismissed</option>
-                  </select>
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
+                      className="w-full h-10 flex items-center justify-between px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold shadow-sm hover:border-[#18254D]/30 transition-all text-[#18254D]"
+                    >
+                      <span>{onboardingData.clientStatus || "Active"}</span>
+                      <ChevronDown size={16} className={`text-slate-400 transition-transform duration-200 ${isStatusDropdownOpen ? "rotate-180" : ""}`} />
+                    </button>
+                    {isStatusDropdownOpen && (
+                      <>
+                        <div className="fixed inset-0 z-[80]" onClick={() => setIsStatusDropdownOpen(false)} />
+                        <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-pop origin-top">
+                          <div className="bg-[#18254D] px-4 py-2.5 border-b border-white/10">
+                            <p className="text-[10px] font-bold text-white/50 tracking-wider uppercase">Select Status</p>
+                          </div>
+                          {["Active", "Inactive", "Dismissed"].map((status) => (
+                            <button
+                              key={status}
+                              type="button"
+                              onClick={() => {
+                                setOnboardingData({ ...onboardingData, clientStatus: status });
+                                setIsStatusDropdownOpen(false);
+                              }}
+                              className={`w-full text-left px-4 py-2.5 text-xs font-semibold tracking-wider transition-colors ${onboardingData.clientStatus === status ? "bg-slate-100 text-[#18254D]" : "text-[#18254D] hover:bg-slate-50"}`}
+                            >
+                              {status}
+                            </button>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
 
               {/* PROJECT DETAILS HEADING */}
-              <div className="flex items-center gap-3 pt-6">
-                <div className="h-[2px] w-8 bg-secondary rounded-full" />
-                <h4 className="text-[14px] font-bold text-[#18254D]  tracking-[0.2em]">
+              <div className="flex items-center gap-2 pt-2">
+                <div className="h-[2px] w-6 bg-emerald-500 rounded-full" />
+                <h4 className="text-[11px] font-black text-[#18254D] tracking-widest uppercase">
                   Project Details
                 </h4>
                 <div className="h-[2px] flex-1 bg-slate-100 rounded-full" />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <div className="space-y-2">
-                  <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                    PROJECT NAME
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
+                    PROJECT NAME <span className="text-rose-500">*</span>
                   </label>
                   <input
                     required
                     type="text"
                     placeholder="e.g. Website Redesign"
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
+                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200"
                     value={onboardingData.projectName}
                     onChange={(e) =>
                       setOnboardingData({
@@ -2545,60 +2292,35 @@ const ClientList = ({
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
                     PROJECT STATUS
                   </label>
                   <div className="relative">
                     <button
                       type="button"
-                      onClick={() =>
-                        setIsOnboardStatusDropdownOpen(
-                          !isOnboardStatusDropdownOpen,
-                        )
-                      }
-                      className="w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium shadow-sm hover:border-secondary transition-all"
+                      onClick={() => setIsOnboardStatusDropdownOpen(!isOnboardStatusDropdownOpen)}
+                      className="w-full h-10 flex items-center justify-between px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold shadow-sm hover:border-[#18254D]/30 transition-all text-[#18254D]"
                     >
-                      <span className="text-primary">
-                        {onboardingData.projectStatus}
-                      </span>
-                      <ChevronDown
-                        size={16}
-                        className={`text-slate-400 transition-transform ${isOnboardStatusDropdownOpen ? "rotate-180" : ""}`}
-                      />
+                      <span>{onboardingData.projectStatus}</span>
+                      <ChevronDown size={16} className={`text-slate-400 transition-transform duration-200 ${isOnboardStatusDropdownOpen ? "rotate-180" : ""}`} />
                     </button>
-
                     {isOnboardStatusDropdownOpen && (
                       <>
-                        <div
-                          className="fixed inset-0 z-[80]"
-                          onClick={() => setIsOnboardStatusDropdownOpen(false)}
-                        />
-                        <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top">
-                          <div className="bg-[#18254D] px-4 py-3 border-b border-white/10">
-                            <p className="text-[14px] font-bold text-white/50  tracking-widest">
-                              Select Status
-                            </p>
+                        <div className="fixed inset-0 z-[80]" onClick={() => setIsOnboardStatusDropdownOpen(false)} />
+                        <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-pop origin-top">
+                          <div className="bg-[#18254D] px-4 py-2.5 border-b border-white/10">
+                            <p className="text-[10px] font-bold text-white/50 tracking-wider uppercase">Select Status</p>
                           </div>
-                          {(onboardingData.projectCategory === 1
-                            ? ["Planning", "In Progress", "Testing", "Live"]
-                            : ["Planning", "In Progress", "Completed"]
-                          ).map((status) => (
+                          {(onboardingData.projectCategory === 1 ? ["Planning", "In Progress", "Testing", "Live"] : ["Planning", "In Progress", "Completed"]).map((status) => (
                             <button
                               key={status}
                               type="button"
                               onClick={() => {
-                                setOnboardingData({
-                                  ...onboardingData,
-                                  projectStatus: status,
-                                });
+                                setOnboardingData({ ...onboardingData, projectStatus: status });
                                 setIsOnboardStatusDropdownOpen(false);
                               }}
-                              className={`w-full text-left px-4 py-2.5 text-[12px] font-bold  tracking-widest transition-colors ${
-                                onboardingData.projectStatus === status
-                                  ? "bg-slate-100 text-secondary"
-                                  : "text-[#18254D] hover:bg-slate-50"
-                              }`}
+                              className={`w-full text-left px-4 py-2.5 text-xs font-semibold tracking-wider transition-colors ${onboardingData.projectStatus === status ? "bg-slate-100 text-[#18254D]" : "text-[#18254D] hover:bg-slate-50"}`}
                             >
                               {status}
                             </button>
@@ -2609,25 +2331,22 @@ const ClientList = ({
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                    LEAD CATEGORY
+                <div className="md:col-span-2 space-y-1.5">
+                  <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
+                    PROJECT CATEGORY
                   </label>
                   <div className="flex gap-2">
                     {[1, 2, 3].map((catId) => (
                       <button
-                        key={catId}
+                        key={`cat-${catId}`}
                         type="button"
                         onClick={() =>
-                          setOnboardingData({
-                            ...onboardingData,
-                            projectCategory: catId,
-                          })
+                          setOnboardingData({ ...onboardingData, projectCategory: catId })
                         }
-                        className={`flex-1 flex items-center justify-center p-3 border-2 rounded-xl transition-all font-bold  text-[12px] tracking-widest ${
+                        className={`flex-1 py-2.5 px-3 rounded-xl border text-[12px] font-bold tracking-wider transition-all ${
                           onboardingData.projectCategory === catId
-                            ? "border-primary bg-primary/5 text-primary shadow-sm"
-                            : "border-slate-100 text-slate-400 hover:border-slate-200"
+                            ? "bg-indigo-50 text-indigo-700 border-indigo-200 shadow-sm"
+                            : "bg-white border-slate-200 text-slate-400 hover:border-slate-300 hover:bg-slate-50"
                         }`}
                       >
                         {CATEGORY_MAP[catId]}
@@ -2636,59 +2355,35 @@ const ClientList = ({
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
                     PROJECT PRIORITY
                   </label>
                   <div className="relative">
                     <button
                       type="button"
-                      onClick={() =>
-                        setIsOnboardPriorityDropdownOpen(
-                          !isOnboardPriorityDropdownOpen,
-                        )
-                      }
-                      className="w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium shadow-sm hover:border-secondary transition-all"
+                      onClick={() => setIsOnboardPriorityDropdownOpen(!isOnboardPriorityDropdownOpen)}
+                      className="w-full h-10 flex items-center justify-between px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold shadow-sm hover:border-[#18254D]/30 transition-all text-[#18254D]"
                     >
-                      <span className="text-primary">
-                        {onboardingData.projectPriority}
-                      </span>
-                      <ChevronDown
-                        size={16}
-                        className={`text-slate-400 transition-transform ${isOnboardPriorityDropdownOpen ? "rotate-180" : ""}`}
-                      />
+                      <span>{onboardingData.projectPriority}</span>
+                      <ChevronDown size={16} className={`text-slate-400 transition-transform duration-200 ${isOnboardPriorityDropdownOpen ? "rotate-180" : ""}`} />
                     </button>
-
                     {isOnboardPriorityDropdownOpen && (
                       <>
-                        <div
-                          className="fixed inset-0 z-[80]"
-                          onClick={() =>
-                            setIsOnboardPriorityDropdownOpen(false)
-                          }
-                        />
-                        <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top">
-                          <div className="bg-[#18254D] px-4 py-3 border-b border-white/10">
-                            <p className="text-[14px] font-bold text-white/50  tracking-widest">
-                              Select Priority
-                            </p>
+                        <div className="fixed inset-0 z-[80]" onClick={() => setIsOnboardPriorityDropdownOpen(false)} />
+                        <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-pop origin-top">
+                          <div className="bg-[#18254D] px-4 py-2.5 border-b border-white/10">
+                            <p className="text-[10px] font-bold text-white/50 tracking-wider uppercase">Select Priority</p>
                           </div>
                           {["High", "Medium", "Low"].map((level) => (
                             <button
                               key={level}
                               type="button"
                               onClick={() => {
-                                setOnboardingData({
-                                  ...onboardingData,
-                                  projectPriority: level,
-                                });
+                                setOnboardingData({ ...onboardingData, projectPriority: level });
                                 setIsOnboardPriorityDropdownOpen(false);
                               }}
-                              className={`w-full text-left px-4 py-2.5 text-[12px] font-bold  tracking-widest transition-colors ${
-                                onboardingData.projectPriority === level
-                                  ? "bg-slate-100 text-secondary"
-                                  : "text-[#18254D] hover:bg-slate-50"
-                              }`}
+                              className={`w-full text-left px-4 py-2.5 text-xs font-semibold tracking-wider transition-colors ${onboardingData.projectPriority === level ? "bg-slate-100 text-[#18254D]" : "text-[#18254D] hover:bg-slate-50"}`}
                             >
                               {level}
                             </button>
@@ -2699,14 +2394,38 @@ const ClientList = ({
                   </div>
                 </div>
 
-                <div className="space-y-2 md:col-span-2">
-                  <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
+                    PROJECT BUDGET <span className="text-rose-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">
+                      {commonCurrencies.find((c) => c.code === onboardingData.currency)?.symbol || "₹"}
+                    </span>
+                    <input
+                      required
+                      type="text"
+                      placeholder="e.g. 50000"
+                      className="w-full pl-8 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-[#18254D]/5 focus:border-[#18254D]/30 focus:outline-none text-sm font-semibold text-[#18254D]"
+                      value={formatBudget(onboardingData.projectBudget, onboardingData.currency)}
+                      onChange={(e) =>
+                        setOnboardingData({
+                          ...onboardingData,
+                          projectBudget: parseBudget(e.target.value),
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+
+                <div className="md:col-span-2 space-y-1.5">
+                  <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
                     PROJECT DESCRIPTION
                   </label>
                   <textarea
                     rows={2}
                     placeholder="Brief overview of the project scope..."
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-bold shadow-sm resize-none"
+                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200 resize-none"
                     value={onboardingData.projectDescription}
                     onChange={(e) =>
                       setOnboardingData({
@@ -2717,62 +2436,38 @@ const ClientList = ({
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  <div className="space-y-2">
-                    <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                      PROJECT BUDGET
-                    </label>
-                    <div className="relative">
-                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">
-                        {commonCurrencies.find((c) => c.code === onboardingData.currency)?.symbol || "₹"}
-                      </span>
-                      <input
-                        type="text"
-                        placeholder="Project Budget"
-                        className="w-full pl-10 pr-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
-                        value={formatBudget(onboardingData.projectBudget, onboardingData.currency)}
-                        onChange={(e) =>
-                          setOnboardingData({
-                            ...onboardingData,
-                            projectBudget: parseBudget(e.target.value),
-                          })
-                        }
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                      ONBOARDING DATE
-                    </label>
-                    <DatePicker
-                      value={onboardingData.onboardingDate}
-                      onChange={(val) =>
-                        setOnboardingData({
-                          ...onboardingData,
-                          onboardingDate: val,
-                        })
-                      }
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                      DEADLINE (TENTATIVE)
-                    </label>
-                    <DatePicker
-                      value={onboardingData.deadline}
-                      onChange={(val) =>
-                        setOnboardingData({
-                          ...onboardingData,
-                          deadline: val,
-                        })
-                      }
-                    />
-                  </div>
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
+                    ONBOARDING DATE
+                  </label>
+                  <DatePicker
+                    value={onboardingData.onboardingDate}
+                    onChange={(val) =>
+                      setOnboardingData({
+                        ...onboardingData,
+                        onboardingDate: val,
+                      })
+                    }
+                  />
                 </div>
 
-                <div className="space-y-2 md:col-span-2">
-                  <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
+                    DEADLINE (TENTATIVE)
+                  </label>
+                  <DatePicker
+                    value={onboardingData.deadline}
+                    onChange={(val) =>
+                      setOnboardingData({
+                        ...onboardingData,
+                        deadline: val,
+                      })
+                    }
+                  />
+                </div>
+
+                <div className="md:col-span-2 space-y-1.5">
+                  <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
                     SCOPE DOCUMENT
                   </label>
                   <div className="relative group">
@@ -2789,15 +2484,12 @@ const ClientList = ({
                         }
                       }}
                     />
-                    <div className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl group-hover:border-secondary group-hover:bg-secondary/5 transition-all flex items-center gap-3 shadow-sm">
-                      <div className="p-2 bg-white border border-slate-200 rounded-lg shadow-sm">
-                        <Upload size={16} className="text-secondary" />
+                    <div className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl group-hover:border-emerald-300 transition-all flex items-center gap-3 shadow-sm">
+                      <div className="p-1.5 bg-white border border-slate-200 rounded-lg shadow-sm">
+                        <Upload size={16} className="text-emerald-500" />
                       </div>
-                      <span
-                        className={`text-sm font-bold ${onboardingData.scopeDocument ? "text-[#18254D]" : "text-slate-400"}`}
-                      >
-                        {onboardingData.scopeDocument ||
-                          "Click to upload scope document (PDF, DOCX)"}
+                      <span className={`text-sm font-semibold truncate ${onboardingData.scopeDocument ? "text-[#18254D]" : "text-slate-400"}`}>
+                        {onboardingData.scopeDocument || "Click to upload scope document (PDF, DOCX)"}
                       </span>
                     </div>
                   </div>
@@ -2808,69 +2500,67 @@ const ClientList = ({
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full py-3 bg-[#18254D] text-white rounded-2xl text-[13px] font-bold  tracking-[0.25em] shadow-xl active:scale-[0.97] transition-all hover:bg-[#1e2e5e] hover:shadow-2xl flex items-center justify-center gap-3 group/btn disabled:opacity-70 disabled:cursor-not-allowed"
+                  className="w-full h-12 bg-[#18254D] text-white rounded-xl text-xs font-bold tracking-wider shadow-lg active:scale-[0.97] transition-all hover:bg-[#1e2e5e] hover:shadow-xl flex items-center justify-center gap-2 group/btn disabled:opacity-70 disabled:cursor-not-allowed btn-animated"
                 >
                   {isSubmitting ? (
                     <>
                       <span>CONVERTING...</span>
-                      <Loader2 size={20} className="animate-spin" />
+                      <Loader2 size={16} className="animate-spin" />
                     </>
                   ) : (
                     <>
-                      <UserCheck
-                        size={20}
-                        className="group-hover/btn:translate-x-1 transition-transform"
-                      />
                       <span>CONVERT TO CLIENT</span>
+                      <UserCheck
+                        size={14}
+                        strokeWidth={2.5}
+                        className="group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform"
+                      />
                     </>
                   )}
                 </button>
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Edit Client Modal */}
-      {showEditModal &&
-        createPortal(
-          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xl z-[100] flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white w-full max-w-xl rounded-xl shadow-2xl border border-slate-200 animate-fade-in my-auto flex flex-col">
-            <div className="bg-primary p-4 text-white relative rounded-t-xl">
-              <button
-                onClick={() => setShowEditModal(false)}
-                className="absolute top-4 right-4 p-1.5 hover:bg-white/10 rounded-xl transition-colors"
-              >
-                <X size={18} strokeWidth={3} />
-              </button>
+      {showEditModal && createPortal(
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[99999] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+          <div className="absolute inset-0" onClick={() => setShowEditModal(false)} />
+          <div className="relative z-10 bg-white w-full max-w-xl rounded-3xl shadow-2xl border border-slate-100 overflow-hidden animate-pop flex flex-col max-h-[90vh]">
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 shrink-0">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-secondary/10 rounded-xl flex items-center justify-center shadow-lg border border-secondary/20">
-                  <Pencil
-                    size={18}
-                    className="text-secondary"
-                    strokeWidth={3}
-                  />
+                <div className="w-8 h-8 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center border border-blue-100 shadow-sm">
+                  <Pencil size={16} />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold tracking-tighter leading-none">
+                  <h3 className="text-base font-bold text-[#18254D] tracking-tight">
                     Edit Client Information
                   </h3>
-                  <p className="text-secondary text-[14px] font-bold  tracking-widest mt-0.5 uppercase">
+                  <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider mt-0.5">
                     Update client data
                   </p>
                 </div>
               </div>
+              <button
+                onClick={() => setShowEditModal(false)}
+                className="p-1.5 hover:bg-slate-200 rounded-xl text-slate-400 transition-all"
+              >
+                <X size={18} />
+              </button>
             </div>
 
-            <form onSubmit={handleEditSubmit} className="p-4 md:p-5 space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <div className="space-y-1.5">
-                  <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1 uppercase">
-                    ORGANISATION NAME
+            <form onSubmit={handleEditSubmit} className="p-6 space-y-5 overflow-y-auto no-scrollbar">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1.5 md:col-span-2">
+                  <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
+                    ORGANISATION NAME <span className="text-rose-500">*</span>
                   </label>
                   <input
                     type="text"
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
+                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200"
                     placeholder="Enter Organisation Name"
                     value={editFormData.organisationName}
                     onChange={(e) =>
@@ -2881,13 +2571,14 @@ const ClientList = ({
                     }
                   />
                 </div>
+
                 <div className="space-y-1.5">
-                  <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1 uppercase">
-                    CLIENT NAME
+                  <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
+                    CLIENT NAME <span className="text-rose-500">*</span>
                   </label>
                   <input
                     type="text"
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
+                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200"
                     placeholder="Enter Client Name"
                     value={editFormData.name}
                     onChange={(e) =>
@@ -2898,6 +2589,7 @@ const ClientList = ({
                     }
                   />
                 </div>
+
                 <SearchableDropdown
                   label="CLIENT COUNTRY"
                   options={countries.map((c) => ({
@@ -2935,13 +2627,13 @@ const ClientList = ({
                     placeholder="Select State"
                   />
                 ) : (
-                  <div className="space-y-2">
-                    <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1 uppercase">
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
                       CLIENT STATE
                     </label>
                     <input
                       type="text"
-                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
+                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200"
                       placeholder="e.g. State/Province"
                       value={editFormData.state}
                       onChange={(e) =>
@@ -2953,6 +2645,7 @@ const ClientList = ({
                     />
                   </div>
                 )}
+
                 <SearchableDropdown
                   label="CLIENT CURRENCY"
                   options={commonCurrencies.map((c) => ({
@@ -2968,24 +2661,21 @@ const ClientList = ({
                   }
                   placeholder="Select Currency"
                 />
-                <div className="space-y-2">
-                  <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1 uppercase">
+
+                <div className="space-y-1.5 md:col-span-2">
+                  <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
                     CLIENT STATUS
                   </label>
                   <div className="relative">
                     <button
                       type="button"
-                      onClick={() =>
-                        setIsEditStatusDropdownOpen(!isEditStatusDropdownOpen)
-                      }
-                      className="w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium shadow-sm hover:border-secondary transition-all"
+                      onClick={() => setIsEditStatusDropdownOpen(!isEditStatusDropdownOpen)}
+                      className="w-full h-10 flex items-center justify-between px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold shadow-sm hover:border-[#18254D]/30 transition-all text-[#18254D]"
                     >
-                      <span className="text-primary truncate">
-                        {editFormData.clientStatus || "Select Status"}
-                      </span>
+                      <span className="truncate">{editFormData.clientStatus || "Select Status"}</span>
                       <ChevronDown
                         size={16}
-                        className={`text-slate-400 transition-transform ${
+                        className={`text-slate-400 transition-transform duration-200 ${
                           isEditStatusDropdownOpen ? "rotate-180" : ""
                         }`}
                       />
@@ -2997,9 +2687,9 @@ const ClientList = ({
                           className="fixed inset-0 z-[110]"
                           onClick={() => setIsEditStatusDropdownOpen(false)}
                         />
-                        <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[120] animate-fade-in-up origin-top">
-                          <div className="bg-[#18254D] px-4 py-3 border-b border-white/10">
-                            <p className="text-[14px] font-medium text-white/50  tracking-widest">
+                        <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[120] animate-pop origin-top">
+                          <div className="bg-[#18254D] px-4 py-2.5 border-b border-white/10">
+                            <p className="text-[10px] font-bold text-white/50 tracking-wider uppercase">
                               Select Status
                             </p>
                           </div>
@@ -3015,9 +2705,9 @@ const ClientList = ({
                                   });
                                   setIsEditStatusDropdownOpen(false);
                                 }}
-                                className={`w-full text-left px-4 py-3 text-[12px] font-medium  tracking-widest transition-colors ${
+                                className={`w-full text-left px-4 py-2.5 text-xs font-semibold tracking-wider transition-colors ${
                                   editFormData.clientStatus === status
-                                    ? "bg-slate-100 text-secondary"
+                                    ? "bg-slate-100 text-[#18254D]"
                                     : "text-[#18254D] hover:bg-slate-50"
                                 }`}
                               >
@@ -3032,25 +2722,25 @@ const ClientList = ({
                 </div>
               </div>
 
-
               <div className="pt-2">
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full py-3 bg-[#18254D] text-white rounded-2xl text-[13px] font-bold  tracking-[0.25em] shadow-xl active:scale-[0.97] transition-all hover:bg-[#1e2e5e] hover:shadow-2xl flex items-center justify-center gap-3 group/btn disabled:opacity-70 disabled:cursor-not-allowed"
+                  className="w-full h-12 bg-[#18254D] text-white rounded-xl text-xs font-bold tracking-wider shadow-lg active:scale-[0.97] transition-all hover:bg-[#1e2e5e] hover:shadow-xl flex items-center justify-center gap-2 group/btn disabled:opacity-70 disabled:cursor-not-allowed btn-animated"
                 >
                   {isSubmitting ? (
                     <>
                       <span>SAVING CHANGES...</span>
-                      <Loader2 size={20} className="animate-spin" />
+                      <Loader2 size={16} className="animate-spin" />
                     </>
                   ) : (
                     <>
-                      <Pencil
-                        size={20}
-                        className="group-hover/btn:rotate-12 transition-transform"
-                      />
                       <span>UPDATE CLIENT</span>
+                      <Pencil
+                        size={14}
+                        strokeWidth={2.5}
+                        className="group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform"
+                      />
                     </>
                   )}
                 </button>
@@ -3058,37 +2748,34 @@ const ClientList = ({
             </form>
           </div>
         </div>,
-          document.body
-        )}
+        document.body
+      )}
 
       {/* Follow Up Modal */}
-      {showFollowUpModal && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[100] flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white w-full max-w-xl rounded-xl shadow-2xl border border-slate-200 overflow-hidden animate-fade-in my-auto flex flex-col">
-            <div className="bg-primary p-4 text-white relative">
-              <button
-                onClick={() => setShowFollowUpModal(false)}
-                className="absolute top-4 right-4 p-1.5 hover:bg-white/10 rounded-xl transition-colors"
-              >
-                <X size={18} strokeWidth={3} />
-              </button>
+      {showFollowUpModal && createPortal(
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[99999] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+          <div className="absolute inset-0" onClick={() => setShowFollowUpModal(false)} />
+          <div className="relative z-10 bg-white w-full max-w-xl rounded-3xl shadow-2xl border border-slate-100 overflow-hidden animate-pop flex flex-col max-h-[90vh]">
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 shrink-0">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-indigo-400/20 rounded-xl flex items-center justify-center shadow-lg border border-indigo-400/30">
-                  <MessageSquare
-                    size={18}
-                    className="text-indigo-300"
-                    strokeWidth={2.5}
-                  />
+                <div className="w-8 h-8 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center border border-indigo-100 shadow-sm">
+                  <MessageSquare size={16} />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold tracking-tighter leading-none">
+                  <h3 className="text-base font-bold text-[#18254D] tracking-tight">
                     Follow Up
                   </h3>
-                  <p className="text-slate-400 text-[14px] font-bold  tracking-widest mt-0.5">
+                  <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider mt-0.5">
                     {followUpLeadName}
                   </p>
                 </div>
               </div>
+              <button
+                onClick={() => setShowFollowUpModal(false)}
+                className="p-1.5 hover:bg-slate-200 rounded-xl text-slate-400 transition-all"
+              >
+                <X size={18} />
+              </button>
             </div>
 
             <form
@@ -3113,12 +2800,12 @@ const ClientList = ({
                   }
                 }
               }}
-              className="p-5 space-y-4"
+              className="p-6 space-y-5 overflow-y-auto no-scrollbar"
             >
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2">
-                  <label className="text-[12px] font-bold text-primary  tracking-widest ml-1">
-                    Date
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
+                    DATE
                   </label>
                   <DatePicker
                     value={followUpData.date}
@@ -3130,30 +2817,28 @@ const ClientList = ({
                     }
                   />
                 </div>
-                <div className="space-y-2">
-                  <label className="text-[12px] font-bold text-primary  tracking-widest ml-1">
-                    Time
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
+                    TIME
                   </label>
-                  <div className="relative">
-                    <input
-                      required
-                      type="time"
-                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 focus:outline-none text-sm font-medium"
-                      value={followUpData.time}
-                      onChange={(e) =>
-                        setFollowUpData({
-                          ...followUpData,
-                          time: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
+                  <input
+                    required
+                    type="time"
+                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200"
+                    value={followUpData.time}
+                    onChange={(e) =>
+                      setFollowUpData({
+                        ...followUpData,
+                        time: e.target.value,
+                      })
+                    }
+                  />
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-[12px] font-bold text-primary  tracking-widest ml-1">
-                  Interaction Type
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
+                  INTERACTION TYPE
                 </label>
                 <div className="grid grid-cols-3 gap-2">
                   {["Call", "Email", "Meeting"].map((type) => (
@@ -3166,10 +2851,10 @@ const ClientList = ({
                           type: type,
                         })
                       }
-                      className={`py-2.5 px-3 rounded-xl border text-[12px] font-bold  tracking-widest transition-all ${
+                      className={`py-2.5 px-3 rounded-xl border text-[12px] font-bold tracking-wider transition-all ${
                         followUpData.type === type
-                          ? "bg-indigo-500 border-indigo-500 text-white shadow-md shadow-indigo-200"
-                          : "bg-white border-slate-100 text-slate-400 hover:border-slate-300"
+                          ? "bg-indigo-50 text-indigo-700 border-indigo-200 shadow-sm"
+                          : "bg-white border-slate-200 text-slate-400 hover:border-slate-300 hover:bg-slate-50"
                       }`}
                     >
                       {type}
@@ -3178,14 +2863,14 @@ const ClientList = ({
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-[12px] font-bold text-primary  tracking-widest ml-1">
-                  Follow Up Message
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
+                  FOLLOW UP MESSAGE
                 </label>
                 <textarea
                   required
                   placeholder="Write your follow-up notes..."
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 focus:outline-none text-sm font-medium min-h-[100px] resize-none"
+                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200 min-h-[100px] resize-none"
                   value={followUpData.description}
                   onChange={(e) =>
                     setFollowUpData({
@@ -3199,15 +2884,20 @@ const ClientList = ({
               <div className="pt-2">
                 <button
                   type="submit"
-                  className="w-full py-3 bg-primary text-white rounded-2xl hover:bg-slate-800 text-[13px] font-bold  tracking-[0.3em] transition-all shadow-lg active:scale-95 flex items-center justify-center gap-3"
+                  className="w-full h-12 bg-[#18254D] text-white rounded-xl text-xs font-bold tracking-wider shadow-lg active:scale-[0.97] transition-all hover:bg-[#1e2e5e] hover:shadow-xl flex items-center justify-center gap-2 group/btn btn-animated"
                 >
-                  <MessageSquare size={18} />
-                  Save & View Conversations
+                  <span>SAVE & VIEW CONVERSATIONS</span>
+                  <MessageSquare
+                    size={14}
+                    strokeWidth={2.5}
+                    className="group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform"
+                  />
                 </button>
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

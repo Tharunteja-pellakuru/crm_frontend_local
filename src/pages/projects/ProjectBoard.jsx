@@ -153,7 +153,7 @@ const ProjectCard = ({
       case "high":
         return { badge: "bg-amber-100 text-amber-600 border-amber-200", icon: Zap };
       case "medium":
-        return { badge: "bg-emerald-100 text-emerald-600 border-emerald-200", icon: CheckCircle2 };
+        return { badge: "bg-emerald-100 text-emerald-600 border-emerald-200", icon: CheckCircle };
       case "low":
         return { badge: "bg-sky-100 text-sky-600 border-sky-200", icon: Tag };
       default:
@@ -245,18 +245,18 @@ const ProjectCard = ({
       onClick={() => onSelectProject && onSelectProject(project)}
       className="group transition-all hover:bg-slate-50/50 cursor-pointer"
     >
-      <td className="px-6 py-5">
+      <td className="px-6 py-5 border-y border-slate-100 first:border-l first:rounded-l-xl">
         <div className="min-w-0">
           <div className="font-bold text-[13px] text-[#18254D] tracking-tight leading-none mb-1 group-hover:text-secondary transition-colors truncate">
             {project.name}
           </div>
-          <div className="text-[12px] text-slate-400 truncate max-w-[280px]">
+          <div className="text-[12px] font-medium text-slate-400 truncate max-w-[280px]">
             {project.description || "No description provided"}
           </div>
         </div>
       </td>
 
-      <td className="px-6 py-5">
+      <td className="px-6 py-5 border-y border-slate-100">
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-secondary" />
           <span className="text-[12px] font-semibold text-slate-600">
@@ -265,14 +265,14 @@ const ProjectCard = ({
         </div>
       </td>
 
-      <td className="px-6 py-5">
-        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold border ${priorityStyle.badge}`}>
+      <td className="px-6 py-5 border-y border-slate-100">
+        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold border tracking-wider uppercase ${priorityStyle.badge}`}>
           <PriorityIcon size={10} />
-          {project.priority?.toUpperCase() || "MEDIUM"}
+          {project.priority || "MEDIUM"}
         </span>
       </td>
 
-      <td className="px-6 py-5">
+      <td className="px-6 py-5 border-y border-slate-100">
         <div className="flex items-center gap-1.5 text-[12px] font-bold text-slate-500">
           <Calendar size={12} className="text-secondary" />
           <span>
@@ -287,7 +287,7 @@ const ProjectCard = ({
         </div>
       </td>
 
-      <td className="px-6 py-5">
+      <td className="px-6 py-5 border-y border-slate-100">
         <div className="flex items-center gap-1.5 text-[12px] font-bold text-slate-500">
           <Calendar size={12} className="text-secondary" />
           <span>
@@ -302,20 +302,20 @@ const ProjectCard = ({
         </div>
       </td>
 
-      <td className="px-6 py-5">
+      <td className="px-6 py-5 border-y border-slate-100">
         <span className="text-[12px] font-semibold text-slate-600">
           {project.createdByName || "System"}
         </span>
       </td>
 
-      <td className="px-6 py-5 text-right">
-        <div className="flex justify-end gap-3" onClick={(e) => e.stopPropagation()}>
+      <td className="px-6 py-5 border-y border-slate-100 last:border-r last:rounded-r-xl text-right">
+        <div className="flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
           <button
             onClick={(e) => {
               e.stopPropagation();
               onEdit && onEdit(project);
             }}
-            className="w-[34px] h-[34px] flex items-center justify-center bg-blue-50/50 border border-blue-100 rounded-[10px] text-blue-500 hover:bg-blue-100 transition-all active:scale-90 shadow-sm relative group/btn"
+            className="w-[34px] h-[34px] flex items-center justify-center bg-blue-50 text-blue-600 border border-blue-100 rounded-[10px] hover:bg-blue-100 transition-all active:scale-90 shadow-sm relative group/btn"
             title="Edit Project"
           >
             <Pencil size={16} />
@@ -362,10 +362,10 @@ const ProjectCard = ({
                   <div
                     onClick={(e) => e.stopPropagation()}
                     style={menuStyle}
-                    className="bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden animate-fade-in origin-top-right py-2"
+                    className="bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden animate-pop origin-top-right py-2"
                   >
-                    <div className="px-4 py-2 border-b border-slate-50 mb-1">
-                      <p className="text-[14px] font-black text-slate-400 tracking-widest">
+                    <div className="bg-[#18254D] px-4 py-2.5 border-b border-white/10 mb-1">
+                      <p className="text-[10px] font-bold text-white/50 tracking-wider uppercase">
                         Quick Actions
                       </p>
                     </div>
@@ -374,7 +374,7 @@ const ProjectCard = ({
                         key={status}
                         type="button"
                         onClick={() => handleStatusUpdate(status)}
-                        className="w-full text-left px-4 py-2.5 text-[12px] font-bold tracking-widest text-[#18254D] hover:bg-slate-50 hover:text-secondary transition-colors"
+                        className="w-full text-left px-4 py-2.5 text-xs font-semibold tracking-wider text-[#18254D] hover:bg-slate-50 transition-colors"
                       >
                         Move to {status}
                       </button>
@@ -495,7 +495,7 @@ const ProjectBoard = ({
     return () => {
       window.removeEventListener("scroll", handleScrollResize, true);
       window.removeEventListener("resize", handleScrollResize);
-    };
+    }
   }, [isFilterPopupOpen]);
 
   const [formData, setFormData] = useState({
@@ -592,10 +592,9 @@ const ProjectBoard = ({
 
     if (!isValid) return;
 
-    setIsSubmitting(true); // Set submitting state to true
+    setIsSubmitting(true);
 
     try {
-      // Create project using the selected existing client ID
       if (onAddProject) {
         await onAddProject({
           clientId: selectedClientId,
@@ -638,7 +637,7 @@ const ProjectBoard = ({
       toast.error("Failed to add project.");
       console.error(error);
     } finally {
-      setIsSubmitting(false); // Reset submitting state
+      setIsSubmitting(false);
     }
   };
 
@@ -658,7 +657,7 @@ const ProjectBoard = ({
           <div className="w-full lg:w-auto">
             <button
               onClick={() => setShowAddModal(true)}
-              className="w-full lg:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white rounded-2xl hover:bg-slate-800 transition-all text-[13px] font-bold  tracking-wider shadow-lg active:scale-95 group"
+              className="w-full lg:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-[#18254D] text-white rounded-2xl hover:bg-slate-800 transition-all text-[13px] font-bold tracking-wider shadow-lg active:scale-95 group"
             >
               <Plus
                 size={16}
@@ -741,14 +740,14 @@ const ProjectBoard = ({
             <div className="relative w-full md:w-64 flex-none transition-all duration-300">
               <Search
                 size={16}
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-[#18254D]/40"
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
               />
               <input
                 type="text"
                 placeholder="Search projects..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full h-[38px] pl-11 pr-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium text-[#18254D] focus:outline-none focus:ring-4 focus:ring-[#18254D]/10 focus:border-[#18254D]/20 transition-all placeholder:text-[#18254D]/30"
+                className="w-full h-[38px] pl-11 pr-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium text-[#18254D] focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all placeholder:text-slate-400"
               />
             </div>
 
@@ -757,18 +756,18 @@ const ProjectBoard = ({
               <button
                 onClick={() => setIsFilterPopupOpen(!isFilterPopupOpen)}
                 className={`w-full md:w-auto h-[38px] flex items-center justify-center gap-2.5 px-6 py-2 rounded-xl text-[12px] font-bold tracking-widest transition-all shadow-sm active:scale-95 group border ${
-                  selectedCategory !== "All"
-                    ? "bg-secondary/5 border-secondary text-secondary"
+                  selectedCategory !== "All" || selectedPriority !== "All"
+                    ? "bg-indigo-50 border-indigo-500 text-indigo-600"
                     : "bg-slate-50 border-slate-100 text-[#18254D] hover:bg-white hover:border-slate-200 shadow-slate-200/50"
                 }`}
               >
                 <Filter
                   size={14}
-                  className={selectedCategory !== "All" ? "text-secondary" : "text-slate-400"}
+                  className={selectedCategory !== "All" || selectedPriority !== "All" ? "text-indigo-600" : "text-slate-400"}
                 />
                 <span>FILTERS</span>
                 {selectedCategory !== "All" || selectedPriority !== "All" ? (
-                  <span className="flex items-center justify-center w-5 h-5 bg-secondary text-white text-[10px] font-black rounded-full ml-1 shadow-sm">
+                  <span className="flex items-center justify-center w-5 h-5 bg-indigo-600 text-white text-[10px] font-black rounded-full ml-1 shadow-sm">
                     {(selectedCategory !== "All" ? 1 : 0) + (selectedPriority !== "All" ? 1 : 0)}
                   </span>
                 ) : null}
@@ -790,14 +789,14 @@ const ProjectBoard = ({
                       className={`${window.innerWidth < 1024 ? "fixed inset-0 flex items-center justify-center p-4 z-[99999] pointer-events-none" : ""}`}
                     >
                       <div
-                        className="bg-white border border-slate-200 shadow-[0_20px_50px_rgba(0,0,0,0.15)] overflow-hidden animate-fade-in-up ring-1 ring-black/5 rounded-3xl pointer-events-auto"
+                        className="bg-white border border-slate-200 shadow-[0_20px_50px_rgba(24,37,77,0.15)] overflow-hidden animate-fade-in-up ring-1 ring-black/5 rounded-3xl pointer-events-auto flex flex-col animate-pop"
                         style={filterPopupStyle}
                       >
                       {/* Sticky Header */}
-                      <div className="flex-none p-4 border-b border-slate-50 flex items-center justify-between bg-white relative z-10">
+                      <div className="flex-none p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 relative z-10">
                         <div className="flex items-center gap-2">
-                          <Filter size={14} className="text-secondary" />
-                          <h3 className="text-[11px] font-black text-[#18254D] tracking-[0.2em] uppercase">
+                          <Filter size={14} className="text-[#18254D]" />
+                          <h3 className="text-[11px] font-black text-[#18254D] tracking-wider uppercase">
                             Filter Projects
                           </h3>
                         </div>
@@ -808,7 +807,7 @@ const ProjectBoard = ({
                               setSelectedPriority("All");
                               setIsFilterPopupOpen(false);
                             }}
-                            className="text-[10px] font-black text-rose-500 hover:text-rose-600 tracking-widest uppercase transition-colors"
+                            className="text-[10px] font-black text-[#F43F5E] hover:text-[#E11D48] tracking-wider uppercase transition-colors"
                           >
                             Clear All
                           </button>
@@ -819,8 +818,8 @@ const ProjectBoard = ({
                       <div className="flex-1 p-5 space-y-4 overflow-y-auto custom-scrollbar">
                         {/* Category Section */}
                         <div className="space-y-3">
-                          <label className="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase ml-1">
-                            Project Category
+                          <label className="text-[10px] font-black text-slate-400 tracking-wider uppercase ml-1 flex items-center gap-1.5">
+                            <Tag size={12} /> Project Category
                           </label>
                           <SearchableDropdown
                             placeholder="Select Category..."
@@ -838,8 +837,8 @@ const ProjectBoard = ({
 
                         {/* Priority Section */}
                         <div className="space-y-3 pt-4 border-t border-slate-50">
-                          <label className="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase ml-1">
-                            Project Priority
+                          <label className="text-[10px] font-black text-slate-400 tracking-wider uppercase ml-1 flex items-center gap-1.5">
+                            <Zap size={12} /> Project Priority
                           </label>
                           <SearchableDropdown
                             placeholder="Select Priority..."
@@ -859,10 +858,10 @@ const ProjectBoard = ({
                       </div>
 
                       {/* Sticky Footer */}
-                      <div className="flex-none p-4 bg-white border-t border-slate-50 relative z-10 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
+                      <div className="flex-none p-4 bg-slate-50/50 border-t border-slate-100 relative z-10 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
                         <button
                           onClick={() => setIsFilterPopupOpen(false)}
-                          className="w-full py-2.5 bg-[#18254D] text-white rounded-2xl text-[11px] font-black tracking-[0.2em] uppercase hover:bg-slate-800 transition-all shadow-lg active:scale-95"
+                          className="w-full py-2.5 bg-[#18254D] text-white rounded-xl text-[11px] font-black tracking-wider uppercase hover:bg-slate-800 transition-all shadow-md active:scale-95"
                         >
                           Apply Filters
                         </button>
@@ -882,20 +881,20 @@ const ProjectBoard = ({
             const isActive = activeStage === status;
             const activeStyles =
               status === "All"
-                ? "bg-[#0F172A] text-white border-[#0F172A]"
+                ? "bg-[#EFF6FF] text-[#3B82F6] border-[#DBEAFE]"
                 : status === "In Progress"
-                  ? "bg-[#FFF9ED] text-[#B45309] border-[#FDE68A]"
+                  ? "bg-[#FFF7ED] text-[#F97316] border-[#FFEDD5]"
                   : status === "Hold"
-                    ? "bg-[#FEF2F2] text-[#E11D48] border-[#FECACA]"
-                    : "bg-[#ECFDF5] text-[#059669] border-[#A7F3D0]";
+                    ? "bg-[#FFF1F2] text-[#F43F5E] border-[#FFE4E6]"
+                    : "bg-[#F0FDF4] text-[#16A34A] border-[#DCFCE7]";
             const inactiveStyles =
               status === "All"
-                ? "bg-white text-[#0F172A] border-slate-200 hover:bg-slate-50"
+                ? "bg-white text-[#3B82F6] border-[#DBEAFE] hover:bg-[#EFF6FF]"
                 : status === "In Progress"
-                  ? "bg-white text-[#B45309] border-[#FDE68A] hover:bg-[#FFF9ED]"
+                  ? "bg-white text-[#F97316] border-[#FFEDD5] hover:bg-[#FFF7ED]"
                   : status === "Hold"
-                    ? "bg-white text-[#E11D48] border-[#FECACA] hover:bg-[#FEF2F2]"
-                    : "bg-white text-[#059669] border-[#A7F3D0] hover:bg-[#ECFDF5]";
+                    ? "bg-white text-[#F43F5E] border-[#FFE4E6] hover:bg-[#FFF1F2]"
+                    : "bg-white text-[#16A34A] border-[#DCFCE7] hover:bg-[#F0FDF4]";
 
             return (
               <button
@@ -914,35 +913,35 @@ const ProjectBoard = ({
         </div>
 
         {/* Main List */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden w-full">
+        <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden w-full">
           <div className="w-full">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="bg-slate-50/50">
-                  <th className="px-6 py-5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
+            <table className="w-full border-collapse border-separate border-spacing-y-2">
+              <thead className="bg-slate-50/50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100 first:border-l first:rounded-l-xl">
                     Project Name
                   </th>
-                  <th className="px-6 py-5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                  <th className="px-6 py-3 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">
                     Client
                   </th>
-                  <th className="px-6 py-5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                  <th className="px-6 py-3 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">
                     Priority
                   </th>
-                  <th className="px-6 py-5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                  <th className="px-6 py-3 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">
                     Onboard Date
                   </th>
-                  <th className="px-6 py-5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                  <th className="px-6 py-3 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">
                     Deadline
                   </th>
-                  <th className="px-6 py-5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                  <th className="px-6 py-3 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">
                     Created By
                   </th>
-                  <th className="px-6 py-5 text-right text-[11px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                  <th className="px-6 py-3 text-right text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100 last:border-r last:rounded-r-xl">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody>
                 {currentProjects.map((project, index) => (
                   <ProjectCard
                     key={project.id || `project-row-${index}`}
@@ -961,7 +960,7 @@ const ProjectBoard = ({
                       <div className="text-slate-300 p-4 rounded-xl mb-4 flex items-center justify-center mx-auto">
                         <Briefcase size={32} strokeWidth={1.5} />
                       </div>
-                      <p className="text-[13px] font-bold text-primary tracking-wider">
+                      <p className="text-[13px] font-bold text-[#18254D] tracking-wider">
                         No Projects Found
                       </p>
                     </td>
@@ -977,21 +976,21 @@ const ProjectBoard = ({
             <button
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              className="p-2.5 rounded-xl border border-slate-200 bg-white text-slate-400 hover:text-primary hover:border-primary disabled:opacity-30 disabled:hover:border-slate-200 disabled:hover:text-slate-400 transition-all shadow-sm active:scale-95"
+              className="h-10 w-10 flex items-center justify-center rounded-full border border-[#DBEAFE] bg-white text-[#3B82F6] shadow-sm transition-all duration-200 hover:bg-[#EFF6FF] hover:border-[#93C5FD] hover:text-[#2563EB] active:scale-95 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-300 disabled:hover:bg-slate-100 disabled:hover:border-slate-200 disabled:hover:text-slate-300"
             >
-              <ChevronDown size={16} className="rotate-90" />
+              <ChevronLeft size={17} strokeWidth={2.75} />
             </button>
-            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-2xl shadow-inner mx-2">
-              <span className="text-[12px] font-bold text-slate-500 tracking-widest">
+            <div className="flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-200 rounded-full shadow-sm mx-2">
+              <span className="text-[12px] font-bold text-slate-500 tracking-widest px-2">
                 {currentPage} / {totalPages}
               </span>
             </div>
             <button
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
-              className="p-2.5 rounded-xl border border-slate-200 bg-white text-slate-400 hover:text-primary hover:border-primary disabled:opacity-30 disabled:hover:border-slate-200 disabled:hover:text-slate-400 transition-all shadow-sm active:scale-95"
+              className="h-10 w-10 flex items-center justify-center rounded-full border border-[#DBEAFE] bg-white text-[#3B82F6] shadow-sm transition-all duration-200 hover:bg-[#EFF6FF] hover:border-[#93C5FD] hover:text-[#2563EB] active:scale-95 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-300 disabled:hover:bg-slate-100 disabled:hover:border-slate-200 disabled:hover:text-slate-300"
             >
-              <ChevronDown size={16} className="-rotate-90" />
+              <ChevronRight size={17} strokeWidth={2.75} />
             </button>
           </div>
         )}
@@ -1000,83 +999,51 @@ const ProjectBoard = ({
       {/* Add Modal */}
       {showAddModal &&
         createPortal(
-          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[99999] flex items-start justify-center p-4 overflow-y-auto no-scrollbar">
-            <div className="bg-white w-full max-w-xl rounded-xl shadow-2xl border border-slate-200 overflow-hidden animate-fade-in my-auto flex flex-col max-h-[90vh]">
-              <div className="bg-primary p-4 text-white relative shrink-0">
-                <button
-                  onClick={() => setShowAddModal(false)}
-                  className="absolute top-4 right-4 p-1.5 hover:bg-white/10 rounded-xl transition-colors"
-                >
-                  <X size={18} strokeWidth={3} />
-                </button>
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[99999] flex items-center justify-center p-4 sm:p-6 overflow-y-auto no-scrollbar">
+            <div className="absolute inset-0" onClick={() => setShowAddModal(false)} />
+            <div className="relative z-10 bg-white w-full max-w-xl rounded-3xl shadow-2xl border border-slate-100 overflow-hidden animate-pop flex flex-col max-h-[90vh]">
+              <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 shrink-0">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-secondary/10 rounded-xl flex items-center justify-center shadow-lg border border-secondary/20">
-                    <UserPlus
-                      size={18}
-                      className="text-secondary"
-                      strokeWidth={3}
-                    />
+                  <div className="w-8 h-8 bg-[#EFF6FF] text-[#3B82F6] rounded-xl flex items-center justify-center border border-[#DBEAFE] shadow-sm">
+                    <Briefcase size={16} />
                   </div>
                   <div>
-                    <h3 className="text-base font-bold tracking-tighter leading-none">
-                      Add New Project
+                    <h3 className="text-base font-bold text-[#18254D] tracking-tight">
+                      New Project
                     </h3>
-                    <p className="text-secondary text-[14px] font-bold  tracking-widest mt-0.5">
-                      Project and Client Details
+                    <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider mt-0.5">
+                      Create Project & Link Client
                     </p>
                   </div>
                 </div>
+                <button
+                  onClick={() => setShowAddModal(false)}
+                  className="p-1.5 hover:bg-slate-200 rounded-xl text-slate-400 transition-all"
+                >
+                  <X size={18} />
+                </button>
               </div>
 
-              <form onSubmit={handleSubmit} className="p-5 space-y-4 overflow-y-auto no-scrollbar">
-
+              <form onSubmit={handleSubmit} className="p-6 space-y-5 overflow-y-auto no-scrollbar">
               {/* CLIENT DETAILS HEADING */}
-              <div className="flex items-center gap-3 pt-2">
-                <div className="h-[2px] w-8 bg-secondary rounded-full" />
-                <h4 className="text-[14px] font-bold text-[#18254D]  tracking-[0.2em]">
-                  Client Details
+              <div className="flex items-center gap-2 pt-1">
+                <div className="h-[2px] w-6 bg-indigo-500 rounded-full" />
+                <h4 className="text-[11px] font-black text-[#18254D] tracking-widest uppercase">
+                  Client Assignment
                 </h4>
                 <div className="h-[2px] flex-1 bg-slate-100 rounded-full" />
               </div>
 
-              {/* CLIENT TYPE */}
-              <div className="space-y-3 pb-2">
-                <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                  CLIENT TYPE
-                </label>
-                <div className="grid grid-cols-1 gap-4">
-                  <label className="flex-1 flex items-center gap-3 p-4 bg-white border-2 border-[#18254D] rounded-xl cursor-default transition-all group shadow-sm">
-                    <div className="relative flex items-center justify-center">
-                      <input
-                        type="radio"
-                        checked={true}
-                        readOnly
-                        className="peer appearance-none w-6 h-6 border-2 border-[#18254D] rounded-full transition-all"
-                      />
-                      <div className="absolute w-3 h-3 bg-[#18254D] rounded-full" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold text-[#18254D] leading-none">
-                        Existing Client
-                      </p>
-                      <p className="text-[14px] text-slate-400 font-bold mt-1">
-                        Select from your client list
-                      </p>
-                    </div>
-                  </label>
-                </div>
-              </div>
-
               {/* CLIENT NAME SEARCHABLE DROPDOWN */}
-              <div className="space-y-2 relative">
-                <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                  CLIENT NAME <span className="text-error">*</span>
+              <div className="space-y-1.5 relative">
+                <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
+                  SELECT EXISTING CLIENT <span className="text-rose-500">*</span>
                 </label>
                 <div className="relative">
                   <input
                     type="text"
                     placeholder="Search existing clients..."
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
+                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200"
                     value={clientSearch}
                     onChange={(e) => {
                       setClientSearch(e.target.value);
@@ -1098,8 +1065,8 @@ const ProjectBoard = ({
                     onFocus={() => setIsClientDropdownOpen(true)}
                   />
                   <ChevronDown
-                    size={14}
-                    className={`absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition-transform ${isClientDropdownOpen ? "rotate-180" : ""}`}
+                    size={16}
+                    className={`absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 transition-transform ${isClientDropdownOpen ? "rotate-180" : ""}`}
                   />
 
                   {isClientDropdownOpen && (
@@ -1111,9 +1078,9 @@ const ProjectBoard = ({
                           setIsClientDropdownOpen(false);
                         }}
                       />
-                      <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top max-h-[200px] overflow-y-auto">
-                        <div className="bg-[#18254D] px-4 py-3 border-b border-white/10 sticky top-0">
-                          <p className="text-[14px] font-bold text-white/50  tracking-widest">
+                      <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top max-h-[200px] overflow-y-auto custom-scrollbar">
+                        <div className="bg-[#18254D] px-4 py-2.5 border-b border-white/10 sticky top-0">
+                          <p className="text-[10px] font-bold text-white/50 tracking-wider uppercase">
                             Select Client
                           </p>
                         </div>
@@ -1149,14 +1116,14 @@ const ProjectBoard = ({
                               }}
                               className={`w-full text-left px-5 py-3 transition-colors ${
                                 selectedClientId === client.id
-                                  ? "bg-slate-100 border-l-4 border-secondary"
+                                  ? "bg-slate-100 border-l-4 border-indigo-500"
                                   : "hover:bg-slate-50"
                               }`}
                             >
-                              <p className="text-[14px] font-bold text-[#18254D]">
+                              <p className="text-sm font-bold text-[#18254D]">
                                 {client.name}
                               </p>
-                              <p className="text-[14px] text-slate-400 font-medium mt-0.5">
+                              <p className="text-[11px] text-slate-400 font-semibold mt-0.5">
                                 {client.email}
                                 {client.company ? ` · ${client.company}` : ""}
                               </p>
@@ -1170,7 +1137,7 @@ const ProjectBoard = ({
                               c.company?.toLowerCase().includes(clientSearch.toLowerCase()) ||
                               c.email?.toLowerCase().includes(clientSearch.toLowerCase()))
                         ).length === 0 && (
-                          <p className="px-4 py-3 text-[12px] text-slate-400 font-bold text-center">
+                          <p className="px-4 py-3 text-[11px] text-slate-400 font-bold text-center">
                             No clients found
                           </p>
                         )}
@@ -1182,86 +1149,70 @@ const ProjectBoard = ({
 
               {/* AUTO-FILLED CLIENT INFO (read-only) */}
               {selectedClientId && (
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1 col-span-2">
-                    <label className="text-[14px] font-bold text-slate-400 tracking-widest ml-1">
+                <div className="grid grid-cols-2 gap-4 bg-slate-50/50 p-4 rounded-2xl border border-slate-100">
+                  <div className="space-y-1.5 col-span-2">
+                    <label className="text-[10px] font-bold text-slate-400 tracking-wider uppercase ml-1">
                       ORGANISATION NAME
                     </label>
-                    <p className="px-3.5 py-2 bg-slate-50 border border-slate-100 rounded-xl text-[13px] font-medium text-[#18254D] truncate">
+                    <p className="px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-[13px] font-semibold text-[#18254D] shadow-sm truncate">
                       {formData.organisationName || "—"}
                     </p>
                   </div>
-                  <div className="space-y-1">
-                    <label className="text-[14px] font-bold text-slate-400 tracking-widest ml-1">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 tracking-wider uppercase ml-1">
                       EMAIL
                     </label>
-                    <p className="px-3.5 py-2 bg-slate-50 border border-slate-100 rounded-xl text-[13px] font-medium text-[#18254D] truncate">
+                    <p className="px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-[13px] font-semibold text-[#18254D] shadow-sm truncate">
                       {formData.email || "—"}
                     </p>
                   </div>
-                  <div className="space-y-1">
-                    <label className="text-[14px] font-bold text-slate-400 tracking-widest ml-1">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 tracking-wider uppercase ml-1">
                       PHONE
                     </label>
-                    <p className="px-3.5 py-2 bg-slate-50 border border-slate-100 rounded-xl text-[13px] font-medium text-[#18254D] truncate">
+                    <p className="px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-[13px] font-semibold text-[#18254D] shadow-sm truncate">
                       {formData.phone || "—"}
                     </p>
                   </div>
-                  <div className="space-y-1">
-                    <label className="text-[14px] font-bold text-slate-400 tracking-widest ml-1">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 tracking-wider uppercase ml-1">
                       COUNTRY
                     </label>
-                    <p className="px-3.5 py-2 bg-slate-50 border border-slate-100 rounded-xl text-[13px] font-medium text-[#18254D] truncate">
+                    <p className="px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-[13px] font-semibold text-[#18254D] shadow-sm truncate">
                       {formData.country || "—"}
                     </p>
                   </div>
-                  <div className="space-y-1">
-                    <label className="text-[14px] font-bold text-slate-400 tracking-widest ml-1">
-                      STATE
-                    </label>
-                    <p className="px-3.5 py-2 bg-slate-50 border border-slate-100 rounded-xl text-[13px] font-medium text-[#18254D] truncate">
-                      {formData.state || "—"}
-                    </p>
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[14px] font-bold text-slate-400 tracking-widest ml-1">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 tracking-wider uppercase ml-1">
                       CURRENCY
                     </label>
-                    <p className="px-3.5 py-2 bg-slate-50 border border-slate-100 rounded-xl text-[13px] font-medium text-[#18254D] truncate">
+                    <p className="px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-[13px] font-semibold text-[#18254D] shadow-sm truncate">
                       {formData.currency || "—"}
-                    </p>
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[14px] font-bold text-slate-400 tracking-widest ml-1">
-                      CLIENT STATUS
-                    </label>
-                    <p className="px-3.5 py-2 bg-slate-100 border border-slate-200 rounded-xl text-[13px] font-medium text-secondary truncate">
-                      {formData.clientStatus || "—"}
                     </p>
                   </div>
                 </div>
               )}
 
               {/* PROJECT DETAILS HEADING */}
-              <div className="flex items-center gap-3 pt-6">
-                <div className="h-[2px] w-8 bg-secondary rounded-full" />
-                <h4 className="text-[14px] font-bold text-[#18254D]  tracking-[0.2em]">
+              <div className="flex items-center gap-2 pt-3">
+                <div className="h-[2px] w-6 bg-indigo-500 rounded-full" />
+                <h4 className="text-[11px] font-black text-[#18254D] tracking-widest uppercase">
                   Project Details
                 </h4>
                 <div className="h-[2px] flex-1 bg-slate-100 rounded-full" />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* PROJECT NAME */}
                 <div className="space-y-1.5 md:col-span-2">
-                  <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                    PROJECT NAME <span className="text-error">*</span>
+                  <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
+                    PROJECT NAME <span className="text-rose-500">*</span>
                   </label>
                   <input
                     required
                     type="text"
-                    placeholder="e.g. Route Optimization Platform"
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
+                    placeholder="e.g. Website Redesign"
+                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200"
                     value={formData.projectName}
                     onChange={(e) =>
                       setFormData({
@@ -1274,13 +1225,13 @@ const ProjectBoard = ({
 
                 {/* PROJECT DESCRIPTION */}
                 <div className="space-y-1.5 md:col-span-2">
-                  <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                    PROJECT DESCRIPTION <span className="text-error">*</span>
+                  <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
+                    PROJECT DESCRIPTION <span className="text-rose-500">*</span>
                   </label>
                   <textarea
                     rows={3}
-                    placeholder="e.g. Focus on UI/UX redesign and performance optimization..."
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium resize-none shadow-sm"
+                    placeholder="Brief overview of the project scope..."
+                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200 resize-none"
                     value={formData.projectDescription}
                     onChange={(e) =>
                       setFormData({
@@ -1293,16 +1244,16 @@ const ProjectBoard = ({
 
                 {/* PROJECT CATEGORY */}
                 <div className="space-y-1.5 md:col-span-2">
-                  <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                    PROJECT CATEGORY <span className="text-error">*</span>
+                  <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
+                    PROJECT CATEGORY <span className="text-rose-500">*</span>
                   </label>
                   <div className="relative">
                     <button
                       type="button"
                       onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
-                      className="w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium shadow-sm hover:border-secondary transition-all"
+                      className="w-full flex items-center justify-between px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold shadow-sm hover:border-[#18254D]/30 transition-all text-[#18254D]"
                     >
-                      <span className="text-primary">
+                      <span>
                         {CATEGORY_MAP[formData.projectCategory] || "Select Category"}
                       </span>
                       <ChevronDown
@@ -1321,8 +1272,8 @@ const ProjectBoard = ({
                           }}
                         />
                         <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top">
-                          <div className="bg-[#18254D] px-4 py-3 border-b border-white/10">
-                            <p className="text-[14px] font-bold text-white/50  tracking-widest">
+                          <div className="bg-[#18254D] px-4 py-2.5 border-b border-white/10">
+                            <p className="text-[10px] font-bold text-white/50 tracking-wider uppercase">
                               Select Category
                             </p>
                           </div>
@@ -1337,9 +1288,9 @@ const ProjectBoard = ({
                                 });
                                 setIsCategoryDropdownOpen(false);
                               }}
-                              className={`w-full text-left px-4 py-2.5 text-[12px] font-bold  tracking-widest transition-colors ${
+                              className={`w-full text-left px-4 py-2.5 text-xs font-semibold tracking-wider transition-colors ${
                                 formData.projectCategory === catId
-                                  ? "bg-slate-100 text-secondary"
+                                  ? "bg-slate-100 text-indigo-600"
                                   : "text-[#18254D] hover:bg-slate-50"
                               }`}
                             >
@@ -1353,8 +1304,8 @@ const ProjectBoard = ({
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                    PROJECT STATUS <span className="text-error">*</span>
+                  <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
+                    PROJECT STATUS <span className="text-rose-500">*</span>
                   </label>
                   <div className="relative">
                     <button
@@ -1362,9 +1313,9 @@ const ProjectBoard = ({
                       onClick={() =>
                         setIsStatusDropdownOpen(!isStatusDropdownOpen)
                       }
-                      className="w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium shadow-sm hover:border-secondary transition-all"
+                      className="w-full flex items-center justify-between px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold shadow-sm hover:border-[#18254D]/30 transition-all text-[#18254D]"
                     >
-                      <span className="text-primary">
+                      <span>
                         {formData.projectStatus}
                       </span>
                       <ChevronDown
@@ -1383,8 +1334,8 @@ const ProjectBoard = ({
                           }}
                         />
                         <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top">
-                          <div className="bg-[#18254D] px-4 py-3 border-b border-white/10">
-                            <p className="text-[14px] font-bold text-white/50  tracking-widest">
+                          <div className="bg-[#18254D] px-4 py-2.5 border-b border-white/10">
+                            <p className="text-[10px] font-bold text-white/50 tracking-wider uppercase">
                               Select Status
                             </p>
                           </div>
@@ -1399,9 +1350,9 @@ const ProjectBoard = ({
                                 });
                                 setIsStatusDropdownOpen(false);
                               }}
-                              className={`w-full text-left px-4 py-2.5 text-[12px] font-bold  tracking-widest transition-colors ${
+                              className={`w-full text-left px-4 py-2.5 text-xs font-semibold tracking-wider transition-colors ${
                                 formData.projectStatus === status
-                                  ? "bg-slate-100 text-secondary"
+                                  ? "bg-slate-100 text-indigo-600"
                                   : "text-[#18254D] hover:bg-slate-50"
                               }`}
                             >
@@ -1416,8 +1367,8 @@ const ProjectBoard = ({
 
 
                 <div className="space-y-1.5">
-                  <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                    PROJECT PRIORITY <span className="text-error">*</span>
+                  <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
+                    PROJECT PRIORITY <span className="text-rose-500">*</span>
                   </label>
                   <div className="relative">
                     <button
@@ -1425,9 +1376,9 @@ const ProjectBoard = ({
                       onClick={() =>
                         setIsPriorityDropdownOpen(!isPriorityDropdownOpen)
                       }
-                      className="w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium shadow-sm hover:border-secondary transition-all"
+                      className="w-full flex items-center justify-between px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold shadow-sm hover:border-[#18254D]/30 transition-all text-[#18254D]"
                     >
-                      <span className="text-primary">
+                      <span>
                         {formData.projectPriority}
                       </span>
                       <ChevronDown
@@ -1446,8 +1397,8 @@ const ProjectBoard = ({
                           }}
                         />
                         <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top">
-                          <div className="bg-[#18254D] px-4 py-3 border-b border-white/10">
-                            <p className="text-[14px] font-bold text-white/50  tracking-widest">
+                          <div className="bg-[#18254D] px-4 py-2.5 border-b border-white/10">
+                            <p className="text-[10px] font-bold text-white/50 tracking-wider uppercase">
                               Select Priority
                             </p>
                           </div>
@@ -1462,9 +1413,9 @@ const ProjectBoard = ({
                                 });
                                 setIsPriorityDropdownOpen(false);
                               }}
-                              className={`w-full text-left px-4 py-2.5 text-[12px] font-bold  tracking-widest transition-colors ${
+                              className={`w-full text-left px-4 py-2.5 text-xs font-semibold tracking-wider transition-colors ${
                                 formData.projectPriority === level
-                                  ? "bg-slate-100 text-secondary"
+                                  ? "bg-slate-100 text-indigo-600"
                                   : "text-[#18254D] hover:bg-slate-50"
                               }`}
                             >
@@ -1478,17 +1429,17 @@ const ProjectBoard = ({
                 </div>
 
                 <div className="space-y-1.5 md:col-span-2">
-                  <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1 flex items-center gap-1.5">
+                  <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1 flex items-center gap-1.5">
                     PROJECT BUDGET
                     {formData.currency && (
                       <span className="text-slate-400 font-bold">
                         ({formData.currency})
                       </span>
                     )}
-                    <span className="text-error">*</span>
+                    <span className="text-rose-500">*</span>
                   </label>
                   <div className="relative">
-                    <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 font-bold text-sm">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">
                       {commonCurrencies.find((c) => c.code === formData.currency)?.symbol ||
                         (formData.currency ? formData.currency : "₹")}
                     </div>
@@ -1499,7 +1450,7 @@ const ProjectBoard = ({
                           ? "e.g. 5,000"
                           : "e.g. 5,00,000"
                       }
-                      className="w-full pl-8 pr-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium shadow-sm"
+                      className="w-full pl-8 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-[#18254D]/5 focus:border-[#18254D]/30 focus:outline-none text-sm font-semibold text-[#18254D]"
                       value={formatBudget(formData.budget, formData.currency)}
                       onChange={(e) =>
                         setFormData({
@@ -1513,8 +1464,8 @@ const ProjectBoard = ({
 
                 {/* DATES */}
                 <div className="space-y-1.5">
-                  <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                    ONBOARDING DATE <span className="text-error">*</span>
+                  <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
+                    ONBOARDING DATE <span className="text-rose-500">*</span>
                   </label>
                   <DatePicker
                     value={formData.onboardingDate}
@@ -1528,8 +1479,8 @@ const ProjectBoard = ({
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                    DEADLINE (TENTATIVE) <span className="text-error">*</span>
+                  <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
+                    DEADLINE (TENTATIVE) <span className="text-rose-500">*</span>
                   </label>
                   <DatePicker
                     value={formData.deadline}
@@ -1544,8 +1495,8 @@ const ProjectBoard = ({
 
                 {/* SCOPE DOCUMENT */}
                 <div className="space-y-1.5 md:col-span-2">
-                  <label className="text-[12px] font-bold text-[#18254D]  tracking-widest ml-1">
-                    SCOPE DOCUMENT <span className="text-error">*</span>
+                  <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
+                    SCOPE DOCUMENT <span className="text-rose-500">*</span>
                   </label>
                   <div className="relative group">
                     <input
@@ -1561,9 +1512,12 @@ const ProjectBoard = ({
                         }
                       }}
                     />
-                    <div className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl group-hover:border-secondary group-hover:bg-secondary/5 transition-all flex items-center gap-3 shadow-sm">
+                    <div className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl group-hover:border-indigo-300 transition-all flex items-center gap-3 shadow-sm">
+                      <div className="p-1.5 bg-white border border-slate-200 rounded-lg shadow-sm">
+                        <Upload size={16} className="text-indigo-500" />
+                      </div>
                       <span
-                        className={`text-sm font-bold ${formData.scopeDocument ? "text-[#18254D]" : "text-slate-400"}`}
+                        className={`text-sm font-semibold truncate ${formData.scopeDocument ? "text-[#18254D]" : "text-slate-400"}`}
                       >
                         {formData.scopeDocument instanceof File
                           ? formData.scopeDocument.name
@@ -1580,21 +1534,22 @@ const ProjectBoard = ({
                 <div className="pt-2 shrink-0">
                   <button
                     type="submit"
-                    disabled={isSubmitting} // Disabled when submitting
-                    className="w-full py-3 bg-[#18254D] text-white rounded-2xl text-[13px] font-bold  tracking-[0.25em] shadow-xl active:scale-[0.97] transition-all hover:bg-[#1e2e5e] hover:shadow-2xl flex items-center justify-center gap-3 group/btn disabled:opacity-70 disabled:cursor-not-allowed" // Added disabled styles
+                    disabled={isSubmitting}
+                    className="w-full h-12 bg-[#18254D] text-white rounded-xl text-xs font-bold tracking-wider shadow-lg active:scale-[0.97] transition-all hover:bg-[#1e2e5e] hover:shadow-xl flex items-center justify-center gap-2 group/btn disabled:opacity-70 disabled:cursor-not-allowed btn-animated"
                   >
-                    {isSubmitting ? ( // Conditional rendering for loading state
+                    {isSubmitting ? (
                       <>
                         <span>ADDING PROJECT...</span>
-                        <Loader2 size={20} className="animate-spin" />
+                        <Loader2 size={16} className="animate-spin" />
                       </>
                     ) : (
                       <>
-                        <UserPlus
-                          size={20}
-                          className="group-hover/btn:translate-x-1 transition-transform"
-                        />
                         <span>ADD PROJECT</span>
+                        <Briefcase
+                          size={14}
+                          strokeWidth={2.5}
+                          className="group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform"
+                        />
                       </>
                     )}
                   </button>
@@ -1607,37 +1562,55 @@ const ProjectBoard = ({
       {/* Delete Confirmation Modal */}
       {projectToDelete &&
         createPortal(
-          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[99999] flex items-start justify-center p-4 animate-fade-in overflow-y-auto no-scrollbar py-20">
-            <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 overflow-hidden animate-scale-in my-auto">
-              <div className="p-6 text-center">
-                <div className="w-16 h-16 bg-[#18254E] rounded-full flex items-center justify-center mx-auto mb-4 border border-[#18254E] shadow-sm">
-                  <AlertTriangle size={32} className="text-[white]" />
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[99999] flex items-center justify-center p-4 overflow-y-auto">
+            <div className="absolute inset-0" onClick={() => setProjectToDelete(null)} />
+            <div className="relative z-10 bg-white w-full max-w-md rounded-3xl shadow-2xl border border-slate-100 overflow-hidden animate-pop flex flex-col">
+              <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 shrink-0">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-[#FFF1F2] text-[#F43F5E] rounded-xl flex items-center justify-center border border-[#FFE4E6] shadow-sm">
+                    <AlertTriangle size={16} />
+                  </div>
+                  <h3 className="text-base font-bold text-[#18254D] tracking-tight">
+                    Confirm Deletion
+                  </h3>
                 </div>
-                <h3 className="text-xl font-bold text-primary mb-2">
-                  Confirm Deletion
-                </h3>
-                <p className="text-slate-500 text-sm font-medium leading-relaxed px-4">
-                  Are you sure you want to delete the project 
-                  <span className="text-primary font-bold"> "{projectToDelete.name}"</span>? 
-                  This action cannot be undone and all associated data will be removed.
-                </p>
-              </div>
-              <div className="bg-slate-50 p-4 border-t border-slate-100 flex gap-3">
                 <button
                   onClick={() => setProjectToDelete(null)}
-                  className="flex-1 px-4 py-2.5 bg-white border border-slate-200 text-slate-600 rounded-xl text-xs font-bold tracking-widest hover:bg-slate-50 transition-all active:scale-95 uppercase"
+                  className="p-1.5 hover:bg-slate-200 rounded-xl text-slate-400 transition-all"
                 >
-                  Cancel
+                  <X size={18} />
                 </button>
-                <button
-                  onClick={() => {
-                    onDeleteProject && onDeleteProject(projectToDelete.project_id || projectToDelete.id);
-                    setProjectToDelete(null);
-                  }}
-                  className="flex-1 px-4 py-2.5 bg-[#18254E] text-white rounded-xl text-xs font-bold tracking-widest hover:bg-[#1e2e5e] shadow-lg shadow-[#18254E]/20 transition-all active:scale-95 uppercase"
-                >
-                  Delete Project
-                </button>
+              </div>
+              <div className="p-6 space-y-6">
+                <div className="space-y-2">
+                  <p className="text-slate-600 text-sm font-semibold leading-relaxed">
+                    Are you sure you want to delete the project{" "}
+                    <span className="text-[#F43F5E] font-bold underline underline-offset-4">
+                      "{projectToDelete.name}"
+                    </span>
+                    ? This action cannot be undone and all associated data will be removed.
+                  </p>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setProjectToDelete(null)}
+                    className="flex-1 h-12 bg-slate-100 text-slate-600 rounded-xl text-xs font-bold tracking-wider hover:bg-slate-200 transition-all active:scale-[0.98] btn-animated uppercase"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onDeleteProject && onDeleteProject(projectToDelete.project_id || projectToDelete.id);
+                      setProjectToDelete(null);
+                    }}
+                    className="flex-1 h-12 bg-[#F43F5E] text-white rounded-xl text-xs font-bold tracking-wider shadow-md hover:bg-[#E11D48] transition-all active:scale-[0.98] flex items-center justify-center gap-2 btn-animated uppercase"
+                  >
+                    <span>Delete Project</span>
+                    <Trash2 size={14} />
+                  </button>
+                </div>
               </div>
             </div>
           </div>,
