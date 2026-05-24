@@ -39,25 +39,30 @@ import {
 import { validateForm } from "../../utils/validation";
 import { addToGoogleCalendar } from "../../utils/calendar";
 
-
+// ─── FIX: parse date parts manually so the browser always treats the
+//          value as LOCAL time, never as UTC.
+//
+//  Before:  new Date("2026-05-26T15:30:00")  → browser reads as UTC
+//           → adds IST offset (+5:30) → displays 21:00 (9 PM) ❌
+//
+//  After:   new Date(2026, 4, 26, 15, 30, 0) → always local time
+//           → displays 15:30 (3:30 PM) ✅
 const parseLocalDate = (dateStr) => {
   if (!dateStr) return new Date();
   if (dateStr instanceof Date) return dateStr;
-  
-  // - [x] 2. Add Desktop Table Wrapper (`hidden lg:block`)
-  // - [x] 3. Implement Table Header matching Leads page
-  // - [x] 4. Map Follow-up data to Table Rows (`<tr>`)
-  // - [x] 5. Migrate Action Buttons to Table Rows
-  // - [x] 6. Verify layout responsiveness
-  // If the date string contains a 'T' but ends with 'Z', it might be treated as UTC.
-  // If we want to treat it as local time, we should replace T with a space and remove Z.
-  // This is a common fix when backends return local times as ISO UTC strings.
-  if (typeof dateStr === 'string' && dateStr.includes('T') && dateStr.endsWith('Z')) {
-    const normalized = dateStr.replace('T', ' ').replace('Z', '').split('.')[0];
-    const date = new Date(normalized);
-    if (!isNaN(date.getTime())) return date;
+
+  if (typeof dateStr === "string") {
+    // Normalize: handle both "YYYY-MM-DD HH:mm:ss" and "YYYY-MM-DDTHH:mm:ss[.ms][Z]"
+    const cleaned = dateStr.replace("T", " ").replace("Z", "").split(".")[0];
+    const [datePart, timePart = "00:00:00"] = cleaned.split(" ");
+    const [year, month, day] = datePart.split("-").map(Number);
+    const [hour = 0, minute = 0, second = 0] = timePart.split(":").map(Number);
+
+    // This constructor always uses the LOCAL timezone — no UTC ambiguity
+    const date = new Date(year, month - 1, day, hour, minute, second);
+    return isNaN(date.getTime()) ? new Date() : date;
   }
-  
+
   const date = new Date(dateStr);
   return isNaN(date.getTime()) ? new Date() : date;
 };
@@ -160,8 +165,6 @@ const FollowUpList = ({
       };
 
       if (isMobile) {
-        // - [x] 1. Preserve Mobile Layout (Wrap existing cards in `lg:hidden`)
-        // Mobile styles: Centering handled by the Flexbox wrapper in JSX
         const popupWidth = Math.min(windowWidth - 32, 400);
         style.width = `${popupWidth}px`;
         style.maxHeight = "calc(100dvh - 32px)";
@@ -194,7 +197,6 @@ const FollowUpList = ({
 
   useEffect(() => {
     const handleScrollResize = (e) => {
-      // Ignore scroll events that originate from inside the filter popup
       if (filterPopupRef.current && filterPopupRef.current.contains(e.target)) {
         return;
       }
@@ -213,7 +215,6 @@ const FollowUpList = ({
     };
   }, [isFilterPopupOpen]);
 
-  // Lock scroll when any modal is open
   useScrollLock(showAddModal || showCompletionModal || showDetailsModal);
 
   const getClientById = (id, leadId, projectId) => {
@@ -231,34 +232,31 @@ const FollowUpList = ({
     }
     return client;
   };
-  const isOverdue = (date) =>
-    parseLocalDate(date) < new Date();
-  const isToday = (date) => {
+
+  // ─── FIX: use date-string comparison (YYYY-MM-DD) so Overdue and Today
+  //          are mutually exclusive and time-of-day doesn't cause overlap.
+  const getTodayStr = () => new Date().toLocaleDateString("en-CA");
+
+  const getDateStr = (date) => {
     const d = parseLocalDate(date);
-    const today = new Date();
-    return (
-      d.getDate() === today.getDate() &&
-      d.getMonth() === today.getMonth() &&
-      d.getFullYear() === today.getFullYear()
-    );
+    return isNaN(d.getTime()) ? "" : d.toLocaleDateString("en-CA");
   };
 
-  // Base filtering (type + category + search + priority + mode + status) — before status tab filter
+  const isOverdue = (date) => getDateStr(date) < getTodayStr();
+
+  const isToday = (date) => getDateStr(date) === getTodayStr();
+
   const baseFiltered = followUps.filter((f) => {
     const client = getClientById(f.clientId, f.leadId, f.projectId);
     if (typeFilter !== "All") {
-      // New reference Follow-ups -> Leads focus (specifically lead-level history)
       if (typeFilter === "Lead") {
         if (!f.leadId || f.projectId) return false;
       }
-      
-      // Reference Follow-ups -> Active/Project focus
       if (typeFilter === "Active") {
         if (!f.projectId) return false;
       }
     }
 
-    // Search filter
     if (searchTerm.trim()) {
       const q = searchTerm.toLowerCase();
       const matchesTitle = f.title?.toLowerCase().includes(q);
@@ -267,31 +265,26 @@ const FollowUpList = ({
       if (!matchesTitle && !matchesClient && !matchesCompany) return false;
     }
 
-    // Date Range Filter
     if (startDate || endDate) {
       const datePart = f.dueDate.split("T")[0];
       if (startDate && datePart < startDate) return false;
       if (endDate && datePart > endDate) return false;
     }
 
-    // Category Filter
     if (categoryFilter !== "All") {
       const categoryNum = parseInt(REVERSE_CATEGORY_MAP[categoryFilter]);
       const entityCategory = client?.category || client?.projectCategory || client?.leadCategory || 1;
       if (entityCategory !== categoryNum) return false;
     }
 
-    // Priority Filter
     if (priorityFilter !== "All") {
       if (f.priority !== priorityFilter) return false;
     }
 
-    // Meeting Mode Filter
     if (modeFilter !== "All") {
       if ((f.followup_mode || "").toLowerCase() !== modeFilter.toLowerCase()) return false;
     }
 
-    // Follow Status Filter
     if (statusFilter !== "All") {
       const fStatus = (f.status || f.followup_status || "").toLowerCase();
       if (fStatus !== statusFilter.toLowerCase()) return false;
@@ -300,22 +293,19 @@ const FollowUpList = ({
     return true;
   });
 
-  // Tab counts
+  // ─── FIX: derive tab counts from pending-only slice so "Total Pending"
+  //          card is accurate and doesn't include completed items.
+  const pendingBase = baseFiltered.filter(
+    (f) => (f.status || f.followup_status || "").toLowerCase() !== "completed"
+  );
+
   const tabCounts = {
-    All: baseFiltered.filter((f) => f.status !== "completed").length,
-    Overdue: baseFiltered.filter(
-      (f) => isOverdue(f.dueDate) && f.status === "pending",
-    ).length,
-    Today: baseFiltered.filter(
-      (f) => isToday(f.dueDate) && f.status === "pending",
-    ).length,
-    Upcoming: baseFiltered.filter(
-      (f) =>
-        !isOverdue(f.dueDate) && !isToday(f.dueDate) && f.status === "pending",
-    ).length,
+    All:      pendingBase.length,
+    Overdue:  pendingBase.filter((f) => isOverdue(f.dueDate)).length,
+    Today:    pendingBase.filter((f) => isToday(f.dueDate)).length,
+    Upcoming: pendingBase.filter((f) => !isOverdue(f.dueDate) && !isToday(f.dueDate)).length,
   };
 
-  // Priority sort order: High first, then Medium, then Low
   const priorityOrder = { High: 0, Medium: 1, Low: 2 };
 
   const filteredFollowUps = baseFiltered
@@ -338,23 +328,19 @@ const FollowUpList = ({
       const isCompletedA = sA === "completed";
       const isCompletedB = sB === "completed";
 
-      // Completed items always go to the bottom
       if (isCompletedA && !isCompletedB) return 1;
       if (!isCompletedA && isCompletedB) return -1;
 
-      // If both are completed, sort descending (newest first) by completed_at (or dueDate)
       if (isCompletedA && isCompletedB) {
         const timeA = parseLocalDate(a.completed_at || a.dueDate).getTime();
         const timeB = parseLocalDate(b.completed_at || b.dueDate).getTime();
         return timeB - timeA;
       }
 
-      // Sort purely by date and time (closest first) for pending items
       const timeA = parseLocalDate(a.dueDate).getTime();
       const timeB = parseLocalDate(b.dueDate).getTime();
       if (timeA !== timeB) return timeA - timeB;
 
-      // If time is same, sort by priority (High -> Medium -> Low)
       const pA = priorityOrder[a.priority] ?? 1;
       const pB = priorityOrder[b.priority] ?? 1;
       return pA - pB;
@@ -384,22 +370,13 @@ const FollowUpList = ({
 
     if (!isValid) return;
 
-    setIsSubmitting(true); // Start submitting
+    setIsSubmitting(true);
 
-    // Convert 12h to 24h for backend
     let hour = parseInt(formData.timeHour);
     if (formData.timePeriod === "PM" && hour < 12) hour += 12;
     if (formData.timePeriod === "AM" && hour === 12) hour = 0;
     const time24 = `${hour.toString().padStart(2, "0")}:${formData.timeMinute}`;
-
-    // Combine date and time into MySQL-friendly local format
     const combinedDateTime = `${formData.followup_date} ${time24}:00`;
-
-    let compHour = parseInt(formData.completionHour || "12");
-    if (formData.completionPeriod === "PM" && compHour < 12) compHour += 12;
-    if (formData.completionPeriod === "AM" && compHour === 12) compHour = 0;
-    const compTime24 = `${compHour.toString().padStart(2, "0")}:${formData.completionMinute || "00"}`;
-    const combinedCompletionStr = `${formData.completionDate || new Date().toLocaleDateString("en-CA")} ${compTime24}:00`;
 
     const selectedClient = clients.find((c) => c.id == formData.clientId);
     const finalClientId =
@@ -415,17 +392,29 @@ const FollowUpList = ({
 
       if (formData.id) {
         if (onEditFollowUp) {
-          // Get current user for updated_by field
           const user = JSON.parse(localStorage.getItem("user") || "{}");
-          await onEditFollowUp({
+
+          const payload = {
             ...formData,
             clientId: finalClientId,
             dueDate: combinedDateTime,
             followup_date: combinedDateTime,
-            completed_at: combinedCompletionStr,
             followup_status: formattedStatus,
             updated_by: user.full_name || user.username || "System",
-          });
+          };
+
+          // ─── FIX: only attach completed_at when status is actually completed.
+          //          Previously this was always sent, writing a phantom timestamp
+          //          even when saving a pending follow-up.
+          if (formattedStatus.toLowerCase() === "completed") {
+            let compHour = parseInt(formData.completionHour || "12");
+            if (formData.completionPeriod === "PM" && compHour < 12) compHour += 12;
+            if (formData.completionPeriod === "AM" && compHour === 12) compHour = 0;
+            const compTime24 = `${compHour.toString().padStart(2, "0")}:${formData.completionMinute || "00"}`;
+            payload.completed_at = `${formData.completionDate || new Date().toLocaleDateString("en-CA")} ${compTime24}:00`;
+          }
+
+          await onEditFollowUp(payload);
         }
       } else {
         if (onAddFollowUp) {
@@ -462,14 +451,14 @@ const FollowUpList = ({
       toast.error("Failed to save follow-up.");
       console.error(error);
     } finally {
-      setIsSubmitting(false); // End submitting
+      setIsSubmitting(false);
     }
   };
 
   const handleAddToCalendar = async (f) => {
     try {
       const startTime = parseLocalDate(f.dueDate);
-      const endTime = new Date(startTime.getTime() + 30 * 60000); // 30 mins later
+      const endTime = new Date(startTime.getTime() + 30 * 60000);
       
       const client = getClientById(f.clientId, f.leadId, f.projectId);
       const eventData = {
@@ -491,7 +480,6 @@ const FollowUpList = ({
   };
 
   const getPriorityBadge = (p) => {
-
     switch (p) {
       case "High":
         return "bg-[#FFFBEB] text-[#D97706] border-[#FDE68A]";
@@ -554,7 +542,6 @@ const FollowUpList = ({
     }
   };
 
-  // Show loading state
   if (loading) {
     return (
       <div className="w-full flex items-center justify-center h-64">
@@ -623,7 +610,6 @@ const FollowUpList = ({
 
         {/* Stat Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          {/* Total Card */}
           <div className="bg-white p-3 sm:p-5 rounded-2xl shadow-sm border border-slate-200 hover:-translate-y-1 hover:shadow-md transition-all duration-300">
             <div className="flex items-center gap-2 sm:gap-4">
               <div className="p-2 sm:p-3 rounded-full bg-blue-50 text-blue-500 shrink-0">
@@ -635,7 +621,6 @@ const FollowUpList = ({
               </div>
             </div>
           </div>
-          {/* Overdue Card */}
           <div className="bg-white p-3 sm:p-5 rounded-2xl shadow-sm border border-slate-200 hover:-translate-y-1 hover:shadow-md transition-all duration-300">
             <div className="flex items-center gap-2 sm:gap-4">
               <div className="p-2 sm:p-3 rounded-full bg-rose-50 text-rose-500 shrink-0">
@@ -647,7 +632,6 @@ const FollowUpList = ({
               </div>
             </div>
           </div>
-          {/* Today Card */}
           <div className="bg-white p-3 sm:p-5 rounded-2xl shadow-sm border border-slate-200 hover:-translate-y-1 hover:shadow-md transition-all duration-300">
             <div className="flex items-center gap-2 sm:gap-4">
               <div className="p-2 sm:p-3 rounded-full bg-amber-50 text-amber-500 shrink-0">
@@ -659,7 +643,6 @@ const FollowUpList = ({
               </div>
             </div>
           </div>
-          {/* Upcoming Card */}
           <div className="bg-white p-3 sm:p-5 rounded-2xl shadow-sm border border-slate-200 hover:-translate-y-1 hover:shadow-md transition-all duration-300">
             <div className="flex items-center gap-2 sm:gap-4">
               <div className="p-2 sm:p-3 rounded-full bg-sky-50 text-sky-500 shrink-0">
@@ -676,7 +659,7 @@ const FollowUpList = ({
         {/* Control Bar: Filters */}
         <div className="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm relative z-[60]">
           <div className="flex flex-col md:flex-row md:justify-between gap-4 w-full items-center">
-            {/* 1. Search Bar */}
+            {/* Search Bar */}
             <div className="relative w-full md:w-64 flex-none transition-all duration-300">
               <Search
                 size={16}
@@ -691,7 +674,7 @@ const FollowUpList = ({
               />
             </div>
 
-            {/* 2. Filters Button */}
+            {/* Filters Button */}
             <div className="relative w-full md:w-auto flex-none" ref={filterButtonRef}>
               <button
                 onClick={() => setIsFilterPopupOpen(!isFilterPopupOpen)}
@@ -724,7 +707,7 @@ const FollowUpList = ({
                 />
               </button>
 
-              {/* Filters Popup - Portaled for perfect layering */}
+              {/* Filters Popup */}
               {isFilterPopupOpen &&
                 createPortal(
                   <>
@@ -740,7 +723,6 @@ const FollowUpList = ({
                         className="bg-white border border-slate-200 shadow-[0_20px_50px_rgba(0,0,0,0.15)] overflow-hidden animate-fade-in-up ring-1 ring-black/5 rounded-3xl pointer-events-auto"
                         style={filterPopupStyle}
                       >
-                      {/* Sticky Header */}
                       <div className="flex-none p-4 border-b border-slate-50 flex items-center justify-between bg-white relative z-10">
                         <div className="flex items-center gap-2">
                           <Filter size={14} className="text-secondary" />
@@ -766,10 +748,8 @@ const FollowUpList = ({
                         )}
                       </div>
 
-                      {/* Scrollable Body */}
                       <div className="flex-1 p-4 space-y-2 overflow-y-auto custom-scrollbar">
 
-                        {/* Priority Filter */}
                         <div className="space-y-1.5">
                           <label className="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase ml-1">
                             Priority
@@ -785,7 +765,6 @@ const FollowUpList = ({
                           />
                         </div>
 
-                        {/* Meeting Mode Filter */}
                         <div className="space-y-1.5">
                           <label className="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase ml-1">
                             Meeting Mode
@@ -801,7 +780,6 @@ const FollowUpList = ({
                           />
                         </div>
 
-                        {/* Follow Status Filter */}
                         <div className="space-y-1.5">
                           <label className="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase ml-1">
                             Follow Status
@@ -817,7 +795,6 @@ const FollowUpList = ({
                           />
                         </div>
 
-                        {/* Date Range Section */}
                         <div className="space-y-1.5">
                           <label className="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase ml-1">
                             Follow-up Date Range
@@ -837,7 +814,6 @@ const FollowUpList = ({
                         </div>
                       </div>
 
-                      {/* Sticky Footer */}
                       <div className="flex-none p-4 bg-white border-t border-slate-50 relative z-10 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
                         <button
                           onClick={() => setIsFilterPopupOpen(false)}
@@ -854,7 +830,8 @@ const FollowUpList = ({
             </div>
           </div>
         </div>
-        {/* View Toggles (Pill Style) */}
+        
+        {/* View Toggles */}
         <div className="flex flex-wrap justify-center sm:justify-start gap-2 sm:gap-3 my-4 w-full px-1 sm:px-0">
           <button onClick={() => setActiveFilter("All")} className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${activeFilter === "All" || !["Overdue","Today","Upcoming"].includes(activeFilter) ? "bg-[#0F172A] text-white border-[#0F172A]" : "bg-white text-[#0F172A] border-slate-200 hover:bg-slate-50"}`}>
              <LayoutGrid size={16} /> All
@@ -882,10 +859,6 @@ const FollowUpList = ({
           ) : (
             currentFollowUps.map((f, index) => {
               const client = getClientById(f.clientId, f.leadId, f.projectId);
-              const overdue = isOverdue(f.dueDate) && f.status === "pending";
-              const isFToday = isToday(f.dueDate) && f.status === "pending";
-              const timeframe = f.status === "completed" ? "Completed" : (overdue ? "Overdue" : (isFToday ? "Today" : "Upcoming"));
-              
               return (
                 <div
                   key={`mobile-${f.id}`}
@@ -899,7 +872,6 @@ const FollowUpList = ({
                       : "border-slate-200 shadow-sm hover:shadow-md active:scale-[0.98] cursor-pointer"
                   }`}
                 >
-                  {/* Top row: Icon, Title, Status */}
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-3">
                       <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-lg border-2 border-slate-50 shadow-md shrink-0 ${
@@ -919,12 +891,10 @@ const FollowUpList = ({
                     </span>
                   </div>
 
-                  {/* Second Row: Lead Name */}
                   <div className="mb-4 rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-[12px] font-medium text-slate-500">
                     Lead Name: <span className="font-semibold text-slate-700">{client?.name || "No Client"}</span>
                   </div>
 
-                  {/* Third Row: Due Date and Mode */}
                   <div className="space-y-3 mb-4">
                     <div className="grid grid-cols-2 gap-2">
                       <div className="flex items-center gap-2 text-[12px] font-medium text-slate-600 bg-white p-2 rounded-lg border border-slate-100 shadow-sm">
@@ -959,7 +929,6 @@ const FollowUpList = ({
                     </div>
                   </div>
 
-                  {/* Bottom row: View Details and Actions */}
                   <div className="flex items-center justify-between pt-3 border-t border-slate-100">
                     <button
                       onClick={(e) => {
@@ -1107,10 +1076,6 @@ const FollowUpList = ({
                 ) : (
                   currentFollowUps.map((f, index) => {
                     const client = getClientById(f.clientId, f.leadId, f.projectId);
-                    const overdue = isOverdue(f.dueDate) && f.status === "pending";
-                    const isFToday = isToday(f.dueDate) && f.status === "pending";
-                    const timeframe = f.status === "completed" ? "Completed" : (overdue ? "Overdue" : (isFToday ? "Today" : "Upcoming"));
-
                     return (
                       <tr 
                         key={`desktop-${f.id}`} 
@@ -1120,7 +1085,6 @@ const FollowUpList = ({
                         }}
                         className={`group bg-white hover:bg-slate-50/50 transition-colors shadow-sm border border-slate-100 rounded-xl hover:shadow-md cursor-pointer ${f.status === "completed" ? "opacity-70 bg-slate-50/30" : ""}`}
                       >
-                        {/* Col 1: Details */}
                         <td className="p-4 border-y border-slate-100 first:border-l first:rounded-l-xl align-top">
                           <h4
                             className={`text-[13px] font-bold text-[#18254D] tracking-tight mb-1 cursor-pointer hover:text-secondary transition-colors ${f.status === "completed" ? "line-through opacity-60" : ""}`}
@@ -1133,7 +1097,6 @@ const FollowUpList = ({
                           </h4>
                         </td>
 
-                        {/* Col 2: Lead Name */}
                         <td className="p-4 border-y border-slate-100 align-top">
                           <div className="flex flex-col gap-1">
                             <span className="text-[13px] font-bold text-secondary">
@@ -1147,7 +1110,6 @@ const FollowUpList = ({
                           </div>
                         </td>
 
-                        {/* Col 3: Mode */}
                         <td className="p-4 border-y border-slate-100 align-top">
                           <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold border flex items-center gap-1.5 shadow-sm transition-all w-fit whitespace-nowrap ${getModeBadge(f.followup_mode)}`}>
                             {React.createElement(
@@ -1164,7 +1126,6 @@ const FollowUpList = ({
                           </span>
                         </td>
 
-                        {/* Col 4: Due Date */}
                         <td className="p-4 border-y border-slate-100 align-top whitespace-nowrap">
                           <div className="flex items-center gap-1.5 text-[11px] font-bold tracking-widest uppercase text-slate-400 whitespace-nowrap">
                             <Calendar size={12} className="opacity-70" />
@@ -1174,7 +1135,6 @@ const FollowUpList = ({
                           </div>
                         </td>
 
-                        {/* Col 5: Due Time */}
                         <td className="p-4 border-y border-slate-100 align-top whitespace-nowrap">
                           <div className="flex items-center gap-1.5 text-[11px] font-bold tracking-widest uppercase text-secondary whitespace-nowrap">
                             <Clock size={12} className="opacity-70" />
@@ -1184,7 +1144,6 @@ const FollowUpList = ({
                           </div>
                         </td>
 
-                        {/* Col 6: Actions */}
                         <td className="p-4 border-y border-slate-100 last:border-r last:rounded-r-xl align-top">
                           <div className="flex items-center justify-end gap-1.5">
                             <button
@@ -1391,7 +1350,6 @@ const FollowUpList = ({
                   return (
                     <>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {/* Schedule Card */}
                         <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 shadow-sm relative overflow-hidden group">
                           <div className="absolute -top-4 -right-4 p-3 opacity-5 text-slate-800">
                             <Calendar size={80} />
@@ -1425,7 +1383,6 @@ const FollowUpList = ({
                           </div>
                         </div>
 
-                        {/* Client Card */}
                         <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 shadow-sm relative overflow-hidden group">
                           <div className="absolute -top-4 -right-4 p-3 opacity-5 text-slate-800">
                             <User size={80} />
@@ -1473,7 +1430,6 @@ const FollowUpList = ({
                         </div>
                       </div>
 
-                      {/* Description block */}
                       {selectedFollowUpForDetails.description && (
                         <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 shadow-sm relative">
                           <p className="text-[10px] font-black tracking-widest text-slate-400 uppercase mb-3 flex items-center gap-1.5">
@@ -1485,7 +1441,6 @@ const FollowUpList = ({
                         </div>
                       )}
 
-                      {/* Completion Block */}
                       {selectedFollowUpForDetails.status === "completed" && (
                         <div className="bg-success/5 border border-success/20 rounded-2xl p-4 shadow-sm">
                           <div className="flex items-center gap-2 mb-4">
@@ -1526,17 +1481,6 @@ const FollowUpList = ({
                   );
                 })()}
               </div>
-              {/* <div className="p-4 border-t border-slate-100 bg-slate-50 flex justify-end shrink-0">
-                <button
-                  onClick={() => {
-                    setShowDetailsModal(false);
-                    setSelectedFollowUpForDetails(null);
-                  }}
-                  className="px-5 py-2 text-sm font-bold text-slate-500 hover:text-slate-700 hover:bg-slate-200/50 rounded-lg transition-colors"
-                >
-                  Close
-                </button>
-              </div> */}
             </div>
           </div>
         , document.body)}
@@ -1872,10 +1816,7 @@ const FollowUpList = ({
                               <div className="overflow-y-auto max-h-60">
                                 {projects
                                   .filter((p) => {
-                                    // Only show active/in-progress/hold projects (exclude completed)
                                     if (p.status === "Completed") return false;
-
-                                    // Search filtering
                                     if (!projectSearchTerm.trim()) return true;
                                     const q = projectSearchTerm.toLowerCase();
                                     return (
@@ -1995,8 +1936,6 @@ const FollowUpList = ({
                                       (c.status !== "Lead" || c.isConverted)
                                     )
                                       return false;
-                                    
-                                    // For Clients (typeFilter !== "Lead"), only show Active clients
                                     if (typeFilter !== "Lead" && c.status !== "Active" && c.status !== "Lead")
                                       return false;
                                     if (!clientSearchTerm.trim()) return true;
@@ -2252,7 +2191,7 @@ const FollowUpList = ({
                                       });
                                       setIsPeriodDropdownOpen(false);
                                     }}
-                                        className={`w-full text-left px-4 py-2.5 text-[12px] font-bold tracking-widest transition-colors ${formData.timePeriod === p ? "bg-slate-100 text-secondary" : "text-[#18254D] hover:bg-slate-50"}`}
+                                    className={`w-full text-left px-4 py-2.5 text-[12px] font-bold tracking-widest transition-colors ${formData.timePeriod === p ? "bg-slate-100 text-secondary" : "text-[#18254D] hover:bg-slate-50"}`}
                                   >
                                     {p}
                                   </button>
@@ -2429,7 +2368,6 @@ const FollowUpList = ({
                             Completion Time
                           </label>
                           <div className="flex gap-2 relative">
-                            {/* Hour Dropdown */}
                             <div className="flex-1 relative">
                               <button
                                 type="button"
@@ -2477,7 +2415,6 @@ const FollowUpList = ({
                               )}
                             </div>
 
-                            {/* Minute Dropdown */}
                             <div className="flex-1 relative">
                               <button
                                 type="button"
@@ -2523,7 +2460,6 @@ const FollowUpList = ({
                               )}
                             </div>
 
-                            {/* Period Dropdown */}
                             <div className="w-20 relative">
                               <button
                                 type="button"
@@ -2604,59 +2540,50 @@ const FollowUpList = ({
                                 Select Status
                               </p>
                             </div>
-                            {["pending", "completed"]
-                              .map((status) => (
-                                <button
-                                  key={status}
-                                  type="button"
-                                  onClick={() => {
-                                    const updates = { followup_status: status };
-
-                                    // If switching TO completed, and it's currently empty, pre-fill with defaults
-                                    if (status === "completed") {
-                                      if (!formData.completed_by) {
-                                        const user = JSON.parse(
-                                          localStorage.getItem("user") || "{}",
-                                        );
-                                        updates.completed_by =
-                                          user.full_name || "";
-                                      }
-                                      if (!formData.completionDate) {
-                                        updates.completionDate = new Date()
-                                          .toISOString()
-                                          .split("T")[0];
-                                      }
-                                      if (!formData.completionHour) {
-                                        const now = new Date();
-                                        updates.completionHour = (
-                                          now.getHours() % 12 || 12
-                                        ).toString();
-                                        updates.completionMinute = now
-                                          .getMinutes()
-                                          .toString()
-                                          .padStart(2, "0");
-                                        updates.completionPeriod =
-                                          now.getHours() >= 12 ? "PM" : "AM";
-                                      }
+                            {["pending", "completed"].map((status) => (
+                              <button
+                                key={status}
+                                type="button"
+                                onClick={() => {
+                                  const updates = { followup_status: status };
+                                  if (status === "completed") {
+                                    if (!formData.completed_by) {
+                                      const user = JSON.parse(
+                                        localStorage.getItem("user") || "{}",
+                                      );
+                                      updates.completed_by =
+                                        user.full_name || "";
                                     }
-
-                                    setFormData({
-                                      ...formData,
-                                      ...updates,
-                                    });
-                                    setIsStatusDropdownOpen(false);
-                                  }}
-                                  className={`w-full text-left px-4 py-2.5 text-[12px] font-bold tracking-widest transition-colors capitalize ${
-                                    formData.followup_status === status
-                                      ? "bg-slate-100 text-secondary"
-                                      : "text-[#18254D] hover:bg-slate-50"
-                                  }`}
-                                >
-                                  {status === "reschedule"
-                                    ? "Rescheduled"
-                                    : status}
-                                </button>
-                              ))}
+                                    if (!formData.completionDate) {
+                                      updates.completionDate = new Date()
+                                        .toISOString()
+                                        .split("T")[0];
+                                    }
+                                    if (!formData.completionHour) {
+                                      const now = new Date();
+                                      updates.completionHour = (
+                                        now.getHours() % 12 || 12
+                                      ).toString();
+                                      updates.completionMinute = now
+                                        .getMinutes()
+                                        .toString()
+                                        .padStart(2, "0");
+                                      updates.completionPeriod =
+                                        now.getHours() >= 12 ? "PM" : "AM";
+                                    }
+                                  }
+                                  setFormData({ ...formData, ...updates });
+                                  setIsStatusDropdownOpen(false);
+                                }}
+                                className={`w-full text-left px-4 py-2.5 text-[12px] font-bold tracking-widest transition-colors capitalize ${
+                                  formData.followup_status === status
+                                    ? "bg-slate-100 text-secondary"
+                                    : "text-[#18254D] hover:bg-slate-50"
+                                }`}
+                              >
+                                {status}
+                              </button>
+                            ))}
                           </div>
                         </>
                       )}
@@ -2666,9 +2593,17 @@ const FollowUpList = ({
                 <div className="pt-1 shrink-0">
                   <button
                     type="submit"
-                    className="w-full py-3 bg-[#18254D] text-white rounded-2xl text-[13px] font-bold tracking-[0.2em] shadow-lg active:scale-[0.97] transition-all hover:bg-[#1e2e5e] flex items-center justify-center gap-2"
+                    disabled={isSubmitting}
+                    className="w-full py-3 bg-[#18254D] text-white rounded-2xl text-[13px] font-bold tracking-[0.2em] shadow-lg active:scale-[0.97] transition-all hover:bg-[#1e2e5e] flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
                   >
-                    {formData.id ? "Save Changes" : "Create Follow-up"}
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 size={16} className="animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      formData.id ? "Save Changes" : "Create Follow-up"
+                    )}
                   </button>
                 </div>
               </form>

@@ -1,62 +1,28 @@
 import React, { useState, useEffect, useRef } from "react";
-import { toast } from "react-hot-toast";
-import { addToGoogleCalendar } from "../../utils/calendar";
-
 import { createPortal } from "react-dom";
+import { toast } from "react-hot-toast";
 import { useScrollLock } from "../../hooks/useScrollLock";
-import {
-  ArrowLeft,
-  Mail,
-  Phone,
-  MapPin,
-  Sparkles,
-  Send,
-  Clock,
-  FileText,
-  Plus,
-  MessageSquare,
-  Briefcase,
-  Calendar,
-  X,
-  ChevronLeft,
-  ChevronRight,
-  Zap,
-  Target,
-  Pencil,
-  RotateCcw,
-  Flame,    
-  Sun,
-  Snowflake,
-  Search,
-  Check,
-  CheckCircle2,
-  ChevronDown,
-  Globe,
-  UserCheck,
-  UserX,
-  Tag,
-  DollarSign,
-  Bell,
-} from "lucide-react";
-import { MOCK_ACTIVITIES } from "../../constants/mockData";
-import {
-  generateClientSummary,
-  suggestNextAction,
-} from "../../services/aiService";
+import { addToGoogleCalendar } from "../../utils/calendar";
+import { validateForm } from "../../utils/validation";
+import { extractCountryAndPhone } from "../../utils/leadUtils";
+import { formatBudget } from "../../utils/formatters";
 import DatePicker from "../../components/ui/DatePicker";
-import { countries } from "../../utils/countries";
-import {
-  indianStates,
-  commonCurrencies,
-  countryToCurrency,
-} from "../../utils/locationData";
 import SearchableDropdown from "../../components/common/SearchableDropdown";
-import {
-  CATEGORY_MAP,
-  REVERSE_CATEGORY_MAP,
-} from "../../constants/categoryConstants";
+import { countries } from "../../utils/countries";
+import { indianStates, commonCurrencies, countryToCurrency } from "../../utils/locationData";
+import { CATEGORY_MAP, REVERSE_CATEGORY_MAP } from "../../constants/categoryConstants";
 import { BASE_URL } from "../../constants/config";
+import { MOCK_ACTIVITIES } from "../../constants/mockData";
+import { generateClientSummary, suggestNextAction } from "../../services/aiService";
+import {
+  ArrowLeft, Mail, Phone, MapPin, Sparkles, Send, Clock, FileText,
+  Plus, MessageSquare, Briefcase, Calendar, X, ChevronLeft,
+  ChevronRight, Zap, Target, Pencil, RotateCcw, Flame,
+  Sun, Snowflake, Search, Check, CheckCircle2, ChevronDown,
+  Globe, UserCheck, UserX, Tag, DollarSign, Bell
+} from "lucide-react";
 
+// --- UTILS ---
 const parseLocalDate = (dateStr) => {
   if (!dateStr) return new Date();
   if (dateStr instanceof Date) return dateStr;
@@ -71,19 +37,15 @@ const parseLocalDate = (dateStr) => {
 
 const getModeBadge = (mode) => {
   switch (mode?.toLowerCase()) {
-    case "call":
-      return "bg-success/10 text-success border-success/20";
-    case "email":
-      return "bg-info/10 text-info border-info/20";
-    case "meeting":
-      return "bg-secondary/10 text-secondary border-secondary/20";
-    case "whatsapp":
-      return "bg-emerald-500/10 text-emerald-600 border-emerald-500/20";
-    default:
-      return "bg-slate-50 text-slate-500 border-slate-200";
+    case "call": return "bg-green-100 text-green-700 border-green-200";
+    case "email": return "bg-blue-100 text-blue-700 border-blue-200";
+    case "meeting": return "bg-purple-100 text-purple-700 border-purple-200";
+    case "whatsapp": return "bg-emerald-100 text-emerald-700 border-emerald-200";
+    default: return "bg-gray-100 text-gray-600 border-gray-200";
   }
 };
 
+// --- SUB-COMPONENTS ---
 const ConversationCard = ({ conv, onAddToCalendar }) => {
   const type = conv.source === "followup" ? (conv.type || conv.followup_mode || "call").toLowerCase() : (conv.type || "call").toLowerCase();
   const createdDate = parseLocalDate(conv.created_at || conv.createdAt || conv.joinedDate || conv.date || conv.dueDate);
@@ -92,117 +54,97 @@ const ConversationCard = ({ conv, onAddToCalendar }) => {
   const isFollowup = conv.source === "followup";
   const isPending = conv.source === "pending";
 
-  const getBgColor = () => {
-    if (isFollowup) return "bg-success/5 border-success/20 shadow-sm shadow-success/5";
-    
+  const getCardStyle = () => {
+    if (isFollowup) return "bg-emerald-50/50 border-emerald-100 hover:border-emerald-200";
     switch (conv.priority) {
-      case "High":
-        return "bg-error/5 border-error/20 shadow-sm shadow-error/5 hover:border-error/40";
-      case "Medium":
-        return "bg-warning/5 border-warning/20 shadow-sm shadow-warning/5 hover:border-warning/40";
-      case "Low":
-        return "bg-info/5 border-info/20 shadow-sm shadow-info/5 hover:border-info/40";
-      default:
-        return "bg-slate-50/50 border-slate-100 hover:border-slate-200";
+      case "High": return "bg-red-50/50 border-red-100 hover:border-red-200";
+      case "Medium": return "bg-amber-50/50 border-amber-100 hover:border-amber-200";
+      case "Low": return "bg-blue-50/50 border-blue-100 hover:border-blue-200";
+      default: return "bg-white border-slate-200 hover:border-slate-300";
+    }
+  };
+
+  const getIconColor = () => {
+    if (isPending) return "bg-amber-500";
+    if (isFollowup) return "bg-emerald-500";
+    switch(type) {
+      case "email": return "bg-blue-500";
+      case "meeting": return "bg-purple-500";
+      case "whatsapp": return "bg-[#25D366]";
+      default: return "bg-green-500"; // call
     }
   };
 
   return (
-    <div className={`group min-w-full w-full shrink-0 snap-start rounded-xl p-4 flex flex-col hover:shadow-md transition-all border relative ${getBgColor()}`}>
-      <div className="flex items-center justify-between mb-3">
-        <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-white shadow-sm ${
-          isPending ? "bg-warning" : isFollowup ? "bg-success" : type === "email" ? "bg-info" : type === "call" ? "bg-success" : type === "meeting" ? "bg-secondary" : type === "whatsapp" ? "bg-[#25D366]" : "bg-slate-400"
-        }`}>
-          {type === "call" ? <Phone size={14} strokeWidth={2.5} /> : type === "meeting" ? <Calendar size={14} strokeWidth={2.5} /> : type === "whatsapp" ? <MessageSquare size={14} strokeWidth={2.5} /> : <Mail size={14} strokeWidth={2.5} />}
+    <div className={`group min-w-full w-full shrink-0 snap-start rounded-2xl p-5 flex flex-col transition-all border ${getCardStyle()}`}>
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-sm ${getIconColor()}`}>
+            {type === "call" ? <Phone size={18} /> : type === "meeting" ? <Calendar size={18} /> : type === "whatsapp" ? <MessageSquare size={18} /> : <Mail size={18} />}
+          </div>
+          <span className={`text-[10px] sm:text-xs font-bold tracking-wider px-2.5 py-1 rounded-md border uppercase ${
+            isPending ? "bg-amber-100 text-amber-700 border-amber-200" :
+            isFollowup ? "bg-emerald-100 text-emerald-700 border-emerald-200" : getModeBadge(type)
+          }`}>
+            {isPending ? "PENDING" : isFollowup ? "FOLLOW-UP COMPLETED" : type}
+          </span>
         </div>
 
         {isPending && (
-          <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onAddToCalendar(conv);
-              }}
-              className="p-1.5 bg-white border border-slate-200 text-slate-400 rounded-lg hover:text-blue-500 hover:border-blue-500/30 transition-all flex items-center justify-center shadow-sm"
-              title="Add to Google Calendar"
-            >
-              <Calendar size={12} />
-            </button>
-          </div>
+          <button
+            onClick={(e) => { e.stopPropagation(); onAddToCalendar(conv); }}
+            className="opacity-0 group-hover:opacity-100 p-2 bg-white border border-slate-200 text-slate-400 rounded-lg hover:text-blue-600 hover:border-blue-300 transition-all shadow-sm"
+            title="Add to Google Calendar"
+          >
+            <Calendar size={16} />
+          </button>
         )}
-
-        <span className={`text-[11px] md:text-[13px] font-bold tracking-widest px-2 py-0.5 rounded-md border uppercase ${
-          isPending ? "bg-warning/10 text-warning border-warning/20" :
-          isFollowup ? "bg-success/10 text-success border-success/20" : getModeBadge(type)
-        }`}>
-          {isPending ? "PENDING" : isFollowup ? "FOLLOW-UP COMPLETED" : type}
-        </span>
       </div>
 
-      
       {conv.title && (
-        <h5 className="text-[14px] font-bold text-primary tracking-tight mb-2 line-clamp-1 opacity-90">{conv.title}</h5>
+        <h5 className="text-base font-bold text-slate-800 mb-2 line-clamp-1">{conv.title}</h5>
       )}
-      
-      <div className="flex-1 space-y-3 mb-4">
+
+      <div className="flex-1 space-y-3 mb-5">
         {isFollowup && conv.originalDescription && (
-          <div className="p-2.5 bg-white/50 border border-slate-100 rounded-lg">
-            <p className="text-[12px] text-slate-600 font-medium line-clamp-2">
-              {conv.originalDescription}
-            </p>
+          <div className="p-3 bg-white/60 border border-slate-200/60 rounded-xl">
+            <p className="text-xs text-slate-500 font-medium line-clamp-2">{conv.originalDescription}</p>
           </div>
         )}
         <div>
           {isFollowup && (
-            <p className="text-[11px] font-bold text-success uppercase tracking-widest mb-1 flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-success"></span>
-              Summary
+            <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Summary
             </p>
           )}
-          <p className="text-[12px] font-medium text-primary leading-relaxed line-clamp-3">
+          <p className="text-sm text-slate-700 leading-relaxed line-clamp-3">
             {conv.description || conv.follow_brief}
           </p>
         </div>
       </div>
-      
-      <div className={`mt-auto pt-3 flex flex-col gap-1.5 text-[11px] font-bold tracking-widest ${isFollowup ? 'border-t border-success/10 text-success/70' : 'border-t border-slate-200 text-slate-400'}`}>
-        {isFollowup && (
-          <div className="flex items-center gap-1.5 mb-1 text-slate-400">
-            <Clock size={12} />
-            <span>
-              Follow-up Scheduled Date: {dueDate.toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" })}
-              {" · "}
-              {dueDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true })}
-            </span>
-          </div>
-        )}
-        {isFollowup && (
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5">
-              <CheckCircle2 size={12} className="text-success" />
-              <span>
-                Follow-up Completed Date: {completedDate ? completedDate.toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" }) : "N/A"}
-                {completedDate && " · "}
-                {completedDate && completedDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true })}
-              </span>
+
+      <div className="mt-auto pt-4 border-t border-slate-200/60 flex flex-col gap-2 text-xs font-medium text-slate-500">
+        {isFollowup ? (
+          <>
+            <div className="flex items-center gap-2">
+              <Clock size={14} className="text-slate-400" />
+              <span>Scheduled: {dueDate.toLocaleDateString()} · {dueDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
             </div>
-          </div>
-        )}
-        {!isFollowup && (
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5">
-              <Calendar size={12} className="text-slate-400" />
-              <span>
-                Interaction Date: {createdDate.toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" })}
-                {" · "}
-                {createdDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true })}
-              </span>
+            <div className="flex items-center gap-2 text-emerald-600">
+              <CheckCircle2 size={14} />
+              <span>Completed: {completedDate ? `${completedDate.toLocaleDateString()} · ${completedDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : "N/A"}</span>
             </div>
+          </>
+        ) : (
+          <div className="flex items-center gap-2">
+            <Calendar size={14} className="text-slate-400" />
+            <span>Interaction: {createdDate.toLocaleDateString()} · {createdDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
           </div>
         )}
+        
         {((isFollowup && conv.completed_by) || conv.completedBy) && (
-          <p className={`mt-1 ${isFollowup ? "text-success/70" : "text-slate-400"}`}>
-            Completed by: {conv.completed_by || conv.completedBy}
+          <p className={`mt-1 text-xs ${isFollowup ? "text-emerald-600/80" : "text-slate-400"}`}>
+            By: <span className="font-semibold">{conv.completed_by || conv.completedBy}</span>
           </p>
         )}
       </div>
@@ -210,83 +152,34 @@ const ConversationCard = ({ conv, onAddToCalendar }) => {
   );
 };
 
-import { validateForm } from "../../utils/validation";
-import { extractCountryAndPhone } from "../../utils/leadUtils";
-import { formatBudget } from "../../utils/formatters";
-
+// --- MAIN COMPONENT ---
 const ClientDetail = ({
-  client,
-  onBack,
-  onUpdateClient,
-  onAddActivity,
-  activities,
-  followUps = [],
-  onAddFollowUp,
-  initialTab = "overview",
-  onSelectProject,
-  projects = [],
-  onDismissLead,
-  onRestoreLead,
-  onToggleStatus,
+  client, onBack, onUpdateClient, onAddActivity, activities, followUps = [],
+  onAddFollowUp, initialTab = "overview", onSelectProject, projects = [],
+  onDismissLead, onRestoreLead, onToggleStatus,
 }) => {
   const isLead = client.status === "Lead" || client.status === "Dismissed";
   const [activeTab, setActiveTab] = useState(initialTab);
   const [nextAction, setNextAction] = useState("");
+  
+  // States - Unchanged
   const [editFormData, setEditFormData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    countryCode: "",
-    leadType: "Warm",
-    notes: "",
-    website: "",
-    projectCategory: 1,
-    country: "India",
-    state: "",
-    currency: "INR",
-    organisationName: "",
-    clientStatus: "Active",
+    name: "", email: "", phone: "", countryCode: "", leadType: "Warm",
+    notes: "", website: "", projectCategory: 1, country: "India",
+    state: "", currency: "INR", organisationName: "", clientStatus: "Active",
   });
-
   const [isCountryDropdownOpen, setIsCountryDropdownOpen] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [isEditCategoryDropdownOpen, setIsEditCategoryDropdownOpen] =
-    useState(false);
-  const [isEditStatusDropdownOpen, setIsEditStatusDropdownOpen] =
-    useState(false);
+  const [isEditCategoryDropdownOpen, setIsEditCategoryDropdownOpen] = useState(false);
+  const [isEditStatusDropdownOpen, setIsEditStatusDropdownOpen] = useState(false);
   const countryButtonRef = useRef(null);
   const [countryDropdownStyle, setCountryDropdownStyle] = useState({});
 
-  useEffect(() => {
-    if (isCountryDropdownOpen && countryButtonRef.current) {
-      const rect = countryButtonRef.current.getBoundingClientRect();
-      setCountryDropdownStyle({
-        position: "fixed",
-        top: `${rect.bottom + 8}px`,
-        left: `${rect.left}px`,
-        width: `${rect.width}px`,
-        zIndex: 9999,
-      });
-    }
-  }, [isCountryDropdownOpen]);
-
-  useEffect(() => {
-    setActiveTab(initialTab);
-  }, [initialTab]);
-
-  // Update form data when modal opens or client changes
   const [showAddFollowUpModal, setShowAddFollowUpModal] = useState(false);
   const [followUpFormData, setFollowUpFormData] = useState({
-    title: "",
-    description: "",
-    followup_date: new Date().toLocaleDateString("en-CA"),
-    timeHour: "12",
-    timeMinute: "00",
-    timePeriod: "PM",
-    priority: "Medium",
-    followup_mode: "Call",
-    followup_status: "Pending",
-    projectId: "",
+    title: "", description: "", followup_date: new Date().toLocaleDateString("en-CA"),
+    timeHour: "12", timeMinute: "00", timePeriod: "PM", priority: "Medium",
+    followup_mode: "Call", followup_status: "Pending", projectId: "",
   });
 
   const [isFollowHourOpen, setIsFollowHourOpen] = useState(false);
@@ -300,18 +193,10 @@ const ClientDetail = ({
   const [showCompletionModal, setShowCompletionModal] = useState(false);
   const [completionBrief, setCompletionBrief] = useState("");
   const [completingFollowUpId, setCompletingFollowUpId] = useState(null);
-  const [completionDate, setCompletionDate] = useState(
-    new Date().toLocaleDateString("en-CA"),
-  );
-  const [completionHour, setCompletionHour] = useState(
-    (new Date().getHours() % 12 || 12).toString(),
-  );
-  const [completionMinute, setCompletionMinute] = useState(
-    new Date().getMinutes().toString().padStart(2, "0"),
-  );
-  const [completionPeriod, setCompletionPeriod] = useState(
-    new Date().getHours() >= 12 ? "PM" : "AM",
-  );
+  const [completionDate, setCompletionDate] = useState(new Date().toLocaleDateString("en-CA"));
+  const [completionHour, setCompletionHour] = useState((new Date().getHours() % 12 || 12).toString());
+  const [completionMinute, setCompletionMinute] = useState(new Date().getMinutes().toString().padStart(2, "0"));
+  const [completionPeriod, setCompletionPeriod] = useState(new Date().getHours() >= 12 ? "PM" : "AM");
   const [completedBy, setCompletedBy] = useState(() => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     return user.full_name || "";
@@ -320,178 +205,160 @@ const ClientDetail = ({
   const [isCompMinOpen, setIsCompMinOpen] = useState(false);
   const [isCompPeriodOpen, setIsCompPeriodOpen] = useState(false);
 
-  // Lock scroll when any modal is open
+  const [logData, setLogData] = useState({
+    type: "call", description: "", projectId: "",
+    date: new Date().toISOString().split("T")[0],
+    time: new Date().toTimeString().split(" ")[0].substring(0, 5),
+  });
+  const [clientFollowUps, setClientFollowUps] = useState([]);
+  const [isLeadConvOpen, setIsLeadConvOpen] = useState(true);
+  const [expandedProjectIndex, setExpandedProjectIndex] = useState(0);
+
   useScrollLock(showEditModal || showAddFollowUpModal || isLogging || showCompletionModal);
+
+  // Effects & Handlers - Unchanged
+  useEffect(() => {
+    if (isCountryDropdownOpen && countryButtonRef.current) {
+      const rect = countryButtonRef.current.getBoundingClientRect();
+      setCountryDropdownStyle({
+        position: "fixed", top: `${rect.bottom + 8}px`, left: `${rect.left}px`,
+        width: `${rect.width}px`, zIndex: 9999,
+      });
+    }
+  }, [isCountryDropdownOpen]);
+
+  useEffect(() => setActiveTab(initialTab), [initialTab]);
+
+  useEffect(() => {
+    if (showEditModal && client) {
+      const dialCode = client.country_code || "";
+      const phone = client.phone || "";
+      const countryName = client.country || "";
+      setEditFormData({
+        name: client.name || "", email: client.email || "", phone: phone,
+        countryCode: dialCode.replace("+", ""), leadType: client.leadType || "Hot",
+        notes: client.notes || "", website: client.website || "",
+        projectCategory: client.projectCategory || REVERSE_CATEGORY_MAP[client.industry] || 1,
+        country: countryName, state: client.state || "", currency: client.currency || "",
+        organisationName: client.organisationName || "", clientStatus: client.clientStatus || "Active",
+      });
+    }
+  }, [showEditModal, client]);
+
+  useEffect(() => {
+    if (client && client.id) fetchClientFollowups();
+  }, [client]);
+
+  const fetchClientFollowups = async () => {
+    try {
+      const response = await fetch(`${BASE_URL}/api/client-followups/${client.id}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setClientFollowUps(data);
+      }
+    } catch (error) { console.error("Error fetching client followups:", error); }
+  };
 
   const handleAddFollowUpSubmit = async (e) => {
     e.preventDefault();
     if (!followUpFormData.title || !followUpFormData.description) {
-      toast.error("Please fill in title and description");
-      return;
+      toast.error("Please fill in title and description"); return;
     }
-
     let hour = parseInt(followUpFormData.timeHour);
     if (followUpFormData.timePeriod === "PM" && hour < 12) hour += 12;
     if (followUpFormData.timePeriod === "AM" && hour === 12) hour = 0;
     const time24 = `${hour.toString().padStart(2, "0")}:${followUpFormData.timeMinute}`;
     const combinedDateTime = `${followUpFormData.followup_date} ${time24}:00`;
-
-    const finalClientId =
-      followUpFormData.projectId ? null : (!isLead && client.lead_id ? client.lead_id : client.id);
+    const finalClientId = followUpFormData.projectId ? null : (!isLead && client.lead_id ? client.lead_id : client.id);
 
     try {
-      const formattedStatus =
-        followUpFormData.followup_status.charAt(0).toUpperCase() +
-        followUpFormData.followup_status.slice(1).toLowerCase();
-
+      const formattedStatus = followUpFormData.followup_status.charAt(0).toUpperCase() + followUpFormData.followup_status.slice(1).toLowerCase();
       if (onAddFollowUp) {
         await onAddFollowUp({
-          ...followUpFormData,
-          clientId: finalClientId,
-          dueDate: combinedDateTime,
-          followup_date: combinedDateTime,
-          followup_status: formattedStatus,
+          ...followUpFormData, clientId: finalClientId, dueDate: combinedDateTime,
+          followup_date: combinedDateTime, followup_status: formattedStatus,
         });
       }
       setShowAddFollowUpModal(false);
       setFollowUpFormData({
-        title: "",
-        description: "",
-        followup_date: new Date().toLocaleDateString("en-CA"),
-        timeHour: "12",
-        timeMinute: "00",
-        timePeriod: "PM",
-        priority: "Medium",
-        followup_mode: "Call",
-        followup_status: "Pending",
-        projectId: "",
+        title: "", description: "", followup_date: new Date().toLocaleDateString("en-CA"),
+        timeHour: "12", timeMinute: "00", timePeriod: "PM", priority: "Medium",
+        followup_mode: "Call", followup_status: "Pending", projectId: "",
       });
     } catch (error) {
-      console.error("Error adding follow-up:", error);
-      toast.error("Failed to add follow-up");
+      console.error("Error adding follow-up:", error); toast.error("Failed to add follow-up");
     }
   };
 
-  useEffect(() => {
-    if (showEditModal && client) {
-      // Prioritize the actual country_code column from the backend
-      const dialCode = client.country_code || "";
-      const phone = client.phone || "";
-      const countryName = client.country || "";
+  const handleLogInteraction = (e) => {
+    e.preventDefault();
+    const isValid = validateForm(logData, {
+      description: { required: true, minLength: 5, label: "Interaction Details" },
+      date: { required: true, label: "Date" },
+      time: { required: true, label: "Time" },
+    });
+    if (!isValid) return;
 
-      setEditFormData({
-        name: client.name || "",
-        email: client.email || "",
-        phone: phone,
-        countryCode: dialCode.replace("+", ""),
-        leadType: client.leadType || "Hot",
-        notes: client.notes || "",
-        website: client.website || "",
-        projectCategory:
-          client.projectCategory || REVERSE_CATEGORY_MAP[client.industry] || 1,
-        country: countryName,
-        state: client.state || "",
-        currency: client.currency || "",
-        organisationName: client.organisationName || "",
-        clientStatus: client.clientStatus || "Active",
+    if (onAddActivity && logData.description) {
+      const combinedDateTime = new Date(`${logData.date}T${logData.time}`);
+      onAddActivity({
+        clientId: client.id, type: logData.type, description: logData.description,
+        projectName: clientProjects.find((p) => p.id === logData.projectId)?.name || "",
+        projectId: logData.projectId, date: combinedDateTime.toISOString(),
+      });
+      setLogData({
+        ...logData, description: "", projectId: "",
+        date: new Date().toISOString().split("T")[0],
+        time: new Date().toTimeString().split(" ")[0].substring(0, 5),
       });
     }
-  }, [showEditModal, client]);
-
-  const [logData, setLogData] = useState({
-    type: "call", 
-    description: "",
-    projectId: "",
-    date: new Date().toISOString().split("T")[0],
-    time: new Date().toTimeString().split(" ")[0].substring(0, 5),
-  });
-
-  const [clientFollowUps, setClientFollowUps] = useState([]);
-  const [isLeadConvOpen, setIsLeadConvOpen] = useState(true);
-  const [expandedProjectIndex, setExpandedProjectIndex] = useState(0);
-
-  const toggleProject = (idx) => {
-    setExpandedProjectIndex((prev) => (prev === idx ? null : idx));
   };
 
-  useEffect(() => {
-    if (client && client.id) {
-      fetchClientFollowups();
-    }
-  }, [client]);
-
-  const fetchClientFollowups = async () => {
+  const handleAddToCalendar = async (f) => {
     try {
-      const response = await fetch(
-        `${BASE_URL}/api/client-followups/${client.id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        },
-      );
-      if (response.ok) {
-        const data = await response.json();
-        setClientFollowUps(data);
-      }
-    } catch (error) {
-      console.error("Error fetching client followups:", error);
-    }
+      const dueDate = f.followup_date ? parseLocalDate(f.followup_date) : f.dueDate ? parseLocalDate(f.dueDate) : new Date();
+      const startTime = dueDate;
+      const endTime = new Date(startTime.getTime() + 30 * 60000); 
+      
+      const eventData = {
+        title: `Follow-up: ${f.title}`,
+        description: `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n 📋 Follow-up Title\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n 📌 TITLE:     ${f.title}\n 👤 CLIENT:    ${client?.name || "N/A"}\n 🏢 COMPANY:   ${client?.company || "N/A"}\n 📞 MODE:      ${f.followup_mode || "Call"}\n\n ──────────────────────────────\n 📝 DESCRIPTION:\n ${f.description || "No description provided."}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nGenerated via Parivartan CRM`,
+        start: startTime, end: endTime
+      };
+      toast.promise(addToGoogleCalendar(eventData), {
+        loading: 'Connecting to Google Calendar...', success: 'Event added to your calendar!', error: 'Failed to add event to calendar.'
+      });
+    } catch (error) { toast.error("Could not sync with Google Calendar."); }
   };
 
+  const toggleProject = (idx) => setExpandedProjectIndex((prev) => (prev === idx ? null : idx));
+
+  // Data processing - Unchanged
   const clientProjects = projects.filter((p) => p.clientId == client.id);
   const clientProjectIds = clientProjects.map((p) => p.id);
+  const clientActivities = activities.filter(a => a.clientId == client.id || (client.lead_id && a.clientId == client.lead_id) || clientProjectIds.includes(a.projectId || a.project_id));
+  
+  const completedFollowUps = [...followUps.filter((f) => f.clientId == client.id || (client.lead_id && f.clientId == client.lead_id) || clientProjectIds.includes(f.projectId || f.project_id)), ...clientFollowUps]
+    .filter((f, index, self) => (f.status === "completed" || f.followup_status === "completed") && index === self.findIndex((t) => t.id === f.id));
 
-  const clientActivities = activities.filter(
-    (a) =>
-      a.clientId == client.id ||
-      (client.lead_id && a.clientId == client.lead_id) ||
-      clientProjectIds.includes(a.projectId || a.project_id)
-  );
-
-  const completedFollowUps = [
-    ...followUps.filter((f) => 
-      f.clientId == client.id || 
-      (client.lead_id && f.clientId == client.lead_id) ||
-      clientProjectIds.includes(f.projectId || f.project_id)
-    ),
-    ...clientFollowUps
-  ].filter((f, index, self) => 
-    (f.status === "completed" || f.followup_status === "completed") && 
-    index === self.findIndex((t) => t.id === f.id)
-  );
-
-  const upcomingFollowUps = [
-    ...followUps.filter((f) => 
-      f.clientId == client.id || 
-      (client.lead_id && f.clientId == client.lead_id) ||
-      clientProjectIds.includes(f.projectId || f.project_id)
-    ),
-    ...clientFollowUps
-  ].filter((f, index, self) => 
-    f.status?.toLowerCase() !== "completed" && 
-    f.followup_status?.toLowerCase() !== "completed" &&
-    index === self.findIndex((t) => t.id === f.id)
-  ).sort((a, b) => {
-    const dateA = parseLocalDate(a.followup_date || a.dueDate);
-    const dateB = parseLocalDate(b.followup_date || b.dueDate);
-    const diff = dateA - dateB;
-    if (diff !== 0) return diff;
-    
-    // Secondary sort by Priority
-    const priorityMap = { 'High': 1, 'Medium': 2, 'Low': 3 };
-    return (priorityMap[a.priority] || 4) - (priorityMap[b.priority] || 4);
-  });
+  const upcomingFollowUps = [...followUps.filter((f) => f.clientId == client.id || (client.lead_id && f.clientId == client.lead_id) || clientProjectIds.includes(f.projectId || f.project_id)), ...clientFollowUps]
+    .filter((f, index, self) => f.status?.toLowerCase() !== "completed" && f.followup_status?.toLowerCase() !== "completed" && index === self.findIndex((t) => t.id === f.id))
+    .sort((a, b) => {
+      const diff = parseLocalDate(a.followup_date || a.dueDate) - parseLocalDate(b.followup_date || b.dueDate);
+      if (diff !== 0) return diff;
+      const priorityMap = { 'High': 1, 'Medium': 2, 'Low': 3 };
+      return (priorityMap[a.priority] || 4) - (priorityMap[b.priority] || 4);
+    });
 
   const now = new Date();
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const tomorrowStart = new Date(todayStart);
-  tomorrowStart.setDate(tomorrowStart.getDate() + 1);
+  const tomorrowStart = new Date(todayStart); tomorrowStart.setDate(tomorrowStart.getDate() + 1);
 
   const overdueFUs = upcomingFollowUps.filter(f => parseLocalDate(f.followup_date || f.dueDate) < todayStart);
   const todayFUs = upcomingFollowUps.filter(f => {
-    const d = parseLocalDate(f.followup_date || f.dueDate);
-    return d >= todayStart && d < tomorrowStart;
+    const d = parseLocalDate(f.followup_date || f.dueDate); return d >= todayStart && d < tomorrowStart;
   });
   const futureFUs = upcomingFollowUps.filter(f => parseLocalDate(f.followup_date || f.dueDate) >= tomorrowStart);
 
@@ -503,1573 +370,863 @@ const ClientDetail = ({
     }
   };
 
-  const handleAddToCalendar = async (f) => {
-    try {
-      const dueDate = f.followup_date ? parseLocalDate(f.followup_date) : f.dueDate ? parseLocalDate(f.dueDate) : new Date();
-      const startTime = dueDate;
-      const endTime = new Date(startTime.getTime() + 30 * 60000); // 30 mins later
-      
-      const eventData = {
-        title: `Follow-up: ${f.title}`,
-        description: `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n 📋 Follow-up Title\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n 📌 TITLE:     ${f.title}\n 👤 CLIENT:    ${client?.name || "N/A"}\n 🏢 COMPANY:   ${client?.company || "N/A"}\n 📞 MODE:      ${f.followup_mode || "Call"}\n\n ──────────────────────────────\n 📝 DESCRIPTION:\n ${f.description || "No description provided."}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nGenerated via Parivartan CRM`,
-        start: startTime,
-        end: endTime
-      };
-
-      toast.promise(addToGoogleCalendar(eventData), {
-        loading: 'Connecting to Google Calendar...',
-        success: 'Event added to your calendar!',
-        error: 'Failed to add event to calendar.'
-      });
-    } catch (error) {
-      console.error(error);
-      toast.error("Could not sync with Google Calendar.");
-    }
-  };
-
-  const handleLogInteraction = (e) => {
-
-    e.preventDefault();
-
-    const isValid = validateForm(logData, {
-      description: {
-        required: true,
-        minLength: 5,
-        label: "Interaction Details",
-      },
-      date: { required: true, label: "Date" },
-      time: { required: true, label: "Time" },
-    });
-
-    if (!isValid) return;
-
-    if (onAddActivity && logData.description) {
-      const combinedDateTime = new Date(`${logData.date}T${logData.time}`);
-      onAddActivity({
-        clientId: client.id,
-        type: logData.type,
-        description: logData.description,
-        projectName:
-          clientProjects.find((p) => p.id === logData.projectId)?.name || "",
-        projectId: logData.projectId,
-        date: combinedDateTime.toISOString(),
-      });
-      setLogData({
-        ...logData,
-        description: "",
-        projectId: "",
-        date: new Date().toISOString().split("T")[0],
-        time: new Date().toTimeString().split(" ")[0].substring(0, 5),
-      });
-    }
-  };
-
   const getFollowUpStatusLabel = (date) => {
     if (!date) return null;
     const fuDate = parseLocalDate(date);
     const today = new Date();
-    
-    if (fuDate < today) {
-      return { label: "Overdue", className: "bg-error/10 text-error border-error/20" };
-    }
-    
-    // Normalize dates to midnight for comparison to see if it's "Today" or "Upcoming"
+    if (fuDate < today) return { label: "Overdue", className: "bg-red-100 text-red-700 border-red-200" };
     const fuDay = new Date(fuDate.getFullYear(), fuDate.getMonth(), fuDate.getDate());
     const todayDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    
-    if (fuDay.getTime() === todayDay.getTime()) {
-      return { label: "Today", className: "bg-warning/10 text-warning border-warning/20" };
-    } else {
-      return { label: "Upcoming", className: "bg-info/10 text-info border-info/20" };
-    }
+    if (fuDay.getTime() === todayDay.getTime()) return { label: "Today", className: "bg-amber-100 text-amber-700 border-amber-200" };
+    return { label: "Upcoming", className: "bg-blue-100 text-blue-700 border-blue-200" };
   };
 
+  // UI RENDERING STARTS HERE (Redesigned)
   return (
-    <div className="w-full relative h-full">
-      <div className="max-w-2xl">
-        <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-primary tracking-tight mb-2">
-          {isLead ? "Lead Overview" : "Client Overview"}
-        </h2>
-        <p className="text-sm text-textMuted font-medium leading-relaxed mb-5">
-          {isLead
-            ? "Get a complete overview of lead details."
-            : "Get a complete overview of client details."}
-        </p>
-      </div>
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col min-h-[calc(100vh-8rem)] animate-fade-in relative overflow-hidden">
-        {/* Header */}
-        <div className="p-3 md:p-6 border-b border-slate-100 flex flex-row items-center justify-between bg-white rounded-t-2xl gap-2 md:gap-4">
-          <div className="flex items-center gap-2 md:gap-5 min-w-0">
-            <button
-              onClick={onBack}
-              className="p-2 md:p-2.5 hover:bg-slate-50 rounded-lg md:rounded-xl text-slate-400 hover:text-primary transition-all border border-slate-100 shadow-sm shrink-0 active:scale-95"
-            >
-              <ArrowLeft className="w-4 h-4 md:w-4.5 md:h-4.5" strokeWidth={2.5} />
-            </button>
-            <div className="flex items-center gap-2 md:gap-5 overflow-hidden min-w-0">
-              <div className="w-8 h-8 md:w-12 md:h-12 rounded-[50%] bg-primary flex items-center justify-center text-white font-bold text-sm md:text-xl border md:border-2 border-slate-50 shadow-md md:shadow-lg shrink-0">
-                {client.name.charAt(0).toUpperCase()}
-              </div>
-              <div className="min-w-0">
-                <h2 className="text-sm md:text-xl font-bold text-primary tracking-tight truncate leading-none mb-0.5 md:mb-1.5 capitalize">
-                  {client.name}
-                </h2>
-                <div className="flex items-center gap-1.5 md:gap-2 text-[10px] md:text-[13px] text-textMuted font-bold tracking-widest truncate">
-                  {isLead ? (
-                    client.company && (
-                      <span className="truncate">{client.company}</span>
-                    )
-                  ) : (
-                    <span className="truncate">
-                      {client.projectName || client.company || "Global Project"}
-                    </span>
-                  )}
+    <div className="w-full  min-h-screen text-slate-800">
+      
+      {/* Top Navigation & Header */}
+      <div className=" border-b border-slate-200 sticky top-0 z-30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            
+            {/* Left: Back & Profile Info */}
+            <div className="flex items-center gap-4">
+              <button
+                onClick={onBack}
+                className="p-2 hover:bg-slate-100 rounded-full text-slate-500 hover:text-slate-900 transition-colors shrink-0"
+              >
+                <ArrowLeft className="w-5 h-5" strokeWidth={2} />
+              </button>
+              
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-slate-900 flex items-center justify-center text-white font-bold text-xl shadow-sm shrink-0">
+                  {client.name.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <h1 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight leading-tight capitalize">
+                    {client.name}
+                  </h1>
+                  <p className="text-sm font-medium text-slate-500 flex items-center gap-2">
+                    {isLead ? (client.company && <span>{client.company}</span>) : (<span>{client.projectName || client.company || "Global Project"}</span>)}
+                    <span className="w-1 h-1 rounded-full bg-slate-300 inline-block" />
+                    <span className="text-slate-400">{isLead ? "Lead" : "Client"}</span>
+                  </p>
                 </div>
               </div>
             </div>
-          </div>
-          <div className="flex items-center gap-2 md:gap-3 shrink-0 pr-2">
-            <button
-              onClick={() => setShowEditModal(true)}
-              className="p-2 md:p-2.5 bg-white border border-slate-200 rounded-lg md:rounded-xl text-slate-400 hover:text-primary hover:border-primary hover:bg-slate-50 transition-all active:scale-95 shadow-sm flex items-center gap-2"
-              title="Edit Details"
-            >
-              <Pencil size={16} strokeWidth={2.5} />
-              <span className="hidden sm:inline text-xs font-bold tracking-widest uppercase">Edit</span>
-            </button>
 
-            {client.status !== "Dismissed" ? (
+            {/* Right: Actions */}
+            <div className="flex items-center gap-3">
               <button
-                onClick={() => {
-                  if (isLead) {
-                    onDismissLead && onDismissLead(client.lead_id || client.id);
-                  } else {
-                    onUpdateClient && onUpdateClient(client.id, { ...client, status: "Dismissed", clientStatus: "Dismissed" });
-                  }
-                }}
-                className="p-2 md:p-2.5 bg-white border border-slate-200 rounded-lg md:rounded-xl text-slate-400 hover:text-amber-500 hover:border-amber-500 hover:bg-amber-50 transition-all active:scale-95 shadow-sm flex items-center gap-2"
-                title={isLead ? "Dismiss Lead" : "Dismiss Client"}
+                onClick={() => setShowEditModal(true)}
+                className="px-4 py-2 bg-white border border-slate-200 rounded-full text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-all flex items-center gap-2 shadow-sm"
               >
-                <UserX size={16} strokeWidth={2.5} />
-                <span className="hidden sm:inline text-xs font-bold tracking-widest uppercase">Dismiss</span>
+                <Pencil size={16} /> 
               </button>
-            ) : (
+
+              {client.status !== "Dismissed" ? (
+                <button
+                  onClick={() => {
+                    if (isLead) { onDismissLead && onDismissLead(client.lead_id || client.id); } 
+                    else { onUpdateClient && onUpdateClient(client.id, { ...client, status: "Dismissed", clientStatus: "Dismissed" }); }
+                  }}
+                  className="px-4 py-2 bg-white border border-slate-200 rounded-full text-sm font-semibold text-red-600 hover:bg-red-50 hover:border-red-200 transition-all flex items-center gap-2 shadow-sm"
+                >
+                  <UserX size={16} /> 
+                </button>
+              ) : (
+                <button
+                  onClick={() => onRestoreLead && onRestoreLead(client.lead_id || client.id)}
+                  className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-blue-600 hover:bg-blue-50 hover:border-blue-200 transition-all flex items-center gap-2 shadow-sm"
+                >
+                  <RotateCcw size={16} /> <span className="hidden sm:inline">Restore</span>
+                </button>
+              )}
+            </div>
+          </div>
+          
+          {/* Tabs */}
+          <div className="flex items-center gap-1 overflow-x-auto no-scrollbar pb-[-1px]">
+            {[
+              { id: "overview", label: "Overview", icon: <Target size={16}/> },
+              { id: "activity", label: "Conversations", icon: <MessageSquare size={16}/> },
+              ...(!isLead ? [{ id: "projects", label: "Projects", icon: <Briefcase size={16}/> }] : []),
+            ].map((tab) => (
               <button
-                onClick={() => onRestoreLead && onRestoreLead(client.lead_id || client.id)}
-                className="p-2 md:p-2.5 bg-white border border-slate-200 rounded-lg md:rounded-xl text-slate-400 hover:text-blue-500 hover:border-blue-500 hover:bg-blue-50 transition-all active:scale-95 shadow-sm flex items-center gap-2"
-                title="Restore"
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 px-5 py-3 border-b-2 text-sm font-semibold transition-all whitespace-nowrap ${
+                  activeTab === tab.id 
+                    ? "border-slate-900 text-slate-900" 
+                    : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
+                }`}
               >
-                <RotateCcw size={16} strokeWidth={2.5} />
-                <span className="hidden sm:inline text-xs font-bold tracking-widest uppercase">Restore</span>
+                {tab.icon} {tab.label}
               </button>
-            )}
+            ))}
           </div>
         </div>
-        <div className="flex-1 flex flex-col md:flex-row">
-          {/* Edit Lead Modal */}
-          {showEditModal &&
-            createPortal(
-              <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xl animate-fade-in">
-                <div className="bg-white rounded-xl shadow-2xl w-full max-w-xl overflow-hidden animate-zoom-in border border-slate-200 flex flex-col max-h-[90vh]">
-                  <div className="bg-primary p-4 text-white relative shrink-0">
-                    <button
-                      onClick={() => setShowEditModal(false)}
-                      className="absolute top-4 right-4 p-1.5 hover:bg-white/10 rounded-xl transition-colors"
-                    >
-                      <X size={18} strokeWidth={3} />
-                    </button>
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-secondary/10 rounded-xl flex items-center justify-center shadow-lg border border-secondary/20">
-                        <Pencil
-                          size={18}
-                          className="text-secondary"
-                          strokeWidth={2.5}
-                        />
-                      </div>
-                      <div>
-                        <h3 className="text-base font-bold tracking-tighter leading-none">
-                          Edit {isLead ? "Lead" : "Client"} Details
-                        </h3>
-                        <p className="text-secondary text-[14px] font-bold  tracking-widest mt-0.5">
-                          Update primary contact information
-                        </p>
-                      </div>
+      </div>
+
+      {/* Main Content Area */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          
+          {/* LEFT SIDEBAR: Contact Details Card */}
+          <div className="lg:col-span-4 space-y-6">
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-5">Contact Information</h3>
+              <div className="space-y-4">
+                {client.organisationName && (
+                  <div className="flex items-start gap-3">
+                    <Briefcase className="w-5 h-5 text-slate-400 mt-0.5" />
+                    <div>
+                      <p className="text-xs font-medium text-slate-500">Organization</p>
+                      <p className="text-sm font-semibold text-slate-900">{client.organisationName}</p>
                     </div>
                   </div>
-
-                  <form
-                    onSubmit={async (e) => {
-                      e.preventDefault();
-
-                      const isValid = validateForm(editFormData, {
-                        name: {
-                          required: true,
-                          minLength: 2,
-                          label: "Full Name",
-                        },
-                        email: {
-                          required: true,
-                          pattern: /^\S+@\S+\.\S+$/,
-                          label: "Email",
-                        },
-                        phone: {
-                          required: true,
-                          minLength: 10,
-                          label: "Phone Number",
-                        },
-                      });
-
-                      if (!isValid) return;
-
-                      if (onUpdateClient) {
-                        try {
-                          // Ensure we have the latest values
-                          const formDataToSubmit = {
-                            name: editFormData.name,
-                            email: editFormData.email,
-                            phone: editFormData.phone,
-                            countryCode: editFormData.countryCode,
-                            leadType: editFormData.leadType,
-                            notes: editFormData.notes,
-                            website: editFormData.website,
-                            projectCategory: editFormData.projectCategory,
-                            country: editFormData.country,
-                            state: editFormData.state,
-                            currency: editFormData.currency,
-                            organisationName: editFormData.organisationName,
-                            clientStatus: editFormData.clientStatus,
-                          };
-                          console.log("=== FORM SUBMISSION DEBUG ===");
-                          console.log(
-                            "Submitting edit form with data:",
-                            formDataToSubmit,
-                          );
-                          console.log(
-                            "Website value being sent:",
-                            formDataToSubmit.website,
-                          );
-
-                          await onUpdateClient(client.lead_id || client.id, formDataToSubmit);
-
-                          console.log("=== END DEBUG ===");
-                          setShowEditModal(false);
-                        } catch (error) {
-                          console.error("Failed to update lead:", error);
-                          toast.error(
-                            "Failed to update lead. Please try again.",
-                          );
+                )}
+                <div className="flex items-start gap-3">
+                  <Mail className="w-5 h-5 text-slate-400 mt-0.5" />
+                  <div>
+                    <p className="text-xs font-medium text-slate-500">Email Address</p>
+                    <a href={`mailto:${client.email}`} className="text-sm font-semibold text-blue-600 hover:underline break-all">{client.email}</a>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Phone className="w-5 h-5 text-slate-400 mt-0.5" />
+                  <div>
+                    <p className="text-xs font-medium text-slate-500">Phone Number</p>
+                    <p className="text-sm font-semibold text-slate-900">
+                      {(() => {
+                        let dialCode = client.country_code || "";
+                        if (dialCode && /^\d+$/.test(dialCode)) dialCode = `+${dialCode}`;
+                        if (!dialCode && client.country) {
+                          const match = client.country.trim().match(/\(([^)]+)\)/);
+                          if (match && match[1]) dialCode = match[1];
                         }
-                      }
-                    }}
-                    className="flex-1 min-h-0 p-5 space-y-4 overflow-y-auto no-scrollbar"
-                  >
-                    <div className="space-y-2">
-                      <label className="text-[12px] font-bold text-primary  tracking-widest ml-1 uppercase">
-                        FULL NAME
-                      </label>
-                      <input
-                        required
-                        type="text"
-                        placeholder="e.g. Sameer Kapoor"
-                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
-                        value={editFormData.name}
-                        onChange={(e) =>
-                          setEditFormData({
-                            ...editFormData,
-                            name: e.target.value,
-                          })
-                        }
-                      />
+                        return dialCode ? `${dialCode} ${client.phone}` : client.phone;
+                      })()}
+                    </p>
+                  </div>
+                </div>
+                {!isLead && (client.state || client.country) && (
+                  <div className="flex items-start gap-3">
+                    <MapPin className="w-5 h-5 text-slate-400 mt-0.5" />
+                    <div>
+                      <p className="text-xs font-medium text-slate-500">Location</p>
+                      <p className="text-sm font-semibold text-slate-900">{client.state ? `${client.state}, ` : ""}{client.country}</p>
                     </div>
-
-                    <div className="space-y-2">
-                      <label className="text-[12px] font-bold text-primary  tracking-widest ml-1 uppercase">
-                        EMAIL ID
-                      </label>
-                      <input
-                        required
-                        type="email"
-                        placeholder="sameer@fintech.com"
-                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
-                        value={editFormData.email}
-                        onChange={(e) =>
-                          setEditFormData({
-                            ...editFormData,
-                            email: e.target.value,
-                          })
-                        }
-                      />
+                  </div>
+                )}
+                {client.website && (
+                  <div className="flex items-start gap-3">
+                    <Globe className="w-5 h-5 text-slate-400 mt-0.5" />
+                    <div>
+                      <p className="text-xs font-medium text-slate-500">Website</p>
+                      <a 
+                        href={client.website.startsWith("http") ? client.website : `https://${client.website}`} 
+                        target="_blank" rel="noopener noreferrer" 
+                        className="text-sm font-semibold text-blue-600 hover:underline break-all"
+                      >
+                        {client.website.replace(/^https?:\/\//, "")}
+                      </a>
                     </div>
+                  </div>
+                )}
+              </div>
+            </div>
 
-                    <div className="space-y-2">
-                      <SearchableDropdown
-                        label="Country Code"
-                        options={countries.map((c) => ({
-                          name: `${c.name} (${c.code})`,
-                          code: c.code,
-                        }))}
-                        value={editFormData.countryCode}
-                        onChange={(val) => {
-                          const selectedCountry = countries.find(
-                            (c) => c.code === val,
-                          );
-                          setEditFormData({
-                            ...editFormData,
-                            countryCode: val,
-                            country: selectedCountry
-                              ? selectedCountry.name
-                              : editFormData.country,
-                          });
-                        }}
-                        placeholder="Select Country Code"
-                      />
-                    </div>
+            {client.notes && (
+              <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Notes & Message</h3>
+                <p className="text-sm text-slate-700 leading-relaxed bg-slate-50 p-4 rounded-xl border border-slate-100">
+                  {client.notes}
+                </p>
+              </div>
+            )}
+          </div>
 
-                    <div className="space-y-2">
-                      <label className="text-[12px] font-bold text-primary  tracking-widest ml-1 uppercase">
-                        PHONE NUMBER
-                      </label>
-                      <input
-                        required
-                        type="tel"
-                        placeholder="e.g. 98765 43210"
-                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
-                        value={editFormData.phone}
-                        onChange={(e) =>
-                          setEditFormData({
-                            ...editFormData,
-                            phone: e.target.value.replace(/\D/g, ""),
-                          })
-                        }
-                      />
-                    </div>
+          {/* RIGHT CONTENT AREA */}
+          <div className="lg:col-span-8 space-y-6">
+            
+            {activeTab === "overview" && (
+              <div className="space-y-8 animate-fade-in">
+                {/* Stats Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {isLead ? (
+                    <>
+                      <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center">
+                          <Zap size={24} />
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Lead Status</p>
+                          <p className={`text-xl font-bold ${client.leadType === "Hot" ? "text-red-600" : client.leadType === "Warm" ? "text-amber-500" : "text-blue-500"}`}>
+                            {client.leadType || "Warm"}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
+                          <UserCheck size={24} />
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Created By</p>
+                          <p className="text-xl font-bold text-slate-900 truncate">{client.createdByName || "System"}</p>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                          <UserCheck size={24} />
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Client Status</p>
+                          <p className={`text-xl font-bold ${client.clientStatus === "Active" || client.status === "Active" ? "text-emerald-600" : "text-slate-500"}`}>
+                            {client.clientStatus || client.status || "Active"}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center">
+                          <DollarSign size={24} />
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Billing Currency</p>
+                          <p className="text-xl font-bold text-slate-900">{client.currency || client.client_currency || "N/A"}</p>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
 
-                    <div className="space-y-2">
-                      <label className="text-[12px] font-bold text-primary  tracking-widest ml-1 uppercase">
-                        WEBSITE URL (OPTIONAL)
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="e.g. www.fintech.com"
-                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
-                        value={editFormData.website}
-                        onChange={(e) =>
-                          setEditFormData({
-                            ...editFormData,
-                            website: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
+                {/* Follow-ups Section */}
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                      <Clock size={20} className="text-slate-500" /> Upcoming Follow-ups
+                    </h2>
+                  </div>
 
-                    {!isLead && (
-                      <div className="space-y-2">
-                        <label className="text-[12px] font-bold text-primary  tracking-widest ml-1 uppercase">
-                          ORGANISATION NAME
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="e.g. Acme Corp"
-                          className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
-                          value={editFormData.organisationName}
-                          onChange={(e) =>
-                            setEditFormData({
-                              ...editFormData,
-                              organisationName: e.target.value,
-                            })
-                          }
-                        />
+                  <div className="space-y-6">
+                    {[
+                      { title: "Overdue", icon: <Bell size={16} />, tasks: overdueFUs, style: "text-red-600 bg-red-50 border-red-200" },
+                      { title: "Today", icon: <Clock size={16} />, tasks: todayFUs, style: "text-amber-600 bg-amber-50 border-amber-200" },
+                      { title: "Upcoming", icon: <Calendar size={16} />, tasks: futureFUs, style: "text-blue-600 bg-blue-50 border-blue-200" }
+                    ].map((section) => section.tasks.length > 0 && (
+                      <div key={section.title}>
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className={`p-1.5 rounded-lg border ${section.style}`}>
+                            {section.icon}
+                          </div>
+                          <h3 className={`text-sm font-bold uppercase tracking-wider ${section.title === 'Overdue' ? 'text-red-600' : section.title === 'Today' ? 'text-amber-600' : 'text-blue-600'}`}>
+                            {section.title} ({section.tasks.length})
+                          </h3>
+                          <div className="flex-1 h-px bg-slate-100"></div>
+                        </div>
+
+                        <div className="space-y-4 pl-[11px] border-l-2 border-slate-100 ml-3">
+                          {section.tasks.map((fu, idx) => {
+                            const fuDate = parseLocalDate(fu.followup_date || fu.dueDate);
+                            const prevFu = section.tasks[idx - 1];
+                            const prevFuDate = prevFu ? parseLocalDate(prevFu.followup_date || prevFu.dueDate) : null;
+                            const hasConflict = prevFuDate && (fuDate - prevFuDate) < 30 * 60 * 1000;
+                            
+                            return (
+                              <div key={fu.id} className="relative pl-6">
+                                {/* Timeline Dot */}
+                                <div className={`absolute -left-[35px] top-5 w-3 h-3 rounded-full border-2 border-white shadow-sm ${fu.priority === 'High' ? 'bg-red-500' : 'bg-slate-300'}`}></div>
+                                
+                                <div className={`p-4 rounded-xl border bg-white transition-shadow hover:shadow-md ${hasConflict ? 'ring-2 ring-amber-400 ring-offset-1' : 'border-slate-200'}`}>
+                                  {hasConflict && (
+                                    <div className="inline-flex items-center gap-1 px-2 py-1 bg-amber-100 text-amber-800 text-[10px] font-bold uppercase rounded-md mb-2">
+                                      <Clock size={12} /> Time Conflict
+                                    </div>
+                                  )}
+                                  
+                                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                                    <div>
+                                      <div className="flex flex-wrap items-center gap-2 mb-2">
+                                        <span className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase ${fu.priority === 'High' ? 'bg-red-100 text-red-700' : fu.priority === 'Medium' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'}`}>
+                                          {fu.priority} Priority
+                                        </span>
+                                        <span className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase ${getModeBadge(fu.followup_mode)}`}>
+                                          {fu.followup_mode}
+                                        </span>
+                                      </div>
+                                      <h4 className="text-base font-bold text-slate-900 mb-1">
+                                        {fu.title} {fu.projectName && <span className="text-sm font-medium text-slate-500 ml-2">| {fu.projectName}</span>}
+                                      </h4>
+                                      {fu.description && <p className="text-sm text-slate-600 line-clamp-2 mb-3">{fu.description}</p>}
+                                      
+                                      <div className="flex items-center gap-4 text-xs font-medium text-slate-500">
+                                        <span className="flex items-center gap-1.5"><Calendar size={14}/> {fuDate.toLocaleDateString()}</span>
+                                        <span className="flex items-center gap-1.5 text-slate-700"><Clock size={14}/> {fuDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                      </div>
+                                    </div>
+
+                                    <div className="flex gap-2 shrink-0 mt-2 sm:mt-0">
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          const now = new Date();
+                                          setCompletionDate(now.toLocaleDateString("en-CA"));
+                                          setCompletionHour((now.getHours() % 12 || 12).toString());
+                                          setCompletionMinute(now.getMinutes().toString().padStart(2, "0"));
+                                          setCompletionPeriod(now.getHours() >= 12 ? "PM" : "AM");
+                                          setCompletingFollowUpId(fu.id); setCompletionBrief(""); setShowCompletionModal(true);
+                                        }}
+                                        className="p-2 bg-slate-50 hover:bg-emerald-50 border border-slate-200 hover:border-emerald-200 text-slate-500 hover:text-emerald-600 rounded-lg transition-colors"
+                                        title="Mark as Completed"
+                                      >
+                                        <CheckCircle2 size={18} />
+                                      </button>
+                                      <button
+                                        onClick={(e) => { e.stopPropagation(); handleAddToCalendar(fu); }}
+                                        className="p-2 bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-200 text-slate-500 hover:text-blue-600 rounded-lg transition-colors"
+                                        title="Add to Google Calendar"
+                                      >
+                                        <Calendar size={18} />
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
+
+                    {upcomingFollowUps.length === 0 && (
+                      <div className="text-center py-12 px-4 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                        <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm border border-slate-100">
+                          <Check className="text-emerald-500 w-6 h-6" />
+                        </div>
+                        <h3 className="text-sm font-bold text-slate-700 mb-1">All caught up!</h3>
+                        <p className="text-xs text-slate-500">No pending follow-ups right now.</p>
                       </div>
                     )}
+                  </div>
+                </div>
+              </div>
+            )}
 
-                    {!isLead &&
-                      (editFormData.country === "India" ? (
-                        <SearchableDropdown
-                          label="CLIENT STATE"
-                          options={indianStates}
-                          value={editFormData.state}
-                          onChange={(val) =>
-                            setEditFormData({ ...editFormData, state: val })
-                          }
-                          placeholder="Select State"
-                        />
-                      ) : (
-                        <div className="space-y-2">
-                          <label className="text-[12px] font-bold text-primary  tracking-widest ml-1 uppercase">
-                            CLIENT STATE
-                          </label>
-                          <input
-                            type="text"
-                            placeholder="e.g. California"
-                            className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
-                            value={editFormData.state}
-                            onChange={(e) =>
-                              setEditFormData({
-                                ...editFormData,
-                                state: e.target.value,
-                              })
-                            }
-                          />
-                        </div>
-                      ))}
+            {activeTab === "activity" && (
+              <div className="space-y-6 animate-fade-in">
+                {isLead ? (
+                  /* Lead Conversations */
+                  (() => {
+                    const leadConversations = [
+                      ...completedFollowUps.map(fu => ({
+                        ...fu, source: "followup", originalDescription: fu.description,
+                        description: fu.follow_brief || "No summary provided", completedBy: fu.completed_by
+                      })),
+                      ...clientActivities.map(a => ({ ...a, source: "activity", originalDescription: null }))
+                    ].sort((a, b) => parseLocalDate(b.date || b.completed_at || b.dueDate || b.created_at || b.createdAt) - parseLocalDate(a.date || a.completed_at || a.dueDate || a.created_at || a.createdAt));
 
-                    {!isLead && (
-                      <>
-                        <SearchableDropdown
-                          label="CLIENT CURRENCY"
-                          options={commonCurrencies.map((c) => ({
-                            name: `${c.code} (${c.symbol})`,
-                            code: c.code,
-                          }))}
-                          value={editFormData.currency}
-                          onChange={(val) =>
-                            setEditFormData({ ...editFormData, currency: val })
-                          }
-                          placeholder="Select Currency"
-                        />
-
-                        <div className="space-y-2">
-                          <label className="text-[12px] font-bold text-primary  tracking-widest ml-1 uppercase">
-                            CLIENT STATUS
-                          </label>
-                          <select
-                            className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-bold"
-                            value={editFormData.clientStatus}
-                            onChange={(e) =>
-                              setEditFormData({
-                                ...editFormData,
-                                clientStatus: e.target.value,
-                              })
-                            }
-                          >
-                            <option value="Active">Active</option>
-                            <option value="Inactive">Inactive</option>
-                          </select>
-                        </div>
-                      </>
-                    )}
-
-
-                    <div className="space-y-2">
-                      <label className="text-[12px] font-bold text-primary  tracking-widest ml-1 uppercase">
-                        {isLead ? "Lead Status" : "Project Status"}
-                      </label>
-                      <div className="relative">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setIsEditStatusDropdownOpen(
-                              !isEditStatusDropdownOpen,
-                            )
-                          }
-                          className="w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold shadow-sm hover:border-secondary transition-all"
-                        >
-                          <span className="text-primary truncate">
-                            {editFormData.leadType || "Select Status"}
-                          </span>
-                          <ChevronDown
-                            size={16}
-                            className={`text-slate-400 transition-transform ${
-                              isEditStatusDropdownOpen ? "rotate-180" : ""
-                            }`}
-                          />
-                        </button>
-
-                        {isEditStatusDropdownOpen && (
-                          <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top">
-                            <div className="bg-[#18254D] px-4 py-3 border-b border-white/10">
-                              <p className="text-[14px] font-bold text-white/50  tracking-widest">
-                                Select Status
-                              </p>
+                    return (
+                      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div className="flex items-center justify-between p-5 bg-slate-50 border-b border-slate-200 cursor-pointer" onClick={() => setIsLeadConvOpen(!isLeadConvOpen)}>
+                          <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center">
+                              <MessageSquare size={20} />
                             </div>
-                            {(client.isConverted
-                              ? ["Hot", "Warm", "Cold", "Converted"]
-                              : ["Hot", "Warm", "Cold"]
-                            ).map((status) => (
-                              <button
-                                key={status}
-                                type="button"
-                                onClick={() => {
-                                  setEditFormData({
-                                    ...editFormData,
-                                    leadType: status,
-                                  });
-                                  setIsEditStatusDropdownOpen(false);
-                                }}
-                                className={`w-full text-left px-4 py-2.5 text-[12px] font-bold  tracking-widest transition-colors ${
-                                  editFormData.leadType === status
-                                    ? "bg-slate-100 text-secondary"
-                                    : "text-[#18254D] hover:bg-slate-50"
-                                }`}
-                              >
-                                <div className="flex items-center gap-2">
-                                  {status === "Hot" && (
-                                    <Flame size={12} className="text-error" />
-                                  )}
-                                  {status === "Warm" && (
-                                    <Sun size={12} className="text-warning" />
-                                  )}
-                                  {status === "Cold" && (
-                                    <Snowflake
-                                      size={12}
-                                      className="text-info"
-                                    />
-                                  )}
-                                  {status === "Converted" && (
-                                    <UserCheck
-                                      size={12}
-                                      className="text-success"
-                                    />
-                                  )}
-                                  <span>{status}</span>
-                                </div>
-                              </button>
-                            ))}
+                            <div>
+                              <h3 className="text-base font-bold text-slate-900">All Conversations</h3>
+                              <p className="text-sm font-medium text-slate-500">{leadConversations.length} logged interactions</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {leadConversations.length > 1 && isLeadConvOpen && (
+                              <div className="flex gap-2 mr-4" onClick={e => e.stopPropagation()}>
+                                <button onClick={() => scrollContainer('lead-conv-carousel', 'left')} className="p-2 border border-slate-200 rounded-lg hover:bg-slate-100 text-slate-600"><ChevronLeft size={16}/></button>
+                                <button onClick={() => scrollContainer('lead-conv-carousel', 'right')} className="p-2 border border-slate-200 rounded-lg hover:bg-slate-100 text-slate-600"><ChevronRight size={16}/></button>
+                              </div>
+                            )}
+                            <ChevronDown size={20} className={`text-slate-400 transition-transform ${isLeadConvOpen ? "rotate-180" : ""}`} />
+                          </div>
+                        </div>
+
+                        {isLeadConvOpen && (
+                          <div className="p-6 bg-slate-50/30">
+                            {leadConversations.length === 0 ? (
+                              <div className="text-center py-8 text-sm font-semibold text-slate-400">No conversations logged yet</div>
+                            ) : (
+                              <div id="lead-conv-carousel" className="flex overflow-x-auto gap-6 pb-2 snap-x snap-mandatory no-scrollbar scroll-smooth">
+                                {leadConversations.map((conv, idx) => (
+                                  <div key={`lead-conv-${conv.id || idx}`} className="w-full sm:w-[400px] shrink-0 snap-start">
+                                    <ConversationCard conv={conv} onAddToCalendar={handleAddToCalendar} />
+                                  </div>
+                                ))}
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>
-                    </div>
+                    );
+                  })()
+                ) : (
+                  /* Client Project Conversations */
+                  (() => {
+                    const projectGroups = clientProjects.map((p) => ({
+                      id: p.id, projectName: p.name, projectStatus: p.status, interactions: [],
+                    }));
+                    const generalInteractions = [];
+                    const leadHistoryInteractions = [];
 
-                    <div className="space-y-2">
-                      <label className="text-[12px] font-bold text-primary  tracking-widest ml-1 uppercase">
-                        MESSAGE
-                      </label>
-                      <textarea
-                        rows={3}
-                        placeholder="e.g. Additional details about the project requirements or client background..."
-                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-bold resize-none"
-                        value={editFormData.notes}
-                        onChange={(e) =>
-                          setEditFormData({
-                            ...editFormData,
-                            notes: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
+                    const addToGroup = (interaction) => {
+                      const targetProject = projectGroups.find((p) => (interaction.projectId && p.id == interaction.projectId) || (interaction.projectName && p.projectName === interaction.projectName));
+                      if (targetProject) targetProject.interactions.push(interaction);
+                      else if (client.lead_id && interaction.clientId == client.lead_id) leadHistoryInteractions.push(interaction);
+                      else generalInteractions.push(interaction);
+                    };
 
-                    <div className="pt-2 shrink-0">
-                      <button
-                        type="submit"
-                        className="w-full py-3 bg-[#18254D] text-white rounded-xl text-[13px] font-bold  tracking-[0.25em] shadow-xl active:scale-[0.97] transition-all hover:bg-[#1e2e5e] hover:shadow-2xl flex items-center justify-center gap-3"
-                      >
-                        Update {isLead ? "Lead" : "Client"}
-                      </button>
-                    </div>
-                  </form>
-                </div>
-              </div>,
-              document.body,
-            )}
+                    clientActivities.forEach((a) => addToGroup({ ...a, source: "activity" }));
+                    completedFollowUps.forEach((f) => addToGroup({
+                      ...f, id: `fu-${f.id}`, type: (f.followup_mode || "call").toLowerCase(),
+                      date: f.completed_at || f.dueDate, description: f.follow_brief || "No summary provided",
+                      originalDescription: f.description, source: "followup"
+                    }));
 
-          {/* Log Activity Modal */}
-          {isLogging &&
-            createPortal(
-              <div className="fixed inset-0 z-[99999] flex items-start justify-center p-4 bg-slate-900/60 backdrop-blur-xl animate-fade-in overflow-y-auto py-10 no-scrollbar">
-                <div className="bg-white rounded-xl shadow-2xl w-full max-w-xl overflow-hidden animate-zoom-in my-auto border border-slate-200 flex flex-col max-h-[90vh]">
-                  <div className="bg-primary p-4 text-white relative shrink-0">
-                    <button
-                      onClick={() => setIsLogging(false)}
-                      className="absolute top-4 right-4 p-1.5 hover:bg-white/10 rounded-xl transition-colors"
-                    >
-                      <X size={18} strokeWidth={3} />
-                    </button>
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-secondary/10 rounded-xl flex items-center justify-center shadow-lg border border-secondary/20">
-                        <MessageSquare
-                          size={18}
-                          className="text-secondary"
-                          strokeWidth={2.5}
-                        />
-                      </div>
-                      <div>
-                        <h3 className="text-base font-bold tracking-tighter leading-none">
-                          Log Conversation
-                        </h3>
-                        <p className="text-secondary text-[14px] font-bold  tracking-widest mt-0.5">
-                          Record interaction details
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+                    const allGroups = [
+                      ...projectGroups,
+                      ...(generalInteractions.length > 0 ? [{ projectName: "Other Conversations", projectStatus: "N/A", interactions: generalInteractions }] : []),
+                      ...(leadHistoryInteractions.length > 0 ? [{ projectName: "Lead History", projectStatus: "Archived", interactions: leadHistoryInteractions }] : []),
+                    ];
 
-                  <form
-                    onSubmit={handleLogInteraction}
-                    className="p-5 space-y-4 overflow-y-auto no-scrollbar"
-                  >
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-2">
-                        <label className="text-[12px] font-bold text-primary  tracking-widest ml-1">
-                          Date
-                        </label>
-                        <DatePicker
-                          value={logData.date}
-                          onChange={(val) =>
-                            setLogData({ ...logData, date: val })
-                          }
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-[12px] font-bold text-primary  tracking-widest ml-1">
-                          Time
-                        </label>
-                        <input
-                          required
-                          type="time"
-                          className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium"
-                          value={logData.time}
-                          onChange={(e) =>
-                            setLogData({ ...logData, time: e.target.value })
-                          }
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="text-[12px] font-bold text-primary  tracking-widest ml-1">
-                        {isLead ? "Subject" : "Project Name"}
-                      </label>
-                      {!isLead && (
-                        <select
-                          required
-                          className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-medium appearance-none cursor-pointer"
-                          value={logData.projectId}
-                          onChange={(e) =>
-                            setLogData({
-                              ...logData,
-                              projectId: e.target.value,
-                            })
-                          }
-                        >
-                          <option value="" disabled>
-                            Select a project...
-                          </option>
-                          {clientProjects.length > 0 ? (
-                            clientProjects.map((project) => (
-                              <option key={project.id} value={project.id}>
-                                {project.name}
-                              </option>
-                            ))
-                          ) : (
-                            <>
-                              <option value="Website Redesign">
-                                Website Redesign
-                              </option>
-                              <option value="SEO Optimization">
-                                SEO Optimization
-                              </option>
-                              <option value="Brand Identity">
-                                Brand Identity
-                              </option>
-                            </>
-                          )}
-                        </select>
-                      )}
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="text-[12px] font-bold text-primary  tracking-widest ml-1">
-                        Interaction Type
-                      </label>
-                      <div className="grid grid-cols-3 gap-2">
-                        {["call", "email", "meeting"].map((type) => (
-                          <button
-                            key={type}
-                            type="button"
-                            onClick={() =>
-                              setLogData({
-                                ...logData,
-                                type: type,
-                              })
-                            }
-                            className={`py-2 px-3 rounded-xl border text-[12px] font-bold  tracking-widest transition-all ${
-                              logData.type === type
-                                ? "bg-secondary border-secondary text-white shadow-md shadow-secondary/20"
-                                : "bg-white border-slate-100 text-slate-400 hover:border-slate-300"
-                            }`}
-                          >
-                            {type}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="text-[12px] font-bold text-primary  tracking-widest ml-1">
-                        Conversation Details
-                      </label>
-                      <textarea
-                        required
-                        placeholder="e.g. Discussed new service package and finalized onboarding steps..."
-                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-secondary/10 focus:border-secondary focus:outline-none text-sm font-bold min-h-[100px] resize-none"
-                        value={logData.description}
-                        onChange={(e) =>
-                          setLogData({
-                            ...logData,
-                            description: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
-
-                    <div className="pt-2 shrink-0">
-                      <button
-                        type="submit"
-                        className="w-full py-3 bg-[#18254D] text-white rounded-xl text-[13px] font-bold  tracking-[0.25em] shadow-xl active:scale-[0.97] transition-all hover:bg-[#1e2e5e] hover:shadow-2xl flex items-center justify-center gap-3"
-                      >
-                        Save Entry
-                      </button>
-                    </div>
-                  </form>
-                </div>
-              </div>,
-              document.body,
-            )}
-
-          {/* Mark as Completed Modal */}
-          {showCompletionModal &&
-            createPortal(
-              <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
-                <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-zoom-in border border-slate-200">
-                  {/* Modal Header */}
-                  <div className="bg-[#18254D] p-5 text-white relative">
-                    <button
-                      onClick={() => setShowCompletionModal(false)}
-                      className="absolute top-5 right-5 text-white/70 hover:text-white transition-colors"
-                    >
-                      <X size={20} />
-                    </button>
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center bg-white/5">
-                        <CheckCircle2 size={20} className="text-white/40" />
-                      </div>
-                      <div>
-                        <h3 className="text-base font-bold leading-none">
-                          Mark as Completed
-                        </h3>
-                        <p className="text-white/40 text-xs font-medium mt-1">
-                          Follow-up Conclusion
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Modal Body */}
-                  <form
-                    onSubmit={async (e) => {
-                      e.preventDefault();
-                      
-                      let compHour = parseInt(completionHour || "12");
-                      if (completionPeriod === "PM" && compHour < 12) compHour += 12;
-                      if (completionPeriod === "AM" && compHour === 12) compHour = 0;
-                      const compTime24 = `${compHour.toString().padStart(2, "0")}:${completionMinute || "00"}`;
-                      const combinedCompletionStr = `${completionDate} ${compTime24}:00`;
-
-                      if (onToggleStatus) {
-                        await onToggleStatus(
-                          completingFollowUpId,
-                          completionBrief,
-                          combinedCompletionStr,
-                          completedBy
-                        );
-                        fetchClientFollowups();
-                      }
-                      setShowCompletionModal(false);
-                    }}
-                    className="p-6 space-y-5 text-start"
-                  >
-                    {/* Conclusion Brief */}
-                    <div className="space-y-2">
-                      <label className="text-sm font-bold text-primary flex items-center gap-1">
-                        Conclusion Brief <span className="text-red-500">*</span>
-                      </label>
-                      <textarea
-                        required
-                        rows={4}
-                        placeholder="Write a brief conclusion about this follow-up..."
-                        className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/10 focus:border-primary focus:outline-none text-sm font-medium resize-none transition-all placeholder:text-slate-300"
-                        value={completionBrief}
-                        onChange={(e) => setCompletionBrief(e.target.value)}
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {/* Completion Date */}
-                      <div className="space-y-2">
-                        <label className="text-sm font-bold text-primary flex items-center gap-1">
-                          Completion Date <span className="text-red-500">*</span>
-                        </label>
-                        <DatePicker
-                          value={completionDate}
-                          onChange={setCompletionDate}
-                        />
-                      </div>
-
-                      {/* Completion Time */}
-                      <div className="space-y-2">
-                        <label className="text-sm font-bold text-primary flex items-center gap-1">
-                          Completion Time <span className="text-red-500">*</span>
-                        </label>
-                        <div className="flex items-center gap-1.5">
-                          {/* Hour Dropdown */}
-                          <div className="relative flex-1">
-                            <button
-                              type="button"
-                              onClick={() => setIsCompHourOpen(!isCompHourOpen)}
-                              className="w-full h-[38px] px-3 bg-white border border-slate-200 rounded-lg text-sm font-bold flex items-center justify-between"
-                            >
-                              {completionHour.padStart(2, '0')} <ChevronDown size={14} className="text-slate-400" />
-                            </button>
-                            {isCompHourOpen && (
-                              <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-100 rounded-lg shadow-xl z-[100] max-h-40 overflow-y-auto custom-scrollbar">
-                                {Array.from({ length: 12 }, (_, i) => (i + 1).toString()).map(h => (
-                                  <button
-                                    key={h}
-                                    type="button"
-                                    onClick={() => { setCompletionHour(h); setIsCompHourOpen(false); }}
-                                    className="w-full text-left px-3 py-2 hover:bg-slate-50 text-xs font-bold"
-                                  >
-                                    {h.padStart(2, '0')}
-                                  </button>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Minute Dropdown */}
-                          <div className="relative flex-1">
-                            <button
-                              type="button"
-                              onClick={() => setIsCompMinOpen(!isCompMinOpen)}
-                              className="w-full h-[38px] px-3 bg-white border border-slate-200 rounded-lg text-sm font-bold flex items-center justify-between"
-                            >
-                              {completionMinute} <ChevronDown size={14} className="text-slate-400" />
-                            </button>
-                            {isCompMinOpen && (
-                              <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-100 rounded-lg shadow-xl z-[100] max-h-40 overflow-y-auto custom-scrollbar">
-                                {Array.from({ length: 60 }, (_, i) => i.toString().padStart(2, '0')).map(m => (
-                                  <button
-                                    key={m}
-                                    type="button"
-                                    onClick={() => { setCompletionMinute(m); setIsCompMinOpen(false); }}
-                                    className="w-full text-left px-3 py-2 hover:bg-slate-50 text-xs font-bold"
-                                  >
-                                    {m}
-                                  </button>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Period Dropdown */}
-                          <div className="relative flex-1">
-                            <button
-                              type="button"
-                              onClick={() => setIsCompPeriodOpen(!isCompPeriodOpen)}
-                              className="w-full h-[38px] px-3 bg-white border border-slate-200 rounded-lg text-sm font-bold flex items-center justify-between"
-                            >
-                              {completionPeriod} <ChevronDown size={14} className="text-slate-400" />
-                            </button>
-                            {isCompPeriodOpen && (
-                              <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-100 rounded-lg shadow-xl z-[100] overflow-hidden">
-                                {["AM", "PM"].map(p => (
-                                  <button
-                                    key={p}
-                                    type="button"
-                                    onClick={() => { setCompletionPeriod(p); setIsCompPeriodOpen(false); }}
-                                    className="w-full text-left px-3 py-2 hover:bg-slate-50 text-xs font-bold"
-                                  >
-                                    {p}
-                                  </button>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Completed By */}
-                    <div className="space-y-2">
-                      <label className="text-sm font-bold text-primary flex items-center gap-1">
-                        Completed By <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        required
-                        type="text"
-                        className="w-full px-4 h-[42px] bg-slate-50/50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/10 focus:border-primary focus:outline-none text-sm font-bold"
-                        value={completedBy}
-                        onChange={(e) => setCompletedBy(e.target.value)}
-                      />
-                    </div>
-
-                    {/* Submit Button */}
-                    <div className="pt-2">
-                      <button
-                        type="submit"
-                        className="w-full h-[48px] bg-[#18254D] text-white rounded-xl text-sm font-bold tracking-widest shadow-lg active:scale-[0.98] transition-all hover:bg-slate-800 flex items-center justify-center uppercase"
-                      >
-                        Complete
-                      </button>
-                    </div>
-                  </form>
-                </div>
-              </div>,
-              document.body,
-            )}
-
-          {/* Side Panel */}
-          <div className="w-full md:w-[260px] lg:w-[300px] border-b md:border-b-0 md:border-r border-slate-100 p-4 md:p-6 bg-slate-50/20 shrink-0">
-            <div className="space-y-6 md:space-y-8">
-              <div>
-                <h3 className="text-[12px] md:text-[14px] font-bold text-primary tracking-widest mb-3 md:mb-4 opacity-40">
-                  Contact Details
-                </h3>
-                <div className="space-y-2.5 md:space-y-3">
-                  {client.organisationName && (
-                    <div className="flex items-center gap-3 md:gap-4 p-2.5 md:p-3.5 bg-white rounded-xl border border-slate-100 shadow-sm group">
-                      <Briefcase className="w-3.5 h-3.5 md:w-4 md:h-4 text-slate-400 shrink-0" />
-                      <span className="text-[11px] md:text-xs font-bold text-primary truncate">
-                        {client.organisationName}
-                      </span>
-                    </div>
-                  )}
-                  <div className="flex items-center gap-3 md:gap-4 p-2.5 md:p-3.5 bg-white rounded-xl border border-slate-100 shadow-sm group">
-                    <Mail className="w-3.5 h-3.5 md:w-4 md:h-4 text-slate-400 group-hover:text-secondary shrink-0" />
-                    <span className="text-[11px] md:text-xs font-bold text-primary truncate">
-                      {client.email}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-3 md:gap-4 p-2.5 md:p-3.5 bg-white rounded-xl border border-slate-100 shadow-sm group">
-                    <Phone className="w-3.5 h-3.5 md:w-4 md:h-4 text-slate-400 shrink-0" />
-                    <span className="text-[11px] md:text-xs font-bold text-primary truncate">
-                      {(() => {
-                        let dialCode = client.country_code || "";
-
-                        // Ensure + prefix
-                        if (dialCode && /^\d+$/.test(dialCode)) {
-                          dialCode = `+${dialCode}`;
-                        }
-
-                        // If still no dialCode, try to fallback to the old logic (but cleaner)
-                        if (!dialCode && client.country) {
-                          const countryVal = client.country.trim();
-                          const match = countryVal.match(/\(([^)]+)\)/);
-                          if (match && match[1]) {
-                            dialCode = match[1];
-                          }
-                        }
-
-                        return dialCode
-                          ? `${dialCode} ${client.phone}`
-                          : client.phone;
-                      })()}
-                    </span>
-                  </div>
-                  {!isLead && (client.state || client.country) && (
-                    <div className="flex items-center gap-3 md:gap-4 p-2.5 md:p-3.5 bg-white rounded-xl border border-slate-100 shadow-sm group">
-                      <MapPin className="w-3.5 h-3.5 md:w-4 md:h-4 text-slate-400 shrink-0" />
-                      <span className="text-[11px] md:text-xs font-bold text-primary truncate">
-                        {client.state ? `${client.state}, ` : ""}
-                        {client.country}
-                      </span>
-                    </div>
-                  )}
-                  {client.website && (
-                    <a
-                      href={
-                        client.website.startsWith("http")
-                          ? client.website
-                          : `https://${client.website}`
-                      }
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-3 md:gap-4 p-2.5 md:p-3.5 bg-white rounded-xl border border-slate-100 shadow-sm group hover:border-secondary transition-all"
-                    >
-                      <Globe className="w-3.5 h-3.5 md:w-4 md:h-4 text-slate-400 group-hover:text-secondary shrink-0" />
-                      <span className="text-[11px] md:text-xs font-bold text-primary truncate group-hover:text-secondary">
-                        {client.website.replace(/^https?:\/\//, "")}
-                      </span>
-                    </a>
-                  )}
-                </div>
-              </div>
-              <div>
-                <h3 className="text-[12px] md:text-[14px] font-bold text-primary tracking-widest mb-3 md:mb-4 opacity-40">
-                  Brief Message
-                </h3>
-                <div className="p-3.5 md:p-5 bg-white border border-slate-100 rounded-xl shadow-inner text-[11px] md:text-[13px] lg:text-sm text-primary leading-relaxed font-medium">
-                  {client.notes}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex-1 flex flex-col bg-white min-w-0">
-            <div className="bg-white p-2 border-b border-slate-100">
-              <div className="flex items-center gap-2">
-                <div className="flex flex-1 bg-slate-100/50 p-1 rounded-2xl border border-slate-200 shadow-sm overflow-x-auto no-scrollbar h-[40px] md:h-[42px] items-center gap-1">
-                  {[
-                    { id: "overview", label: "Overview" },
-                    {
-                      id: "activity",
-                      label: "Conversations",
-                    },
-                    ...(!isLead ? [{ id: "projects", label: "Projects" }] : []),
-                  ].map((tab) => (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id)}
-                      className={`flex-1 px-3 md:px-5 h-full rounded-xl text-[11px] md:text-[12px] font-bold  tracking-wider transition-all flex items-center justify-center min-w-[80px] md:min-w-[100px] border border-transparent whitespace-nowrap ${activeTab === tab.id ? "bg-white text-primary shadow-md border-slate-100" : "text-slate-400 hover:text-slate-600 hover:bg-white/50"}`}
-                    >
-                      {tab.label}
-                    </button>
-                  ))}
-                </div>
-
-              </div>
-            </div>
-
-            <div className="flex-1 p-4 md:p-6 bg-white">
-              {activeTab === "overview" && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 animate-fade-in text-start">
-                  {isLead ? (
-                    <>
-                      <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 group relative overflow-hidden hover:shadow-md hover:border-secondary/30 transition-all">
-                        <div className="w-8 h-8 bg-secondary/10 text-secondary rounded-xl flex items-center justify-center mb-3 group-hover:bg-secondary group-hover:text-white transition-all border border-secondary/20">
-                          <Zap size={16} strokeWidth={2.5} />
-                        </div>
-                        <h3 className="text-[14px] font-bold text-slate-400 tracking-widest mb-1">
-                          Lead Status
-                        </h3>
-                        <p
-                          className={`text-lg font-bold tracking-tight  ${
-                            client.leadType === "Hot"
-                              ? "text-error"
-                              : client.leadType === "Warm"
-                                ? "text-warning"
-                                : "text-info"
-                          }`}
-                        >
-                          {client.leadType || "Warm"}
-                        </p>
-                      </div>
-
-                      <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 group relative overflow-hidden hover:shadow-md hover:border-secondary/30 transition-all">
-                        <div className="w-8 h-8 bg-info/10 text-info rounded-xl flex items-center justify-center mb-3 group-hover:bg-info group-hover:text-white transition-all border border-info/20">
-                          <UserCheck size={16} strokeWidth={2.5} />
-                        </div>
-                        <h3 className="text-[14px] font-bold text-slate-400 tracking-widest mb-1">
-                          Created By
-                        </h3>
-                        <p className="text-lg font-bold tracking-tight text-primary truncate">
-                          {client.createdByName || "System"}
-                        </p>
-                      </div>
-                    </>
-                  ) : (
-                    /* Client Overview - Show Client Status and Project Billing Currency */
-                    <>
-                      {/* Client Status Card */}
-                      <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 group relative overflow-hidden hover:shadow-md hover:border-secondary/30 transition-all">
-                        <div className="w-8 h-8 bg-secondary/10 text-secondary rounded-xl flex items-center justify-center mb-3 group-hover:bg-secondary group-hover:text-white transition-all border border-secondary/20">
-                          <UserCheck size={16} strokeWidth={2.5} />
-                        </div>
-                        <h3 className="text-[14px] font-bold text-slate-400 tracking-widest mb-1">
-                          Client Status
-                        </h3>
-                        <p className={`text-lg font-bold tracking-tight ${
-                          client.clientStatus === "Active" || client.status === "Active"
-                            ? "text-success"
-                            : "text-slate-400"
-                        }`}>
-                          {client.clientStatus || client.status || "Active"}
-                        </p>
-                      </div>
-
-                      {/* Project Billing Currency Card */}
-                      <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 group relative overflow-hidden hover:shadow-md hover:border-secondary/30 transition-all">
-                        <div className="w-8 h-8 bg-secondary/10 text-secondary rounded-xl flex items-center justify-center mb-3 group-hover:bg-secondary group-hover:text-white transition-all border border-secondary/20">
-                          <DollarSign size={16} strokeWidth={2.5} />
-                        </div>
-                        <h3 className="text-[14px] font-bold text-slate-400 tracking-widest mb-1">
-                          Project Billing Currency
-                        </h3>
-                        <p className="text-lg font-bold tracking-tight text-primary">
-                          {client.currency || client.client_currency || "N/A"}
-                        </p>
-                      </div>
-                    </>
-                  )}
-
-                  {/* Upcoming Follow-ups Section */}
-                  <div className="col-span-1 sm:col-span-2 mt-4 md:mt-6 border-t border-slate-100 pt-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-[12px] md:text-[14px] font-bold text-primary tracking-widest uppercase flex items-center gap-2">
-                        <Clock size={16} className="text-secondary" />
-                        Follow-ups
-                      </h3>
-                    </div>
-                    
-                    <div className="space-y-8">
-                      {[
-                        { title: "Overdue", icon: <Bell size={14} />, tasks: overdueFUs, color: "error", styles: "text-error bg-error/10 border-error/20" },
-                        { title: "Today", icon: <Clock size={14} />, tasks: todayFUs, color: "secondary", styles: "text-secondary bg-secondary/10 border-secondary/20" },
-                        { title: "Upcoming", icon: <Calendar size={14} />, tasks: futureFUs, color: "info", styles: "text-info bg-info/10 border-info/20" }
-                      ].map((section) => section.tasks.length > 0 && (
-                        <div key={section.title} className="space-y-4">
-                          <div className="flex items-center gap-3 mb-2">
-                            <div className={`p-1.5 rounded-lg ${section.styles}`}>
-                              {section.icon}
-                            </div>
-                            <h4 className={`text-[12px] font-black tracking-[0.2em] uppercase ${section.title === 'Overdue' ? 'text-error' : section.title === 'Today' ? 'text-secondary' : 'text-info'}`}>
-                              {section.title} Schedule ({section.tasks.length})
-                            </h4>
-                            <div className="flex-1 h-[1px] bg-slate-100"></div>
-                          </div>
-                          
-                          <div className="relative space-y-4 ml-2 pl-6 border-l-2 border-slate-50">
-                            {section.tasks.map((fu, idx) => {
-                              const fuDate = parseLocalDate(fu.followup_date || fu.dueDate);
-                              const prevFu = section.tasks[idx - 1];
-                              const prevFuDate = prevFu ? parseLocalDate(prevFu.followup_date || prevFu.dueDate) : null;
-                              const hasConflict = prevFuDate && (fuDate - prevFuDate) < 30 * 60 * 1000;
-                              
-                              return (
-                                <div key={fu.id} className="relative">
-                                  <div className={`absolute -left-[31px] top-4 w-2.5 h-2.5 rounded-full border-2 border-white shadow-sm ${
-                                    fu.priority === 'High' ? 'bg-error scale-110' : 'bg-slate-300'
-                                  }`}></div>
-                                  
-                                  <div className={`p-4 rounded-2xl border transition-all group relative flex flex-col md:flex-row items-start gap-4 hover:shadow-md ${
-                                    fu.status === 'completed' 
-                                      ? "bg-slate-50/50 border-slate-100 opacity-80" 
-                                      : fu.priority === 'High'
-                                        ? "bg-error/[0.06] border-error/20 shadow-sm shadow-error/5"
-                                        : fu.priority === 'Medium'
-                                          ? "bg-warning/[0.06] border-warning/20 shadow-sm shadow-warning/5"
-                                          : "bg-info/[0.06] border-info/20 shadow-sm shadow-info/5"
-                                  } ${hasConflict ? 'ring-2 ring-amber-400 ring-offset-2' : ''}`}>
-                                    
-                                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-white shadow-sm shrink-0 ${
-                                      fu.priority === 'High' ? 'bg-error' : fu.priority === 'Medium' ? 'bg-warning' : 'bg-info'
-                                    }`}>
-                                      {fu.followup_mode?.toLowerCase() === 'call' ? <Phone size={18} strokeWidth={2.5} /> : 
-                                       fu.followup_mode?.toLowerCase() === 'meeting' ? <Calendar size={18} strokeWidth={2.5} /> : 
-                                       fu.followup_mode?.toLowerCase() === 'whatsapp' ? <MessageSquare size={18} strokeWidth={2.5} /> :
-                                       <Mail size={18} strokeWidth={2.5} />}
-                                    </div>
-
-                                    <div className="flex-1 min-w-0">
-                                      {hasConflict && (
-                                        <div className="absolute top-0 right-0 px-2 py-0.5 bg-amber-100 text-amber-700 text-[9px] font-black tracking-widest uppercase rounded-bl-lg flex items-center gap-1">
-                                          <Clock size={10} /> Time Conflict
-                                        </div>
-                                      )}
-                                      
-                                      <div className="flex items-center justify-between mb-3">
-                                        <div className="flex flex-wrap items-center gap-2">
-                                          <span className={`px-2 py-0.5 rounded-md text-[10px] font-black tracking-widest uppercase border ${
-                                            fu.priority === 'High' ? 'bg-error/10 text-error border-error/20' :
-                                            fu.priority === 'Medium' ? 'bg-warning/10 text-warning border-warning/20' :
-                                            'bg-info/10 text-info border-info/20'
-                                          }`}>
-                                            {fu.priority} Priority
-                                          </span>
-                                          <span className={`px-2 py-0.5 rounded-md text-[10px] font-black tracking-widest uppercase border ${getModeBadge(fu.followup_mode)}`}>
-                                            {fu.followup_mode}
-                                          </span>
-                                        </div>
-                                      </div>
-                                      
-                                      <h4 className="text-sm font-bold text-primary tracking-tight mb-1">
-                                        {fu.title}
-                                        {fu.projectName && (
-                                          <>
-                                            <span className="text-slate-300 font-medium mx-2">|</span>
-                                            <span className="text-secondary/70">{fu.projectName}</span>
-                                          </>
-                                        )}
-                                      </h4>
-                                      
-                                      {fu.description && (
-                                        <p className="text-[12px] text-slate-500 line-clamp-1 font-medium mb-3 leading-relaxed">
-                                          {fu.description}
-                                        </p>
-                                      )}
-
-                                      <div className="mt-auto pt-2 border-t border-slate-50 flex items-center justify-between gap-2">
-                                        <div className="flex items-center gap-2 md:gap-3 text-[10px] md:text-[11px] font-bold text-slate-400 uppercase tracking-widest min-w-0 flex-1">
-                                          <div className="flex items-center gap-1.5 shrink-0">
-                                            <Calendar size={11} className="text-slate-300" />
-                                            <span className="truncate">{fuDate.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-                                          </div>
-                                          <div className="flex items-center gap-1.5 text-secondary shrink-0">
-                                            <Clock size={11} className="opacity-70" />
-                                            <span>{fuDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}</span>
-                                          </div>
-                                        </div>
-                                        <button
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            const now = new Date();
-                                            setCompletionDate(now.toLocaleDateString("en-CA"));
-                                            setCompletionHour((now.getHours() % 12 || 12).toString());
-                                            setCompletionMinute(now.getMinutes().toString().padStart(2, "0"));
-                                            setCompletionPeriod(now.getHours() >= 12 ? "PM" : "AM");
-                                            setCompletingFollowUpId(fu.id);
-                                            setCompletionBrief("");
-                                            setShowCompletionModal(true);
-                                          }}
-                                          className="w-7 h-7 md:w-8 md:h-8 rounded-lg border border-slate-200 bg-white text-slate-300 hover:border-success hover:text-success hover:bg-success/5 transition-all flex items-center justify-center shrink-0 shadow-sm"
-                                          title="Mark as Completed"
-                                        >
-                                          <CheckCircle2 size={13} strokeWidth={3} />
-                                        </button>
-                                        <button
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleAddToCalendar(fu);
-                                          }}
-                                          className="w-7 h-7 md:w-8 md:h-8 rounded-lg border border-slate-200 bg-white text-slate-300 hover:border-blue-500 hover:text-blue-500 hover:bg-blue-50 transition-all flex items-center justify-center shrink-0 shadow-sm"
-                                          title="Add to Google Calendar"
-                                        >
-                                          <Calendar size={13} />
-                                        </button>
-                                      </div>
-
-                                    </div>
+                    return (
+                      <div className="space-y-6">
+                        {allGroups.length === 0 ? (
+                          <div className="text-center py-12 bg-white rounded-2xl border border-slate-200 text-slate-500 font-semibold">No conversations logged yet</div>
+                        ) : (
+                          allGroups.map((group, groupIdx) => (
+                            <div key={`group-${groupIdx}`} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                              <div className="flex items-center justify-between p-5 bg-slate-50 border-b border-slate-200 cursor-pointer" onClick={() => toggleProject(groupIdx)}>
+                                <div className="flex items-center gap-4">
+                                  <div className={`w-10 h-10 rounded-xl text-white flex items-center justify-center ${group.projectStatus === 'Active' ? 'bg-blue-600' : group.projectStatus === 'Completed' ? 'bg-emerald-500' : 'bg-slate-400'}`}>
+                                    <Briefcase size={20} />
+                                  </div>
+                                  <div>
+                                    <h3 className="text-base font-bold text-slate-900">{group.projectName}</h3>
+                                    <p className="text-sm font-medium text-slate-500">{group.interactions.length} interactions</p>
                                   </div>
                                 </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      ))}
-
-                      {upcomingFollowUps.length === 0 && (
-                        <div className="bg-slate-50/50 rounded-2xl border border-dashed border-slate-200 p-8 flex flex-col items-center justify-center text-center">
-                          <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm border border-slate-100 mb-3 text-slate-300">
-                            <Clock size={24} />
-                          </div>
-                          <p className="text-sm font-bold text-slate-400 tracking-tight mb-1">No pending follow-ups</p>
-                          <p className="text-[12px] text-slate-300 font-medium max-w-[200px]">Keep track of your next steps by adding a follow-up.</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
-              {activeTab === "activity" && (
-                <div className="space-y-6 animate-fade-in">
-                  <div className="flex justify-between items-center">
-                    <h3 className="text-sm font-bold text-primary tracking-tight">
-                      {isLead ? "Lead Conversations" : "Client Conversations"}
-                    </h3>
-                  </div>
-
-                  {isLead ? (
-                    /* Lead: Carousel */
-                    (() => {
-                      const leadConversations = [
-                        ...completedFollowUps.map(fu => ({
-                          ...fu, 
-                          source: "followup",
-                          originalDescription: fu.description,
-                          description: fu.follow_brief || "No summary provided",
-                          completedBy: fu.completed_by
-                        })),
-                        ...clientActivities.map(a => ({
-                          ...a, 
-                          source: "activity",
-                          originalDescription: null
-                        }))
-                      ].sort((a, b) => parseLocalDate(b.date || b.completed_at || b.dueDate || b.created_at || b.createdAt) - parseLocalDate(a.date || a.completed_at || a.dueDate || a.created_at || a.createdAt));
-
-                      return (
-                        <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-                          <div 
-                            className="flex items-center justify-between p-4 bg-slate-50/50 border-b border-slate-100 cursor-pointer hover:bg-slate-50 transition-colors"
-                            onClick={() => setIsLeadConvOpen(!isLeadConvOpen)}
-                          >
-                            <div className="flex items-center gap-3">
-                              <div className="w-7 h-7 rounded-lg flex items-center justify-center text-white shadow-sm bg-primary">
-                                <MessageSquare size={14} strokeWidth={2.5} />
-                              </div>
-                              <div>
-                                <h4 className="text-xs font-bold text-primary tracking-tight">
-                                  All Conversations
-                                </h4>
-                                <p className="text-[14px] font-bold text-slate-400 tracking-widest">
-                                  {leadConversations.length} total
-                                </p>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-3">
-                              {leadConversations.length > 1 && isLeadConvOpen && (
-                                <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                                  <button onClick={() => scrollContainer('lead-conv-carousel', 'left')} className="p-1.5 rounded-lg bg-white hover:bg-slate-50 text-slate-400 hover:text-primary transition-colors border border-slate-200 shadow-sm"><ChevronLeft size={16} /></button>
-                                  <button onClick={() => scrollContainer('lead-conv-carousel', 'right')} className="p-1.5 rounded-lg bg-white hover:bg-slate-50 text-slate-400 hover:text-primary transition-colors border border-slate-200 shadow-sm"><ChevronRight size={16} /></button>
+                                <div className="flex items-center gap-3">
+                                  {group.projectStatus !== "N/A" && (
+                                    <span className="px-3 py-1 bg-white border border-slate-200 rounded-full text-xs font-bold text-slate-600 hidden sm:block">
+                                      {group.projectStatus}
+                                    </span>
+                                  )}
+                                  {group.interactions.length > 1 && expandedProjectIndex === groupIdx && (
+                                    <div className="flex gap-2" onClick={e => e.stopPropagation()}>
+                                      <button onClick={() => scrollContainer(`client-conv-carousel-${groupIdx}`, 'left')} className="p-2 border border-slate-200 bg-white rounded-lg hover:bg-slate-50 text-slate-600"><ChevronLeft size={16}/></button>
+                                      <button onClick={() => scrollContainer(`client-conv-carousel-${groupIdx}`, 'right')} className="p-2 border border-slate-200 bg-white rounded-lg hover:bg-slate-50 text-slate-600"><ChevronRight size={16}/></button>
+                                    </div>
+                                  )}
+                                  <ChevronDown size={20} className={`text-slate-400 transition-transform ${expandedProjectIndex === groupIdx ? "rotate-180" : ""}`} />
                                 </div>
-                              )}
-                              <ChevronDown size={20} className={`text-slate-400 transition-transform ${isLeadConvOpen ? "rotate-180" : ""}`} />
-                            </div>
-                          </div>
-                          
-                          {isLeadConvOpen && (
-                            <div className="p-4 bg-white animate-fade-in-up">
-                              {leadConversations.length === 0 ? (
-                                <div className="text-center py-6 text-[12px] font-bold text-slate-300 tracking-widest uppercase">
-                                  No conversations logged yet
-                                </div>
-                              ) : (
-                                <div id="lead-conv-carousel" className="flex overflow-x-auto gap-4 pb-4 snap-x snap-mandatory no-scrollbar scroll-smooth">
-                                  {leadConversations.map((conv, idx) => (
-                                    <ConversationCard key={`lead-conv-${conv.id || idx}`} conv={conv} onAddToCalendar={handleAddToCalendar} />
-                                  ))}
+                              </div>
 
+                              {expandedProjectIndex === groupIdx && (
+                                <div className="p-6 bg-slate-50/30">
+                                  {group.interactions.length === 0 ? (
+                                    <div className="text-center py-6 text-sm font-semibold text-slate-400">No interactions</div>
+                                  ) : (
+                                    <div id={`client-conv-carousel-${groupIdx}`} className="flex overflow-x-auto gap-6 pb-2 snap-x snap-mandatory no-scrollbar scroll-smooth">
+                                      {group.interactions
+                                        .sort((a, b) => parseLocalDate(b.date || b.completed_at || b.dueDate || b.created_at || b.createdAt) - parseLocalDate(a.date || a.completed_at || a.dueDate || a.created_at || a.createdAt))
+                                        .map((conv, idx) => (
+                                          <div key={`conv-${conv.id || idx}`} className="w-full sm:w-[400px] shrink-0 snap-start">
+                                            <ConversationCard conv={conv} onAddToCalendar={handleAddToCalendar}/>
+                                          </div>
+                                      ))}
+                                    </div>
+                                  )}
                                 </div>
                               )}
                             </div>
-                          )}
-                        </div>
-                      );
-                    })()
-                  ) : (
-                    /* Client: Project-wise conversations */
-                    (() => {
-                      // 1. Initialize result with actual projects for this client
-                      const projectGroups = clientProjects.map((p) => ({
-                        id: p.id,
-                        projectName: p.name,
-                        projectStatus: p.status,
-                        interactions: [],
-                      }));
-
-                      // 2. Add an "Other / General" group for interactions without a project
-                      const generalInteractions = [];
-                      const leadHistoryInteractions = [];
-
-                      // 3. Helper to find or add to group
-                      const addToGroup = (interaction) => {
-                        const targetProject = projectGroups.find(
-                          (p) =>
-                            (interaction.projectId &&
-                              p.id == interaction.projectId) ||
-                            (interaction.projectName &&
-                              p.projectName === interaction.projectName),
-                        );
-                        if (targetProject) {
-                          targetProject.interactions.push(interaction);
-                        } else if (
-                          client.lead_id &&
-                          interaction.clientId == client.lead_id
-                        ) {
-                          leadHistoryInteractions.push(interaction);
-                        } else {
-                          generalInteractions.push(interaction);
-                        }
-                      };
-
-                      // 4. Distribute real activities
-                      clientActivities.forEach((a) =>
-                        addToGroup({
-                          id: a.id,
-                          type: a.type,
-                          date: a.date,
-                          description: a.description,
-                          projectName: a.projectName,
-                          projectId: a.projectId,
-                          clientId: a.clientId,
-                          source: "activity",
-                        }),
-                      );
-
-                      // 5. Distribute completed follow-ups (Summaries)
-                      completedFollowUps.forEach((f) =>
-                        addToGroup({
-                          id: `fu-${f.id}`,
-                          type: (f.followup_mode || "call").toLowerCase(),
-                          date: f.completed_at || f.dueDate,
-                          created_at: f.created_at || f.createdAt,
-                          completed_at: f.completed_at,
-                          description: f.follow_brief || "No summary provided",
-                          originalDescription: f.description,
-                          title: f.title,
-                          completedBy: f.completed_by,
-                          projectName: f.projectName,
-                          projectId: f.projectId,
-                          clientId: f.clientId,
-                          dueDate: f.dueDate,
-                          followup_date: f.followup_date,
-                          source: "followup",
-                        }),
-                      );
-
-                      const allGroups = [
-                        ...projectGroups,
-                        ...(generalInteractions.length > 0
-                          ? [
-                              {
-                                projectName: "Other Conversations",
-                                projectStatus: "N/A",
-                                interactions: generalInteractions,
-                              },
-                            ]
-                          : []),
-                        ...(leadHistoryInteractions.length > 0
-                          ? [
-                              {
-                                projectName: "Lead Conversations",
-                                projectStatus: "Lead History",
-                                interactions: leadHistoryInteractions,
-                              },
-                            ]
-                          : []),
-                      ];
-
-                      return (
-                        <div className="space-y-4">
-                          {allGroups.length === 0 ? (
-                            <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm p-8 text-center">
-                              <p className="text-[12px] font-bold text-slate-300 tracking-widest uppercase">
-                                No conversations logged yet
-                              </p>
-                            </div>
-                          ) : (
-                            allGroups.map((group, groupIdx) => (
-                              <div
-                                key={`group-${groupIdx}`}
-                                className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm mb-6"
-                              >
-                                {/* Project Header */}
-                                <div 
-                                  className="flex items-center justify-between p-4 bg-slate-50/50 border-b border-slate-100 cursor-pointer hover:bg-slate-50 transition-colors"
-                                  onClick={() => toggleProject(groupIdx)}
-                                >
-                                  <div className="flex items-center gap-3">
-                                    <div
-                                      className={`w-7 h-7 rounded-lg flex items-center justify-center text-white shadow-sm ${
-                                        group.projectStatus === "Active" ||
-                                        group.projectStatus === "Planning"
-                                          ? "bg-secondary"
-                                          : group.projectStatus === "Completed"
-                                            ? "bg-success"
-                                            : "bg-slate-400"
-                                      }`}
-                                    >
-                                      <Briefcase size={14} strokeWidth={2.5} />
-                                    </div>
-                                    <div>
-                                      <h4 className="text-xs font-bold text-primary tracking-tight">
-                                        {group.projectName}
-                                      </h4>
-                                      <p className="text-[14px] font-bold text-slate-400  tracking-widest">
-                                        {group.interactions.length}{" "}
-                                        conversations
-                                      </p>
-                                    </div>
-                                  </div>
-                                  <div className="flex items-center gap-3">
-                                    {group.projectStatus !== "N/A" && (
-                                      <span
-                                        className={`px-2.5 py-1 rounded-lg text-[13px] font-bold  tracking-widest border ${
-                                          group.projectStatus === "Active" ||
-                                          group.projectStatus === "Planning"
-                                            ? "bg-secondary/10 text-secondary border-secondary/20"
-                                            : group.projectStatus === "Completed"
-                                              ? "bg-success/10 text-success border-success/20"
-                                              : "bg-info/10 text-info border-info/20"
-                                        }`}
-                                      >
-                                        {group.projectStatus}
-                                      </span>
-                                    )}
-                                    {group.interactions.length > 1 && expandedProjectIndex === groupIdx && (
-                                      <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                                        <button onClick={() => scrollContainer(`client-conv-carousel-${groupIdx}`, 'left')} className="p-1.5 rounded-lg bg-white hover:bg-slate-50 text-slate-400 hover:text-primary transition-colors border border-slate-200 shadow-sm"><ChevronLeft size={16} /></button>
-                                        <button onClick={() => scrollContainer(`client-conv-carousel-${groupIdx}`, 'right')} className="p-1.5 rounded-lg bg-white hover:bg-slate-50 text-slate-400 hover:text-primary transition-colors border border-slate-200 shadow-sm"><ChevronRight size={16} /></button>
-                                      </div>
-                                    )}
-                                    <ChevronDown size={20} className={`text-slate-400 transition-transform ${expandedProjectIndex === groupIdx ? "rotate-180" : ""}`} />
-                                  </div>
-                                </div>
-
-                                {/* Conversations Carousel */}
-                                {expandedProjectIndex === groupIdx && (
-                                  <div className="p-4 bg-white animate-fade-in-up">
-                                    {group.interactions.length === 0 ? (
-                                      <div className="text-center py-6 text-[12px] font-bold text-slate-300 tracking-widest uppercase">
-                                        No conversations logged yet
-                                      </div>
-                                    ) : (
-                                      <div id={`client-conv-carousel-${groupIdx}`} className="flex overflow-x-auto gap-4 pb-4 snap-x snap-mandatory no-scrollbar scroll-smooth">
-                                        {group.interactions
-                                          .sort(
-                                            (a, b) =>
-                                              parseLocalDate(b.date || b.completed_at || b.dueDate || b.created_at || b.createdAt) - parseLocalDate(a.date || a.completed_at || a.dueDate || a.created_at || a.createdAt),
-                                          )
-                                          .map((conv, idx) => (
-                                            <ConversationCard key={`conv-${conv.id || idx}`} conv={conv} />
-                                          ))}
-                                      </div>
-                                    )}
-                                  </div>
-                                )}
-                              </div>
-                            ))
-                          )}
-                        </div>
-                      );
-                    })()
-                  )}
-                </div>
-              )}
-              {activeTab === "projects" && (
-                <div className="space-y-4 animate-fade-in">
-                  {clientProjects.map((project) => (
-                    <div
-                      key={project.id}
-                      onClick={() =>
-                        onSelectProject && onSelectProject(project)
-                      }
-                      className="p-4 bg-white border border-slate-200 rounded-xl hover:border-secondary hover:shadow-lg cursor-pointer transition-all flex items-center gap-5"
-                    >
-                      <div className="flex-1">
-                        <h4 className="text-sm font-bold text-primary truncate mb-1">
-                          {project.name}
-                        </h4>
-                        {/* <div className="w-full bg-slate-50 border border-slate-100 rounded-full h-2 overflow-hidden mt-3">
-                          <div
-                            className="bg-secondary h-full rounded-full transition-all duration-1000"
-                            style={{ width: `${project.progress}%` }}
-                          ></div>
-                        </div> */}
+                          ))
+                        )}
                       </div>
-                      <div className="text-right shrink-0">
-                        <p className="text-[12px] font-bold text-primary">
+                    );
+                  })()
+                )}
+              </div>
+            )}
+
+            {activeTab === "projects" && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 animate-fade-in">
+                {clientProjects.map((project) => (
+                  <div
+                    key={project.id}
+                    onClick={() => onSelectProject && onSelectProject(project)}
+                    className="p-6 bg-white border border-slate-200 rounded-2xl hover:border-slate-400 hover:shadow-lg cursor-pointer transition-all flex flex-col justify-between"
+                  >
+                    <div className="mb-6">
+                      <div className="flex justify-between items-start mb-2">
+                        <h4 className="text-lg font-bold text-slate-900 line-clamp-1 pr-4">{project.name}</h4>
+                        <span className="px-3 py-1 bg-slate-100 text-slate-600 text-xs font-bold rounded-full whitespace-nowrap">
+                          {project.status}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="pt-4 border-t border-slate-100 flex items-end justify-between">
+                      <div>
+                        <p className="text-xs font-medium text-slate-500 mb-1">Budget</p>
+                        <p className="text-base font-bold text-slate-900">
                           {(() => {
-                            const currencyObj = commonCurrencies.find(
-                              (c) => c.code === client.currency,
-                            );
-                            return currencyObj 
-                              ? `${currencyObj.code} (${currencyObj.symbol})` 
-                              : (client.currency || "$");
+                            const currencyObj = commonCurrencies.find((c) => c.code === client.currency);
+                            return currencyObj ? `${currencyObj.code} (${currencyObj.symbol})` : (client.currency || "$");
                           })()}{" "}
                           {formatBudget(project.budget, client.currency)}
                         </p>
-                        <p className="text-[13px] font-bold text-slate-400  tracking-widest mt-1">
-                          {project.status}
-                        </p>
+                      </div>
+                      <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400">
+                        <ChevronRight size={20} />
                       </div>
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
+                  </div>
+                ))}
+                {clientProjects.length === 0 && (
+                  <div className="col-span-full py-16 text-center bg-white rounded-2xl border border-dashed border-slate-300">
+                     <p className="text-slate-500 font-semibold">No active projects found.</p>
+                  </div>
+                )}
+              </div>
+            )}
+            
           </div>
         </div>
       </div>
+
+      {/* --- MODALS (Portals) --- */}
+      
+      {/* Edit Form Modal */}
+      {showEditModal && createPortal(
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-xl overflow-hidden animate-zoom-in flex flex-col max-h-[90vh]">
+            <div className="bg-slate-900 p-6 text-white relative shrink-0">
+              <button onClick={() => setShowEditModal(false)} className="absolute top-6 right-6 p-1.5 hover:bg-white/20 rounded-full transition-colors">
+                <X size={20} strokeWidth={2.5} />
+              </button>
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center border border-white/20">
+                  <Pencil size={20} className="text-white" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold">Edit {isLead ? "Lead" : "Client"}</h3>
+                  <p className="text-slate-400 text-sm font-medium mt-1">Update primary contact information</p>
+                </div>
+              </div>
+            </div>
+
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                const isValid = validateForm(editFormData, {
+                  name: { required: true, minLength: 2, label: "Full Name" },
+                  email: { required: true, pattern: /^\S+@\S+\.\S+$/, label: "Email" },
+                  phone: { required: true, minLength: 10, label: "Phone Number" },
+                });
+                if (!isValid) return;
+
+                if (onUpdateClient) {
+                  try {
+                    await onUpdateClient(client.lead_id || client.id, editFormData);
+                    setShowEditModal(false);
+                  } catch (error) {
+                    toast.error("Failed to update lead. Please try again.");
+                  }
+                }
+              }}
+              className="flex-1 min-h-0 p-6 space-y-5 overflow-y-auto custom-scrollbar"
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Full Name</label>
+                  <input required type="text" placeholder="e.g. Sameer Kapoor" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-900 focus:outline-none text-sm font-medium" value={editFormData.name} onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })} />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Email Address</label>
+                  <input required type="email" placeholder="sameer@fintech.com" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-900 focus:outline-none text-sm font-medium" value={editFormData.email} onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })} />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="space-y-1.5">
+                  <SearchableDropdown label="Country Code" options={countries.map((c) => ({ name: `${c.name} (${c.code})`, code: c.code }))} value={editFormData.countryCode} onChange={(val) => { const selectedCountry = countries.find((c) => c.code === val); setEditFormData({ ...editFormData, countryCode: val, country: selectedCountry ? selectedCountry.name : editFormData.country }); }} placeholder="Code" />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Phone Number</label>
+                  <input required type="tel" placeholder="98765 43210" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-900 focus:outline-none text-sm font-medium" value={editFormData.phone} onChange={(e) => setEditFormData({ ...editFormData, phone: e.target.value.replace(/\D/g, "") })} />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Website URL (Optional)</label>
+                <input type="text" placeholder="www.example.com" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-900 focus:outline-none text-sm font-medium" value={editFormData.website} onChange={(e) => setEditFormData({ ...editFormData, website: e.target.value })} />
+              </div>
+
+              {!isLead && (
+                <>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Organisation Name</label>
+                    <input type="text" placeholder="Acme Corp" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-900 focus:outline-none text-sm font-medium" value={editFormData.organisationName} onChange={(e) => setEditFormData({ ...editFormData, organisationName: e.target.value })} />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    {editFormData.country === "India" ? (
+                      <SearchableDropdown label="State" options={indianStates} value={editFormData.state} onChange={(val) => setEditFormData({ ...editFormData, state: val })} placeholder="Select State" />
+                    ) : (
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">State/Province</label>
+                        <input type="text" placeholder="California" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-900 focus:outline-none text-sm font-medium" value={editFormData.state} onChange={(e) => setEditFormData({ ...editFormData, state: e.target.value })} />
+                      </div>
+                    )}
+                    <SearchableDropdown label="Currency" options={commonCurrencies.map((c) => ({ name: `${c.code} (${c.symbol})`, code: c.code }))} value={editFormData.currency} onChange={(val) => setEditFormData({ ...editFormData, currency: val })} placeholder="Currency" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Client Status</label>
+                    <select className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-900 focus:outline-none text-sm font-semibold" value={editFormData.clientStatus} onChange={(e) => setEditFormData({ ...editFormData, clientStatus: e.target.value })}>
+                      <option value="Active">Active</option>
+                      <option value="Inactive">Inactive</option>
+                    </select>
+                  </div>
+                </>
+              )}
+
+              <div className="space-y-1.5 relative">
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">{isLead ? "Lead Status" : "Project Status"}</label>
+                <button type="button" onClick={() => setIsEditStatusDropdownOpen(!isEditStatusDropdownOpen)} className="w-full flex items-center justify-between px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold hover:border-slate-400 transition-all">
+                  <span className="text-slate-800">{editFormData.leadType || "Select Status"}</span>
+                  <ChevronDown size={18} className={`text-slate-500 transition-transform ${isEditStatusDropdownOpen ? "rotate-180" : ""}`} />
+                </button>
+                {isEditStatusDropdownOpen && (
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden z-[90]">
+                    {(client.isConverted ? ["Hot", "Warm", "Cold", "Converted"] : ["Hot", "Warm", "Cold"]).map((status) => (
+                      <button key={status} type="button" onClick={() => { setEditFormData({ ...editFormData, leadType: status }); setIsEditStatusDropdownOpen(false); }} className={`w-full text-left px-5 py-3 text-sm font-semibold transition-colors ${editFormData.leadType === status ? "bg-slate-100 text-slate-900" : "text-slate-600 hover:bg-slate-50"}`}>
+                        <div className="flex items-center gap-3">
+                          {status === "Hot" && <Flame size={16} className="text-red-500" />}
+                          {status === "Warm" && <Sun size={16} className="text-amber-500" />}
+                          {status === "Cold" && <Snowflake size={16} className="text-blue-500" />}
+                          {status === "Converted" && <UserCheck size={16} className="text-emerald-500" />}
+                          <span>{status}</span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Notes</label>
+                <textarea rows={4} placeholder="Additional details..." className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-900 focus:outline-none text-sm font-medium resize-none" value={editFormData.notes} onChange={(e) => setEditFormData({ ...editFormData, notes: e.target.value })} />
+              </div>
+
+              <div className="pt-4 shrink-0">
+                <button type="submit" className="w-full py-4 bg-slate-900 text-white rounded-xl text-sm font-bold tracking-wide shadow-md active:scale-[0.98] transition-transform hover:bg-slate-800">
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Log Activity Modal */}
+      {isLogging && createPortal(
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in py-10">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-xl overflow-hidden animate-zoom-in my-auto flex flex-col max-h-[90vh]">
+            <div className="bg-slate-900 p-6 text-white relative shrink-0">
+              <button onClick={() => setIsLogging(false)} className="absolute top-6 right-6 p-1.5 hover:bg-white/20 rounded-full transition-colors">
+                <X size={20} strokeWidth={2.5} />
+              </button>
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center border border-white/20">
+                  <MessageSquare size={20} className="text-white" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold">Log Conversation</h3>
+                  <p className="text-slate-400 text-sm font-medium mt-1">Record interaction details</p>
+                </div>
+              </div>
+            </div>
+
+            <form onSubmit={handleLogInteraction} className="p-6 space-y-5 overflow-y-auto custom-scrollbar">
+              <div className="grid grid-cols-2 gap-5">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Date</label>
+                  <DatePicker value={logData.date} onChange={(val) => setLogData({ ...logData, date: val })} />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Time</label>
+                  <input required type="time" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-900 focus:outline-none text-sm font-medium" value={logData.time} onChange={(e) => setLogData({ ...logData, time: e.target.value })} />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">{isLead ? "Subject" : "Project Name"}</label>
+                {!isLead && (
+                  <div className="relative">
+                    <select required className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-900 focus:outline-none text-sm font-medium appearance-none cursor-pointer" value={logData.projectId} onChange={(e) => setLogData({ ...logData, projectId: e.target.value })}>
+                      <option value="" disabled>Select a project...</option>
+                      {clientProjects.length > 0 ? (
+                        clientProjects.map((project) => <option key={project.id} value={project.id}>{project.name}</option>)
+                      ) : (
+                        <>
+                          <option value="Website Redesign">Website Redesign</option>
+                          <option value="SEO Optimization">SEO Optimization</option>
+                          <option value="Brand Identity">Brand Identity</option>
+                        </>
+                      )}
+                    </select>
+                    <ChevronDown className="absolute right-4 top-3.5 text-slate-400 pointer-events-none" size={18} />
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Interaction Type</label>
+                <div className="grid grid-cols-3 gap-3">
+                  {["call", "email", "meeting"].map((type) => (
+                    <button key={type} type="button" onClick={() => setLogData({ ...logData, type: type })} className={`py-3 px-4 rounded-xl border text-sm font-bold uppercase tracking-wider transition-all ${logData.type === type ? "bg-slate-900 border-slate-900 text-white shadow-md" : "bg-white border-slate-200 text-slate-500 hover:border-slate-400"}`}>
+                      {type}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Conversation Details</label>
+                <textarea required placeholder="Discussed new service package..." className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-900 focus:outline-none text-sm font-medium min-h-[120px] resize-none" value={logData.description} onChange={(e) => setLogData({ ...logData, description: e.target.value })} />
+              </div>
+
+              <div className="pt-4 shrink-0">
+                <button type="submit" className="w-full py-4 bg-slate-900 text-white rounded-xl text-sm font-bold tracking-wide shadow-md active:scale-[0.98] transition-transform hover:bg-slate-800">
+                  Save Entry
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Completion Modal */}
+      {showCompletionModal && createPortal(
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-zoom-in">
+            <div className="bg-emerald-600 p-6 text-white relative">
+              <button onClick={() => setShowCompletionModal(false)} className="absolute top-6 right-6 text-white/70 hover:text-white transition-colors">
+                <X size={20} />
+              </button>
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl border border-white/20 flex items-center justify-center bg-white/10">
+                  <CheckCircle2 size={24} className="text-white" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold">Mark Completed</h3>
+                  <p className="text-emerald-100 text-sm font-medium mt-1">Follow-up Conclusion</p>
+                </div>
+              </div>
+            </div>
+
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                let compHour = parseInt(completionHour || "12");
+                if (completionPeriod === "PM" && compHour < 12) compHour += 12;
+                if (completionPeriod === "AM" && compHour === 12) compHour = 0;
+                const compTime24 = `${compHour.toString().padStart(2, "0")}:${completionMinute || "00"}`;
+                const combinedCompletionStr = `${completionDate} ${compTime24}:00`;
+                if (onToggleStatus) {
+                  await onToggleStatus(completingFollowUpId, completionBrief, combinedCompletionStr, completedBy);
+                  fetchClientFollowups();
+                }
+                setShowCompletionModal(false);
+              }}
+              className="p-6 space-y-5"
+            >
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Conclusion Brief <span className="text-red-500">*</span></label>
+                <textarea required rows={4} placeholder="Write a brief conclusion..." className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none text-sm font-medium resize-none placeholder:text-slate-400" value={completionBrief} onChange={(e) => setCompletionBrief(e.target.value)} />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Completion Date <span className="text-red-500">*</span></label>
+                  <DatePicker value={completionDate} onChange={setCompletionDate} />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Completion Time <span className="text-red-500">*</span></label>
+                  <div className="flex items-center gap-2">
+                    <div className="relative flex-1">
+                      <button type="button" onClick={() => setIsCompHourOpen(!isCompHourOpen)} className="w-full h-11 px-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold flex items-center justify-between">
+                        {completionHour.padStart(2, '0')} <ChevronDown size={14} className="text-slate-500" />
+                      </button>
+                      {isCompHourOpen && (
+                        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-[100] max-h-40 overflow-y-auto">
+                          {Array.from({ length: 12 }, (_, i) => (i + 1).toString()).map(h => (
+                            <button key={h} type="button" onClick={() => { setCompletionHour(h); setIsCompHourOpen(false); }} className="w-full text-left px-4 py-2.5 hover:bg-slate-50 text-sm font-semibold">
+                              {h.padStart(2, '0')}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <div className="relative flex-1">
+                      <button type="button" onClick={() => setIsCompMinOpen(!isCompMinOpen)} className="w-full h-11 px-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold flex items-center justify-between">
+                        {completionMinute} <ChevronDown size={14} className="text-slate-500" />
+                      </button>
+                      {isCompMinOpen && (
+                        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-[100] max-h-40 overflow-y-auto">
+                          {Array.from({ length: 60 }, (_, i) => i.toString().padStart(2, '0')).map(m => (
+                            <button key={m} type="button" onClick={() => { setCompletionMinute(m); setIsCompMinOpen(false); }} className="w-full text-left px-4 py-2.5 hover:bg-slate-50 text-sm font-semibold">
+                              {m}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <div className="relative flex-1">
+                      <button type="button" onClick={() => setIsCompPeriodOpen(!isCompPeriodOpen)} className="w-full h-11 px-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold flex items-center justify-between">
+                        {completionPeriod} <ChevronDown size={14} className="text-slate-500" />
+                      </button>
+                      {isCompPeriodOpen && (
+                        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-[100] overflow-hidden">
+                          {["AM", "PM"].map(p => (
+                            <button key={p} type="button" onClick={() => { setCompletionPeriod(p); setIsCompPeriodOpen(false); }} className="w-full text-left px-4 py-2.5 hover:bg-slate-50 text-sm font-semibold">
+                              {p}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Completed By <span className="text-red-500">*</span></label>
+                <input required type="text" className="w-full h-12 px-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none text-sm font-bold" value={completedBy} onChange={(e) => setCompletedBy(e.target.value)} />
+              </div>
+
+              <div className="pt-4">
+                <button type="submit" className="w-full h-12 bg-emerald-600 text-white rounded-xl text-sm font-bold tracking-wide shadow-md active:scale-[0.98] transition-transform hover:bg-emerald-700">
+                  Confirm Completion
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>,
+        document.body
+      )}
+
     </div>
   );
 };
