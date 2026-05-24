@@ -5,8 +5,8 @@ import { useScrollLock } from "../../hooks/useScrollLock";
 import { useSearch } from "../../hooks/useSearch";
 // MOCK_PROJECTS and MOCK_CLIENTS are now passed as props
 import {
+  Briefcase,
   Calendar,
-  IndianRupee,
   MoreVertical,
   Plus,
   Clock,
@@ -24,6 +24,9 @@ import {
   Filter,
   AlertTriangle,
   Loader2,
+  LayoutGrid,
+  Pencil,
+  Trash2,
 } from "lucide-react";
 import DatePicker from "../../components/ui/DatePicker";
 import {
@@ -96,6 +99,14 @@ const MEDIA_COLUMNS = [
 
 const ALL_COLUMNS = [
   {
+    id: "All",
+    title: "All",
+    color: "text-slate-600",
+    dotColor: "bg-slate-400",
+    activeTabBg: "bg-slate-100",
+    activeTabText: "text-slate-700",
+  },
+  {
     id: "In Progress",
     title: "In Progress",
     color: "text-info",
@@ -131,75 +142,41 @@ const ProjectCard = ({
   onDelete,
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [menuStyle, setMenuStyle] = useState({});
+  const menuButtonRef = useRef(null);
   const client = clients.find((c) => c.id == project.clientId || c.client_id == project.clientId);
 
   const getPriorityStyles = (priority) => {
     switch (priority?.toLowerCase()) {
       case "critical":
-        return {
-          badge: "bg-error/10 text-error border-error/30",
-          icon: AlertCircle,
-          color: "text-error",
-        };
+        return { badge: "bg-rose-100 text-rose-600 border-rose-200", icon: AlertCircle };
       case "high":
-        return {
-          badge: "bg-warning/10 text-warning border-warning/30",
-          icon: Zap,
-          color: "text-warning",
-        };
+        return { badge: "bg-amber-100 text-amber-600 border-amber-200", icon: Zap };
       case "medium":
-        return {
-          badge: "bg-secondary/10 text-secondary border-secondary/30",
-          icon: CheckCircle,
-          color: "text-secondary",
-        };
+        return { badge: "bg-emerald-100 text-emerald-600 border-emerald-200", icon: CheckCircle2 };
       case "low":
-        return {
-          badge: "bg-info/10 text-info border-info/30",
-          icon: Tag,
-          color: "text-info",
-        };
+        return { badge: "bg-sky-100 text-sky-600 border-sky-200", icon: Tag };
       default:
-        return {
-          badge: "bg-slate-100 text-slate-600 border-slate-200",
-          icon: Tag,
-          color: "text-slate-400",
-        };
+        return { badge: "bg-slate-100 text-slate-600 border-slate-200", icon: Tag };
     }
   };
 
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {
       case "completed":
-        return "bg-success/10 text-success border-success/30";
+        return "bg-emerald-50 text-emerald-600 border-emerald-100";
       case "in_progress":
       case "in progress":
-        return "bg-warning/10 text-warning border-warning/30";
+        return "bg-amber-50 text-amber-600 border-amber-100";
       case "on_hold":
       case "on hold":
       case "planning":
       case "pending":
-        return "bg-info/10 text-info border-info/30";
+        return "bg-sky-50 text-sky-600 border-sky-100";
       case "testing":
-        return "bg-secondary/10 text-secondary border-secondary/30";
+        return "bg-violet-50 text-violet-600 border-violet-100";
       case "live":
-        return "bg-success/10 text-success border-success/30";
-      default:
-        return "bg-slate-100 text-slate-600 border-slate-200";
-    }
-  };
-
-  const getCategoryColor = (category) => {
-    switch (category) {
-      case 1:
-      case "tech":
-        return "bg-secondary/10 text-secondary border-secondary/30";
-      case 2:
-      case "social media":
-        return "bg-warning/10 text-warning border-warning/30";
-      case 3:
-      case "both":
-        return "bg-purple-500/10 text-purple-500 border-purple-500/30";
+        return "bg-emerald-50 text-emerald-600 border-emerald-100";
       default:
         return "bg-slate-100 text-slate-600 border-slate-200";
     }
@@ -207,13 +184,11 @@ const ProjectCard = ({
 
   const handleStatusUpdate = (newStatus) => {
     if (onUpdateProject) {
-      // Calculate new progress based on status if needed
       let newProgress = project.progress;
       if (newStatus === "Live" || newStatus === "Completed") newProgress = 100;
       else if (newStatus === "Testing") newProgress = 75;
       else if (newStatus === "In Progress") newProgress = 40;
-      else if (newStatus === "Planning" || newStatus === "Pending")
-        newProgress = 10;
+      else if (newStatus === "Planning" || newStatus === "Pending") newProgress = 10;
 
       onUpdateProject({
         ...project,
@@ -224,151 +199,198 @@ const ProjectCard = ({
     setIsMenuOpen(false);
   };
 
+  useEffect(() => {
+    if (!isMenuOpen || !menuButtonRef.current) return;
+
+    const rect = menuButtonRef.current.getBoundingClientRect();
+    const menuWidth = 192;
+    const menuHeight = 180;
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    let left = rect.right - menuWidth;
+    if (left < 12) left = 12;
+    if (left + menuWidth > viewportWidth - 12) left = viewportWidth - menuWidth - 12;
+
+    let top = rect.bottom + 8;
+    if (top + menuHeight > viewportHeight - 12) {
+      top = rect.top - menuHeight - 8;
+    }
+
+    setMenuStyle({
+      position: "fixed",
+      top: `${top}px`,
+      left: `${left}px`,
+      width: `${menuWidth}px`,
+      zIndex: 99999,
+    });
+  }, [isMenuOpen]);
+
+  useEffect(() => {
+    if (!isMenuOpen) return;
+
+    const closeMenu = () => setIsMenuOpen(false);
+    window.addEventListener("scroll", closeMenu, true);
+    window.addEventListener("resize", closeMenu);
+    return () => {
+      window.removeEventListener("scroll", closeMenu, true);
+      window.removeEventListener("resize", closeMenu);
+    };
+  }, [isMenuOpen]);
+
   const priorityStyle = getPriorityStyles(project.priority);
   const PriorityIcon = priorityStyle.icon;
 
   return (
-    <div
+    <tr
       onClick={() => onSelectProject && onSelectProject(project)}
-      className="group bg-white p-5 rounded-2xl border border-slate-200 hover:border-secondary/50 hover:shadow-xl transition-all cursor-pointer animate-fade-in flex flex-col h-full relative"
+      className="group transition-all hover:bg-slate-50/50 cursor-pointer"
     >
-      {/* Header with Category */}
-      <div className="flex items-start mb-4">
-        <span
-          className={`px-2 py-0.5 text-[13px] font-bold tracking-widest border rounded-md ${getCategoryColor(project.category)}`}
-        >
-          {CATEGORY_MAP[project.category] || project.category || "Tech"}
+      <td className="px-6 py-5">
+        <div className="min-w-0">
+          <div className="font-bold text-[13px] text-[#18254D] tracking-tight leading-none mb-1 group-hover:text-secondary transition-colors truncate">
+            {project.name}
+          </div>
+          <div className="text-[12px] text-slate-400 truncate max-w-[280px]">
+            {project.description || "No description provided"}
+          </div>
+        </div>
+      </td>
+
+      <td className="px-6 py-5">
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-secondary" />
+          <span className="text-[12px] font-semibold text-slate-600">
+            {client?.name || client?.company || "System"}
+          </span>
+        </div>
+      </td>
+
+      <td className="px-6 py-5">
+        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold border ${priorityStyle.badge}`}>
+          <PriorityIcon size={10} />
+          {project.priority?.toUpperCase() || "MEDIUM"}
         </span>
-      </div>
+      </td>
 
-      {/* Project Title & Description */}
-      <div className="mb-4 flex-grow">
-        <h4 className="font-bold text-[#18254D] text-sm tracking-tight mb-2 group-hover:text-secondary transition-colors line-clamp-2">
-          {project.name}
-        </h4>
-        {project.description && (
-          <p className="text-[13px] text-slate-500 line-clamp-2 leading-relaxed font-medium">
-            {project.description}
-          </p>
-        )}
-      </div>
-
-      {/* Status & Priority Row */}
-      <div className="flex items-center justify-between mb-4 mt-auto pt-4 border-t border-slate-50">
-        <div className="flex flex-col gap-1.5">
-          <span className="text-[13px] font-black text-slate-300 tracking-widest uppercase">Status</span>
-          <span
-            className={`px-2 py-0.5 text-[13px] font-bold tracking-widest border rounded-md w-fit ${getStatusColor(project.status)}`}
-          >
-            {project.status?.replace("_", " ") || "Planning"}
+      <td className="px-6 py-5">
+        <div className="flex items-center gap-1.5 text-[12px] font-bold text-slate-500">
+          <Calendar size={12} className="text-secondary" />
+          <span>
+            {project.onboardingDate
+              ? new Date(project.onboardingDate).toLocaleDateString(undefined, {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                })
+              : "N/A"}
           </span>
         </div>
-        <div className="flex flex-col items-end gap-1.5">
-          <span className="text-[13px] font-black text-slate-300 tracking-widest uppercase text-right">Priority</span>
-          <span
-            className={`inline-flex items-center gap-1 px-2 py-0.5 text-[13px] font-bold tracking-widest border rounded-md ${priorityStyle.badge}`}
-          >
-            <PriorityIcon size={10} />
-            {project.priority?.toUpperCase() || "MEDIUM"}
+      </td>
+
+      <td className="px-6 py-5">
+        <div className="flex items-center gap-1.5 text-[12px] font-bold text-slate-500">
+          <Calendar size={12} className="text-secondary" />
+          <span>
+            {project.deadline
+              ? new Date(project.deadline).toLocaleDateString(undefined, {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                })
+              : "N/A"}
           </span>
         </div>
-      </div>
+      </td>
 
-      {/* Action Menu (Floating top-right) */}
-      <div className="absolute top-5 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-        <div className="relative">
+      <td className="px-6 py-5">
+        <span className="text-[12px] font-semibold text-slate-600">
+          {project.createdByName || "System"}
+        </span>
+      </td>
+
+      <td className="px-6 py-5 text-right">
+        <div className="flex justify-end gap-3" onClick={(e) => e.stopPropagation()}>
           <button
             onClick={(e) => {
               e.stopPropagation();
-              setIsMenuOpen(!isMenuOpen);
+              onEdit && onEdit(project);
             }}
-            className={`p-1.5 transition-colors rounded-lg ${isMenuOpen ? "bg-slate-100 text-primary" : "bg-white border border-slate-100 text-slate-300 hover:text-primary hover:border-slate-300 shadow-sm"}`}
+            className="w-[34px] h-[34px] flex items-center justify-center bg-blue-50/50 border border-blue-100 rounded-[10px] text-blue-500 hover:bg-blue-100 transition-all active:scale-90 shadow-sm relative group/btn"
+            title="Edit Project"
           >
-            <MoreVertical size={14} />
+            <Pencil size={16} />
+            <div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">
+              Edit Project
+            </div>
           </button>
-
-          {isMenuOpen && (
-            <>
-              <div
-                className="fixed inset-0 z-[60]"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsMenuOpen(false);
-                }}
-              />
-              <div
-                onClick={(e) => e.stopPropagation()}
-                className="absolute right-0 mt-2 w-48 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[70] animate-fade-in origin-top-right py-2 scale-90 -translate-y-2 translate-x-2"
-                style={{ transform: "scale(1) translate(0, 0)" }}
-              >
-                <div className="px-4 py-2 border-b border-slate-50 mb-1">
-                  <p className="text-[14px] font-black text-slate-400  tracking-widest">
-                    Quick Actions
-                  </p>
-                </div>
-                {availableStatuses.map((status) => (
-                  <button
-                    key={status}
-                    onClick={() => handleStatusUpdate(status)}
-                    className="w-full text-left px-4 py-2.5 text-[12px] font-bold  tracking-widest text-[#18254D] hover:bg-slate-50 hover:text-secondary transition-colors"
-                  >
-                    Move to {status}
-                  </button>
-                ))}
-                <div className="border-t border-slate-50 mt-1 pt-1">
-                  <button
-                    onClick={() => {
-                      onEdit && onEdit(project);
-                      setIsMenuOpen(false);
-                    }}
-                    className="w-full text-left px-4 py-2.5 text-[12px] font-bold  tracking-widest text-slate-400 hover:bg-slate-50 hover:text-primary transition-colors"
-                  >
-                    Edit Details
-                  </button>
-                  <button
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete && onDelete(project);
+            }}
+            className="w-[34px] h-[34px] flex items-center justify-center bg-[#FEF2F2] border border-[#FECACA] rounded-[10px] text-[#EF4444] hover:text-[#DC2626] hover:border-[#FCA5A5] transition-all active:scale-90 shadow-sm relative group/btn"
+            title="Delete Project"
+          >
+            <Trash2 size={16} />
+            <div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">
+              Delete Project
+            </div>
+          </button>
+          <div className="relative">
+            <button
+              ref={menuButtonRef}
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsMenuOpen(!isMenuOpen);
+              }}
+              type="button"
+              className={`w-[34px] h-[34px] flex items-center justify-center bg-white border rounded-[10px] shadow-sm transition-all ${isMenuOpen ? "border-primary text-primary" : "border-slate-200 text-slate-400 hover:border-slate-300 hover:text-primary"}`}
+              title="Change Status"
+            >
+              <MoreVertical size={16} />
+            </button>
+            {isMenuOpen && (
+              createPortal(
+                <>
+                  <div
+                    className="fixed inset-0 z-[99990]"
                     onClick={(e) => {
                       e.stopPropagation();
-                      onDelete && onDelete(project);
-                      setIsMenuOpen(false); 
+                      setIsMenuOpen(false);
                     }}
-                    className="w-full text-left px-4 py-2.5 text-[12px] font-bold  tracking-widest text-rose-400 hover:bg-rose-50 hover:text-rose-600 transition-colors border-t border-slate-50"
+                  />
+                  <div
+                    onClick={(e) => e.stopPropagation()}
+                    style={menuStyle}
+                    className="bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden animate-fade-in origin-top-right py-2"
                   >
-                    Delete Project
-                  </button>
-                </div>
-              </div>
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* Footer with Budget & Deadline */}
-      <div className="pt-4 border-t border-slate-100 flex items-center justify-between mt-auto">
-        <div className="flex flex-col gap-1">
-          <span className="text-[13px] font-black text-slate-300 tracking-widest uppercase">Budget</span>
-          <span className="text-[12px] font-bold text-primary flex items-center gap-0.5">
-            {commonCurrencies.find((c) => c.code === client?.currency)?.symbol || "₹"}
-            {project.budget?.toLocaleString("en-IN") || "0"}
-          </span>
-        </div>
-        <div className="flex flex-col items-end gap-1">
-          <span className="text-[13px] font-black text-slate-300 tracking-widest uppercase text-right">Deadline</span>
-          <div className="flex items-center gap-1.5 text-[12px] font-bold text-slate-500">
-            <Calendar size={12} className="text-secondary" />
-            <span>
-              {project.deadline
-                ? new Date(project.deadline).toLocaleDateString(undefined, {
-                    month: "short",
-                    day: "numeric",
-                  })
-                : "N/A"}
-            </span>
+                    <div className="px-4 py-2 border-b border-slate-50 mb-1">
+                      <p className="text-[14px] font-black text-slate-400 tracking-widest">
+                        Quick Actions
+                      </p>
+                    </div>
+                    {availableStatuses.map((status) => (
+                      <button
+                        key={status}
+                        type="button"
+                        onClick={() => handleStatusUpdate(status)}
+                        className="w-full text-left px-4 py-2.5 text-[12px] font-bold tracking-widest text-[#18254D] hover:bg-slate-50 hover:text-secondary transition-colors"
+                      >
+                        Move to {status}
+                      </button>
+                    ))}
+                  </div>
+                </>,
+                document.body,
+              )
+            )}
           </div>
         </div>
-      </div>
-    </div>
+      </td>
+    </tr>
   );
 };
+
 
 const ProjectBoard = ({
   projects,
@@ -381,8 +403,9 @@ const ProjectBoard = ({
 }) => {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedPriority, setSelectedPriority] = useState("All");
+  const [currentPage, setCurrentPage] = useState(1);
   const [projectToDelete, setProjectToDelete] = useState(null);
-  const { searchTerm, setSearchTerm } = useSearch(null);
+  const { searchTerm, setSearchTerm } = useSearch(setCurrentPage);
   const [isFilterPopupOpen, setIsFilterPopupOpen] = useState(false);
   const COLUMNS =
     selectedCategory === 1
@@ -391,12 +414,12 @@ const ProjectBoard = ({
         ? MEDIA_COLUMNS
         : ALL_COLUMNS;
 
-  const [activeStage, setActiveStage] = useState(COLUMNS[0].id);
+  const [activeStage, setActiveStage] = useState("All");
 
   // Sync activeStage when selectedCategory changes if current activeStage is not in new COLUMNS
   useEffect(() => {
     if (!COLUMNS.find((c) => c.id === activeStage)) {
-      setActiveStage(COLUMNS[0].id);
+      setActiveStage("All");
     }
   }, [selectedCategory, COLUMNS, activeStage]);
 
@@ -496,13 +519,13 @@ const ProjectBoard = ({
   });
 
   const getAvailableStatuses = (currentStatus) => {
-    return COLUMNS.filter((col) => col.id !== currentStatus).map(
-      (col) => col.id,
-    );
+    return COLUMNS.filter(
+      (col) => col.id !== currentStatus && col.id !== "All",
+    ).map((col) => col.id);
   };
   const activeColumn = COLUMNS.find((c) => c.id === activeStage) || COLUMNS[0];
   const filteredProjects = projects.filter((p) => {
-    const matchesStatus = p.status === activeStage;
+    const matchesStatus = activeStage === "All" ? true : p.status === activeStage;
     const matchesCategory =
       selectedCategory === "All" ? true : (p.category || 1) === selectedCategory;
     const matchesPriority = 
@@ -524,9 +547,16 @@ const ProjectBoard = ({
     if (!b.deadline) return -1;
     return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
   });
+  const RECORDS_PER_PAGE = 10;
+  const totalPages = Math.ceil(filteredProjects.length / RECORDS_PER_PAGE);
+  const currentProjects = filteredProjects.slice(
+    (currentPage - 1) * RECORDS_PER_PAGE,
+    currentPage * RECORDS_PER_PAGE,
+  );
 
   const handleCategoryChange = (cat) => {
     setSelectedCategory(cat);
+    setCurrentPage(1);
   };
 
   const handleEditProject = (project) => {
@@ -534,6 +564,11 @@ const ProjectBoard = ({
       onSelectProject(project);
     }
   };
+
+  const totalProjectsCount = projects.length;
+  const inProgressCount = projects.filter((p) => p.status === "In Progress").length;
+  const holdCount = projects.filter((p) => p.status === "Hold").length;
+  const completedCount = projects.filter((p) => p.status === "Completed").length;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -620,7 +655,7 @@ const ProjectBoard = ({
               Manage and track all your projects and their delivery status.
             </p>
           </div>
-          {/* <div className="w-full lg:w-auto">
+          <div className="w-full lg:w-auto">
             <button
               onClick={() => setShowAddModal(true)}
               className="w-full lg:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white rounded-2xl hover:bg-slate-800 transition-all text-[13px] font-bold  tracking-wider shadow-lg active:scale-95 group"
@@ -632,7 +667,71 @@ const ProjectBoard = ({
               />
               Add New Project
             </button>
-          </div> */}
+          </div>
+        </div>
+
+        {/* Stat Cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div className="bg-white p-3 sm:p-5 rounded-2xl shadow-sm border border-slate-200 hover:-translate-y-1 hover:shadow-md transition-all duration-300">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <div className="p-2 sm:p-3 rounded-full bg-blue-50 text-blue-500 shrink-0">
+                <Briefcase className="w-5 h-5 sm:w-6 sm:h-6" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-slate-500 text-[10px] sm:text-xs font-semibold truncate">
+                  Total Projects
+                </h3>
+                <p className="text-lg sm:text-2xl font-bold text-[#18254D] leading-none mt-1">
+                  {totalProjectsCount}
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="bg-white p-3 sm:p-5 rounded-2xl shadow-sm border border-slate-200 hover:-translate-y-1 hover:shadow-md transition-all duration-300">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <div className="p-2 sm:p-3 rounded-full bg-amber-50 text-amber-500 shrink-0">
+                <Clock className="w-5 h-5 sm:w-6 sm:h-6" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-slate-500 text-[10px] sm:text-xs font-semibold truncate">
+                  In Progress
+                </h3>
+                <p className="text-lg sm:text-2xl font-bold text-[#18254D] leading-none mt-1">
+                  {inProgressCount}
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="bg-white p-3 sm:p-5 rounded-2xl shadow-sm border border-slate-200 hover:-translate-y-1 hover:shadow-md transition-all duration-300">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <div className="p-2 sm:p-3 rounded-full bg-rose-50 text-rose-500 shrink-0">
+                <AlertTriangle className="w-5 h-5 sm:w-6 sm:h-6" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-slate-500 text-[10px] sm:text-xs font-semibold truncate">
+                  Hold
+                </h3>
+                <p className="text-lg sm:text-2xl font-bold text-[#18254D] leading-none mt-1">
+                  {holdCount}
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="bg-white p-3 sm:p-5 rounded-2xl shadow-sm border border-slate-200 hover:-translate-y-1 hover:shadow-md transition-all duration-300">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <div className="p-2 sm:p-3 rounded-full bg-emerald-50 text-emerald-500 shrink-0">
+                <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-slate-500 text-[10px] sm:text-xs font-semibold truncate">
+                  Completed
+                </h3>
+                <p className="text-lg sm:text-2xl font-bold text-[#18254D] leading-none mt-1">
+                  {completedCount}
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Control Bar */}
@@ -753,6 +852,7 @@ const ProjectBoard = ({
                             value={selectedPriority}
                             onChange={(val) => {
                               setSelectedPriority(val);
+                              setCurrentPage(1);
                             }}
                           />
                         </div>
@@ -776,178 +876,125 @@ const ProjectBoard = ({
           </div>
         </div>
 
-        {/* Stage Toggle Tabs */}
-        <div className="flex justify-center my-4 w-full px-1 sm:px-0">
-        <div className="relative flex flex-nowrap bg-slate-100/50 p-0.5 rounded-[14px] border border-slate-200 shadow-sm leading-none w-full sm:w-auto items-center gap-0 overflow-hidden">
-          {/* Moving Indicator */}
-          <div
-            className="absolute top-[2px] bottom-[2px] left-[2px] bg-white rounded-[11px] shadow-sm transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] border border-white/20 z-0"
-            style={{
-              width: "calc(33.333% - 2px)",
-              transform: `translateX(${COLUMNS.findIndex((c) => c.id === activeStage) * 100}%)`,
-            }}
-          />
+        {/* Stage Tabs */}
+        <div className="flex flex-wrap justify-center sm:justify-start gap-2 sm:gap-3 w-full px-1 sm:px-0">
+          {["All", "In Progress", "Hold", "Completed"].map((status) => {
+            const isActive = activeStage === status;
+            const activeStyles =
+              status === "All"
+                ? "bg-[#0F172A] text-white border-[#0F172A]"
+                : status === "In Progress"
+                  ? "bg-[#FFF9ED] text-[#B45309] border-[#FDE68A]"
+                  : status === "Hold"
+                    ? "bg-[#FEF2F2] text-[#E11D48] border-[#FECACA]"
+                    : "bg-[#ECFDF5] text-[#059669] border-[#A7F3D0]";
+            const inactiveStyles =
+              status === "All"
+                ? "bg-white text-[#0F172A] border-slate-200 hover:bg-slate-50"
+                : status === "In Progress"
+                  ? "bg-white text-[#B45309] border-[#FDE68A] hover:bg-[#FFF9ED]"
+                  : status === "Hold"
+                    ? "bg-white text-[#E11D48] border-[#FECACA] hover:bg-[#FEF2F2]"
+                    : "bg-white text-[#059669] border-[#A7F3D0] hover:bg-[#ECFDF5]";
 
-          {COLUMNS.map((column) => {
-            const count = projects.filter(
-              (p) =>
-                p.status === column.id &&
-                (selectedCategory === "All" ||
-                  (p.category || 1) === selectedCategory) &&
-                (selectedPriority === "All" ||
-                  (p.priority?.toLowerCase() === selectedPriority.toLowerCase()))
-            ).length;
-            const isActive = activeStage === column.id;
             return (
               <button
-                key={column.id}
-                onClick={() => setActiveStage(column.id)}
-                className={`relative z-10 flex-1 sm:flex-none px-2 sm:px-5 py-2.5 sm:py-2 rounded-xl text-[10px] sm:text-[12px] font-bold tracking-wider transition-all duration-300 flex items-center justify-center min-w-[75px] sm:min-w-[110px] h-[30px] sm:h-[36px] whitespace-nowrap gap-2 active:scale-95 ${
-                  isActive
-                    ? "text-[#18254D] scale-[1.02]"
-                    : "text-slate-400 hover:text-slate-600"
-                }`}
+                key={status}
+                onClick={() => {
+                  setActiveStage(status);
+                  setCurrentPage(1);
+                }}
+                className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${isActive ? activeStyles : inactiveStyles}`}
               >
-                <span>{column.title}</span>
-                <span
-                  className={`min-w-[18px] h-4.5 px-1.5 rounded-full text-[10px] sm:text-[12px] font-black flex items-center justify-center transition-colors duration-300 ${
-                    isActive
-                      ? "bg-[#18254D] text-white"
-                      : "bg-slate-200 text-slate-500"
-                  }`}
-                >
-                  {count}
-                </span>
+                <LayoutGrid size={16} />
+                {status}
               </button>
             );
           })}
         </div>
-        </div>
 
-        {/* Active Stage Content */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 md:p-6 min-h-[300px]">
-          {/* Stage Header */}
-          <div className="flex justify-between items-center mb-4 px-1">
-            <div className="flex items-center gap-4">
-              <div
-                className={`w-3 h-3 rounded-full ${activeColumn.dotColor}`}
-              ></div>
-              <h3 className="text-sm font-bold text-primary  tracking-[0.25em]">
-                {activeColumn.title}
-              </h3>
-            </div>
-            <span className="bg-slate-100 text-slate-500 text-[12px] font-bold px-3 py-1 rounded-full border border-slate-200  tracking-widest">
-              {filteredProjects.length}{" "}
-              {filteredProjects.length === 1 ? "Project" : "Projects"}
-            </span>
-          </div>
-
-          {/* Project Cards Grid — Month-wise grouping for all tabs */}
-          {filteredProjects.length > 0 ? (
-            <div className="space-y-10">
-              {(() => {
-                // Determine which date field to use for grouping based on the active tab
-                const getGroupDate = (project) => {
-                  if (activeStage === "In Progress") {
-                    // Group by onboarding month
-                    return project.onboardingDate
-                      ? new Date(project.onboardingDate)
-                      : new Date();
-                  } else {
-                    // Completed → completion month, Hold → hold month
-                    // Both use updatedAt (the date the status was last changed)
-                    return project.updatedAt
-                      ? new Date(project.updatedAt)
-                      : project.onboardingDate
-                        ? new Date(project.onboardingDate)
-                        : new Date();
-                  }
-                };
-
-                // Build month groups
-                const groups = filteredProjects.reduce((acc, project) => {
-                  const date = getGroupDate(project);
-                  const monthKey = date.toLocaleString("default", {
-                    month: "long",
-                    year: "numeric",
-                  });
-                  if (!acc[monthKey]) acc[monthKey] = { date, projects: [] };
-                  acc[monthKey].projects.push(project);
-                  return acc;
-                }, {});
-
-                // Sort months in reverse chronological order (newest first)
-                const sortedMonths = Object.entries(groups).sort(
-                  ([, a], [, b]) => b.date - a.date
-                );
-
-                // Get the label for the month section based on active tab
-                const getMonthLabel = () => {
-                  if (activeStage === "In Progress") return "Onboarded";
-                  if (activeStage === "Completed") return "Completed";
-                  if (activeStage === "Hold") return "On Hold since";
-                  return "";
-                };
-
-                return sortedMonths.map(([month, { projects: monthProjects }]) => (
-                  <div key={month} className="space-y-5">
-                    <div className="flex items-center gap-4">
-                      <div className="h-px flex-1 bg-slate-100" />
-                      <h4 className="text-[13px] font-bold text-slate-400 tracking-[0.3em] uppercase bg-slate-50 px-4 py-1.5 rounded-full border border-slate-100 shadow-sm flex items-center gap-2">
-                        <span>{getMonthLabel()} — {month}</span>
-                      </h4>
-                      <div className="h-px flex-1 bg-slate-100" />
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-                      {monthProjects.map((project) => (
-                        <ProjectCard
-                          key={project.id}
-                          project={project}
-                          clients={clients}
-                          onEdit={handleEditProject}
-                          onUpdateProject={onUpdateProject}
-                          availableStatuses={getAvailableStatuses(
-                            project.status,
-                          )}
-                          onSelectProject={onSelectProject}
-                          onDelete={setProjectToDelete}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                ));
-              })()}
-              {/* Add Project Button */}
-              {/* <div className="flex justify-center">
-                <button
-                  onClick={() => setShowAddModal(true)}
-                  className="w-full max-w-sm py-6 border-2 border-dashed border-slate-100 rounded-2xl text-slate-300 text-[12px] font-bold  tracking-widest hover:border-secondary hover:text-secondary hover:bg-secondary/[0.02] transition-all group flex flex-col items-center justify-center gap-2 min-h-[100px]"
-                >
-                  <Plus
-                    size={16}
-                    strokeWidth={3}
-                    className="group-hover:scale-125 transition-transform"
+        {/* Main List */}
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden w-full">
+          <div className="w-full">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="bg-slate-50/50">
+                  <th className="px-6 py-5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                    Project Name
+                  </th>
+                  <th className="px-6 py-5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                    Client
+                  </th>
+                  <th className="px-6 py-5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                    Priority
+                  </th>
+                  <th className="px-6 py-5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                    Onboard Date
+                  </th>
+                  <th className="px-6 py-5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                    Deadline
+                  </th>
+                  <th className="px-6 py-5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                    Created By
+                  </th>
+                  <th className="px-6 py-5 text-right text-[11px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {currentProjects.map((project, index) => (
+                  <ProjectCard
+                    key={project.id || `project-row-${index}`}
+                    project={project}
+                    clients={clients}
+                    onEdit={handleEditProject}
+                    onUpdateProject={onUpdateProject}
+                    availableStatuses={getAvailableStatuses(project.status)}
+                    onSelectProject={onSelectProject}
+                    onDelete={setProjectToDelete}
                   />
-                  Initiate Project
-                </button>
-              </div> */}
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center py-10">
-              <button
-                onClick={() => setShowAddModal(true)}
-                className="w-full max-w-sm py-6 border-2 border-dashed border-slate-100 rounded-2xl text-slate-300 text-[12px] font-bold  tracking-widest hover:border-secondary hover:text-secondary hover:bg-secondary/[0.02] transition-all group flex flex-col items-center justify-center gap-2"
-              >
-                <Plus
-                  size={18}
-                  strokeWidth={2.5}
-                  className="group-hover:scale-125 transition-transform"
-                />
-                Initiate Project
-              </button>
-            </div>
-          )}
+                ))}
+                {filteredProjects.length === 0 && (
+                  <tr>
+                    <td colSpan={7} className="px-10 py-32 text-center">
+                      <div className="text-slate-300 p-4 rounded-xl mb-4 flex items-center justify-center mx-auto">
+                        <Briefcase size={32} strokeWidth={1.5} />
+                      </div>
+                      <p className="text-[13px] font-bold text-primary tracking-wider">
+                        No Projects Found
+                      </p>
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
+
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-2 mt-8 mb-4">
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="p-2.5 rounded-xl border border-slate-200 bg-white text-slate-400 hover:text-primary hover:border-primary disabled:opacity-30 disabled:hover:border-slate-200 disabled:hover:text-slate-400 transition-all shadow-sm active:scale-95"
+            >
+              <ChevronDown size={16} className="rotate-90" />
+            </button>
+            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-2xl shadow-inner mx-2">
+              <span className="text-[12px] font-bold text-slate-500 tracking-widest">
+                {currentPage} / {totalPages}
+              </span>
+            </div>
+            <button
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="p-2.5 rounded-xl border border-slate-200 bg-white text-slate-400 hover:text-primary hover:border-primary disabled:opacity-30 disabled:hover:border-slate-200 disabled:hover:text-slate-400 transition-all shadow-sm active:scale-95"
+            >
+              <ChevronDown size={16} className="-rotate-90" />
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Add Modal */}

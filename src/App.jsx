@@ -264,6 +264,7 @@ function AppRoutes() {
           ? (REVERSE_CATEGORY_MAP[p.project_category] || parseInt(p.project_category, 10) || 1)
           : (p.project_category || 1),
         scopeDocument: p.scope_document,
+        createdByName: p.created_by_name || null,
         updatedAt: p.updated_at?.split("T")[0],
         progress: 0,
       }));
@@ -1639,6 +1640,7 @@ function AppRoutes() {
           scopeDocument: createdProject.scope_document,
           clientId: createdProject.client_id.toString(),
           lead_id: createdProject.lead_id?.toString(),
+          createdByName: createdProject.created_by_name || null,
         };
 
         setProjects([newProject, ...projects]);
@@ -1700,7 +1702,8 @@ function AppRoutes() {
           budget: updated.budget,
           onboardingDate: updated.onboardingDate,
           deadline: updated.deadline,
-          scopeDocument: result.project?.scope_document || updated.scopeDocument
+          scopeDocument: result.project?.scope_document || updated.scopeDocument,
+          createdByName: result.project?.created_by_name || updated.createdByName || null,
         };
         setProjects((prev) => prev.map((p) => (p.id == updated.id ? updatedProject : p)));
 
