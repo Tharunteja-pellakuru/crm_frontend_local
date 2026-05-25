@@ -916,21 +916,22 @@ const ClientDetail = ({
       
       {/* Edit Form Modal */}
       {showEditModal && createPortal(
-        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-xl overflow-hidden animate-zoom-in flex flex-col max-h-[90vh]">
-            <div className="bg-slate-900 p-6 text-white relative shrink-0">
-              <button onClick={() => setShowEditModal(false)} className="absolute top-6 right-6 p-1.5 hover:bg-white/20 rounded-full transition-colors">
-                <X size={20} strokeWidth={2.5} />
-              </button>
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center border border-white/20">
-                  <Pencil size={20} className="text-white" />
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[99999] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+          <div className="absolute inset-0" onClick={() => setShowEditModal(false)} />
+          <div className="relative z-10 bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-slate-100 overflow-hidden animate-pop flex flex-col max-h-[90vh]">
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-blue-50 text-blue-500 rounded-xl flex items-center justify-center border border-blue-100 shadow-sm">
+                  <Pencil size={16} strokeWidth={2.5} />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold">Edit {isLead ? "Lead" : "Client"}</h3>
-                  <p className="text-slate-400 text-sm font-medium mt-1">Update primary contact information</p>
+                  <h3 className="text-base font-bold text-[#18254D] tracking-tight">Edit {isLead ? "Lead" : "Client"}</h3>
+                  <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider mt-0.5">Update Details</p>
                 </div>
               </div>
+              <button onClick={() => setShowEditModal(false)} className="p-1.5 hover:bg-slate-200 rounded-xl text-slate-400 transition-all">
+                <X size={18} />
+              </button>
             </div>
 
             <form
@@ -952,54 +953,54 @@ const ClientDetail = ({
                   }
                 }
               }}
-              className="flex-1 min-h-0 p-6 space-y-5 overflow-y-auto custom-scrollbar"
+              className="p-6 space-y-4 overflow-y-auto no-scrollbar"
             >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Full Name</label>
-                  <input required type="text" placeholder="e.g. Sameer Kapoor" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-900 focus:outline-none text-sm font-medium" value={editFormData.name} onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })} />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Email Address</label>
-                  <input required type="email" placeholder="sameer@fintech.com" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-900 focus:outline-none text-sm font-medium" value={editFormData.email} onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })} />
-                </div>
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">Full Name <span className="text-rose-500">*</span></label>
+                <input required type="text" placeholder="e.g. Sameer Kapoor" className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200" value={editFormData.name} onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })} />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">Email <span className="text-rose-500">*</span></label>
+                <input required type="email" placeholder="e.g. sameer@fintech.com" className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200" value={editFormData.email} onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })} />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <SearchableDropdown label="Country Code" options={countries.map((c) => ({ name: `${c.name} (${c.code})`, code: c.code }))} value={editFormData.countryCode} onChange={(val) => { const selectedCountry = countries.find((c) => c.code === val); setEditFormData({ ...editFormData, countryCode: val, country: selectedCountry ? selectedCountry.name : editFormData.country }); }} placeholder="Code" />
+                  <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">Country Code <span className="text-rose-500">*</span></label>
+                  <SearchableDropdown options={countries.map((c) => ({ name: `${c.name} (${c.code})`, code: c.code }))} value={editFormData.countryCode} onChange={(val) => { const selectedCountry = countries.find((c) => c.code === val); setEditFormData({ ...editFormData, countryCode: val, country: selectedCountry ? selectedCountry.name : editFormData.country }); }} placeholder="Search country..." />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Phone Number</label>
-                  <input required type="tel" placeholder="98765 43210" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-900 focus:outline-none text-sm font-medium" value={editFormData.phone} onChange={(e) => setEditFormData({ ...editFormData, phone: e.target.value.replace(/\D/g, "") })} />
+                  <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">Phone Number <span className="text-rose-500">*</span></label>
+                  <input required type="tel" placeholder="e.g. 9876543210" className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200" value={editFormData.phone} onChange={(e) => setEditFormData({ ...editFormData, phone: e.target.value.replace(/\D/g, "") })} />
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Website URL (Optional)</label>
-                <input type="text" placeholder="www.example.com" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-900 focus:outline-none text-sm font-medium" value={editFormData.website} onChange={(e) => setEditFormData({ ...editFormData, website: e.target.value })} />
+                <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">Website URL (Optional)</label>
+                <input type="text" placeholder="e.g. www.company.com" className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200" value={editFormData.website} onChange={(e) => setEditFormData({ ...editFormData, website: e.target.value })} />
               </div>
 
               {!isLead && (
                 <>
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Organisation Name</label>
-                    <input type="text" placeholder="Acme Corp" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-900 focus:outline-none text-sm font-medium" value={editFormData.organisationName} onChange={(e) => setEditFormData({ ...editFormData, organisationName: e.target.value })} />
+                    <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">Organisation Name</label>
+                    <input type="text" placeholder="Acme Corp" className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200" value={editFormData.organisationName} onChange={(e) => setEditFormData({ ...editFormData, organisationName: e.target.value })} />
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {editFormData.country === "India" ? (
                       <SearchableDropdown label="State" options={indianStates} value={editFormData.state} onChange={(val) => setEditFormData({ ...editFormData, state: val })} placeholder="Select State" />
                     ) : (
                       <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">State/Province</label>
-                        <input type="text" placeholder="California" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-900 focus:outline-none text-sm font-medium" value={editFormData.state} onChange={(e) => setEditFormData({ ...editFormData, state: e.target.value })} />
+                        <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">State/Province</label>
+                        <input type="text" placeholder="California" className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200" value={editFormData.state} onChange={(e) => setEditFormData({ ...editFormData, state: e.target.value })} />
                       </div>
                     )}
                     <SearchableDropdown label="Currency" options={commonCurrencies.map((c) => ({ name: `${c.code} (${c.symbol})`, code: c.code }))} value={editFormData.currency} onChange={(val) => setEditFormData({ ...editFormData, currency: val })} placeholder="Currency" />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Client Status</label>
-                    <select className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-900 focus:outline-none text-sm font-semibold" value={editFormData.clientStatus} onChange={(e) => setEditFormData({ ...editFormData, clientStatus: e.target.value })}>
+                    <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">Client Status</label>
+                    <select className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] focus:outline-none focus:ring-4 focus:ring-[#18254D]/5 focus:border-[#18254D]/30 transition-all" value={editFormData.clientStatus} onChange={(e) => setEditFormData({ ...editFormData, clientStatus: e.target.value })}>
                       <option value="Active">Active</option>
                       <option value="Inactive">Inactive</option>
                     </select>
@@ -1007,36 +1008,41 @@ const ClientDetail = ({
                 </>
               )}
 
-              <div className="space-y-1.5 relative">
-                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">{isLead ? "Lead Status" : "Project Status"}</label>
-                <button type="button" onClick={() => setIsEditStatusDropdownOpen(!isEditStatusDropdownOpen)} className="w-full flex items-center justify-between px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold hover:border-slate-400 transition-all">
-                  <span className="text-slate-800">{editFormData.leadType || "Select Status"}</span>
-                  <ChevronDown size={18} className={`text-slate-500 transition-transform ${isEditStatusDropdownOpen ? "rotate-180" : ""}`} />
-                </button>
-                {isEditStatusDropdownOpen && (
-                  <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden z-[90]">
-                    {(client.isConverted ? ["Hot", "Warm", "Cold", "Converted"] : ["Hot", "Warm", "Cold"]).map((status) => (
-                      <button key={status} type="button" onClick={() => { setEditFormData({ ...editFormData, leadType: status }); setIsEditStatusDropdownOpen(false); }} className={`w-full text-left px-5 py-3 text-sm font-semibold transition-colors ${editFormData.leadType === status ? "bg-slate-100 text-slate-900" : "text-slate-600 hover:bg-slate-50"}`}>
-                        <div className="flex items-center gap-3">
-                          {status === "Hot" && <Flame size={16} className="text-red-500" />}
-                          {status === "Warm" && <Sun size={16} className="text-amber-500" />}
-                          {status === "Cold" && <Snowflake size={16} className="text-blue-500" />}
-                          {status === "Converted" && <UserCheck size={16} className="text-emerald-500" />}
-                          <span>{status}</span>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                )}
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">{isLead ? "Lead Status" : "Project Status"}</label>
+                <div className="relative">
+                  <button type="button" onClick={() => setIsEditStatusDropdownOpen(!isEditStatusDropdownOpen)} className="w-full h-10 flex items-center justify-between px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold shadow-sm hover:border-[#18254D]/30 transition-all text-[#18254D]">
+                    <span className={editFormData.leadType ? "text-[#18254D]" : "text-slate-400 font-medium"}>{editFormData.leadType || "Select Status"}</span>
+                    <ChevronDown size={16} className={`text-slate-400 transition-transform duration-200 ${isEditStatusDropdownOpen ? "rotate-180" : ""}`} />
+                  </button>
+                  {isEditStatusDropdownOpen && (
+                    <>
+                      <div className="fixed inset-0 z-[80]" onClick={() => setIsEditStatusDropdownOpen(false)} />
+                      <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-pop origin-top">
+                        <div className="bg-[#18254D] px-4 py-2.5 border-b border-white/10"><p className="text-[10px] font-bold text-white/50 tracking-wider uppercase">Select Status</p></div>
+                        {(client.isConverted ? ["Hot", "Warm", "Cold", "Converted"] : ["Hot", "Warm", "Cold"]).map((status) => (
+                          <button key={status} type="button" onClick={() => { setEditFormData({ ...editFormData, leadType: status }); setIsEditStatusDropdownOpen(false); }} className={`w-full text-left px-4 py-2.5 text-xs font-semibold tracking-wider transition-colors flex items-center gap-2 ${editFormData.leadType === status ? "bg-indigo-50 text-indigo-700" : "text-[#18254D] hover:bg-slate-50"}`}>
+                            {status === "Hot" && <Flame size={12} className="text-[#F43F5E]" />}
+                            {status === "Warm" && <Sun size={12} className="text-[#F97316]" />}
+                            {status === "Cold" && <Snowflake size={12} className="text-[#3B82F6]" />}
+                            {status === "Converted" && <UserCheck size={12} className="text-[#10B981]" />}
+                            <span>{status}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Notes</label>
-                <textarea rows={4} placeholder="Additional details..." className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-900 focus:outline-none text-sm font-medium resize-none" value={editFormData.notes} onChange={(e) => setEditFormData({ ...editFormData, notes: e.target.value })} />
+                <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">Note / Message</label>
+                <textarea rows={3} placeholder="e.g. Interested in cloud migration services..." className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200 resize-none" value={editFormData.notes} onChange={(e) => setEditFormData({ ...editFormData, notes: e.target.value })} />
               </div>
 
-              <div className="pt-4 shrink-0">
-                <button type="submit" className="w-full py-4 bg-slate-900 text-white rounded-xl text-sm font-bold tracking-wide shadow-md active:scale-[0.98] transition-transform hover:bg-slate-800">
+              <div className="pt-2">
+                <button type="submit" className="w-full h-12 bg-[#18254D] text-white rounded-xl text-xs font-bold tracking-wider shadow-lg active:scale-[0.97] transition-all hover:bg-[#1e2e5e] hover:shadow-xl flex items-center justify-center gap-2 btn-animated">
+                  <Send size={14} strokeWidth={2.5} className="rotate-[-45deg]" />
                   Save Changes
                 </button>
               </div>
@@ -1127,21 +1133,22 @@ const ClientDetail = ({
 
       {/* Completion Modal */}
       {showCompletionModal && createPortal(
-        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-zoom-in">
-            <div className="bg-emerald-600 p-6 text-white relative">
-              <button onClick={() => setShowCompletionModal(false)} className="absolute top-6 right-6 text-white/70 hover:text-white transition-colors">
-                <X size={20} />
-              </button>
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl border border-white/20 flex items-center justify-center bg-white/10">
-                  <CheckCircle2 size={24} className="text-white" />
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[99999] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+          <div className="absolute inset-0" onClick={() => setShowCompletionModal(false)} />
+          <div className="relative z-10 bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-slate-100 overflow-hidden animate-pop flex flex-col max-h-[90vh]">
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-emerald-50 text-emerald-500 rounded-xl flex items-center justify-center border border-emerald-100 shadow-sm">
+                  <CheckCircle2 size={16} strokeWidth={2.5} />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold">Mark Completed</h3>
-                  <p className="text-emerald-100 text-sm font-medium mt-1">Follow-up Conclusion</p>
+                  <h3 className="text-base font-bold text-[#18254D] tracking-tight">Mark as Completed</h3>
+                  <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider mt-0.5">Follow-up Conclusion</p>
                 </div>
               </div>
+              <button onClick={() => setShowCompletionModal(false)} className="p-1.5 hover:bg-slate-200 rounded-xl text-slate-400 transition-all">
+                <X size={18} />
+              </button>
             </div>
 
             <form
@@ -1150,7 +1157,7 @@ const ClientDetail = ({
                 let compHour = parseInt(completionHour || "12");
                 if (completionPeriod === "PM" && compHour < 12) compHour += 12;
                 if (completionPeriod === "AM" && compHour === 12) compHour = 0;
-                const compTime24 = `${compHour.toString().padStart(2, "0")}:${completionMinute || "00"}`;
+                const compTime24 = `${compHour.toString().padStart(2, "00")}:${completionMinute || "00"}`;
                 const combinedCompletionStr = `${completionDate} ${compTime24}:00`;
                 if (onToggleStatus) {
                   await onToggleStatus(completingFollowUpId, completionBrief, combinedCompletionStr, completedBy);
@@ -1158,74 +1165,43 @@ const ClientDetail = ({
                 }
                 setShowCompletionModal(false);
               }}
-              className="p-6 space-y-5"
+              className="p-6 space-y-4 overflow-y-auto no-scrollbar"
             >
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Conclusion Brief <span className="text-red-500">*</span></label>
-                <textarea required rows={4} placeholder="Write a brief conclusion..." className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none text-sm font-medium resize-none placeholder:text-slate-400" value={completionBrief} onChange={(e) => setCompletionBrief(e.target.value)} />
+                <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">Follow Conclusion Brief</label>
+                <textarea rows={3} placeholder="Update the conclusion brief..." className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200 resize-none" value={completionBrief} onChange={(e) => setCompletionBrief(e.target.value)} />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">Completed By</label>
+                <input type="text" placeholder="e.g. John Doe" className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200" value={completedBy} onChange={(e) => setCompletedBy(e.target.value)} />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Completion Date <span className="text-red-500">*</span></label>
+                  <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">Completion Date</label>
                   <DatePicker value={completionDate} onChange={setCompletionDate} />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Completion Time <span className="text-red-500">*</span></label>
-                  <div className="flex items-center gap-2">
-                    <div className="relative flex-1">
-                      <button type="button" onClick={() => setIsCompHourOpen(!isCompHourOpen)} className="w-full h-11 px-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold flex items-center justify-between">
-                        {completionHour.padStart(2, '0')} <ChevronDown size={14} className="text-slate-500" />
-                      </button>
-                      {isCompHourOpen && (
-                        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-[100] max-h-40 overflow-y-auto">
-                          {Array.from({ length: 12 }, (_, i) => (i + 1).toString()).map(h => (
-                            <button key={h} type="button" onClick={() => { setCompletionHour(h); setIsCompHourOpen(false); }} className="w-full text-left px-4 py-2.5 hover:bg-slate-50 text-sm font-semibold">
-                              {h.padStart(2, '0')}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                    <div className="relative flex-1">
-                      <button type="button" onClick={() => setIsCompMinOpen(!isCompMinOpen)} className="w-full h-11 px-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold flex items-center justify-between">
-                        {completionMinute} <ChevronDown size={14} className="text-slate-500" />
-                      </button>
-                      {isCompMinOpen && (
-                        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-[100] max-h-40 overflow-y-auto">
-                          {Array.from({ length: 60 }, (_, i) => i.toString().padStart(2, '0')).map(m => (
-                            <button key={m} type="button" onClick={() => { setCompletionMinute(m); setIsCompMinOpen(false); }} className="w-full text-left px-4 py-2.5 hover:bg-slate-50 text-sm font-semibold">
-                              {m}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                    <div className="relative flex-1">
-                      <button type="button" onClick={() => setIsCompPeriodOpen(!isCompPeriodOpen)} className="w-full h-11 px-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold flex items-center justify-between">
-                        {completionPeriod} <ChevronDown size={14} className="text-slate-500" />
-                      </button>
-                      {isCompPeriodOpen && (
-                        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-[100] overflow-hidden">
-                          {["AM", "PM"].map(p => (
-                            <button key={p} type="button" onClick={() => { setCompletionPeriod(p); setIsCompPeriodOpen(false); }} className="w-full text-left px-4 py-2.5 hover:bg-slate-50 text-sm font-semibold">
-                              {p}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
+                  <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">Completion Time</label>
+                  <div className="flex gap-2">
+                    <select className="flex-1 px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] focus:outline-none focus:ring-4 focus:ring-[#18254D]/5 focus:border-[#18254D]/30" value={completionHour} onChange={(e) => setCompletionHour(e.target.value)}>
+                      {Array.from({ length: 12 }, (_, i) => i + 1).map((h) => (<option key={`cd-comp-hour-${h}`} value={String(h).padStart(2, "0")}>{String(h).padStart(2, "0")}</option>))}
+                    </select>
+                    <select className="flex-1 px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] focus:outline-none focus:ring-4 focus:ring-[#18254D]/5 focus:border-[#18254D]/30" value={completionMinute} onChange={(e) => setCompletionMinute(e.target.value)}>
+                      {Array.from({ length: 60 }, (_, i) => i).map((m) => (<option key={`cd-comp-min-${m}`} value={String(m).padStart(2, "0")}>{String(m).padStart(2, "0")}</option>))}
+                    </select>
+                    <select className="w-20 px-2 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] focus:outline-none focus:ring-4 focus:ring-[#18254D]/5 focus:border-[#18254D]/30" value={completionPeriod} onChange={(e) => setCompletionPeriod(e.target.value)}>
+                      <option value="AM">AM</option>
+                      <option value="PM">PM</option>
+                    </select>
                   </div>
                 </div>
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Completed By <span className="text-red-500">*</span></label>
-                <input required type="text" className="w-full h-12 px-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none text-sm font-bold" value={completedBy} onChange={(e) => setCompletedBy(e.target.value)} />
-              </div>
-
-              <div className="pt-4">
-                <button type="submit" className="w-full h-12 bg-emerald-600 text-white rounded-xl text-sm font-bold tracking-wide shadow-md active:scale-[0.98] transition-transform hover:bg-emerald-700">
+              <div className="pt-2">
+                <button type="submit" className="w-full h-12 bg-[#18254D] text-white rounded-xl text-xs font-bold tracking-wider shadow-lg active:scale-[0.97] transition-all hover:bg-[#1e2e5e] hover:shadow-xl flex items-center justify-center gap-2 btn-animated">
+                  <CheckCircle2 size={14} strokeWidth={2.5} />
                   Confirm Completion
                 </button>
               </div>
