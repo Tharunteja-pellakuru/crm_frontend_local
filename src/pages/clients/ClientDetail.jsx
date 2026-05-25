@@ -35,6 +35,14 @@ const parseLocalDate = (dateStr) => {
   return isNaN(date.getTime()) ? new Date() : date;
 };
 
+const formatDateDMY = (date) => {
+  if (!date || isNaN(date.getTime())) return "";
+  const d = String(date.getDate()).padStart(2, "0");
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const y = date.getFullYear();
+  return `${d}-${m}-${y}`;
+};
+
 const getModeBadge = (mode) => {
   switch (mode?.toLowerCase()) {
     case "call": return "bg-green-100 text-green-700 border-green-200";
@@ -128,17 +136,17 @@ const ConversationCard = ({ conv, onAddToCalendar }) => {
           <>
             <div className="flex items-center gap-2">
               <Clock size={14} className="text-slate-400" />
-              <span>Scheduled: {dueDate.toLocaleDateString()} · {dueDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
+              <span>Scheduled: {formatDateDMY(dueDate)} · {dueDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
             </div>
             <div className="flex items-center gap-2 text-emerald-600">
               <CheckCircle2 size={14} />
-              <span>Completed: {completedDate ? `${completedDate.toLocaleDateString()} · ${completedDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : "N/A"}</span>
+              <span>Completed: {completedDate ? `${formatDateDMY(completedDate)} · ${completedDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : "N/A"}</span>
             </div>
           </>
         ) : (
           <div className="flex items-center gap-2">
             <Calendar size={14} className="text-slate-400" />
-            <span>Interaction: {createdDate.toLocaleDateString()} · {createdDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
+            <span>Interaction: {formatDateDMY(createdDate)} · {createdDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
           </div>
         )}
         
@@ -664,7 +672,7 @@ const ClientDetail = ({
                                       {fu.description && <p className="text-sm text-slate-600 line-clamp-2 mb-3">{fu.description}</p>}
                                       
                                       <div className="flex items-center gap-4 text-xs font-medium text-slate-500">
-                                        <span className="flex items-center gap-1.5"><Calendar size={14}/> {fuDate.toLocaleDateString()}</span>
+                                        <span className="flex items-center gap-1.5"><Calendar size={14}/> {formatDateDMY(fuDate)}</span>
                                         <span className="flex items-center gap-1.5 text-slate-700"><Clock size={14}/> {fuDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                                       </div>
                                     </div>
