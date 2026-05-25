@@ -7,12 +7,10 @@ import { validateForm } from "../../utils/validation";
 import { extractCountryAndPhone } from "../../utils/leadUtils";
 import { formatBudget } from "../../utils/formatters";
 import DatePicker from "../../components/ui/DatePicker";
-import SearchableDropdown from "../../components/common/SearchableDropdown";
 import { countries } from "../../utils/countries";
-import { indianStates, commonCurrencies, countryToCurrency } from "../../utils/locationData";
+import { commonCurrencies } from "../../utils/locationData";
 import { CATEGORY_MAP, REVERSE_CATEGORY_MAP } from "../../constants/categoryConstants";
 import { BASE_URL } from "../../constants/config";
-import { MOCK_ACTIVITIES } from "../../constants/mockData";
 import { generateClientSummary, suggestNextAction } from "../../services/aiService";
 import {
   ArrowLeft, Mail, Phone, MapPin, Sparkles, Send, Clock, FileText,
@@ -53,6 +51,221 @@ const getModeBadge = (mode) => {
   }
 };
 
+// Helper function to get safe client ID
+const getClientId = (client) => {
+  return client?._id || client?.id || client?.lead_id || null;
+};
+
+// Helper function to get organisation name from multiple possible field names
+const getOrganisationName = (client) => {
+  return client?.organisationName || 
+         client?.organization || 
+         client?.company || 
+         client?.org_name || 
+         client?.business_name || 
+         '';
+};
+
+// --- CUSTOM DROPDOWN COMPONENT WITH SEARCH & KEYBOARD NAVIGATION ---
+const Dropdown = ({ 
+  label, 
+  options, 
+  value, 
+  onChange, 
+  placeholder = "Select...", 
+  required = false,
+  searchable = false,
+  onSearchChange 
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
+  const [searchQuery, setSearchQuery] = useState("");
+  const containerRef = useRef(null);
+  const listRef = useRef(null);
+
+  // Filter options based on search query
+  const filteredOptions = searchable
+    ? options.filter(opt => 
+        (opt.name?.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (opt.code?.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (opt.value?.toLowerCase().includes(searchQuery.toLowerCase()))
+      )
+    : options;
+
+  // Close on click outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (containerRef.current && !containerRef.current.contains(event.target)) {
+        setIsOpen(false);
+        setSelectedIndex(-1);
+        setSearchQuery("");
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Keyboard navigation
+  useEffect(() => {
+    function handleKeyDown(e) {
+      if (!isOpen) return;
+      
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setSelectedIndex(prev => 
+          prev < filteredOptions.length - 1 ? prev + 1 : 0
+        );
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setSelectedIndex(prev => prev > 0 ? prev - 1 : filteredOptions.length - 1);
+      } else if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        if (selectedIndex >= 0 && selectedIndex < filteredOptions.length) {
+          const selectedOpt = filteredOptions[selectedIndex];
+          onChange(selectedOpt.code || opt.name || opt.value);
+          setIsOpen(false);
+          setSelectedIndex(-1);
+          setSearchQuery("");
+        }
+      } else if (e.key === 'Escape') {
+        setIsOpen(false);
+        setSelectedIndex(-1);
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, filteredOptions, selectedIndex]);
+
+  // Scroll active item into view
+  useEffect(() => {
+    if (selectedIndex >= 0 && listRef.current) {
+      const items = listRef.current.querySelectorAll('[data-index]');
+      if (items[selectedIndex]) {
+        items[selectedIndex].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      }
+    }
+  }, [selectedIndex]);
+
+  const selectedOption = options.find(opt => 
+    opt.code === value || opt.name === value || opt.value === value
+  );
+
+  return (
+    <div className="space-y-1.5" ref={containerRef}>
+      <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
+        {label} {required && <span className="text-rose-500">*</span>}
+      </label>
+      
+      <div className="relative">
+        {/* Trigger Button */}
+        <button
+          type="button"
+          onClick={() => setIsOpen(!isOpen)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              setIsOpen(true);
+              e.stopPropagation();
+            }
+          }}
+          className={`w-full flex items-center justify-between gap-2 px-4 py-2.5 bg-white border rounded-xl text-sm font-semibold transition-all min-h-[42px] shadow-sm outline-none ${
+            isOpen 
+              ? "border-[#18254D]/30 ring-4 ring-[#18254D]/5" 
+              : "border-slate-200/70 hover:border-slate-300 hover:bg-slate-50"
+          }`}
+        >
+          <span className={`${selectedOption ? "text-[#18254D]" : "text-slate-400"}`}>
+            {selectedOption?.name || selectedOption?.code || selectedOption?.value || placeholder}
+          </span>
+          <ChevronDown
+            size={14}
+            strokeWidth={2.5}
+            className={`transition-transform duration-300 text-slate-500 ${isOpen ? "rotate-180" : ""}`}
+          />
+        </button>
+
+        {/* Dropdown Menu */}
+        {isOpen && (
+          <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100/85 rounded-2xl shadow-[0_12px_30px_-6px_rgba(24,37,77,0.12)] overflow-hidden z-[90] animate-pop origin-top max-h-[300px] flex flex-col">
+            {/* Search Bar (if searchable) */}
+            {searchable && (
+              <div className="p-2 border-b border-slate-100 sticky top-0 bg-white z-10">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Search..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Escape') setIsOpen(false);
+                    }}
+                    autoFocus
+                    className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#18254D]/5 focus:border-[#18254D]/30"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Options List */}
+            <div 
+              ref={listRef}
+              className="overflow-y-auto max-h-[200px] p-1 space-y-0.5"
+            >
+              {filteredOptions.length === 0 ? (
+                <div className="px-4 py-3 text-xs text-slate-400 text-center italic">
+                  No results found
+                </div>
+              ) : (
+                filteredOptions.map((opt, idx) => {
+                  const optionValue = opt.code || opt.name || opt.value;
+                  const isActive = optionValue === value;
+                  const isSelected = idx === selectedIndex;
+
+                  return (
+                    <button
+                      key={`${label}-${optionValue}`}
+                      data-index={idx}
+                      type="button"
+                      onClick={() => {
+                        onChange(optionValue);
+                        setIsOpen(false);
+                        setSelectedIndex(-1);
+                        setSearchQuery("");
+                      }}
+                      onMouseEnter={() => setSelectedIndex(idx)}
+                      className={`w-full text-left px-4 py-2.5 text-xs font-semibold transition-all rounded-lg flex items-center justify-between ${
+                        isActive
+                          ? "bg-[#18254D] text-white shadow-sm"
+                          : isSelected
+                          ? "bg-slate-100 text-[#18254D]"
+                          : "text-[#18254D] hover:bg-slate-50"
+                      }`}
+                    >
+                      <span>{opt.name || opt.code || opt.value}</span>
+                      {isActive && (
+                        <Check size={14} strokeWidth={3} />
+                      )}
+                    </button>
+                  );
+                })
+              )}
+            </div>
+
+            {/* Footer Info */}
+            {searchable && (
+              <div className="px-3 py-2 text-[10px] text-slate-400 border-t border-slate-100 bg-slate-50/50">
+                Use ↑↓ to navigate, Enter to select
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 // --- SUB-COMPONENTS ---
 const ConversationCard = ({ conv, onAddToCalendar }) => {
   const type = conv.source === "followup" ? (conv.type || conv.followup_mode || "call").toLowerCase() : (conv.type || "call").toLowerCase();
@@ -79,12 +292,13 @@ const ConversationCard = ({ conv, onAddToCalendar }) => {
       case "email": return "bg-blue-500";
       case "meeting": return "bg-purple-500";
       case "whatsapp": return "bg-[#25D366]";
-      default: return "bg-green-500"; // call
+      default: return "bg-green-500";
     }
   };
 
   return (
     <div className={`group min-w-full w-full shrink-0 snap-start rounded-2xl p-5 flex flex-col transition-all border ${getCardStyle()}`}>
+      {/* ... rest of conversation card */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-sm ${getIconColor()}`}>
@@ -168,36 +382,17 @@ const ClientDetail = ({
 }) => {
   const isLead = client.status === "Lead" || client.status === "Dismissed";
   const [activeTab, setActiveTab] = useState(initialTab);
-  const [nextAction, setNextAction] = useState("");
   
-  // States - Unchanged
+  const clientId = getClientId(client);
+  const leadId = client?.lead_id || client?.id || client?._id;
+  const orgName = getOrganisationName(client);
+  
   const [editFormData, setEditFormData] = useState({
     name: "", email: "", phone: "", countryCode: "", leadType: "Warm",
     notes: "", website: "", projectCategory: 1, country: "India",
     state: "", currency: "INR", organisationName: "", clientStatus: "Active",
   });
-  const [isCountryDropdownOpen, setIsCountryDropdownOpen] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [isEditCategoryDropdownOpen, setIsEditCategoryDropdownOpen] = useState(false);
-  const [isEditStatusDropdownOpen, setIsEditStatusDropdownOpen] = useState(false);
-  const countryButtonRef = useRef(null);
-  const [countryDropdownStyle, setCountryDropdownStyle] = useState({});
-
-  const [showAddFollowUpModal, setShowAddFollowUpModal] = useState(false);
-  const [followUpFormData, setFollowUpFormData] = useState({
-    title: "", description: "", followup_date: new Date().toLocaleDateString("en-CA"),
-    timeHour: "12", timeMinute: "00", timePeriod: "PM", priority: "Medium",
-    followup_mode: "Call", followup_status: "Pending", projectId: "",
-  });
-
-  const [isFollowHourOpen, setIsFollowHourOpen] = useState(false);
-  const [isFollowMinOpen, setIsFollowMinOpen] = useState(false);
-  const [isFollowPeriodOpen, setIsFollowPeriodOpen] = useState(false);
-  const [isFollowModeOpen, setIsFollowModeOpen] = useState(false);
-  const [isFollowPriorityOpen, setIsFollowPriorityOpen] = useState(false);
-  const [isFollowStatusOpen, setIsFollowStatusOpen] = useState(false);
-  const [isFollowProjectOpen, setIsFollowProjectOpen] = useState(false);
-  const [isLogging, setIsLogging] = useState(false);
   const [showCompletionModal, setShowCompletionModal] = useState(false);
   const [completionBrief, setCompletionBrief] = useState("");
   const [completingFollowUpId, setCompletingFollowUpId] = useState(null);
@@ -209,31 +404,23 @@ const ClientDetail = ({
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     return user.full_name || "";
   });
-  const [isCompHourOpen, setIsCompHourOpen] = useState(false);
-  const [isCompMinOpen, setIsCompMinOpen] = useState(false);
-  const [isCompPeriodOpen, setIsCompPeriodOpen] = useState(false);
-
+  
   const [logData, setLogData] = useState({
     type: "call", description: "", projectId: "",
     date: new Date().toISOString().split("T")[0],
     time: new Date().toTimeString().split(" ")[0].substring(0, 5),
   });
   const [clientFollowUps, setClientFollowUps] = useState([]);
-  const [isLeadConvOpen, setIsLeadConvOpen] = useState(true);
+  const [isLogging, setIsLogging] = useState(false);
   const [expandedProjectIndex, setExpandedProjectIndex] = useState(0);
+  const [showAddFollowUpModal, setShowAddFollowUpModal] = useState(false);
+  const [followUpFormData, setFollowUpFormData] = useState({
+    title: "", description: "", followup_date: new Date().toLocaleDateString("en-CA"),
+    timeHour: "12", timeMinute: "00", timePeriod: "PM", priority: "Medium",
+    followup_mode: "Call", followup_status: "Pending", projectId: "",
+  });
 
   useScrollLock(showEditModal || showAddFollowUpModal || isLogging || showCompletionModal);
-
-  // Effects & Handlers - Unchanged
-  useEffect(() => {
-    if (isCountryDropdownOpen && countryButtonRef.current) {
-      const rect = countryButtonRef.current.getBoundingClientRect();
-      setCountryDropdownStyle({
-        position: "fixed", top: `${rect.bottom + 8}px`, left: `${rect.left}px`,
-        width: `${rect.width}px`, zIndex: 9999,
-      });
-    }
-  }, [isCountryDropdownOpen]);
 
   useEffect(() => setActiveTab(initialTab), [initialTab]);
 
@@ -242,24 +429,32 @@ const ClientDetail = ({
       const dialCode = client.country_code || "";
       const phone = client.phone || "";
       const countryName = client.country || "";
+      
       setEditFormData({
-        name: client.name || "", email: client.email || "", phone: phone,
-        countryCode: dialCode.replace("+", ""), leadType: client.leadType || "Hot",
-        notes: client.notes || "", website: client.website || "",
+        name: client.name || "", 
+        email: client.email || "", 
+        phone: phone,
+        countryCode: dialCode.startsWith('+') ? dialCode.slice(1) : dialCode, 
+        leadType: client.leadType || "Hot",
+        notes: client.notes || "", 
+        website: client.website || "",
         projectCategory: client.projectCategory || REVERSE_CATEGORY_MAP[client.industry] || 1,
-        country: countryName, state: client.state || "", currency: client.currency || "",
-        organisationName: client.organisationName || "", clientStatus: client.clientStatus || "Active",
+        country: countryName, 
+        state: client.state || "", 
+        currency: client.currency || "",
+        organisationName: getOrganisationName(client),
+        clientStatus: client.clientStatus || "Active",
       });
     }
   }, [showEditModal, client]);
 
   useEffect(() => {
-    if (client && client.id) fetchClientFollowups();
-  }, [client]);
+    if (client && clientId) fetchClientFollowups();
+  }, [client, clientId]);
 
   const fetchClientFollowups = async () => {
     try {
-      const response = await fetch(`${BASE_URL}/api/client-followups/${client.id}`, {
+      const response = await fetch(`${BASE_URL}/api/client-followups/${clientId}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       if (response.ok) {
@@ -274,12 +469,13 @@ const ClientDetail = ({
     if (!followUpFormData.title || !followUpFormData.description) {
       toast.error("Please fill in title and description"); return;
     }
+    
     let hour = parseInt(followUpFormData.timeHour);
     if (followUpFormData.timePeriod === "PM" && hour < 12) hour += 12;
     if (followUpFormData.timePeriod === "AM" && hour === 12) hour = 0;
     const time24 = `${hour.toString().padStart(2, "0")}:${followUpFormData.timeMinute}`;
     const combinedDateTime = `${followUpFormData.followup_date} ${time24}:00`;
-    const finalClientId = followUpFormData.projectId ? null : (!isLead && client.lead_id ? client.lead_id : client.id);
+    const finalClientId = followUpFormData.projectId ? null : (!isLead && client.lead_id ? client.lead_id : clientId);
 
     try {
       const formattedStatus = followUpFormData.followup_status.charAt(0).toUpperCase() + followUpFormData.followup_status.slice(1).toLowerCase();
@@ -312,7 +508,7 @@ const ClientDetail = ({
     if (onAddActivity && logData.description) {
       const combinedDateTime = new Date(`${logData.date}T${logData.time}`);
       onAddActivity({
-        clientId: client.id, type: logData.type, description: logData.description,
+        clientId: clientId, type: logData.type, description: logData.description,
         projectName: clientProjects.find((p) => p.id === logData.projectId)?.name || "",
         projectId: logData.projectId, date: combinedDateTime.toISOString(),
       });
@@ -343,15 +539,14 @@ const ClientDetail = ({
 
   const toggleProject = (idx) => setExpandedProjectIndex((prev) => (prev === idx ? null : idx));
 
-  // Data processing - Unchanged
-  const clientProjects = projects.filter((p) => p.clientId == client.id);
+  const clientProjects = projects.filter((p) => p.clientId == clientId);
   const clientProjectIds = clientProjects.map((p) => p.id);
-  const clientActivities = activities.filter(a => a.clientId == client.id || (client.lead_id && a.clientId == client.lead_id) || clientProjectIds.includes(a.projectId || a.project_id));
+  const clientActivities = activities.filter(a => a.clientId == clientId || (client.lead_id && a.clientId == client.lead_id) || clientProjectIds.includes(a.projectId || a.project_id));
   
-  const completedFollowUps = [...followUps.filter((f) => f.clientId == client.id || (client.lead_id && f.clientId == client.lead_id) || clientProjectIds.includes(f.projectId || f.project_id)), ...clientFollowUps]
+  const completedFollowUps = [...followUps.filter((f) => f.clientId == clientId || (client.lead_id && f.clientId == client.lead_id) || clientProjectIds.includes(f.projectId || f.project_id)), ...clientFollowUps]
     .filter((f, index, self) => (f.status === "completed" || f.followup_status === "completed") && index === self.findIndex((t) => t.id === f.id));
 
-  const upcomingFollowUps = [...followUps.filter((f) => f.clientId == client.id || (client.lead_id && f.clientId == client.lead_id) || clientProjectIds.includes(f.projectId || f.project_id)), ...clientFollowUps]
+  const upcomingFollowUps = [...followUps.filter((f) => f.clientId == clientId || (client.lead_id && f.clientId == client.lead_id) || clientProjectIds.includes(f.projectId || f.project_id)), ...clientFollowUps]
     .filter((f, index, self) => f.status?.toLowerCase() !== "completed" && f.followup_status?.toLowerCase() !== "completed" && index === self.findIndex((t) => t.id === f.id))
     .sort((a, b) => {
       const diff = parseLocalDate(a.followup_date || a.dueDate) - parseLocalDate(b.followup_date || b.dueDate);
@@ -378,27 +573,13 @@ const ClientDetail = ({
     }
   };
 
-  const getFollowUpStatusLabel = (date) => {
-    if (!date) return null;
-    const fuDate = parseLocalDate(date);
-    const today = new Date();
-    if (fuDate < today) return { label: "Overdue", className: "bg-red-100 text-red-700 border-red-200" };
-    const fuDay = new Date(fuDate.getFullYear(), fuDate.getMonth(), fuDate.getDate());
-    const todayDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    if (fuDay.getTime() === todayDay.getTime()) return { label: "Today", className: "bg-amber-100 text-amber-700 border-amber-200" };
-    return { label: "Upcoming", className: "bg-blue-100 text-blue-700 border-blue-200" };
-  };
-
-  // UI RENDERING STARTS HERE (Redesigned)
   return (
-    <div className="w-full  min-h-screen text-slate-800">
+    <div className="w-full min-h-screen text-slate-800">
       
       {/* Top Navigation & Header */}
-      <div className=" border-b border-slate-200 sticky top-0 z-30">
+      <div className="border-b border-slate-200 sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            
-            {/* Left: Back & Profile Info */}
             <div className="flex items-center gap-4">
               <button
                 onClick={onBack}
@@ -409,14 +590,14 @@ const ClientDetail = ({
               
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-full bg-slate-900 flex items-center justify-center text-white font-bold text-xl shadow-sm shrink-0">
-                  {client.name.charAt(0).toUpperCase()}
+                  {client.name?.charAt(0).toUpperCase() || "?"}
                 </div>
                 <div>
                   <h1 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight leading-tight capitalize">
                     {client.name}
                   </h1>
                   <p className="text-sm font-medium text-slate-500 flex items-center gap-2">
-                    {isLead ? (client.company && <span>{client.company}</span>) : (<span>{client.projectName || client.company || "Global Project"}</span>)}
+                    {isLead ? (client.company && <span>{client.company}</span>) : (<span>{client.projectName || orgName || "Global Project"}</span>)}
                     <span className="w-1 h-1 rounded-full bg-slate-300 inline-block" />
                     <span className="text-slate-400">{isLead ? "Lead" : "Client"}</span>
                   </p>
@@ -424,7 +605,6 @@ const ClientDetail = ({
               </div>
             </div>
 
-            {/* Right: Actions */}
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setShowEditModal(true)}
@@ -436,8 +616,8 @@ const ClientDetail = ({
               {client.status !== "Dismissed" ? (
                 <button
                   onClick={() => {
-                    if (isLead) { onDismissLead && onDismissLead(client.lead_id || client.id); } 
-                    else { onUpdateClient && onUpdateClient(client.id, { ...client, status: "Dismissed", clientStatus: "Dismissed" }); }
+                    if (isLead) { onDismissLead && onDismissLead(leadId); } 
+                    else { onUpdateClient && onUpdateClient(clientId, { ...client, status: "Dismissed", clientStatus: "Dismissed" }); }
                   }}
                   className="px-4 py-2 bg-white border border-slate-200 rounded-full text-sm font-semibold text-red-600 hover:bg-red-50 hover:border-red-200 transition-all flex items-center gap-2 shadow-sm"
                 >
@@ -445,7 +625,7 @@ const ClientDetail = ({
                 </button>
               ) : (
                 <button
-                  onClick={() => onRestoreLead && onRestoreLead(client.lead_id || client.id)}
+                  onClick={() => onRestoreLead && onRestoreLead(leadId)}
                   className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-blue-600 hover:bg-blue-50 hover:border-blue-200 transition-all flex items-center gap-2 shadow-sm"
                 >
                   <RotateCcw size={16} /> <span className="hidden sm:inline">Restore</span>
@@ -454,7 +634,6 @@ const ClientDetail = ({
             </div>
           </div>
           
-          {/* Tabs */}
           <div className="flex items-center gap-1 overflow-x-auto no-scrollbar pb-[-1px]">
             {[
               { id: "overview", label: "Overview", icon: <Target size={16}/> },
@@ -481,17 +660,16 @@ const ClientDetail = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           
-          {/* LEFT SIDEBAR: Contact Details Card */}
           <div className="lg:col-span-4 space-y-6">
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
               <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-5">Contact Information</h3>
               <div className="space-y-4">
-                {client.organisationName && (
+                {orgName && (
                   <div className="flex items-start gap-3">
                     <Briefcase className="w-5 h-5 text-slate-400 mt-0.5" />
                     <div>
                       <p className="text-xs font-medium text-slate-500">Organization</p>
-                      <p className="text-sm font-semibold text-slate-900">{client.organisationName}</p>
+                      <p className="text-sm font-semibold text-slate-900">{orgName}</p>
                     </div>
                   </div>
                 )}
@@ -556,12 +734,10 @@ const ClientDetail = ({
             )}
           </div>
 
-          {/* RIGHT CONTENT AREA */}
           <div className="lg:col-span-8 space-y-6">
             
             {activeTab === "overview" && (
               <div className="space-y-8 animate-fade-in">
-                {/* Stats Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {isLead ? (
                     <>
@@ -612,7 +788,6 @@ const ClientDetail = ({
                   )}
                 </div>
 
-                {/* Follow-ups Section */}
                 <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
                   <div className="flex items-center justify-between mb-6">
                     <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
@@ -646,7 +821,6 @@ const ClientDetail = ({
                             
                             return (
                               <div key={fu.id} className="relative pl-6">
-                                {/* Timeline Dot */}
                                 <div className={`absolute -left-[35px] top-5 w-3 h-3 rounded-full border-2 border-white shadow-sm ${fu.priority === 'High' ? 'bg-red-500' : 'bg-slate-300'}`}></div>
                                 
                                 <div className={`p-4 rounded-xl border bg-white transition-shadow hover:shadow-md ${hasConflict ? 'ring-2 ring-amber-400 ring-offset-1' : 'border-slate-200'}`}>
@@ -727,7 +901,6 @@ const ClientDetail = ({
             {activeTab === "activity" && (
               <div className="space-y-6 animate-fade-in">
                 {isLead ? (
-                  /* Lead Conversations */
                   (() => {
                     const leadConversations = [
                       ...completedFollowUps.map(fu => ({
@@ -737,6 +910,8 @@ const ClientDetail = ({
                       ...clientActivities.map(a => ({ ...a, source: "activity", originalDescription: null }))
                     ].sort((a, b) => parseLocalDate(b.date || b.completed_at || b.dueDate || b.created_at || b.createdAt) - parseLocalDate(a.date || a.completed_at || a.dueDate || a.created_at || a.createdAt));
 
+                    const [isLeadConvOpen, setIsLeadConvOpen] = useState(true);
+                    
                     return (
                       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                         <div className="flex items-center justify-between p-5 bg-slate-50 border-b border-slate-200 cursor-pointer" onClick={() => setIsLeadConvOpen(!isLeadConvOpen)}>
@@ -779,7 +954,6 @@ const ClientDetail = ({
                     );
                   })()
                 ) : (
-                  /* Client Project Conversations */
                   (() => {
                     const projectGroups = clientProjects.map((p) => ({
                       id: p.id, projectName: p.name, projectStatus: p.status, interactions: [],
@@ -934,305 +1108,178 @@ const ClientDetail = ({
               </button>
             </div>
 
-<form
-  onSubmit={async (e) => {
-    e.preventDefault();
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                
+                if (!clientId) {
+                  toast.error('Client ID is missing. Please refresh the page.');
+                  console.error('[EDIT ERROR] No client ID available');
+                  return;
+                }
 
-    const validationRules = isLead
-      ? {
-          name: { required: true, minLength: 2, label: "Full Name" },
-          email: { required: true, pattern: /^\S+@\S+\.\S+$/, label: "Email" },
-          phone: { required: true, minLength: 10, label: "Phone Number" },
-        }
-      : {
-          organisationName: {
-            required: true,
-            minLength: 2,
-            label: "Organisation Name",
-          },
-          name: {
-            required: true,
-            minLength: 2,
-            label: "Client Name",
-          },
-        };
+                console.log('[FORM SUBMIT] Sending to backend:', {
+                  clientId,
+                  formData: editFormData,
+                  orgNameSent: editFormData.organisationName
+                });
 
-    const isValid = validateForm(editFormData, validationRules);
+                const validationRules = isLead
+                  ? {
+                      name: { required: true, minLength: 2, label: "Full Name" },
+                      email: { required: true, pattern: /^\S+@\S+\.\S+$/, label: "Email" },
+                      phone: { required: true, minLength: 10, label: "Phone Number" },
+                      countryCode: { required: true, label: "Country Code" },
+                    }
+                  : {
+                      name: { required: true, minLength: 2, label: "Client Name" },
+                      organisationName: { required: true, minLength: 2, label: "Organisation Name" },
+                    };
 
-    if (!isValid) return;
+                const isValid = validateForm(editFormData, validationRules);
 
-    try {
-      await onUpdateClient(client.lead_id || client.id, editFormData);
-      setShowEditModal(false);
-    } catch (error) {
-      toast.error("Failed to update details");
-    }
-  }}
-  className="p-6 space-y-4 overflow-y-auto no-scrollbar"
->
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">Full Name <span className="text-rose-500">*</span></label>
-                <input required type="text" placeholder="e.g. Sameer Kapoor" className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200" value={editFormData.name} onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })} />
-              </div>
+                if (!isValid) return;
 
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">Email <span className="text-rose-500">*</span></label>
-                <input required type="email" placeholder="e.g. sameer@fintech.com" className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200" value={editFormData.email} onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })} />
-              </div>
+                try {
+                  await onUpdateClient(clientId, editFormData);
+                  setShowEditModal(false);
+                  toast.success(`${isLead ? "Lead" : "Client"} updated successfully`);
+                } catch (error) {
+                  console.error('[UPDATE ERROR]', error);
+                  toast.error(error.message || "Failed to update details");
+                }
+              }}
+              className="p-6 space-y-4 overflow-y-auto no-scrollbar"
+            >
+              {/* --- LEAD SPECIFIC FIELDS --- */}
+              {isLead && (
+                <>
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">Full Name <span className="text-rose-500">*</span></label>
+                    <input required type="text" placeholder="e.g. Sameer Kapoor" className="w-full px-4 py-2.5 bg-white border border-slate-200/70 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200 shadow-sm" value={editFormData.name} onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })} />
+                  </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">Country Code <span className="text-rose-500">*</span></label>
-                  <SearchableDropdown options={countries.map((c) => ({ name: `${c.name} (${c.code})`, code: c.code }))} value={editFormData.countryCode} onChange={(val) => { const selectedCountry = countries.find((c) => c.code === val); setEditFormData({ ...editFormData, countryCode: val, country: selectedCountry ? selectedCountry.name : editFormData.country }); }} placeholder="Search country..." />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">Phone Number <span className="text-rose-500">*</span></label>
-                  <input required type="tel" placeholder="e.g. 9876543210" className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200" value={editFormData.phone} onChange={(e) => setEditFormData({ ...editFormData, phone: e.target.value.replace(/\D/g, "") })} />
-                </div>
-              </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">Email <span className="text-rose-500">*</span></label>
+                    <input required type="email" placeholder="e.g. sameer@fintech.com" className="w-full px-4 py-2.5 bg-white border border-slate-200/70 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200 shadow-sm" value={editFormData.email} onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })} />
+                  </div>
 
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">Website URL (Optional)</label>
-                <input type="text" placeholder="e.g. www.company.com" className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200" value={editFormData.website} onChange={(e) => setEditFormData({ ...editFormData, website: e.target.value })} />
-              </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <Dropdown
+                      label="Country Code"
+                      required
+                      searchable
+                      options={countries.map((c) => ({ name: `${c.name} (${c.code})`, code: c.code }))}
+                      value={editFormData.countryCode}
+                      onChange={(val) => { 
+                        const selectedCountry = countries.find((c) => c.code === val);
+                        setEditFormData({ ...editFormData, countryCode: val, country: selectedCountry ? selectedCountry.name : editFormData.country }); 
+                      }}
+                      placeholder="Search country..."
+                    />
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">Phone Number <span className="text-rose-500">*</span></label>
+                      <input required type="tel" placeholder="e.g. 9876543210" className="w-full px-4 py-2.5 bg-white border border-slate-200/70 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200 shadow-sm" value={editFormData.phone} onChange={(e) => setEditFormData({ ...editFormData, phone: e.target.value.replace(/\D/g, "") })} />
+                    </div>
+                  </div>
 
-{isLead ? (
-  <>
-    {/* Full Name */}
-    {/* <div className="space-y-1.5">
-      <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
-        Full Name <span className="text-rose-500">*</span>
-      </label>
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">Website URL (Optional)</label>
+                    <input type="text" placeholder="e.g. www.company.com" className="w-full px-4 py-2.5 bg-white border border-slate-200/70 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200 shadow-sm" value={editFormData.website} onChange={(e) => setEditFormData({ ...editFormData, website: e.target.value })} />
+                  </div>
 
-      <input
-        type="text"
-        required
-        value={editFormData.name}
-        onChange={(e) =>
-          setEditFormData({
-            ...editFormData,
-            name: e.target.value,
-          })
-        }
-        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl"
-        placeholder="Lead User"
-      />
-    </div> */}
+                  <Dropdown
+                    label="Lead Status"
+                    options={[
+                      { name: "Hot", value: "Hot" },
+                      { name: "Warm", value: "Warm" },
+                      { name: "Cold", value: "Cold" },
+                    ]}
+                    value={editFormData.leadType}
+                    onChange={(val) => setEditFormData({ ...editFormData, leadType: val })}
+                    placeholder="Select Status"
+                  />
 
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">Note / Message</label>
+                    <textarea
+                      rows={3}
+                      value={editFormData.notes}
+                      onChange={(e) => setEditFormData({ ...editFormData, notes: e.target.value })}
+                      className="w-full px-4 py-2.5 bg-white border border-slate-200/70 rounded-xl resize-none text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200 shadow-sm"
+                    />
+                  </div>
+                </>
+              )}
 
+              {/* --- CLIENT SPECIFIC FIELDS (With Searchable Dropdowns) --- */}
+              {!isLead && (
+                <>
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">Organisation Name <span className="text-rose-500">*</span></label>
+                    <input
+                      type="text"
+                      required
+                      value={editFormData.organisationName}
+                      onChange={(e) => setEditFormData({ ...editFormData, organisationName: e.target.value })}
+                      className="w-full px-4 py-2.5 bg-white border border-slate-200/70 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200 shadow-sm"
+                      placeholder="Acme Technologies"
+                    />
+                  </div>
 
-    {/* Website */}
-    {/* <div className="space-y-1.5">
-      <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
-        Website URL (Optional)
-      </label>
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">Client Name <span className="text-rose-500">*</span></label>
+                    <input
+                      type="text"
+                      required
+                      value={editFormData.name}
+                      onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                      className="w-full px-4 py-2.5 bg-white border border-slate-200/70 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200 shadow-sm"
+                      placeholder="John Doe"
+                    />
+                  </div>
 
-      <input
-        type="text"
-        value={editFormData.website}
-        onChange={(e) =>
-          setEditFormData({
-            ...editFormData,
-            website: e.target.value,
-          })
-        }
-        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl"
-        placeholder="www.company.com"
-      />
-    </div> */}
+                  <Dropdown
+                    label="Client Country"
+                    searchable
+                    options={countries.map((c) => ({ name: c.name, code: c.name }))}
+                    value={editFormData.country}
+                    onChange={(val) => setEditFormData({ ...editFormData, country: val })}
+                    placeholder="Search country..."
+                  />
 
-    {/* Lead Status */}
-    <div className="space-y-1.5">
-      <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
-        Lead Status
-      </label>
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">Client State</label>
+                    <input
+                      type="text"
+                      value={editFormData.state}
+                      onChange={(e) => setEditFormData({ ...editFormData, state: e.target.value })}
+                      className="w-full px-4 py-2.5 bg-white border border-slate-200/70 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200 shadow-sm"
+                      placeholder="State"
+                    />
+                  </div>
 
-      <select
-        value={editFormData.leadType}
-        onChange={(e) =>
-          setEditFormData({
-            ...editFormData,
-            leadType: e.target.value,
-          })
-        }
-        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl"
-      >
-        <option value="Hot">Hot</option>
-        <option value="Warm">Warm</option>
-        <option value="Cold">Cold</option>
-      </select>
-    </div>
+                  <Dropdown
+                    label="Client Currency"
+                    searchable
+                    options={commonCurrencies.map((c) => ({ name: `${c.code} (${c.symbol})`, code: c.code }))}
+                    value={editFormData.currency}
+                    onChange={(val) => setEditFormData({ ...editFormData, currency: val })}
+                    placeholder="Search currency..."
+                  />
 
-    {/* Notes */}
-    <div className="space-y-1.5">
-      <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
-        Note / Message
-      </label>
-
-      <textarea
-        rows={3}
-        value={editFormData.notes}
-        onChange={(e) =>
-          setEditFormData({
-            ...editFormData,
-            notes: e.target.value,
-          })
-        }
-        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl resize-none"
-      />
-    </div>
-  </>
-) : (  <>
-    {/* Organisation Name */}
-    <div className="space-y-1.5">
-      <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
-        Organisation Name *
-      </label>
-
-      <input
-        type="text"
-        required
-        value={editFormData.organisationName}
-        onChange={(e) =>
-          setEditFormData({
-            ...editFormData,
-            organisationName: e.target.value,
-          })
-        }
-        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl"
-        placeholder="Acme Technologies"
-      />
-    </div>
-
-    {/* Client Name */}
-    <div className="space-y-1.5">
-      <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
-        Client Name *
-      </label>
-
-      <input
-        type="text"
-        required
-        value={editFormData.name}
-        onChange={(e) =>
-          setEditFormData({
-            ...editFormData,
-            name: e.target.value,
-          })
-        }
-        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl"
-        placeholder="John Doe"
-      />
-    </div>
-
-    {/* Country */}
-    <SearchableDropdown
-      label="Client Country"
-      options={countries.map((c) => ({
-        name: c.name,
-        code: c.name,
-      }))}
-      value={editFormData.country}
-      onChange={(val) =>
-        setEditFormData({
-          ...editFormData,
-          country: val,
-        })
-      }
-      placeholder="Select Country"
-    />
-
-    {/* State */}
-    <div className="space-y-1.5">
-      <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
-        Client State
-      </label>
-
-      <input
-        type="text"
-        value={editFormData.state}
-        onChange={(e) =>
-          setEditFormData({
-            ...editFormData,
-            state: e.target.value,
-          })
-        }
-        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl"
-        placeholder="State"
-      />
-    </div>
-
-    {/* Currency */}
-    <SearchableDropdown
-      label="Client Currency"
-      options={commonCurrencies.map((c) => ({
-        name: `${c.code} (${c.symbol})`,
-        code: c.code,
-      }))}
-      value={editFormData.currency}
-      onChange={(val) =>
-        setEditFormData({
-          ...editFormData,
-          currency: val,
-        })
-      }
-      placeholder="Select Currency"
-    />
-
-    {/* Status */}
-    <div className="space-y-1.5">
-      <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
-        Client Status
-      </label>
-
-      <select
-        value={editFormData.clientStatus}
-        onChange={(e) =>
-          setEditFormData({
-            ...editFormData,
-            clientStatus: e.target.value,
-          })
-        }
-        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl"
-      >
-        <option value="Active">Active</option>
-        <option value="Inactive">Inactive</option>
-      </select>
-    </div>
-  </>
-)}
-{/* 
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">{isLead ? "Lead Status" : "Project Status"}</label>
-                <div className="relative">
-                  <button type="button" onClick={() => setIsEditStatusDropdownOpen(!isEditStatusDropdownOpen)} className="w-full h-10 flex items-center justify-between px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold shadow-sm hover:border-[#18254D]/30 transition-all text-[#18254D]">
-                    <span className={editFormData.leadType ? "text-[#18254D]" : "text-slate-400 font-medium"}>{editFormData.leadType || "Select Status"}</span>
-                    <ChevronDown size={16} className={`text-slate-400 transition-transform duration-200 ${isEditStatusDropdownOpen ? "rotate-180" : ""}`} />
-                  </button>
-                  {isEditStatusDropdownOpen && (
-                    <>
-                      <div className="fixed inset-0 z-[80]" onClick={() => setIsEditStatusDropdownOpen(false)} />
-                      <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-pop origin-top">
-                        <div className="bg-[#18254D] px-4 py-2.5 border-b border-white/10"><p className="text-[10px] font-bold text-white/50 tracking-wider uppercase">Select Status</p></div>
-                        {(client.isConverted ? ["Hot", "Warm", "Cold", "Converted"] : ["Hot", "Warm", "Cold"]).map((status) => (
-                          <button key={status} type="button" onClick={() => { setEditFormData({ ...editFormData, leadType: status }); setIsEditStatusDropdownOpen(false); }} className={`w-full text-left px-4 py-2.5 text-xs font-semibold tracking-wider transition-colors flex items-center gap-2 ${editFormData.leadType === status ? "bg-indigo-50 text-indigo-700" : "text-[#18254D] hover:bg-slate-50"}`}>
-                            {status === "Hot" && <Flame size={12} className="text-[#F43F5E]" />}
-                            {status === "Warm" && <Sun size={12} className="text-[#F97316]" />}
-                            {status === "Cold" && <Snowflake size={12} className="text-[#3B82F6]" />}
-                            {status === "Converted" && <UserCheck size={12} className="text-[#10B981]" />}
-                            <span>{status}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div> */}
-
-              {/* <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">Note / Message</label>
-                <textarea rows={3} placeholder="e.g. Interested in cloud migration services..." className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200 resize-none" value={editFormData.notes} onChange={(e) => setEditFormData({ ...editFormData, notes: e.target.value })} />
-              </div> */}
+                  <Dropdown
+                    label="Client Status"
+                    options={[
+                      { name: "Active", value: "Active" },
+                      { name: "Inactive", value: "Inactive" },
+                    ]}
+                    value={editFormData.clientStatus}
+                    onChange={(val) => setEditFormData({ ...editFormData, clientStatus: val })}
+                    placeholder="Select Status"
+                  />
+                </>
+              )}
 
               <div className="pt-2">
                 <button type="submit" className="w-full h-12 bg-[#18254D] text-white rounded-xl text-xs font-bold tracking-wider shadow-lg active:scale-[0.97] transition-all hover:bg-[#1e2e5e] hover:shadow-xl flex items-center justify-center gap-2 btn-animated">
@@ -1273,28 +1320,27 @@ const ClientDetail = ({
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Time</label>
-                  <input required type="time" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-900 focus:outline-none text-sm font-medium" value={logData.time} onChange={(e) => setLogData({ ...logData, time: e.target.value })} />
+                  <input required type="time" className="w-full px-4 py-3 bg-white border border-slate-200/70 rounded-xl focus:ring-2 focus:ring-[#18254D]/5 focus:outline-none text-sm font-medium shadow-sm" value={logData.time} onChange={(e) => setLogData({ ...logData, time: e.target.value })} />
                 </div>
               </div>
 
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">{isLead ? "Subject" : "Project Name"}</label>
                 {!isLead && (
-                  <div className="relative">
-                    <select required className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-900 focus:outline-none text-sm font-medium appearance-none cursor-pointer" value={logData.projectId} onChange={(e) => setLogData({ ...logData, projectId: e.target.value })}>
-                      <option value="" disabled>Select a project...</option>
-                      {clientProjects.length > 0 ? (
-                        clientProjects.map((project) => <option key={project.id} value={project.id}>{project.name}</option>)
-                      ) : (
-                        <>
-                          <option value="Website Redesign">Website Redesign</option>
-                          <option value="SEO Optimization">SEO Optimization</option>
-                          <option value="Brand Identity">Brand Identity</option>
-                        </>
-                      )}
-                    </select>
-                    <ChevronDown className="absolute right-4 top-3.5 text-slate-400 pointer-events-none" size={18} />
-                  </div>
+                  <Dropdown
+                    label="Project Name"
+                    required
+                    options={clientProjects.length > 0 
+                      ? clientProjects.map((project) => ({ name: project.name, value: project.id }))
+                      : [
+                          { name: "Website Redesign", value: "Website Redesign" },
+                          { name: "SEO Optimization", value: "SEO Optimization" },
+                          { name: "Brand Identity", value: "Brand Identity" },
+                        ]}
+                    value={logData.projectId}
+                    onChange={(val) => setLogData({ ...logData, projectId: val })}
+                    placeholder="Select project..."
+                  />
                 )}
               </div>
 
@@ -1302,7 +1348,7 @@ const ClientDetail = ({
                 <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Interaction Type</label>
                 <div className="grid grid-cols-3 gap-3">
                   {["call", "email", "meeting"].map((type) => (
-                    <button key={type} type="button" onClick={() => setLogData({ ...logData, type: type })} className={`py-3 px-4 rounded-xl border text-sm font-bold uppercase tracking-wider transition-all ${logData.type === type ? "bg-slate-900 border-slate-900 text-white shadow-md" : "bg-white border-slate-200 text-slate-500 hover:border-slate-400"}`}>
+                    <button key={type} type="button" onClick={() => setLogData({ ...logData, type: type })} className={`py-3 px-4 rounded-xl border text-sm font-bold uppercase tracking-wider transition-all ${logData.type === type ? "bg-[#18254D] border-[#18254D] text-white shadow-md" : "bg-white border-slate-200 text-slate-500 hover:border-slate-400"}`}>
                       {type}
                     </button>
                   ))}
@@ -1311,11 +1357,11 @@ const ClientDetail = ({
 
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Conversation Details</label>
-                <textarea required placeholder="Discussed new service package..." className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-900 focus:outline-none text-sm font-medium min-h-[120px] resize-none" value={logData.description} onChange={(e) => setLogData({ ...logData, description: e.target.value })} />
+                <textarea required placeholder="Discussed new service package..." className="w-full px-4 py-3 bg-white border border-slate-200/70 rounded-xl focus:ring-2 focus:ring-[#18254D]/5 focus:outline-none text-sm font-medium min-h-[120px] resize-none shadow-sm" value={logData.description} onChange={(e) => setLogData({ ...logData, description: e.target.value })} />
               </div>
 
               <div className="pt-4 shrink-0">
-                <button type="submit" className="w-full py-4 bg-slate-900 text-white rounded-xl text-sm font-bold tracking-wide shadow-md active:scale-[0.98] transition-transform hover:bg-slate-800">
+                <button type="submit" className="w-full py-4 bg-[#18254D] text-white rounded-xl text-sm font-bold tracking-wide shadow-md active:scale-[0.98] transition-transform hover:bg-[#1e2e5e]">
                   Save Entry
                 </button>
               </div>
@@ -1363,12 +1409,12 @@ const ClientDetail = ({
             >
               <div className="space-y-1.5">
                 <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">Follow Conclusion Brief</label>
-                <textarea rows={3} placeholder="Update the conclusion brief..." className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200 resize-none" value={completionBrief} onChange={(e) => setCompletionBrief(e.target.value)} />
+                <textarea rows={3} placeholder="Update the conclusion brief..." className="w-full px-4 py-2.5 bg-white border border-slate-200/70 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200 resize-none shadow-sm" value={completionBrief} onChange={(e) => setCompletionBrief(e.target.value)} />
               </div>
 
               <div className="space-y-1.5">
                 <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">Completed By</label>
-                <input type="text" placeholder="e.g. John Doe" className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200" value={completedBy} onChange={(e) => setCompletedBy(e.target.value)} />
+                <input type="text" placeholder="e.g. John Doe" className="w-full px-4 py-2.5 bg-white border border-slate-200/70 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200 shadow-sm" value={completedBy} onChange={(e) => setCompletedBy(e.target.value)} />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1379,16 +1425,24 @@ const ClientDetail = ({
                 <div className="space-y-1.5">
                   <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">Completion Time</label>
                   <div className="flex gap-2">
-                    <select className="flex-1 px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] focus:outline-none focus:ring-4 focus:ring-[#18254D]/5 focus:border-[#18254D]/30" value={completionHour} onChange={(e) => setCompletionHour(e.target.value)}>
-                      {Array.from({ length: 12 }, (_, i) => i + 1).map((h) => (<option key={`cd-comp-hour-${h}`} value={String(h).padStart(2, "0")}>{String(h).padStart(2, "0")}</option>))}
-                    </select>
-                    <select className="flex-1 px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] focus:outline-none focus:ring-4 focus:ring-[#18254D]/5 focus:border-[#18254D]/30" value={completionMinute} onChange={(e) => setCompletionMinute(e.target.value)}>
-                      {Array.from({ length: 60 }, (_, i) => i).map((m) => (<option key={`cd-comp-min-${m}`} value={String(m).padStart(2, "0")}>{String(m).padStart(2, "0")}</option>))}
-                    </select>
-                    <select className="w-20 px-2 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] focus:outline-none focus:ring-4 focus:ring-[#18254D]/5 focus:border-[#18254D]/30" value={completionPeriod} onChange={(e) => setCompletionPeriod(e.target.value)}>
-                      <option value="AM">AM</option>
-                      <option value="PM">PM</option>
-                    </select>
+                    <Dropdown
+                      options={Array.from({ length: 12 }, (_, i) => i + 1).map((h) => ({ name: String(h).padStart(2, "0"), value: String(h).padStart(2, "0") }))}
+                      value={completionHour}
+                      onChange={setCompletionHour}
+                      placeholder="Hour"
+                    />
+                    <Dropdown
+                      options={Array.from({ length: 60 }, (_, i) => ({ name: String(i).padStart(2, "0"), value: String(i).padStart(2, "0") }))}
+                      value={completionMinute}
+                      onChange={setCompletionMinute}
+                      placeholder="Minute"
+                    />
+                    <Dropdown
+                      options={[{ name: "AM", value: "AM" }, { name: "PM", value: "PM" }]}
+                      value={completionPeriod}
+                      onChange={setCompletionPeriod}
+                      placeholder="AM/PM"
+                    />
                   </div>
                 </div>
               </div>
@@ -1397,6 +1451,109 @@ const ClientDetail = ({
                 <button type="submit" className="w-full h-12 bg-[#18254D] text-white rounded-xl text-xs font-bold tracking-wider shadow-lg active:scale-[0.97] transition-all hover:bg-[#1e2e5e] hover:shadow-xl flex items-center justify-center gap-2 btn-animated">
                   <CheckCircle2 size={14} strokeWidth={2.5} />
                   Confirm Completion
+                </button> 
+              </div>
+            </form>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Add Follow-up Modal */}
+      {showAddFollowUpModal && createPortal(
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[99999] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+          <div className="absolute inset-0" onClick={() => setShowAddFollowUpModal(false)} />
+          <div className="relative z-10 bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-slate-100 overflow-hidden animate-pop flex flex-col max-h-[90vh]">
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-teal-50 text-teal-500 rounded-xl flex items-center justify-center border border-teal-100 shadow-sm">
+                  <Plus size={16} strokeWidth={2.5} />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-[#18254D] tracking-tight">Add Follow-Up</h3>
+                  <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider mt-0.5">Create New Task</p>
+                </div>
+              </div>
+              <button onClick={() => setShowAddFollowUpModal(false)} className="p-1.5 hover:bg-slate-200 rounded-xl text-slate-400 transition-all">
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddFollowUpSubmit} className="p-6 space-y-4 overflow-y-auto no-scrollbar">
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">Title <span className="text-rose-500">*</span></label>
+                <input
+                  required
+                  type="text"
+                  value={followUpFormData.title}
+                  onChange={(e) => setFollowUpFormData({ ...followUpFormData, title: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-white border border-slate-200/70 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200 shadow-sm"
+                  placeholder="Follow-up with client"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">Description <span className="text-rose-500">*</span></label>
+                <textarea
+                  required
+                  rows={3}
+                  value={followUpFormData.description}
+                  onChange={(e) => setFollowUpFormData({ ...followUpFormData, description: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-white border border-slate-200/70 rounded-xl resize-none text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200 shadow-sm"
+                  placeholder="What will you discuss?"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">Due Date <span className="text-rose-500">*</span></label>
+                  <input
+                    required
+                    type="date"
+                    value={followUpFormData.followup_date}
+                    onChange={(e) => setFollowUpFormData({ ...followUpFormData, followup_date: e.target.value })}
+                    className="w-full px-4 py-2.5 bg-white border border-slate-200/70 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200 shadow-sm"
+                  />
+                </div>
+                <Dropdown
+                  label="Priority"
+                  options={[
+                    { name: "High", value: "High" },
+                    { name: "Medium", value: "Medium" },
+                    { name: "Low", value: "Low" },
+                  ]}
+                  value={followUpFormData.priority}
+                  onChange={(val) => setFollowUpFormData({ ...followUpFormData, priority: val })}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Dropdown
+                  label="Mode"
+                  options={[
+                    { name: "Call", value: "Call" },
+                    { name: "Email", value: "Email" },
+                    { name: "Meeting", value: "Meeting" },
+                    { name: "WhatsApp", value: "WhatsApp" },
+                  ]}
+                  value={followUpFormData.followup_mode}
+                  onChange={(val) => setFollowUpFormData({ ...followUpFormData, followup_mode: val })}
+                />
+                <Dropdown
+                  label="Status"
+                  options={[
+                    { name: "Pending", value: "Pending" },
+                    { name: "Completed", value: "Completed" },
+                  ]}
+                  value={followUpFormData.followup_status}
+                  onChange={(val) => setFollowUpFormData({ ...followUpFormData, followup_status: val })}
+                />
+              </div>
+
+              <div className="pt-2">
+                <button type="submit" className="w-full h-12 bg-[#18254D] text-white rounded-xl text-xs font-bold tracking-wider shadow-lg active:scale-[0.97] transition-all hover:bg-[#1e2e5e] hover:shadow-xl flex items-center justify-center gap-2 btn-animated">
+                  <Plus size={14} strokeWidth={2.5} />
+                  Add Follow-Up
                 </button>
               </div>
             </form>

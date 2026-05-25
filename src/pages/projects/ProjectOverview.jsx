@@ -509,7 +509,7 @@ const ProjectOverview = ({
           </div>
 
           {/* Follow-ups & History */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100/50">
+          {/* <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100/50">
             <div className="flex items-center justify-between mb-6">
                <h3 className="text-lg font-bold text-slate-800">Activity & Tasks</h3>
                <span className="text-sm font-semibold text-blue-600 hover:text-blue-700 cursor-pointer">View all &rarr;</span>
@@ -543,7 +543,7 @@ const ProjectOverview = ({
                 );
               })()}
             </div>
-          </div>
+          </div> */}
 
         </div>
 
