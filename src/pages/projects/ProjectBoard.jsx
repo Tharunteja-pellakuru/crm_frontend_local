@@ -27,6 +27,8 @@ import {
   LayoutGrid,
   Pencil,
   Trash2,
+  ChevronRight,
+  ChevronLeft,
 } from "lucide-react";
 import DatePicker from "../../components/ui/DatePicker";
 import {
@@ -646,7 +648,7 @@ const ProjectBoard = ({
     <div className="w-full min-h-screen relative overflow-x-hidden">  
       <div className="space-y-4 sm:space-y-5 lg:space-y-6 animate-fade-in px-0">
         {/* Header */}
-        <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
           <div className="max-w-2xl">
             <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-primary tracking-tight mb-2">
               Projects
@@ -736,9 +738,9 @@ const ProjectBoard = ({
 
         {/* Control Bar */}
         <div className="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm relative z-[60]">
-          <div className="flex flex-col lg:flex-row lg:justify-between gap-4 w-full items-center">
+          <div className="flex flex-col md:flex-row md:justify-between gap-2 w-full items-center">
             {/* 1. Search Bar */}
-            <div className="relative w-full lg:w-[320px] flex-none transition-all duration-300">
+            <div className="relative w-full md:w-64 flex-none transition-all duration-300">
               <Search
                 size={16}
                 className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
@@ -753,7 +755,7 @@ const ProjectBoard = ({
             </div>
 
             {/* 2. Filters Button */}
-            <div className="relative w-full sm:w-auto flex-none" ref={filterButtonRef}>
+            <div className="relative w-full md:w-auto flex-none" ref={filterButtonRef}>
               <button
                 onClick={() => setIsFilterPopupOpen(!isFilterPopupOpen)}
                 className={`w-full md:w-auto h-[38px] flex items-center justify-center gap-2.5 px-6 py-2 rounded-xl text-[12px] font-bold tracking-widest transition-all shadow-sm active:scale-95 group border ${
@@ -877,7 +879,7 @@ const ProjectBoard = ({
         </div>
 
         {/* Stage Tabs */}
-        <div className="flex overflow-x-auto scrollbar-hide sm:flex-wrap sm:overflow-visible justify-start gap-2 pb-1 sm:gap-3 w-full px-1 sm:px-0">
+        <div className="flex overflow-x-auto no-scrollbar sm:flex-wrap sm:overflow-visible justify-start gap-2 pb-1 sm:gap-3 w-full px-1 sm:px-0">
           {["All", "In Progress", "Hold", "Completed"].map((status) => {
             const isActive = activeStage === status;
             const activeStyles =
@@ -897,7 +899,7 @@ const ProjectBoard = ({
                   setActiveStage(status);
                   setCurrentPage(1);
                 }}
-                className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${isActive ? activeStyles : inactiveStyles}`}
+                className={`shrink-0 whitespace-nowrap px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${isActive ? activeStyles : inactiveStyles}`}
               >
                 <LayoutGrid size={16} />
                 {status}
@@ -906,8 +908,8 @@ const ProjectBoard = ({
           })}
         </div>
 
-        {/* Main List */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden w-full">
+        {/* Desktop Table */}
+        <div className="hidden lg:block bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden w-full">
           <div className="w-full overflow-x-auto custom-scrollbar rounded-2xl">
             <table className="min-w-[1100px] w-full border-collapse">
               <thead className="bg-slate-50/50">
@@ -963,6 +965,65 @@ const ProjectBoard = ({
               </tbody>
             </table>
           </div>
+        </div>
+
+        {/* Mobile Card List */}
+        <div className="lg:hidden grid grid-cols-1 md:grid-cols-2 gap-4">
+          {currentProjects.map((project, index) => {
+            const client = clients.find((c) => c.id == project.clientId || c.client_id == project.clientId);
+            return (
+              <div
+                key={project.id ? `project-mobile-${project.id}` : `project-mobile-idx-${index}`}
+                onClick={() => onSelectProject && onSelectProject(project)}
+                className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md active:scale-[0.98] cursor-pointer transition-all"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 border border-indigo-100 shadow-sm shrink-0">
+                      <Briefcase size={20} strokeWidth={2} />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="font-bold text-sm text-[#18254D] truncate">{project.projectName}</div>
+                      <div className="text-xs text-slate-400 truncate">{client ? client.name : "Internal Project"}</div>
+                    </div>
+                  </div>
+                  <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black tracking-widest uppercase border flex items-center gap-1.5 shadow-sm shrink-0 ml-2 ${project.status === "Completed" ? "bg-emerald-50 text-emerald-600 border-emerald-100" : project.status === "In Progress" ? "bg-amber-50 text-amber-600 border-amber-100" : "bg-slate-50 text-slate-600 border-slate-100"}`}>
+                    {project.status}
+                  </span>
+                </div>
+                <div className="mb-4 rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-[12px] font-medium text-slate-500">
+                  Created By: <span className="font-semibold text-slate-700">{project.createdByName || "System"}</span>
+                </div>
+                <div className="space-y-3 mb-4">
+                  <div className="grid grid-cols-2 gap-2">
+                     <div className="text-[11px]">
+                       <span className="text-slate-400 block mb-1">Onboard Date</span>
+                       <span className="font-semibold text-[#18254D]">{project.onboardingDate ? new Date(project.onboardingDate).toLocaleDateString() : "—"}</span>
+                     </div>
+                     <div className="text-[11px]">
+                       <span className="text-slate-400 block mb-1">Deadline</span>
+                       <span className="font-semibold text-[#18254D]">{project.deadline ? new Date(project.deadline).toLocaleDateString() : "—"}</span>
+                     </div>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between pt-3 border-t border-slate-100">
+                  <button onClick={(e) => { e.stopPropagation(); onSelectProject && onSelectProject(project); }} className="flex items-center gap-1 text-[12px] font-bold text-indigo-600 uppercase tracking-widest hover:text-indigo-700 transition-colors min-w-0">
+                    <span className="truncate">View Details</span> <ChevronRight size={14} className="shrink-0" />
+                  </button>
+                  <div className="flex items-center gap-2 shrink-0 ml-2" onClick={(e) => e.stopPropagation()}>
+                    <button onClick={(e) => { e.stopPropagation(); handleEditProject(project); }} className="p-2 bg-blue-50 text-blue-600 border border-blue-100 rounded-lg hover:bg-blue-100 transition-all active:scale-90"><Pencil size={16} /></button>
+                    <button onClick={(e) => { e.stopPropagation(); setProjectToDelete(project); }} className="p-2 bg-rose-50 text-rose-600 border border-rose-100 rounded-lg hover:bg-rose-100 transition-all active:scale-90"><Trash2 size={16} /></button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+          {filteredProjects.length === 0 && (
+            <div className="col-span-full text-center py-10 bg-white rounded-2xl border border-slate-200 shadow-sm">
+              <div className="text-slate-300 p-4 rounded-xl mb-4 flex items-center justify-center mx-auto"><Briefcase size={32} strokeWidth={1.5} /></div>
+              <p className="text-[13px] font-bold text-[#18254D] tracking-wider">No Projects Found</p>
+            </div>
+          )}
         </div>
 
         {totalPages > 1 && (

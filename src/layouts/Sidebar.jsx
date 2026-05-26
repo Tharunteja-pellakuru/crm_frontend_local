@@ -94,12 +94,6 @@ function Sidebar({
             </svg>
           </button>
         )} */}
-        <button
-          onClick={onCloseMobile}
-          className="min-[1201px]:hidden text-slate-500 hover:text-slate-800 p-2 hover:bg-slate-100 rounded-xl transition-all animate-scale-in"
-        >
-          <X size={24} strokeWidth={2.5} />
-        </button>
       </div>
 
 

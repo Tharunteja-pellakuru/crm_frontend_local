@@ -1,22 +1,33 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import Sidebar from "./Sidebar";
 import Footer from "./Footer";
-import Logo from "../components/ui/Logo";
 import parivartanLogo from "../assets/Parivartan_Logo.png";
+import favIcon from "../assets/Parivartan-Leaf.png";
+import "remixicon/fonts/remixicon.css";
 
 const Layout = ({
   onLogout, enquiries, followUps, clients
 }) => {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isPageTransitioning, setIsPageTransitioning] = useState(false);
+  const [isMobileView, setIsMobileView] = useState(false); // ✅ Add mobile view state
   const location = useLocation();
   const navigate = useNavigate();
   const prevPathRef = useRef(location.pathname);
 
+  // ✅ Detect mobile/tablet view synchronously
+  useLayoutEffect(() => {
+    const handleResize = () => {
+      setIsMobileView(window.innerWidth < 1201); // Match your breakpoint
+    };
+    handleResize(); // Check immediately
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   // Handle active tab from current URL
-  // Default to dashboard, or handle nested routes like /followups/clients
   const pathParts = location.pathname.split("/").filter(Boolean);
   const activeTab = pathParts.length > 0 ? pathParts[0] : "dashboard";
 
@@ -60,20 +71,73 @@ const Layout = ({
             followUps.filter((f) => f.status === "pending" && !!f.leadId && !f.projectId).length
           }
           onCloseMobile={() => setIsMobileSidebarOpen(false)}
+          isMobile={isMobileView} // ✅ Pass mobile state to Sidebar
+          isCollapsed={false}
         />
       </div>
 
       {/* Main Container */}
       <div className={`flex-1 min-w-0 flex flex-col min-[1201px]:ml-[240px] transition-all duration-300 ease-smooth ${isPageTransitioning ? "opacity-0 translate-y-4" : "opacity-100 translate-y-0"}`}>
-        <header className="min-[1201px]:hidden flex items-center justify-between bg-white text-slate-800 p-5 fixed top-0 left-0 right-0 z-[100] shadow-md h-24 animate-fade-in-down border-b border-slate-200">
-          <img src={parivartanLogo} alt="Parivartan" style={{ width: 180 }} className="h-auto object-contain" />
-          <button
-            onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
-            className="p-2.5 bg-slate-100 rounded-xl hover:bg-slate-200 transition-all active:scale-95 text-slate-600"
-          >
-            {isMobileSidebarOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
-        </header>
+        
+        {/* ✅ Header with Conditional Logo */}
+<header
+  className="
+    min-[1201px]:hidden
+    fixed top-0 left-0 right-0 z-[100]
+    h-[72px]
+    px-4
+    flex items-center justify-between
+    bg-white/90
+    backdrop-blur-xl
+    border-b border-slate-200/80
+    shadow-sm
+    animate-fade-in-down
+  "
+>
+  {/* Left Section */}
+  <div className="flex items-center gap-3">
+    {/* Logo */}
+    <a
+      href="/"
+      className="flex items-center justify-center transition-transform duration-300 active:scale-95"
+    >
+      <img
+        src={favIcon}
+        alt="Parivartan"
+        className="
+          w-11 h-11
+          object-contain
+          drop-shadow-sm
+        "
+      />
+    </a>
+  </div>
+
+  {/* Right Section */}
+  <button
+    onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+    className="
+      relative
+      w-11 h-11
+      flex items-center justify-center
+      rounded-2xl
+      bg-slate-100
+      hover:bg-slate-200
+      active:scale-95
+      transition-all duration-300
+      shadow-sm
+      border border-slate-200
+    "
+  >
+<div className="flex items-center justify-center text-slate-800">
+  {isMobileSidebarOpen ? (
+    <X size={22} strokeWidth={2.2} />
+  ) : (
+    <i className="ri-menu-5-line text-[24px] text-slate-800"></i>
+  )}
+</div>
+  </button>
+</header>
 
         {/* Scalable Content Injection */}
         <main className="flex-1 p-3 min-[1201px]:px-8 min-[1201px]:py-6 min-w-0 overflow-x-hidden mt-24 min-[1201px]:mt-2 flex flex-col">
