@@ -164,9 +164,9 @@ const ActionBtn = ({ onClick, variant = "edit", title, children }) => {
 // ─── Modal Shell ───────────────────────────────────────────────────────────────
 const ModalShell = ({ title, subtitle, icon: Icon, onClose, children, footer }) =>
   createPortal(
-    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[99999] flex items-end sm:items-center justify-center sm:p-4">
+    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[99999] flex items-center justify-center p-4">
       <div className="absolute inset-0" onClick={onClose} />
-      <div className="relative z-10 bg-white w-full sm:max-w-xl rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-100 flex flex-col max-h-[92dvh] sm:max-h-[90vh] animate-pop overflow-hidden">
+      <div className="relative z-10 bg-white w-full max-w-xl rounded-3xl shadow-2xl border border-slate-100 flex flex-col max-h-[90vh] animate-pop overflow-hidden">
         {/* Header */}
         <div className="px-5 py-4 sm:px-6 sm:py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 shrink-0 rounded-t-3xl">
           <div className="flex items-center gap-3">
@@ -448,98 +448,239 @@ const Settings = ({ aiModels = [], onAddAiModel, onUpdateAiModel, onDeleteAiMode
 
           {/* ━━━ PROFILE ━━━ */}
           {activeTab === "profile" && (
-            <div className="p-4 sm:p-6 lg:p-8 space-y-5 sm:space-y-6">
-              <SectionHeading label="Profile Information" />
+            <div className="space-y-0">
+              {/* Cover Banner */}
+              <div className="relative w-full">
+                <div className="h-28 sm:h-40 w-full bg-gradient-to-r from-[#18254D] via-[#24376b] to-[#1a2952] rounded-t-2xl relative overflow-hidden shadow-inner">
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(99,102,241,0.25),transparent_70%)]" />
+                  <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:14px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
+                  
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (isProfileEditing) {
+                        setProfile(JSON.parse(localStorage.getItem("user")));
+                        setSelectedImageFile(null);
+                      }
+                      setIsProfileEditing(!isProfileEditing);
+                    }}
+                    className={`absolute top-4 right-4 z-20 px-3 py-1.5 flex items-center gap-1.5 rounded-xl text-[10px] sm:text-xs font-bold tracking-wider transition-all shadow-md active:scale-95 border backdrop-blur-sm
+                      ${isProfileEditing
+                        ? "bg-rose-50/90 border-rose-200 text-rose-600 hover:bg-rose-100"
+                        : "bg-white/90 hover:bg-white border-white/20 text-[#18254D]"
+                      }`}
+                  >
+                    {isProfileEditing ? <X size={12} /> : <Pencil size={12} />}
+                    <span>{isProfileEditing ? "CANCEL" : "EDIT PROFILE"}</span>
+                  </button>
+                </div>
 
-              {/* Avatar + info */}
-              <div className="flex flex-col xs:flex-row sm:flex-row items-center xs:items-start gap-4 sm:gap-6">
-                {/* Avatar */}
-                <label htmlFor="pfp-upload" className={`shrink-0 block ${isProfileEditing ? "cursor-pointer" : "cursor-default"}`}>
-                  <div className="relative w-20 h-20 sm:w-24 sm:h-24">
-                    {profile?.image
-                      ? <img src={getImageUrl(profile.image)} alt="Profile"
-                          className="w-full h-full rounded-2xl object-cover border-2 border-slate-200 shadow-sm"
-                          onError={e => { e.target.style.display = "none"; e.target.nextSibling.style.display = "flex"; }} />
-                      : null}
-                    <div className={`w-full h-full rounded-2xl bg-[#EFF6FF] items-center justify-center border-2 border-[#DBEAFE] shadow-sm ${profile?.image ? "hidden" : "flex"}`}>
-                      <span className="text-2xl sm:text-3xl font-black text-[#3B82F6]">
-                        {profile?.full_name?.charAt(0).toUpperCase() || "U"}
+                {/* Avatar overlap */}
+                <div className="flex flex-col items-center -mt-14 sm:-mt-20 relative z-10 px-4 pb-6 border-b border-slate-100">
+                  <label htmlFor="pfp-upload" className={`group relative shrink-0 block ${isProfileEditing ? "cursor-pointer" : "cursor-default"}`}>
+                    <div className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-3xl bg-white p-1 shadow-xl border border-slate-100">
+                      {profile?.image ? (
+                        <img
+                          src={getImageUrl(profile.image)}
+                          alt="Profile"
+                          className="w-full h-full rounded-2xl object-cover"
+                          onError={e => {
+                            e.target.style.display = "none";
+                            e.target.nextSibling.style.display = "flex";
+                          }}
+                        />
+                      ) : null}
+                      <div
+                        className={`w-full h-full rounded-2xl bg-[#EFF6FF] items-center justify-center border border-[#DBEAFE] shadow-inner ${
+                          profile?.image ? "hidden" : "flex"
+                        }`}
+                      >
+                        <span className="text-3xl sm:text-4xl font-black text-[#3B82F6]">
+                          {profile?.full_name?.charAt(0).toUpperCase() || "U"}
+                        </span>
+                      </div>
+                      
+                      {isProfileEditing && (
+                        <div className="absolute inset-1 bg-black/45 rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
+                          <Camera className="text-white" size={24} />
+                        </div>
+                      )}
+                      <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 border-4 border-white rounded-full shadow-md animate-pulse" />
+                    </div>
+                  </label>
+                  <input
+                    type="file"
+                    id="pfp-upload"
+                    accept="image/*"
+                    className="hidden"
+                    disabled={!isProfileEditing}
+                    onChange={e => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        setSelectedImageFile(file);
+                        const r = new FileReader();
+                        r.onloadend = () => setProfile(p => ({ ...p, image: r.result }));
+                        r.readAsDataURL(file);
+                      }
+                    }}
+                  />
+
+                  {/* Info */}
+                  <div className="mt-3 text-center">
+                    <h3 className="text-lg sm:text-xl font-bold text-[#18254D] flex items-center justify-center gap-2">
+                      {profile?.full_name}
+                      {isProfileEditing && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-600 border border-blue-100 rounded-full text-[9px] font-extrabold uppercase tracking-wider animate-pulse">
+                          Editing
+                        </span>
+                      )}
+                    </h3>
+                    
+                    <div className="flex flex-wrap items-center justify-center gap-2 mt-1.5">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-[#EFF6FF] text-[#2563EB] border border-[#DBEAFE] rounded-full text-[10px] font-extrabold uppercase tracking-wider">
+                        {profile?.role || "User"}
+                      </span>
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-slate-50 text-slate-500 border border-slate-200 rounded-full text-[10px] font-bold">
+                        <Mail size={10} />
+                        {profile?.email}
                       </span>
                     </div>
-                    {isProfileEditing && (
-                      <div className="absolute inset-0 bg-black/40 rounded-2xl flex items-center justify-center opacity-0 hover:opacity-100 transition-all">
-                        <Camera className="text-white" size={20} />
-                      </div>
-                    )}
-                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-400 border-2 border-white rounded-full" />
                   </div>
-                </label>
-                <input type="file" id="pfp-upload" accept="image/*" className="hidden" disabled={!isProfileEditing}
-                  onChange={e => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                      setSelectedImageFile(file);
-                      const r = new FileReader();
-                      r.onloadend = () => setProfile(p => ({ ...p, image: r.result }));
-                      r.readAsDataURL(file);
-                    }
-                  }} />
+                </div>
+              </div>
 
-                {/* Info */}
-                <div className="flex-1 min-w-0 text-center xs:text-left sm:text-left w-full">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <p className="text-base sm:text-lg font-black text-[#18254D] tracking-tight truncate">{profile?.full_name}</p>
-                      <p className="text-xs sm:text-sm font-semibold text-slate-400 mt-0.5">{profile?.role}</p>
-                      <p className="text-[11px] sm:text-xs text-slate-400 mt-1 flex items-center gap-1 justify-center xs:justify-start">
-                        <Mail size={11} className="shrink-0" />
-                        <span className="truncate">{profile?.email}</span>
-                      </p>
+              {/* Responsive Content Grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 p-4 sm:p-6 lg:p-8">
+                {/* Form Fields - 2 columns on desktop */}
+                <div className="lg:col-span-2 space-y-5">
+                  <div className="bg-slate-50/50 p-4 sm:p-6 rounded-2xl border border-slate-100 space-y-4">
+                    <h4 className="text-xs font-bold text-[#18254D] uppercase tracking-wider mb-2">Personal details</h4>
+                    
+                    {/* Full Name */}
+                    <div className="space-y-1.5">
+                      <FieldLabel required={isProfileEditing}>Full Name</FieldLabel>
+                      <div className="relative rounded-xl shadow-sm">
+                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                          <User className={`h-4 w-4 transition-colors ${isProfileEditing ? "text-[#2563EB]" : "text-slate-400"}`} />
+                        </div>
+                        <input
+                          type="text"
+                          value={profile?.full_name || ""}
+                          onChange={e => setProfile({ ...profile, full_name: e.target.value })}
+                          disabled={!isProfileEditing}
+                          placeholder="Enter full name"
+                          className={`w-full pl-10 pr-4 py-2.5 border rounded-xl text-sm font-semibold outline-none transition-all
+                            ${isProfileEditing
+                              ? "bg-white border-slate-200 text-[#18254D] focus:border-[#2563EB]/40 focus:ring-4 focus:ring-[#2563EB]/5 shadow-sm"
+                              : "bg-slate-50 border-slate-200/60 text-slate-500 cursor-not-allowed"
+                            }`}
+                        />
+                      </div>
                     </div>
-                    <button onClick={() => setIsProfileEditing(!isProfileEditing)}
-                      className={`w-9 h-9 flex items-center justify-center rounded-[10px] border transition-all shrink-0
-                        ${isProfileEditing ? "bg-[#EFF6FF] border-[#DBEAFE] text-[#3B82F6]" : "bg-slate-50 border-slate-200 text-slate-400 hover:text-[#18254D]"}`}>
-                      <Pencil size={15} />
-                    </button>
+
+                    {/* Designation */}
+                    <div className="space-y-1.5">
+                      <FieldLabel>Designation</FieldLabel>
+                      <div className="relative rounded-xl shadow-sm">
+                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                          <Briefcase className="h-4 w-4 text-slate-400" />
+                        </div>
+                        <input
+                          type="text"
+                          value={profile?.role || ""}
+                          disabled
+                          className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200/60 rounded-xl text-sm font-semibold text-slate-500 cursor-not-allowed"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Email Address */}
+                    <div className="space-y-1.5">
+                      <FieldLabel>Email Address</FieldLabel>
+                      <div className="relative rounded-xl shadow-sm">
+                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                          <Mail className="h-4 w-4 text-slate-400" />
+                        </div>
+                        <input
+                          type="email"
+                          value={profile?.email || ""}
+                          readOnly
+                          className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200/60 rounded-xl text-sm font-semibold text-slate-500 cursor-not-allowed"
+                        />
+                      </div>
+                    </div>
                   </div>
+
                   {isProfileEditing && (
-                    <span className="inline-flex items-center gap-1.5 mt-2 px-2.5 py-1 bg-blue-50 text-blue-600 border border-blue-100 rounded-full text-[10px] font-bold">
-                      <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse" /> Editing Mode
-                    </span>
+                    <div className="flex flex-col xs:flex-row gap-3 pt-2">
+                      <SubmitButton
+                        className="w-full xs:w-auto px-6 py-3"
+                        loading={isSubmitting}
+                        loadingText="SAVING..."
+                        onClick={handleProfileSave}
+                      >
+                        <Save size={14} strokeWidth={2.5} />
+                        <span>SAVE CHANGES</span>
+                      </SubmitButton>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setProfile(JSON.parse(localStorage.getItem("user")));
+                          setSelectedImageFile(null);
+                          setIsProfileEditing(false);
+                        }}
+                        className="w-full xs:w-auto px-6 h-12 bg-slate-100 text-slate-600 rounded-xl text-xs font-bold tracking-wider hover:bg-slate-200 transition-all active:scale-[0.97] uppercase flex items-center justify-center gap-2 border border-slate-200"
+                      >
+                        <span>Cancel</span>
+                      </button>
+                    </div>
                   )}
                 </div>
-              </div>
 
-              {/* Fields */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl">
-                <div className="space-y-1.5">
-                  <FieldLabel>Full Name</FieldLabel>
-                  <input type="text" value={profile?.full_name || ""}
-                    onChange={e => setProfile({ ...profile, full_name: e.target.value })}
-                    disabled={!isProfileEditing}
-                    className={`w-full px-3.5 py-2 border rounded-lg text-[13px] font-medium outline-none transition-all
-                      ${isProfileEditing ? "bg-slate-50 border-slate-200 text-[#18254D] focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5"
-                        : "bg-slate-50 border-slate-100 text-slate-400 cursor-not-allowed"}`} />
-                </div>
-                <div className="space-y-1.5">
-                  <FieldLabel>Designation</FieldLabel>
-                  <input type="text" value={profile?.role || ""} disabled
-                    className="w-full px-3.5 py-2 bg-slate-50 border border-slate-100 rounded-lg text-[13px] font-medium text-slate-400 cursor-not-allowed" />
-                </div>
-                <div className="space-y-1.5 sm:col-span-2">
-                  <FieldLabel>Email Address</FieldLabel>
-                  <input type="email" value={profile?.email || ""} readOnly
-                    className="w-full px-3.5 py-2 bg-slate-50 border border-slate-100 rounded-lg text-[13px] font-medium text-slate-400 cursor-not-allowed" />
+                {/* Details & Status - 1 column on desktop */}
+                <div className="space-y-4">
+                  {/* Account Status Card */}
+                  <div className="bg-slate-50/50 p-4 sm:p-5 rounded-2xl border border-slate-100 space-y-4">
+                    <h4 className="text-xs font-bold text-[#18254D] uppercase tracking-wider">Account status</h4>
+                    
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center shrink-0">
+                        <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-extrabold text-[#18254D]">Active & Verified</p>
+                        <p className="text-[10px] text-slate-400 font-semibold uppercase">Status Indicator</p>
+                      </div>
+                    </div>
+
+                    <div className="p-3 bg-white rounded-xl border border-slate-100 space-y-2">
+                      <div className="flex justify-between text-[11px] font-semibold text-slate-400">
+                        <span>Account Level</span>
+                        <span className="text-[#18254D] font-bold">Administrator</span>
+                      </div>
+                      <div className="h-1 bg-slate-100 rounded-full overflow-hidden">
+                        <div className="h-full w-full bg-[#18254D] rounded-full" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Security Overview Card */}
+                  <div className="bg-slate-50/50 p-4 sm:p-5 rounded-2xl border border-slate-100 space-y-3.5">
+                    <h4 className="text-xs font-bold text-[#18254D] uppercase tracking-wider">Security info</h4>
+                    
+                    <div className="space-y-2.5">
+                      <div className="flex items-start gap-2.5 text-[11px] font-semibold text-slate-500">
+                        <Shield size={14} className="text-emerald-500 mt-0.5 shrink-0" />
+                        <span>All active sessions are encrypted using secure JWT web protocols.</span>
+                      </div>
+                      <div className="flex items-start gap-2.5 text-[11px] font-semibold text-slate-500">
+                        <Lock size={14} className="text-indigo-500 mt-0.5 shrink-0" />
+                        <span>Password requirements are active for new admin credentials.</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
-
-              {isProfileEditing && (
-                <div className="flex justify-start">
-                  <SubmitButton className="w-full sm:w-auto px-6" loading={isSubmitting} loadingText="SAVING..." onClick={handleProfileSave}>
-                    <Save size={14} strokeWidth={2.5} /><span>SAVE CHANGES</span>
-                  </SubmitButton>
-                </div>
-              )}
             </div>
           )}
 
@@ -1011,9 +1152,9 @@ const Settings = ({ aiModels = [], onAddAiModel, onUpdateAiModel, onDeleteAiMode
 
       {/* ── Delete Admin Confirm ── */}
       {adminToDelete && createPortal(
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[99999] flex items-end sm:items-center justify-center sm:p-4">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[99999] flex items-center justify-center p-4">
           <div className="absolute inset-0" onClick={() => setAdminToDelete(null)} />
-          <div className="relative z-10 bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-100 overflow-hidden animate-pop">
+          <div className="relative z-10 bg-white w-full max-w-md rounded-3xl shadow-2xl border border-slate-100 overflow-hidden animate-pop">
             <div className="px-5 py-4 sm:px-6 sm:py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 bg-[#FFF1F2] text-[#F43F5E] rounded-xl flex items-center justify-center border border-[#FFE4E6] shadow-sm shrink-0">
@@ -1041,9 +1182,9 @@ const Settings = ({ aiModels = [], onAddAiModel, onUpdateAiModel, onDeleteAiMode
 
       {/* ── Follow-up Export Type ── */}
       {showFollowupModal && createPortal(
-        <div className="fixed inset-0 z-[99999] flex items-end sm:items-center justify-center sm:p-4">
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" onClick={() => setShowFollowupModal(false)} />
-          <div className="relative z-10 bg-white w-full sm:max-w-sm rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-100 overflow-hidden animate-pop">
+          <div className="relative z-10 bg-white w-full max-w-sm rounded-3xl shadow-2xl border border-slate-100 overflow-hidden animate-pop">
             <div className="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 bg-[#EFF6FF] text-[#3B82F6] rounded-xl flex items-center justify-center border border-[#DBEAFE] shadow-sm shrink-0"><Download size={15} /></div>
