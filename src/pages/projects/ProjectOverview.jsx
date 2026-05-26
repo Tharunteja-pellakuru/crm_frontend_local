@@ -304,37 +304,86 @@ const ProjectOverview = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-3 mb-1">
-            <button onClick={onBack} className="p-1.5 hover:bg-white rounded-full text-slate-400 hover:text-slate-700 transition-colors shadow-sm bg-white">
-              <ArrowLeft size={18} />
+            <button onClick={onBack} className="p-2.5 hover:bg-white rounded-xl text-slate-400 hover:text-slate-700 transition-colors shadow-sm bg-white">
+              <ArrowLeft size={20} />
             </button>
-            <h2 className="text-xl md:text-2xl font-bold text-slate-800 tracking-tight">
-              {isEditing ? "Edit Project Details" : formData.name}
+            <h2 className="text-xl md:text-2xl ml-2 font-bold text-slate-800 tracking-tight">
+              {isEditing ? "Edit Project Details" : "Project Overview"}
             </h2>
           </div>
-          <p className="text-sm text-slate-500 ml-9">Get a complete overview of the project progress and timeline.</p>
+          <p className="text-sm text-slate-500 ml-14">Get a complete overview of the project progress and timeline.</p>
         </div>
+      </div>
 
-        <div className="flex items-center gap-3">
-          {isEditing ? (
-            <>
-              <button onClick={() => setIsEditing(false)} className="px-4 py-2 bg-white text-slate-600 border border-slate-200 rounded-xl text-sm font-semibold hover:bg-slate-50 transition-colors shadow-sm">
-                Cancel
-              </button>
-              <button onClick={handleSave} disabled={isSubmitting} className="px-5 py-2 bg-[#1B2B5B] text-white rounded-xl text-sm font-semibold flex items-center gap-2 shadow-md hover:bg-[#111A3A] transition-colors disabled:opacity-70">
-                {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-                Save Changes
-              </button>
-            </>
-          ) : (
-            <button onClick={() => setIsEditing(true)} className="px-5 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-full text-sm font-semibold hover:border-blue-300 hover:bg-blue-50 hover:text-blue-600 transition-all shadow-sm flex items-center gap-2 group">
-              <Edit2 size={16} className="text-blue-500 group-hover:rotate-12 transition-transform" /> 
-            </button>
-          )}
+      {/* Project Name Section */}
+      <div className="bg-gradient-to-r from-[#18254D] to-[#243B7A] rounded-2xl p-6 md:p-7 shadow-xl border border-[#243B7A]/30">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
+
+          <div className="flex items-start gap-4">
+            <div className="w-14 h-14 rounded-2xl bg-white/10 border border-white/10 backdrop-blur-sm flex items-center justify-center text-white shadow-lg">
+              <Briefcase size={26} />
+            </div>
+
+            <div className="space-y-2">
+
+              {isEditing ? (
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      name: e.target.value,
+                    })
+                  }
+                  placeholder="Enter Project Name"
+                  className="w-full md:w-[450px] px-5 py-3 bg-white/10 border border-white/10 rounded-2xl text-white placeholder:text-blue-100/50 text-2xl md:text-3xl font-bold outline-none focus:border-white/30 backdrop-blur-sm"
+                />
+              ) : (
+                <h1 className="w-full md:w-[450px] px-5 py-3 border-white/10 rounded-2xl text-white placeholder:text-blue-100/50 text-2xl md:text-3xl font-bold outline-none focus:border-white/30 backdrop-blur-sm">
+                  {formData.name}
+                </h1>
+              )}
+
+              {/* <div className="flex flex-wrap items-center gap-2 pt-1">
+                <span className="px-3 py-1 rounded-full bg-white/10 border border-white/10 text-blue-50 text-[11px] font-bold uppercase tracking-wider">
+                  {formData.status}
+                </span>
+
+                <span className="px-3 py-1 rounded-full bg-white/10 border border-white/10 text-blue-50 text-[11px] font-bold uppercase tracking-wider">
+                  {formData.priority} Priority
+                </span>
+
+                <span className="px-3 py-1 rounded-full bg-white/10 border border-white/10 text-blue-50 text-[11px] font-bold uppercase tracking-wider">
+                  {CATEGORY_MAP[formData.category] || formData.category}
+                </span>
+              </div> */}
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+                {isEditing ? (
+                  <>
+                    <button onClick={() => setIsEditing(false)} className="px-4 py-2 bg-white text-slate-600 border border-slate-200 rounded-xl text-sm font-semibold hover:bg-slate-50 transition-colors shadow-sm">
+                      Cancel  
+                    </button>
+                    <button onClick={handleSave} disabled={isSubmitting} className="px-5 py-2 bg-[#1B2B5B] text-white rounded-xl text-sm font-semibold flex items-center gap-2 shadow-md hover:bg-[#111A3A] transition-colors disabled:opacity-70">
+                      {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                      Save Changes
+                    </button>
+                  </>
+                ) : (
+                  <button onClick={() => setIsEditing(true)} className="px-3 py-3 bg-white border border-slate-200 text-slate-700 rounded-xl text-sm font-semibold hover:border-blue-300 hover:bg-blue-50 hover:text-blue-600 transition-all shadow-sm flex items-center gap-2 group">
+                    <Edit2 size={16} className="text-blue-500 group-hover:rotate-12 transition-transform" /> 
+                  </button>
+                )}
+              </div>
         </div>
       </div>
 
       {/* KPI Top Row */}
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+        
         
         {/* Budget */}
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100/50 flex flex-col justify-between">
@@ -440,20 +489,9 @@ const ProjectOverview = ({
             <h3 className="text-lg font-bold text-slate-800 mb-4">Project Details</h3>
             
             <div className="space-y-5">
-              {isEditing && (
-                 <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-500">Project Name <span className="text-red-500">*</span></label>
-                    <input
-                      type="text"
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-800 focus:outline-none focus:border-blue-400 shadow-sm"
-                    />
-                 </div>
-              )}
               
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-500">Description {isEditing && <span className="text-red-500">*</span>}</label>
+                <label className="text-xs font-semibold texat-slate-500">Description {isEditing && <span className="text-red-500">*</span>}</label>
                 {isEditing ? (
                   <textarea
                     value={formData.description}

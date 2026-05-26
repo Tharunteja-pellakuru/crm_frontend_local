@@ -848,24 +848,24 @@ const ClientList = ({
         </div>
 
         {/* Main List */}
-        <div className="hidden lg:block bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden w-full">
+        <div className="hidden lg:block bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden w-full">
           <div className="w-full">
-            <table className="w-full border-collapse border-separate border-spacing-y-2">
+            <table className="w-full border-collapse">
               <thead className="bg-slate-50/50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100 first:border-l first:rounded-l-xl">
+                  <th className="px-6 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100 first:border-l first:rounded-l-xl">
                     Client Name
                   </th>
-                  <th className="px-6 py-3 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">
+                  <th className="px-6 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">
                     Contact Details
                   </th>
-                  <th className="px-6 py-3 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">
+                  <th className="px-6 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">
                     Client Category
                   </th>
-                  <th className="px-6 py-3 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">
+                  <th className="px-6 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">
                     Created By
                   </th>
-                  <th className="px-6 py-3 text-right text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100 last:border-r last:rounded-r-xl">
+                  <th className="px-6 py-5 text-right text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100 last:border-r last:rounded-r-xl">
                     Actions
                   </th>
                 </tr>

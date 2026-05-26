@@ -250,7 +250,7 @@ const ProjectCard = ({
           <div className="font-bold text-[13px] text-[#18254D] tracking-tight leading-none mb-1 group-hover:text-secondary transition-colors truncate">
             {project.name}
           </div>
-          <div className="text-[12px] font-medium text-slate-400 truncate max-w-[280px]">
+          <div className="text-[12px] font-medium text-slate-400 truncate max-w-[140px] sm:max-w-[220px] xl:max-w-[320px]">
             {project.description || "No description provided"}
           </div>
         </div>
@@ -309,13 +309,13 @@ const ProjectCard = ({
       </td>
 
       <td className="px-6 py-5 border-y border-slate-100 last:border-r last:rounded-r-xl text-right">
-        <div className="flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+        <div className="flex justify-end gap-2 flex-nowrap" onClick={(e) => e.stopPropagation()}>
           <button
             onClick={(e) => {
               e.stopPropagation();
               onEdit && onEdit(project);
             }}
-            className="w-[34px] h-[34px] flex items-center justify-center bg-blue-50 text-blue-600 border border-blue-100 rounded-[10px] hover:bg-blue-100 transition-all active:scale-90 shadow-sm relative group/btn"
+            className="w-9 h-9 sm:w-[34px] sm:h-[34px] flex items-center justify-center bg-blue-50 text-blue-600 border border-blue-100 rounded-[10px] hover:bg-blue-100 transition-all active:scale-90 shadow-sm relative group/btn"
             title="Edit Project"
           >
             <Pencil size={16} />
@@ -456,10 +456,11 @@ const ProjectBoard = ({
         // Mobile styles: Centering handled by the Flexbox wrapper in JSX
         const popupWidth = Math.min(windowWidth - 32, 400);
         style.width = `${popupWidth}px`;
-        style.maxHeight = "calc(100dvh - 32px)";
+        style.maxHeight = "calc(100dvh - 24px)";
+        style.minWidth = "min(92vw, 400px)";
         style.borderRadius = "24px";
       } else {
-        const popupWidth = 384; 
+        const popupWidth = Math.min(384, windowWidth - 32); 
         let left = rect.right - popupWidth;
         if (left < 16) left = 16;
         if (left + popupWidth > windowWidth - 16) left = windowWidth - popupWidth - 16;
@@ -642,12 +643,12 @@ const ProjectBoard = ({
   };
 
   return (
-    <div className="w-full h-full relative">
-      <div className="space-y-5 animate-fade-in">
+    <div className="w-full min-h-screen relative overflow-x-hidden">  
+      <div className="space-y-4 sm:space-y-5 lg:space-y-6 animate-fade-in px-0">
         {/* Header */}
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+        <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4">
           <div className="max-w-2xl">
-            <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-primary tracking-tight mb-2">
+            <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-primary tracking-tight mb-2">
               Projects
             </h2>
             <p className="text-sm text-textMuted font-medium leading-relaxed">
@@ -670,8 +671,8 @@ const ProjectBoard = ({
         </div>
 
         {/* Stat Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          <div className="bg-white p-3 sm:p-5 rounded-2xl shadow-sm border border-slate-200 hover:-translate-y-1 hover:shadow-md transition-all duration-300">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
+          <div className="bg-white p-4 sm:p-5 lg:p-6 rounded-2xl shadow-sm border border-slate-200 hover:-translate-y-1 hover:shadow-md transition-all duration-300">
             <div className="flex items-center gap-2 sm:gap-4">
               <div className="p-2 sm:p-3 rounded-full bg-blue-50 text-blue-500 shrink-0">
                 <Briefcase className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -735,9 +736,9 @@ const ProjectBoard = ({
 
         {/* Control Bar */}
         <div className="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm relative z-[60]">
-          <div className="flex flex-col md:flex-row md:justify-between gap-4 w-full items-center">
+          <div className="flex flex-col lg:flex-row lg:justify-between gap-4 w-full items-center">
             {/* 1. Search Bar */}
-            <div className="relative w-full md:w-64 flex-none transition-all duration-300">
+            <div className="relative w-full lg:w-[320px] flex-none transition-all duration-300">
               <Search
                 size={16}
                 className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
@@ -752,7 +753,7 @@ const ProjectBoard = ({
             </div>
 
             {/* 2. Filters Button */}
-            <div className="relative w-full md:w-auto flex-none" ref={filterButtonRef}>
+            <div className="relative w-full sm:w-auto flex-none" ref={filterButtonRef}>
               <button
                 onClick={() => setIsFilterPopupOpen(!isFilterPopupOpen)}
                 className={`w-full md:w-auto h-[38px] flex items-center justify-center gap-2.5 px-6 py-2 rounded-xl text-[12px] font-bold tracking-widest transition-all shadow-sm active:scale-95 group border ${
@@ -876,7 +877,7 @@ const ProjectBoard = ({
         </div>
 
         {/* Stage Tabs */}
-        <div className="flex flex-wrap justify-center sm:justify-start gap-2 sm:gap-3 w-full px-1 sm:px-0">
+        <div className="flex overflow-x-auto scrollbar-hide sm:flex-wrap sm:overflow-visible justify-start gap-2 pb-1 sm:gap-3 w-full px-1 sm:px-0">
           {["All", "In Progress", "Hold", "Completed"].map((status) => {
             const isActive = activeStage === status;
             const activeStyles =
@@ -906,30 +907,30 @@ const ProjectBoard = ({
         </div>
 
         {/* Main List */}
-        <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden w-full">
-          <div className="w-full">
-            <table className="w-full border-collapse border-separate border-spacing-y-2">
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden w-full">
+          <div className="w-full overflow-x-auto custom-scrollbar rounded-2xl">
+            <table className="min-w-[1100px] w-full border-collapse">
               <thead className="bg-slate-50/50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100 first:border-l first:rounded-l-xl">
+                  <th className="px-6 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100 first:border-l first:rounded-l-xl">
                     Project Name
                   </th>
-                  <th className="px-6 py-3 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">
+                  <th className="px-6 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">
                     Client
                   </th>
-                  <th className="px-6 py-3 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">
+                  <th className="px-6 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">
                     Priority
                   </th>
-                  <th className="px-6 py-3 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">
+                  <th className="px-6 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">
                     Onboard Date
                   </th>
-                  <th className="px-6 py-3 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">
+                  <th className="px-6 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">
                     Deadline
                   </th>
-                  <th className="px-6 py-3 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">
+                  <th className="px-6 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">
                     Created By
                   </th>
-                  <th className="px-6 py-3 text-right text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100 last:border-r last:rounded-r-xl">
+                  <th className="px-6 py-5 text-right text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100 last:border-r last:rounded-r-xl">
                     Actions
                   </th>
                 </tr>
@@ -994,8 +995,8 @@ const ProjectBoard = ({
         createPortal(
           <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[99999] flex items-center justify-center p-4 sm:p-6 overflow-y-auto no-scrollbar">
             <div className="absolute inset-0" onClick={() => setShowAddModal(false)} />
-            <div className="relative z-10 bg-white w-full max-w-xl rounded-3xl shadow-2xl border border-slate-100 overflow-hidden animate-pop flex flex-col max-h-[90vh]">
-              <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 shrink-0">
+            <div className="relative z-10 bg-white w-full max-w-[95vw] sm:max-w-xl rounded-3xl shadow-2xl border border-slate-100 overflow-hidden animate-pop flex flex-col h-[100dvh] sm:h-auto sm:max-h-[90vh]">
+              <div className="p-4 sm:p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 shrink-0">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 bg-[#EFF6FF] text-[#3B82F6] rounded-xl flex items-center justify-center border border-[#DBEAFE] shadow-sm">
                     <Briefcase size={16} />
@@ -1142,12 +1143,12 @@ const ProjectBoard = ({
 
               {/* AUTO-FILLED CLIENT INFO (read-only) */}
               {selectedClientId && (
-                <div className="grid grid-cols-2 gap-4 bg-slate-50/50 p-4 rounded-2xl border border-slate-100">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50/50 p-4 rounded-2xl border border-slate-100">
                   <div className="space-y-1.5 col-span-2">
                     <label className="text-[10px] font-bold text-slate-400 tracking-wider uppercase ml-1">
                       ORGANISATION NAME
                     </label>
-                    <p className="px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-[13px] font-semibold text-[#18254D] shadow-sm truncate">
+                    <p className="px-4 min-h-[44px] py-2.5 bg-white border border-slate-200 rounded-xl text-[13px] font-semibold text-[#18254D] shadow-sm truncate">
                       {formData.organisationName || "—"}
                     </p>
                   </div>
@@ -1264,7 +1265,7 @@ const ProjectBoard = ({
                             setIsCategoryDropdownOpen(false);
                           }}
                         />
-                        <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top">
+                        <div className="absolute top-full left-0 right-0 max-h-[260px] overflow-y-auto mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top">
                           <div className="bg-[#18254D] px-4 py-2.5 border-b border-white/10">
                             <p className="text-[10px] font-bold text-white/50 tracking-wider uppercase">
                               Select Category
@@ -1510,7 +1511,7 @@ const ProjectBoard = ({
                         <Upload size={16} className="text-indigo-500" />
                       </div>
                       <span
-                        className={`text-sm font-semibold truncate ${formData.scopeDocument ? "text-[#18254D]" : "text-slate-400"}`}
+                        className={`text-sm font-semibold truncate max-w-[180px] sm:max-w-full ${formData.scopeDocument ? "text-[#18254D]" : "text-slate-400"}`}
                       >
                         {formData.scopeDocument instanceof File
                           ? formData.scopeDocument.name
@@ -1557,7 +1558,7 @@ const ProjectBoard = ({
         createPortal(
           <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[99999] flex items-center justify-center p-4 overflow-y-auto">
             <div className="absolute inset-0" onClick={() => setProjectToDelete(null)} />
-            <div className="relative z-10 bg-white w-full max-w-md rounded-3xl shadow-2xl border border-slate-100 overflow-hidden animate-pop flex flex-col">
+            <div className="relative z-10 bg-white w-full max-w-[95vw] sm:max-w-md rounded-3xl shadow-2xl border border-slate-100 overflow-hidden animate-pop flex flex-col">
               <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 shrink-0">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 bg-[#FFF1F2] text-[#F43F5E] rounded-xl flex items-center justify-center border border-[#FFE4E6] shadow-sm">
@@ -1598,7 +1599,7 @@ const ProjectBoard = ({
                       onDeleteProject && onDeleteProject(projectToDelete.project_id || projectToDelete.id);
                       setProjectToDelete(null);
                     }}
-                    className="flex-1 h-12 bg-[#F43F5E] text-white rounded-xl text-xs font-bold tracking-wider shadow-md hover:bg-[#E11D48] transition-all active:scale-[0.98] flex items-center justify-center gap-2 btn-animated uppercase"
+                    className="flex-1 h-12 bg-[#F43F5E] text-white rounded-xl text-xs font-bold tracking-wider shadow-md hover:bg-[#E11D48] transition-all active:scale-[0.98] flex items-center justify-center gap-1 sm:gap-2 flex-wrap btn-animated uppercase"
                   >
                     <span>Delete Project</span>
                     <Trash2 size={14} />

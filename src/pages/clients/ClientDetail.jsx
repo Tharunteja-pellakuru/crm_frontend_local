@@ -779,7 +779,7 @@ const handleEditFollowUpSubmit = async (e) => {
             <div className="flex items-center gap-4">
               <button
                 onClick={onBack}
-                className="p-2 hover:bg-slate-100 rounded-full text-slate-500 hover:text-slate-900 transition-colors shrink-0"
+                className="p-2 hover:bg-white hover:shadow-md bg-white rounded-full text-slate-500 hover:text-slate-900 transition-colors shrink-0"
               >
                 <ArrowLeft className="w-5 h-5" strokeWidth={2} />
               </button>
