@@ -59,9 +59,8 @@ const getClientId = (client) => {
 };
 
 const getOrganisationName = (client) => {
-  return client?.organisationName ||
+  return client?.organisation_name ||
          client?.organization ||
-         client?.company ||
          client?.org_name ||
          client?.business_name ||
          '';
@@ -599,43 +598,76 @@ const ClientDetail = ({
     }
   };
 
-  const handleEditFollowUpSubmit = async (e) => {
-    e.preventDefault();
-    if (!editFollowUpFormData.title || !editFollowUpFormData.description) {
-      toast.error("Please fill in title and description");
-      return;
-    }
-    let hour = parseInt(editFollowUpFormData.timeHour);
-    if (editFollowUpFormData.timePeriod === "PM" && hour < 12) hour += 12;
-    if (editFollowUpFormData.timePeriod === "AM" && hour === 12) hour = 0;
-    const time24 = `${hour.toString().padStart(2, "0")}:${editFollowUpFormData.timeMinute}`;
-    const combinedDateTime = `${editFollowUpFormData.followup_date} ${time24}:00`;
-    try {
-      const response = await fetch(
-        `${BASE_URL}/api/followups/${editingFollowUp.id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: JSON.stringify({
-            ...editFollowUpFormData,
-            followup_date: combinedDateTime,
-            dueDate: combinedDateTime,
-          }),
-        }
-      );
-      if (!response.ok) throw new Error("Failed to update");
-      toast.success("Follow-up updated successfully");
-      setShowEditFollowUpModal(false);
-      setEditingFollowUp(null);
-      fetchClientFollowups();
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to update follow-up");
-    }
+const handleEditFollowUpSubmit = async (e) => {
+  e.preventDefault();
+  if (!editFollowUpFormData.title || !editFollowUpFormData.description) {
+    toast.error("Please fill in title and description");
+    return;
+  }
+
+  const followUpId = editingFollowUp?.id || editingFollowUp?._id;
+  if (!followUpId) {
+    toast.error("Follow-up ID is missing. Please try again.");
+    console.error("editingFollowUp has no id:", editingFollowUp);
+    return;
+  }
+
+  let hour = parseInt(editFollowUpFormData.timeHour);
+  if (editFollowUpFormData.timePeriod === "PM" && hour < 12) hour += 12;
+  if (editFollowUpFormData.timePeriod === "AM" && hour === 12) hour = 0;
+  const time24 = `${hour.toString().padStart(2, "0")}:${editFollowUpFormData.timeMinute}`;
+  const combinedDateTime = `${editFollowUpFormData.followup_date} ${time24}:00`;
+
+  // ✅ Normalize mode to match backend enum exactly: "Whatsapp" not "WhatsApp"
+  const normalizeMode = (mode) => {
+    if (!mode) return "Call";
+    const map = {
+      "whatsapp": "Whatsapp",
+      "call": "Call",
+      "email": "Email",
+      "meeting": "Meeting",
+    };
+    return map[mode.toLowerCase()] || mode;
   };
+
+  try {
+    // ✅ Correct endpoint: /api/followups/:id (not /api/client-followups/:id)
+    const response = await fetch(
+      `${BASE_URL}/api/update-followup/${followUpId}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({
+          title: editFollowUpFormData.title,
+          description: editFollowUpFormData.description,
+          followup_date: combinedDateTime,
+          dueDate: combinedDateTime,
+          followup_mode: normalizeMode(editFollowUpFormData.followup_mode),
+          followup_status: editFollowUpFormData.followup_status,
+          priority: editFollowUpFormData.priority,
+          projectId: editFollowUpFormData.projectId || null,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Server error:", errorText);
+      throw new Error("Failed to update");
+    }
+
+    toast.success("Follow-up updated successfully");
+    setShowEditFollowUpModal(false);
+    setEditingFollowUp(null);
+    fetchClientFollowups();
+  } catch (error) {
+    console.error(error);
+    toast.error("Failed to update follow-up");
+  }
+};
 
   const handleLogInteraction = (e) => {
     e.preventDefault();
@@ -771,53 +803,84 @@ const ClientDetail = ({
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setShowEditModal(true)}
-                className="px-4 py-2 bg-white border border-slate-200 rounded-full text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-all flex items-center gap-2 shadow-sm"
-              >
-                <Pencil size={16} />
-              </button>
+<div className="flex items-center gap-2.5">
+  {/* Edit Button */}
+  <button
+    onClick={() => setShowEditModal(true)}
+    className="w-11 h-11 flex items-center justify-center bg-white border border-slate-200 rounded-2xl text-slate-500 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50/60 transition-all shadow-sm hover:shadow-md active:scale-95 group"
+    title="Edit"
+  >
+    <Pencil size={17} strokeWidth={1.8} className="group-hover:scale-110 transition-transform duration-200" />
+  </button>
 
-              {client.status !== "Dismissed" ? (
-                <button
-                  onClick={() => {
-                    if (isLead) { onDismissLead && onDismissLead(leadId); }
-                    else { onUpdateClient && onUpdateClient(clientId, { ...client, status: "Dismissed", clientStatus: "Dismissed" }); }
-                  }}
-                  className="px-4 py-2 bg-white border border-slate-200 rounded-full text-sm font-semibold text-red-600 hover:bg-red-50 hover:border-red-200 transition-all flex items-center gap-2 shadow-sm"
-                >
-                  <UserX size={16} />
-                </button>
-              ) : (
-                <button
-                  onClick={() => onRestoreLead && onRestoreLead(leadId)}
-                  className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-blue-600 hover:bg-blue-50 hover:border-blue-200 transition-all flex items-center gap-2 shadow-sm"
-                >
-                  <RotateCcw size={16} /> <span className="hidden sm:inline">Restore</span>
-                </button>
-              )}
-            </div>
+  {client.status !== "Dismissed" ? (
+    /* Dismiss Button */
+    <button
+      onClick={() => {
+        if (isLead) { onDismissLead && onDismissLead(leadId); }
+        else { onUpdateClient && onUpdateClient(clientId, { ...client, status: "Dismissed", clientStatus: "Dismissed",  organisationName:
+      client.organisationName ||
+      client.organization ||
+      client.organisation_name ||
+      client.client_organisation ||
+      client.org_name ||
+      client.business_name ||
+      client.company ||
+      "", }); }
+      }}
+      className="w-11 h-11 flex items-center justify-center bg-white border border-slate-200 rounded-2xl text-red-400 hover:text-red-600 hover:border-red-200 hover:bg-red-50/60 transition-all shadow-sm hover:shadow-md active:scale-95 group"
+      title="Dismiss"
+    >
+      <UserX size={17} strokeWidth={1.8} className="group-hover:scale-110 transition-transform duration-200" />
+    </button>
+  ) : (
+    /* Restore Button */
+    <button
+      onClick={() => onRestoreLead && onRestoreLead(leadId)}
+      className="w-11 h-11 flex items-center justify-center bg-white border border-slate-200 rounded-2xl text-blue-400 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50/60 transition-all shadow-sm hover:shadow-md active:scale-95 group"
+      title="Restore"
+    >
+      <RotateCcw size={17} strokeWidth={1.8} className="group-hover:scale-110 transition-transform duration-200" />
+    </button>
+  )}
+</div>
           </div>
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+            {/* Pill container */}
+            <div className="flex items-center gap-1 bg-slate-100/80 p-1 rounded-2xl border border-slate-200/60 shadow-inner">
+              {[
+                { id: "overview",  label: "Overview",       icon: <Target size={14}/>      },
+                { id: "activity",  label: "Conversations",  icon: <MessageSquare size={14}/> },
+                ...(!isLead ? [{ id: "projects", label: "Projects", icon: <Briefcase size={14}/> }] : []),
+              ].map((tab) => {
+                const isActive = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`
+                      relative flex items-center gap-2 px-4 py-2 rounded-xl text-[13px] font-bold
+                      whitespace-nowrap transition-all duration-200 outline-none
+                      ${isActive
+                        ? "bg-white text-[#18254D] shadow-sm border border-slate-200/80"
+                        : "text-slate-500 hover:text-slate-700 hover:bg-white/50"
+                      }
+                    `}
+                  >
+                    {/* Icon with color shift */}
+                    <span className={`transition-colors duration-200 ${isActive ? "text-[#18254D]" : "text-slate-400"}`}>
+                      {tab.icon}
+                    </span>
+                    {tab.label}
 
-          <div className="flex items-center gap-1 overflow-x-auto no-scrollbar pb-[-1px]">
-            {[
-              { id: "overview", label: "Overview", icon: <Target size={16}/> },
-              { id: "activity", label: "Conversations", icon: <MessageSquare size={16}/> },
-              ...(!isLead ? [{ id: "projects", label: "Projects", icon: <Briefcase size={16}/> }] : []),
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-5 py-3 border-b-2 text-sm font-semibold transition-all whitespace-nowrap ${
-                  activeTab === tab.id
-                    ? "border-slate-900 text-slate-900"
-                    : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
-                }`}
-              >
-                {tab.icon} {tab.label}
-              </button>
-            ))}
+                    {/* Active dot indicator */}
+                    {isActive && (
+                      <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-[#18254D] rounded-full border-2 border-slate-100 shadow-sm" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
 
@@ -1593,17 +1656,79 @@ const ClientDetail = ({
                 <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">Description <span className="text-rose-500">*</span></label>
                 <textarea required rows={3} value={followUpFormData.description} onChange={(e) => setFollowUpFormData({ ...followUpFormData, description: e.target.value })} className="w-full px-4 py-2.5 bg-white border border-slate-200/70 rounded-xl resize-none text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200 shadow-sm" placeholder="What will you discuss?" />
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">Due Date <span className="text-rose-500">*</span></label>
-                  <input required type="date" value={followUpFormData.followup_date} onChange={(e) => setFollowUpFormData({ ...followUpFormData, followup_date: e.target.value })} className="w-full px-4 py-2.5 bg-white border border-slate-200/70 rounded-xl text-sm font-semibold text-[#18254D] focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200 shadow-sm" />
-                </div>
-                <Dropdown label="Priority" options={[{ name: "High", value: "High" }, { name: "Medium", value: "Medium" }, { name: "Low", value: "Low" }]} value={followUpFormData.priority} onChange={(val) => setFollowUpFormData({ ...followUpFormData, priority: val })} />
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Dropdown label="Mode" options={[{ name: "Call", value: "Call" }, { name: "Email", value: "Email" }, { name: "Meeting", value: "Meeting" }, { name: "WhatsApp", value: "WhatsApp" }]} value={followUpFormData.followup_mode} onChange={(val) => setFollowUpFormData({ ...followUpFormData, followup_mode: val })} />
-                <Dropdown label="Status" options={[{ name: "Pending", value: "Pending" }, { name: "Completed", value: "Completed" }]} value={followUpFormData.followup_status} onChange={(val) => setFollowUpFormData({ ...followUpFormData, followup_status: val })} />
-              </div>
+              {/* Due Date + Time */}
+<div className="grid grid-cols-2 gap-4">
+  <div className="space-y-1.5">
+    <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
+      Due Date <span className="text-rose-500">*</span>
+    </label>
+    <input
+      required
+      type="date"
+      value={followUpFormData.followup_date}
+      onChange={(e) => setFollowUpFormData({ ...followUpFormData, followup_date: e.target.value })}
+      className="w-full h-[42px] px-4 bg-white border border-slate-200/70 rounded-xl text-sm font-semibold text-[#18254D] focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200 shadow-sm"
+    />
+  </div>
+  <div className="space-y-1.5">
+    <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
+      Time
+    </label>
+    <div className="grid grid-cols-3 gap-1.5">
+      <Dropdown
+        options={Array.from({ length: 12 }, (_, i) => i + 1).map((h) => ({
+          name: String(h).padStart(2, "0"),
+          value: String(h),
+        }))}
+        value={followUpFormData.timeHour}
+        onChange={(val) => setFollowUpFormData({ ...followUpFormData, timeHour: val })}
+        placeholder="Hr"
+      />
+      <Dropdown
+        options={Array.from({ length: 60 }, (_, i) => ({
+          name: String(i).padStart(2, "0"),
+          value: String(i).padStart(2, "0"),
+        }))}
+        value={followUpFormData.timeMinute}
+        onChange={(val) => setFollowUpFormData({ ...followUpFormData, timeMinute: val })}
+        placeholder="Min"
+      />
+      <Dropdown
+        options={[
+          { name: "AM", value: "AM" },
+          { name: "PM", value: "PM" },
+        ]}
+        value={followUpFormData.timePeriod}
+        onChange={(val) => setFollowUpFormData({ ...followUpFormData, timePeriod: val })}
+        placeholder="AM/PM"
+      />
+    </div>
+  </div>
+</div>
+
+{/* Priority + Mode */}
+<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+  <Dropdown
+    label="Priority"
+    options={[{ name: "High", value: "High" }, { name: "Medium", value: "Medium" }, { name: "Low", value: "Low" }]}
+    value={followUpFormData.priority}
+    onChange={(val) => setFollowUpFormData({ ...followUpFormData, priority: val })}
+  />
+  <Dropdown
+    label="Mode"
+    options={[{ name: "Call", value: "Call" }, { name: "Email", value: "Email" }, { name: "Meeting", value: "Meeting" }, { name: "WhatsApp", value: "Whatsapp" }]}
+    value={followUpFormData.followup_mode}
+    onChange={(val) => setFollowUpFormData({ ...followUpFormData, followup_mode: val })}
+  />
+</div>
+
+{/* Status */}
+<Dropdown
+  label="Status"
+  options={[{ name: "Pending", value: "Pending" }, { name: "Completed", value: "Completed" }]}
+  value={followUpFormData.followup_status}
+  onChange={(val) => setFollowUpFormData({ ...followUpFormData, followup_status: val })}
+/>
               <div className="pt-2">
                 <button type="submit" className="w-full h-12 bg-[#18254D] text-white rounded-xl text-xs font-bold tracking-wider shadow-lg active:scale-[0.97] transition-all hover:bg-[#1e2e5e] hover:shadow-xl flex items-center justify-center gap-2 btn-animated">
                   <Plus size={14} strokeWidth={2.5} />
@@ -1750,7 +1875,7 @@ const ClientDetail = ({
                     { name: "Call", value: "Call" },
                     { name: "Email", value: "Email" },
                     { name: "Meeting", value: "Meeting" },
-                    { name: "WhatsApp", value: "WhatsApp" },
+                    { name: "WhatsApp", value: "Whatsapp" }
                   ]}
                   value={editFollowUpFormData.followup_mode}
                   onChange={(val) => setEditFollowUpFormData({ ...editFollowUpFormData, followup_mode: val })}

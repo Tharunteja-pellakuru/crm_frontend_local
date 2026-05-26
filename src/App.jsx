@@ -1489,14 +1489,6 @@ function AppRoutes() {
 
       const leadId = clientToUpdate.lead_id || clientToUpdate.id;
 
-      console.log("=== EDIT CLIENT DEBUG ===");
-      console.log("Client ID:", clientId);
-      console.log("Lead ID:", leadId);
-      console.log("Client to update:", clientToUpdate);
-      console.log("Update data:", data);
-      console.log("Clients before update:", clients.length);
-      console.log("Leads before update:", leads.length);
-
       // 2. Optimistic update for clients state
       const updatedClient = {
         ...clientToUpdate,
