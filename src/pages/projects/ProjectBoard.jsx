@@ -1176,12 +1176,28 @@ const ProjectBoard = ({
                       {formData.country || "—"}
                     </p>
                   </div>
+                    <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 tracking-wider uppercase ml-1">
+                      STATE
+                    </label>
+                    <p className="px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-[13px] font-semibold text-[#18254D] shadow-sm truncate">
+                      {formData.state || "—"}
+                    </p>
+                  </div>
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-bold text-slate-400 tracking-wider uppercase ml-1">
                       CURRENCY
                     </label>
                     <p className="px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-[13px] font-semibold text-[#18254D] shadow-sm truncate">
                       {formData.currency || "—"}
+                    </p>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 tracking-wider uppercase ml-1">
+                      CLIENT STATUS
+                    </label>
+                    <p className="px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-[13px] font-semibold text-[#18254D] shadow-sm truncate">
+                      {formData.clientStatus || "—"}
                     </p>
                   </div>
                 </div>
