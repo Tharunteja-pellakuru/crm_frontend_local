@@ -881,20 +881,13 @@ const ProjectBoard = ({
             const isActive = activeStage === status;
             const activeStyles =
               status === "All"
-                ? "bg-[#EFF6FF] text-[#3B82F6] border-[#DBEAFE]"
+                ? "bg-[#EFF6FF] text-[#2563EB] border-[#3B82F6] shadow-sm"
                 : status === "In Progress"
-                  ? "bg-[#FFF7ED] text-[#F97316] border-[#FFEDD5]"
+                  ? "bg-[#FFF7ED] text-[#C2410C] border-[#F97316] shadow-sm"
                   : status === "Hold"
-                    ? "bg-[#FFF1F2] text-[#F43F5E] border-[#FFE4E6]"
-                    : "bg-[#F0FDF4] text-[#16A34A] border-[#DCFCE7]";
-            const inactiveStyles =
-              status === "All"
-                ? "bg-white text-[#3B82F6] border-[#DBEAFE] hover:bg-[#EFF6FF]"
-                : status === "In Progress"
-                  ? "bg-white text-[#F97316] border-[#FFEDD5] hover:bg-[#FFF7ED]"
-                  : status === "Hold"
-                    ? "bg-white text-[#F43F5E] border-[#FFE4E6] hover:bg-[#FFF1F2]"
-                    : "bg-white text-[#16A34A] border-[#DCFCE7] hover:bg-[#F0FDF4]";
+                    ? "bg-[#FFF1F2] text-[#BE123C] border-[#F43F5E] shadow-sm"
+                    : "bg-[#F0FDF4] text-[#15803D] border-[#16A34A] shadow-sm";
+            const inactiveStyles = "bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700";
 
             return (
               <button

@@ -55,7 +55,7 @@ import {
   CATEGORY_MAP,
   REVERSE_CATEGORY_MAP,
 } from "../../constants/categoryConstants";
-import { extractCountryAndPhone } from "../../utils/leadUtils";
+import { extractCountryAndPhone, sanitizeDialCode } from "../../utils/leadUtils";
 
 const LeadList = ({
   leads,
@@ -236,6 +236,7 @@ const LeadList = ({
     email: "",
     phone: "",
     countryCode: "",
+    country: "",
     leadType: "Hot",
     notes: "",
     website: "",
@@ -402,6 +403,27 @@ const LeadList = ({
     country: "India",
     countryCode: "+91",
   });
+
+  const buildEditLeadFormData = (lead) => {
+    const { phone, countryCode, countryName } = extractCountryAndPhone(
+      lead.phone,
+      lead.country || lead.client_country,
+      countries
+    );
+    const dialCode = sanitizeDialCode(lead.country_code) || countryCode || "";
+    return {
+      name: lead.name || "",
+      email: lead.email || "",
+      phone: phone || lead.phone || "",
+      countryCode: dialCode,
+      country: lead.country || lead.client_country || countryName || "",
+      leadType: lead.leadType || "Hot",
+      notes: lead.notes || "",
+      website: lead.website || "",
+    };
+  };
+
+
 
   const handleEditConvertedClick = (lead) => {
     setEditingConvertedLeadId(lead.lead_id);
@@ -655,7 +677,7 @@ const LeadList = ({
   const handleSubmit = async (e) => {
     e.preventDefault();
     const isValid = validateForm(formData, {
-      name: { required: true, minLength: 2, label: "Full Name", pattern: /^[a-zA-Z\s]+$/, errorMessage: "Full Name must contain only alphabets." },
+      name: { required: true, minLength: 2, label: "Full Name", pattern: /^[a-zA-Z0-9\s]+$/, errorMessage: "Full Name must contain only letters and numbers." },
       email: { required: true, pattern: EMAIL_PATTERN, label: "Email", errorMessage: "Enter a valid email (e.g. john@gmail.com, john@yahoo.com)." },
       phone: { required: true, minLength: 10, label: "Phone Number", pattern: /^\d+$/, errorMessage: "Phone Number must be at least 10 digits." },
       countryCode: { required: true, label: "Country Code" },
@@ -853,16 +875,16 @@ const LeadList = ({
 
         {/* Lead View Toggles */}
         <div className="flex flex-wrap justify-center sm:justify-start gap-2 sm:gap-3 my-4 w-full px-1 sm:px-0">
-          <button onClick={() => setLeadView("All")} className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${leadView === "All" || !["Pending","Converted","Dismissed"].includes(leadView) ? "bg-[#0F172A] text-white border-[#0F172A]" : "bg-white text-[#0F172A] border-slate-200 hover:bg-slate-50"}`}>
+          <button onClick={() => setLeadView("All")} className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${leadView === "All" || !["Pending","Converted","Dismissed"].includes(leadView) ? "bg-[#0F172A] text-white border-[#0F172A] shadow-sm" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700"}`}>
             <LayoutGrid size={16} /> All
           </button>
-          <button onClick={() => setLeadView("Pending")} className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${leadView === "Pending" ? "bg-[#FFF9ED] text-[#B45309] border-[#FDE68A]" : "bg-white text-[#B45309] border-[#FDE68A] hover:bg-[#FFF9ED]"}`}>
+          <button onClick={() => setLeadView("Pending")} className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${leadView === "Pending" ? "bg-[#FFF9ED] text-[#B45309] border-[#FDE68A] shadow-sm" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700"}`}>
             <Clock size={16} /> Pending
           </button>
-          <button onClick={() => setLeadView("Converted")} className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${leadView === "Converted" ? "bg-[#ECFDF5] text-[#059669] border-[#A7F3D0]" : "bg-white text-[#059669] border-[#A7F3D0] hover:bg-[#ECFDF5]"}`}>
+          <button onClick={() => setLeadView("Converted")} className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${leadView === "Converted" ? "bg-[#ECFDF5] text-[#059669] border-[#A7F3D0] shadow-sm" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700"}`}>
             <CheckCircle2 size={16} /> Converted
           </button>
-          <button onClick={() => setLeadView("Dismissed")} className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${leadView === "Dismissed" ? "bg-[#FEF2F2] text-[#E11D48] border-[#FECACA]" : "bg-white text-[#E11D48] border-[#FECACA] hover:bg-[#FEF2F2]"}`}>
+          <button onClick={() => setLeadView("Dismissed")} className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${leadView === "Dismissed" ? "bg-[#FEF2F2] text-[#E11D48] border-[#FECACA] shadow-sm" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700"}`}>
             <XCircle size={16} /> Dismissed
           </button>
         </div>
@@ -917,12 +939,7 @@ const LeadList = ({
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setEditingLead(lead);
-                                const { phone: extractedPhone, countryCode: extractedDialCode } = extractCountryAndPhone(lead.phone, lead.country, countries);
-                                const dialCode = lead.country_code || extractedDialCode || "";
-                                const phone = extractedPhone || lead.phone || "";
-                                let finalDialCode = dialCode || "";
-                                if (finalDialCode && !finalDialCode.startsWith("+") && /^\d+$/.test(finalDialCode)) finalDialCode = `+${finalDialCode}`;
-                                setEditFormData({ name: lead.name || "", email: lead.email || "", phone, countryCode: finalDialCode, leadType: lead.leadType || "Hot", notes: lead.notes || "", website: lead.website || "" });
+                                setEditFormData(buildEditLeadFormData(lead));
                                 setShowEditModal(true);
                               }}
                               className="w-[34px] h-[34px] flex items-center justify-center bg-blue-50/50 border border-blue-100 rounded-[10px] text-blue-500 hover:bg-blue-100 transition-all active:scale-90 shadow-sm relative group/btn"
@@ -953,12 +970,7 @@ const LeadList = ({
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     setEditingLead(lead);
-                                    const { phone: extractedPhone, countryCode: extractedDialCode } = extractCountryAndPhone(lead.phone, lead.country, countries);
-                                    const dialCode = lead.country_code || extractedDialCode || "";
-                                    const phone = extractedPhone || lead.phone || "";
-                                    let finalDialCode = dialCode || "";
-                                    if (finalDialCode && !finalDialCode.startsWith("+") && /^\d+$/.test(finalDialCode)) finalDialCode = `+${finalDialCode}`;
-                                    setEditFormData({ name: lead.name || "", email: lead.email || "", phone, countryCode: finalDialCode, leadType: lead.leadType || "Hot", notes: lead.notes || "", website: lead.website || "" });
+                                    setEditFormData(buildEditLeadFormData(lead));
                                     setShowEditModal(true);
                                   }}
                                   className="w-[34px] h-[34px] flex items-center justify-center bg-blue-50/50 border border-blue-100 rounded-[10px] text-blue-500 hover:bg-blue-100 transition-all active:scale-90 shadow-sm relative group/btn"
@@ -1058,12 +1070,7 @@ const LeadList = ({
                         onClick={(e) => {
                           e.stopPropagation();
                           setEditingLead(lead);
-                          const { phone: extractedPhone, countryCode: extractedDialCode } = extractCountryAndPhone(lead.phone, lead.country, countries);
-                          const dialCode = lead.country_code || extractedDialCode || "";
-                          const phone = extractedPhone || lead.phone || "";
-                          let finalDialCode = dialCode || "";
-                          if (finalDialCode && !finalDialCode.startsWith("+") && /^\d+$/.test(finalDialCode)) finalDialCode = `+${finalDialCode}`;
-                          setEditFormData({ name: lead.name || "", email: lead.email || "", phone, countryCode: finalDialCode, leadType: lead.leadType || "Hot", notes: lead.notes || "", website: lead.website || "" });
+                          setEditFormData(buildEditLeadFormData(lead));
                           setShowEditModal(true);
                         }}
                         className="p-2 bg-blue-50 text-blue-600 border border-blue-100 rounded-lg hover:bg-blue-100 transition-all active:scale-90"
@@ -1095,12 +1102,7 @@ const LeadList = ({
                             onClick={(e) => {
                               e.stopPropagation();
                               setEditingLead(lead);
-                              const { phone: extractedPhone, countryCode: extractedDialCode } = extractCountryAndPhone(lead.phone, lead.country, countries);
-                              const dialCode = lead.country_code || extractedDialCode || "";
-                              const phone = extractedPhone || lead.phone || "";
-                              let finalDialCode = dialCode || "";
-                              if (finalDialCode && !finalDialCode.startsWith("+") && /^\d+$/.test(finalDialCode)) finalDialCode = `+${finalDialCode}`;
-                              setEditFormData({ name: lead.name || "", email: lead.email || "", phone, countryCode: finalDialCode, leadType: lead.leadType || "Hot", notes: lead.notes || "", website: lead.website || "" });
+                              setEditFormData(buildEditLeadFormData(lead));
                               setShowEditModal(true);
                             }}
                             className="p-2 bg-blue-50 text-blue-600 border border-blue-100 rounded-lg hover:bg-blue-100 transition-all active:scale-90"
@@ -1184,7 +1186,7 @@ const LeadList = ({
                   required type="text" placeholder="e.g. Rahul Sharma"
                   className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200"
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value.replace(/[^a-zA-Z\s]/g, "") })}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value.replace(/[^a-zA-Z0-9\s]/g, "") })}
                 />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1576,7 +1578,7 @@ const LeadList = ({
                 if (!isValid) return;
                 if (onEditLead && editingLead) {
                   try {
-                    await onEditLead(editingLead.lead_id, { name: editFormData.name, email: editFormData.email, phone: editFormData.phone, countryCode: editFormData.countryCode, leadType: editFormData.leadType, notes: editFormData.notes, website: editFormData.website });
+                    await onEditLead(editingLead.lead_id, { name: editFormData.name, email: editFormData.email, phone: editFormData.phone, countryCode: editFormData.countryCode, country: editFormData.country, leadType: editFormData.leadType, notes: editFormData.notes, website: editFormData.website });
                     setShowEditModal(false);
                     setEditingLead(null);
                   } catch (error) {
@@ -1598,7 +1600,19 @@ const LeadList = ({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">Country Code <span className="text-rose-500">*</span></label>
-                  <SearchableDropdown options={countries.map((c) => ({ name: `${c.name} (${c.code})`, code: c.code }))} value={editFormData.countryCode} onChange={(val) => setEditFormData({ ...editFormData, countryCode: val })} placeholder="Search country..." />
+                  <SearchableDropdown
+                    options={countries.map((c) => ({ name: `${c.name} (${c.code})`, value: c.code, code: c.code }))}
+                    value={editFormData.countryCode}
+                    onChange={(val) => {
+                      const selectedCountry = countries.find((c) => c.code === val);
+                      setEditFormData({
+                        ...editFormData,
+                        countryCode: selectedCountry ? selectedCountry.code : val,
+                        country: selectedCountry ? selectedCountry.name : editFormData.country,
+                      });
+                    }}
+                    placeholder="Search country..."
+                  />
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">Phone Number <span className="text-rose-500">*</span></label>

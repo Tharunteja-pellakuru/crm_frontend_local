@@ -1,4 +1,19 @@
 /**
+ * Normalizes a dial code to +XX format for dropdown matching and API payloads.
+ * @param {string} raw - e.g. "+91", "91", "India (+91)"
+ * @returns {string}
+ */
+export const sanitizeDialCode = (raw) => {
+  if (!raw) return "";
+  const str = String(raw).trim();
+  if (/^\+\d{1,4}$/.test(str)) return str;
+  const match = str.match(/(\+\d{1,4})/);
+  if (match) return match[1];
+  if (/^\d{1,4}$/.test(str)) return `+${str}`;
+  return "";
+};
+
+/**
  * Robustly extracts country code and clean phone number from stored data.
  * Handles cases where phone might or might not have + prefix, 
  * and fallback to matching by country name.

@@ -67,7 +67,7 @@ function StatCard({ title, value, trend, trendUp, badge, icon, description, dela
         </div>
 
         <div className="w-16 h-8">
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
             <LineChart data={data}>
               <Line type="monotone" dataKey="value" stroke={strokeColor} strokeWidth={2} dot={false} isAnimationActive={false} />
             </LineChart>
@@ -428,6 +428,7 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
     const activeClients = clients.filter(c => c.status === "Active");
 
     if (selectedMonth === "All") {
+      const prevYearNum = yearNum - 1;
       return months.map((month, index) => {
         const monthlyEnquiries = enquiries.filter(e => {
           const d = new Date(e.date);
@@ -448,19 +449,36 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
         const totalPotential = monthlyEnquiries + monthlyLeads;
         const engagement = totalPotential > 0 ? Math.round((monthlyClients / totalPotential) * 100) : 0;
 
+        // Previous year engagement rate from real data
+        const prevMonthlyEnquiries = enquiries.filter(e => {
+          const d = new Date(e.date);
+          return d.getFullYear() === prevYearNum && d.getMonth() === index;
+        }).length;
+        const prevMonthlyClients = activeClients.filter(c => {
+          const d = new Date(c.joinedDate);
+          return d.getFullYear() === prevYearNum && d.getMonth() === index;
+        }).length;
+        const prevMonthlyLeads = leads.filter(l => {
+          const d = new Date(l.joinedDate);
+          return l.status === "Lead" && d.getFullYear() === prevYearNum && d.getMonth() === index;
+        }).length;
+        const prevTotalPotential = prevMonthlyEnquiries + prevMonthlyLeads;
+        const previousYear = prevTotalPotential > 0 ? Math.round((prevMonthlyClients / prevTotalPotential) * 100) : 0;
+
         return {
           name: month,
           enquiries: monthlyEnquiries,
           clients: monthlyClients,
           leads: monthlyLeads,
-          engagement: engagement,
-          previousYear: Math.max(0, engagement - Math.floor(Math.random() * 5 + 2))
+          engagement,
+          previousYear,
         };
       });
     }
 
     // Weekly for specific month
     const monthIndex = months.indexOf(selectedMonth);
+    const prevYearNum = yearNum - 1;
     return [1, 2, 3, 4].map(week => {
       const startDay = (week - 1) * 7 + 1;
       const endDay = week === 4 ? 31 : week * 7;
@@ -483,13 +501,29 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
       const totalPotential = weeklyEnquiries + weeklyLeads;
       const engagement = totalPotential > 0 ? Math.round((weeklyClients / totalPotential) * 100) : 0;
 
+      // Previous year engagement rate from real data
+      const prevWeeklyEnquiries = enquiries.filter(e => {
+        const d = new Date(e.date);
+        return d.getFullYear() === prevYearNum && d.getMonth() === monthIndex && d.getDate() >= startDay && d.getDate() <= endDay;
+      }).length;
+      const prevWeeklyClients = activeClients.filter(c => {
+        const d = new Date(c.joinedDate);
+        return d.getFullYear() === prevYearNum && d.getMonth() === monthIndex && d.getDate() >= startDay && d.getDate() <= endDay;
+      }).length;
+      const prevWeeklyLeads = leads.filter(l => {
+        const d = new Date(l.joinedDate);
+        return l.status === "Lead" && d.getFullYear() === prevYearNum && d.getMonth() === monthIndex && d.getDate() >= startDay && d.getDate() <= endDay;
+      }).length;
+      const prevTotalPotential = prevWeeklyEnquiries + prevWeeklyLeads;
+      const previousYear = prevTotalPotential > 0 ? Math.round((prevWeeklyClients / prevTotalPotential) * 100) : 0;
+
       return {
         name: `Week ${week}`,
         enquiries: weeklyEnquiries,
         clients: weeklyClients,
         leads: weeklyLeads,
-        engagement: engagement,
-        previousYear: Math.max(0, engagement - Math.floor(Math.random() * 5 + 2))
+        engagement,
+        previousYear,
       };
     });
   }
@@ -943,7 +977,7 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
             </div>
             <div className="flex-1 w-full mt-2 relative" style={{ minWidth: 0 }}>
               <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
-                <ComposedChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <ComposedChart data={chartData} margin={{ top: 10, right: 44, left: -20, bottom: 0 }}>
                   <CartesianGrid
                     strokeDasharray="3 3"
                     vertical={false}
@@ -956,9 +990,19 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
                     tick={{ fill: "#64748b", fontSize: 10, fontWeight: 600 }}
                   />
                   <YAxis
+                    yAxisId="left"
                     axisLine={false}
                     tickLine={false}
                     tick={{ fill: "#64748b", fontSize: 10, fontWeight: 600 }}
+                  />
+                  <YAxis
+                    yAxisId="right"
+                    orientation="right"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: "#8B5CF6", fontSize: 10, fontWeight: 600 }}
+                    tickFormatter={(v) => `${v}%`}
+                    domain={[0, 100]}
                   />
                   <Tooltip
                     contentStyle={{
@@ -966,8 +1010,13 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
                       border: "1px solid #E2E8F0",
                       fontSize: "10px",
                     }}
+                    formatter={(value, name) => {
+                      if (name === "Engagement Rate %") return [`${value}%`, name];
+                      return [value, name];
+                    }}
                   />
                   <Area
+                    yAxisId="left"
                     type="monotone"
                     dataKey="enquiries"
                     stroke="#18254D"
@@ -979,6 +1028,7 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
                     activeDot={{ r: 6, fill: "#18254D" }}
                   />
                   <Line
+                    yAxisId="left"
                     type="monotone"
                     dataKey="leads"
                     stroke="#F97316"
@@ -988,6 +1038,7 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
                     name="Pending Leads"
                   />
                   <Line
+                    yAxisId="left"
                     type="monotone"
                     dataKey="clients"
                     stroke="#2DD4BF"
@@ -995,6 +1046,16 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
                     dot={{ r: 3.5, stroke: "#2DD4BF", strokeWidth: 2, fill: "#FFF" }}
                     activeDot={{ r: 5 }}
                     name="Active Clients"
+                  />
+                  <Line
+                    yAxisId="right"
+                    type="monotone"
+                    dataKey="engagement"
+                    stroke="#8B5CF6"
+                    strokeWidth={2.5}
+                    dot={{ r: 3.5, stroke: "#8B5CF6", strokeWidth: 2, fill: "#FFF" }}
+                    activeDot={{ r: 6, fill: "#8B5CF6" }}
+                    name="Engagement Rate %"
                   />
                 </ComposedChart>
               </ResponsiveContainer>

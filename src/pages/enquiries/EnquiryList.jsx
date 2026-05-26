@@ -518,8 +518,8 @@ const EnquiryList = ({
         required: true,
         minLength: 2,
         label: "Full Name",
-        pattern: /^[a-zA-Z\s]+$/,
-        errorMessage: "Full Name must contain only alphabets.",
+        pattern: /^[a-zA-Z0-9\s]+$/,
+        errorMessage: "Full Name must contain only letters and numbers.",
       },
       email: {
         required: false,
@@ -594,8 +594,8 @@ const EnquiryList = ({
         required: true,
         minLength: 2,
         label: "Full Name",
-        pattern: /^[a-zA-Z\s]+$/,
-        errorMessage: "Full Name must contain only alphabets.",
+        pattern: /^[a-zA-Z0-9\s]+$/,
+        errorMessage: "Full Name must contain only letters and numbers.",
       },
       email: {
         required: false,
@@ -650,8 +650,8 @@ const EnquiryList = ({
         required: true,
         minLength: 2,
         label: "Full Name",
-        pattern: /^[a-zA-Z\s]+$/,
-        errorMessage: "Full Name must contain only alphabets.",
+        pattern: /^[a-zA-Z0-9\s]+$/,
+        errorMessage: "Full Name must contain only letters and numbers.",
       },
       email: {
         required: false,
@@ -1035,18 +1035,17 @@ const EnquiryList = ({
           </div>
         </div>
 
-        {/* View Toggles */}
         <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-2 pt-2">
-          <button onClick={() => setActiveTab("new")} className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${activeTab === "new" ? "bg-[#EFF6FF] text-[#3B82F6] border-[#DBEAFE]" : "bg-white text-[#3B82F6] border-[#DBEAFE] hover:bg-[#EFF6FF]"}`}>
+          <button onClick={() => setActiveTab("new")} className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${activeTab === "new" ? "bg-[#EFF6FF] text-[#2563EB] border-[#3B82F6] shadow-sm" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700"}`}>
             Inbox
           </button>
-          <button onClick={() => setActiveTab("hold")} className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${activeTab === "hold" ? "bg-[#FFF7ED] text-[#F97316] border-[#FFEDD5]" : "bg-white text-[#F97316] border-[#FFEDD5] hover:bg-[#FFF7ED]"}`}>
+          <button onClick={() => setActiveTab("hold")} className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${activeTab === "hold" ? "bg-[#FFF7ED] text-[#C2410C] border-[#F97316] shadow-sm" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700"}`}>
             On Hold
           </button>
-          <button onClick={() => setActiveTab("converted")} className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${activeTab === "converted" ? "bg-[#F0FDF4] text-[#16A34A] border-[#DCFCE7]" : "bg-white text-[#16A34A] border-[#DCFCE7] hover:bg-[#F0FDF4]"}`}>
+          <button onClick={() => setActiveTab("converted")} className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${activeTab === "converted" ? "bg-[#F0FDF4] text-[#15803D] border-[#16A34A] shadow-sm" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700"}`}>
             Converted
           </button>
-          <button onClick={() => setActiveTab("dismissed")} className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${activeTab === "dismissed" ? "bg-[#FFF1F2] text-[#F43F5E] border-[#FFE4E6]" : "bg-white text-[#F43F5E] border-[#FFE4E6] hover:bg-[#FFF1F2]"}`}>
+          <button onClick={() => setActiveTab("dismissed")} className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${activeTab === "dismissed" ? "bg-[#FFF1F2] text-[#BE123C] border-[#F43F5E] shadow-sm" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700"}`}>
             Dismissed
           </button>
         </div>
@@ -1117,7 +1116,21 @@ const EnquiryList = ({
                         )}
                       </div>
                     </td>
-                    <td className="p-4 border-y border-slate-100 last:border-r last:rounded-r-xl">
+                    <td className="pt-7 pb-3 px-4 border-y border-slate-100 last:border-r last:rounded-r-xl relative">
+                      {aiAnalysisEnabled && enquiry.aiAnalysis && (
+                        <span className={`absolute top-1.5 right-4 px-2 py-0.5 rounded-md text-[9px] font-black tracking-widest border uppercase ${
+                          enquiry.aiAnalysis.isRelevant
+                            ? "bg-[#F0FDF4] border-[#DCFCE7] text-[#16A34A]"
+                            : "bg-[#FFF1F2] border-[#FFE4E6] text-[#F43F5E]"
+                        }`}>
+                          {enquiry.aiAnalysis.isRelevant ? (enquiry.aiAnalysis.category || "Relevant") : "Irrelevant"}
+                        </span>
+                      )}
+                      {aiAnalysisEnabled && !enquiry.aiAnalysis && (
+                        <span className="absolute top-1.5 right-4 px-2 py-0.5 rounded-md text-[9px] font-black tracking-widest border uppercase bg-slate-50 border-slate-200 text-slate-400">
+                          Pending AI
+                        </span>
+                      )}
                       <div className="flex items-center justify-end gap-2">
                         {activeTab === "new" ? (
                           <>
@@ -1180,6 +1193,20 @@ const EnquiryList = ({
                   </div>
                 </div>
                 <div className="flex flex-col gap-2 items-end">
+                  {aiAnalysisEnabled && enquiry.aiAnalysis && (
+                    <span className={`inline-flex px-2 py-0.5 rounded-md text-[9px] font-black tracking-widest border uppercase ${
+                      enquiry.aiAnalysis.isRelevant
+                        ? "bg-[#F0FDF4] border-[#DCFCE7] text-[#16A34A]"
+                        : "bg-[#FFF1F2] border-[#FFE4E6] text-[#F43F5E]"
+                    }`}>
+                      {enquiry.aiAnalysis.isRelevant ? (enquiry.aiAnalysis.category || "Relevant") : "Irrelevant"}
+                    </span>
+                  )}
+                  {aiAnalysisEnabled && !enquiry.aiAnalysis && (
+                    <span className="inline-flex px-2 py-0.5 rounded-md text-[9px] font-black tracking-widest border uppercase bg-slate-50 border-slate-200 text-slate-400">
+                      Pending AI
+                    </span>
+                  )}
                   <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-600 bg-slate-50 px-2 py-1 rounded-lg border border-slate-100">
                     <span className="truncate max-w-[100px]">{enquiry.createdByName || "System"}</span>
                     <Users size={12} className="text-slate-400" />
@@ -1342,7 +1369,7 @@ const EnquiryList = ({
                       onChange={(e) =>
                         setFormData({
                           ...formData,
-                          name: e.target.value.replace(/[^a-zA-Z\s]/g, ""),
+                          name: e.target.value.replace(/[^a-zA-Z0-9\s]/g, ""),
                         })
                       }
                     />
@@ -1580,7 +1607,7 @@ const EnquiryList = ({
                       onChange={(e) =>
                         setEditFormData({
                           ...editFormData,
-                          name: e.target.value.replace(/[^a-zA-Z\s]/g, ""),
+                          name: e.target.value.replace(/[^a-zA-Z0-9\s]/g, ""),
                         })
                       }
                     />
@@ -1938,7 +1965,7 @@ const EnquiryList = ({
                       onChange={(e) =>
                         setPromoteFormData({
                           ...promoteFormData,
-                          name: e.target.value.replace(/[^a-zA-Z\s]/g, ""),
+                          name: e.target.value.replace(/[^a-zA-Z0-9\s]/g, ""),
                         })
                       }
                     />

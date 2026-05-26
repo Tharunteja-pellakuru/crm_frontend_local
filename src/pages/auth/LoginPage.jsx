@@ -19,7 +19,7 @@ function LoginPage({ onLogin }) {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [imgError, setImgError] = useState(false);
+  const [imgError, setImgError] = useState(false);  
 
   // Simple validation
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

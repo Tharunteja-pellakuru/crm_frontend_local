@@ -819,28 +819,28 @@ const ClientList = ({
         <div className="flex flex-wrap justify-center sm:justify-start gap-2 sm:gap-3 w-full px-1 sm:px-0">
           <button
             onClick={() => setFilterStatus("All")}
-            className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${filterStatus === "All" ? "bg-[#0F172A] text-white border-[#0F172A]" : "bg-white text-[#0F172A] border-slate-200 hover:bg-slate-50"}`}
+            className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${filterStatus === "All" ? "bg-[#0F172A] text-white border-[#0F172A] shadow-sm" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700"}`}
           >
             <LayoutGrid size={16} />
             All
           </button>
           <button
             onClick={() => setFilterStatus("Active")}
-            className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${filterStatus === "Active" ? "bg-[#ECFDF5] text-[#059669] border-[#A7F3D0]" : "bg-white text-[#059669] border-[#A7F3D0] hover:bg-[#ECFDF5]"}`}
+            className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${filterStatus === "Active" ? "bg-[#ECFDF5] text-[#059669] border-[#A7F3D0] shadow-sm" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700"}`}
           >
             <UserCheck size={16} />
             Active
           </button>
           <button
             onClick={() => setFilterStatus("Inactive")}
-            className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${filterStatus === "Inactive" ? "bg-[#FFF7ED] text-[#C2410C] border-[#FDBA74]" : "bg-white text-[#C2410C] border-[#FDBA74] hover:bg-[#FFF7ED]"}`}
+            className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${filterStatus === "Inactive" ? "bg-[#FFF7ED] text-[#C2410C] border-[#FDBA74] shadow-sm" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700"}`}
           >
             <Users size={16} />
             Inactive
           </button>
           <button
             onClick={() => setFilterStatus("Dismissed")}
-            className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${filterStatus === "Dismissed" ? "bg-[#FEF2F2] text-[#E11D48] border-[#FECACA]" : "bg-white text-[#E11D48] border-[#FECACA] hover:bg-[#FEF2F2]"}`}
+            className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${filterStatus === "Dismissed" ? "bg-[#FEF2F2] text-[#E11D48] border-[#FECACA] shadow-sm" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700"}`}
           >
             <UserX size={16} />
             Dismissed
@@ -875,7 +875,7 @@ const ClientList = ({
                   const status = getStatusBadge(client);
                   return (
                     <tr
-                      key={client.id || `client-table-${index}`}
+                      key={`client-table-${client.id || 'no-id'}-${index}`}
                       onClick={() =>
                         client.status !== "Dismissed" && onSelectClient(client)
                       }
@@ -1105,7 +1105,7 @@ const ClientList = ({
             const status = getStatusBadge(client);
             return (
               <div
-                key={client.id || `client-mobile-${index}`}
+                key={`client-mobile-${client.id || 'no-id'}-${index}`}
                 onClick={() => onSelectClient(client)}
                 className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all cursor-pointer"
               >

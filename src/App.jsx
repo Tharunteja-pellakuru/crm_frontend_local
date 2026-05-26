@@ -55,6 +55,7 @@ function ClientDetailWrapper({
   onDismissLead,
   onRestoreLead,
   onToggleStatus,
+  onOnboardClient,
 }) {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -92,6 +93,7 @@ function ClientDetailWrapper({
       onDismissLead={onDismissLead}
       onRestoreLead={onRestoreLead}
       onToggleStatus={onToggleStatus}
+      onOnboardClient={onOnboardClient}
     />
   );
 }
@@ -2331,6 +2333,7 @@ function AppRoutes() {
               onDismissLead={handleDismissLead}
               onRestoreLead={handleRestoreLead}
               onToggleStatus={handleToggleFollowUpStatus}
+              onOnboardClient={handleOnboardClient}
             />
           }
         />
@@ -2352,6 +2355,7 @@ function AppRoutes() {
               onDismissLead={handleDismissLead}
               onRestoreLead={handleRestoreLead}
               onToggleStatus={handleToggleFollowUpStatus}
+              onOnboardClient={handleOnboardClient}
             />
           }
         />

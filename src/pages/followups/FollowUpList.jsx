@@ -833,16 +833,16 @@ const FollowUpList = ({
         
         {/* View Toggles */}
         <div className="flex flex-wrap justify-center sm:justify-start gap-2 sm:gap-3 my-4 w-full px-1 sm:px-0">
-          <button onClick={() => setActiveFilter("All")} className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${activeFilter === "All" || !["Overdue","Today","Upcoming"].includes(activeFilter) ? "bg-[#0F172A] text-white border-[#0F172A]" : "bg-white text-[#0F172A] border-slate-200 hover:bg-slate-50"}`}>
+          <button onClick={() => setActiveFilter("All")} className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${activeFilter === "All" || !["Overdue","Today","Upcoming"].includes(activeFilter) ? "bg-[#0F172A] text-white border-[#0F172A] shadow-sm" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700"}`}>
              <LayoutGrid size={16} /> All
           </button>
-          <button onClick={() => setActiveFilter("Overdue")} className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${activeFilter === "Overdue" ? "bg-[#FEF2F2] text-[#E11D48] border-[#FECACA]" : "bg-white text-[#E11D48] border-[#FECACA] hover:bg-[#FEF2F2]"}`}>
+          <button onClick={() => setActiveFilter("Overdue")} className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${activeFilter === "Overdue" ? "bg-[#FEF2F2] text-[#E11D48] border-[#FECACA] shadow-sm" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700"}`}>
              <AlertTriangle size={16} /> Overdue
           </button>
-          <button onClick={() => setActiveFilter("Today")} className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${activeFilter === "Today" ? "bg-[#FFF9ED] text-[#B45309] border-[#FDE68A]" : "bg-white text-[#B45309] border-[#FDE68A] hover:bg-[#FFF9ED]"}`}>
+          <button onClick={() => setActiveFilter("Today")} className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${activeFilter === "Today" ? "bg-[#FFF9ED] text-[#B45309] border-[#FDE68A] shadow-sm" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700"}`}>
              <Clock size={16} /> Today
           </button>
-          <button onClick={() => setActiveFilter("Upcoming")} className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${activeFilter === "Upcoming" ? "bg-[#F0F9FF] text-[#0284C7] border-[#BAE6FD]" : "bg-white text-[#0284C7] border-[#BAE6FD] hover:bg-[#F0F9FF]"}`}>
+          <button onClick={() => setActiveFilter("Upcoming")} className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${activeFilter === "Upcoming" ? "bg-[#F0F9FF] text-[#0284C7] border-[#BAE6FD] shadow-sm" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700"}`}>
              <Calendar size={16} /> Upcoming
           </button>
         </div>
