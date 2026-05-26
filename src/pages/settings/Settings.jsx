@@ -46,7 +46,7 @@ const CustomDropdown = ({ label, value, options, field, icon: Icon, onChange, ac
     const vw = window.innerWidth;
     let left = r.left;
     if (left + menuW > vw - 8) left = vw - menuW - 8;
-    setDropdownStyles({ position: "fixed", top: `${r.bottom + 6}px`, left: `${Math.max(8, left)}px`, width: `${menuW}px`, zIndex: 100001 });
+    setDropdownStyles({ position: "fixed", bottom: `${window.innerHeight - r.top + 6}px`, left: `${Math.max(8, left)}px`, width: `${menuW}px`, zIndex: 100001 });
   };
 
   useEffect(() => {
@@ -83,7 +83,7 @@ const CustomDropdown = ({ label, value, options, field, icon: Icon, onChange, ac
       {isOpen && createPortal(
         <>
           <div className="fixed inset-0 z-[100000]" onClick={() => setActiveDropdown(null)} />
-          <div style={dropdownStyles} className="bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[100001] animate-pop max-h-[260px] overflow-y-auto">
+          <div style={dropdownStyles} className="bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[100001] animate-pop origin-bottom max-h-[260px] overflow-y-auto">
             <div className="bg-[#18254D] px-4 py-2 sticky top-0 z-10">
               <p className="text-[10px] font-bold text-white/50 tracking-wider uppercase">Select {label}</p>
             </div>

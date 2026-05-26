@@ -556,10 +556,10 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
   }
 
   return (
-    <div className="w-full relative flex flex-col lg:h-[calc(100vh-150px)]">
-      <div className="flex-1 min-h-0 flex flex-col space-y-4 md:space-y-5 relative z-0">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 animate-fade-in relative z-50 shrink-0" style={{ animationDelay: '100ms' }}>
-          <div className="max-w-2xl shrink-0">
+    <div className="w-full relative lg:flex lg:flex-col lg:h-[calc(100vh-140px)]">
+      <div className="space-y-4 md:space-y-5 animate-fade-in w-full lg:flex-1 lg:min-h-0 lg:flex lg:flex-col relative z-0">
+        <div className="flex flex-col lg:flex-row justify-between items-center gap-6 lg:gap-4 animate-fade-in relative z-50 shrink-0 w-full" style={{ animationDelay: '100ms' }}>
+          <div className="max-w-2xl shrink-0 text-center lg:text-left w-full lg:w-auto">
             <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-primary tracking-tight mb-2">
               Welcome {currentUser?.full_name?.split(' ')[0] || 'Admin'} <span className="text-2xl animate-waving-hand inline-block origin-[70%_70%]">👋</span>
             </h2>
@@ -568,7 +568,7 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
             </p>
           </div>
 
-          <div className="flex items-center gap-4 relative z-20">
+          <div className="flex items-center justify-between w-full lg:w-auto gap-4 relative z-20">
             <div
               className="relative shrink-0"
               ref={dropdownRef}
@@ -595,7 +595,7 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
                     className="fixed inset-0 z-[1000] bg-slate-900/10 backdrop-blur-[2px]"
                     onClick={() => setShowNotifications(false)}
                   />
-                  <div className="fixed top-24 right-4 md:right-10 w-full max-w-[380px] bg-white rounded-[24px] shadow-[0_20px_50px_-12px_rgba(24,37,77,0.15)] border border-slate-100/85 overflow-hidden animate-pop z-[1001]">
+                  <div className="fixed top-24 left-4 right-4 sm:left-auto md:right-10 w-auto sm:w-full sm:max-w-[380px] bg-white rounded-[24px] shadow-[0_20px_50px_-12px_rgba(24,37,77,0.15)] border border-slate-100/85 overflow-hidden animate-pop z-[1001]">
 
                     {/* HEADER */}
                     <div className="px-5 py-4 flex items-center justify-between border-b border-slate-100">
@@ -781,7 +781,7 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
           />
         </div>
 
-        <div className="flex-1 min-h-0 flex flex-col lg:flex-row gap-4 md:gap-5 animate-fade-in-up" style={{ animationDelay: '350ms' }}>
+        <div className="flex flex-col lg:flex-row gap-4 md:gap-5 animate-fade-in-up lg:flex-1 lg:min-h-0" style={{ animationDelay: '350ms' }}>
           <div className="w-full lg:w-[35%] xl:w-[30%] bg-[#FFFFFF] p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col min-h-[420px] lg:min-h-0 lg:h-full">
             <div className="flex flex-row justify-between items-center mb-4">
               <h3 className="text-base font-bold text-[#18254D]">Tasks</h3>
@@ -833,37 +833,44 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
                         if (!client) return;
                         onSelectFollowUp(client);
                       }}
-                      className={`p-4 border rounded-xl transition-all cursor-pointer shadow-sm group relative ${isOverdue ? "bg-[#FFF5F5] border-red-100 hover:border-red-200" : "bg-white border-slate-100 hover:border-slate-200"}`}
+                      className={`p-4 sm:p-5 border rounded-2xl transition-all duration-300 cursor-pointer shadow-sm group relative overflow-hidden ${isOverdue ? "bg-[#FFF5F5] border-red-100 hover:border-red-200 hover:shadow-md hover:-translate-y-0.5" : "bg-white border-slate-100 hover:border-slate-200 hover:shadow-md hover:-translate-y-0.5"}`}
                     >
-                      <div className="flex justify-between items-start mb-2">
-                        <div className="flex items-center gap-2">
-                          {isOverdue && <div className="w-1.5 h-1.5 rounded-full bg-red-500" />}
-                          {isOverdue && (
-                            <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-red-100 text-red-600 uppercase tracking-wider">
+                      {/* Left Accent Bar */}
+                      <div className={`absolute left-0 top-0 bottom-0 w-1.5 transition-colors ${isOverdue ? "bg-red-500 group-hover:bg-red-600" : "bg-teal-400 group-hover:bg-teal-500"}`} />
+                      
+                      <div className="flex justify-between items-start mb-3 pl-1">
+                        <div className="flex items-center gap-1.5">
+                          {isOverdue ? (
+                            <span className="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-red-100 text-red-600 uppercase tracking-widest border border-red-200/50">
                               OVERDUE
                             </span>
-                          )}
-                          {!isOverdue && (
-                            <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold bg-teal-100 text-teal-600 uppercase tracking-wider`}>
+                          ) : (
+                            <span className="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-teal-50 text-teal-600 uppercase tracking-widest border border-teal-100">
                               PENDING
                             </span>
                           )}
-                          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#18254D] text-white uppercase tracking-wider">
+                          <span className="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-[#18254D] text-white uppercase tracking-widest shadow-sm">
                             NEW
                           </span>
                         </div>
-                        <span className={`text-[11px] font-semibold flex items-center gap-1 ${isOverdue ? "text-red-500" : "text-slate-400"}`}>
-                          <Calendar size={12} />
+                        <span className={`text-[10px] font-bold flex items-center gap-1.5 px-2.5 py-1 rounded-lg ${isOverdue ? "text-red-600 bg-red-50 border border-red-100/50" : "text-slate-500 bg-slate-50 border border-slate-100"}`}>
+                          <Calendar size={12} strokeWidth={2.5} className={isOverdue ? "text-red-500" : "text-slate-400"} />
                           {parseLocalDate(f.dueDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                         </span>
                       </div>
-                      <div className="flex flex-col gap-1 mt-3">
+                      
+                      <div className="flex flex-col gap-1.5 pl-1">
                         {client && (
-                          <p className={`text-[13px] font-semibold ${isOverdue ? "text-red-500" : "text-slate-500"}`}>
-                            {client.name}
-                          </p>
+                          <div className="flex items-center gap-2">
+                            <div className="w-5 h-5 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-[10px] font-bold border border-indigo-100/50 shrink-0">
+                              {client.name.charAt(0).toUpperCase()}
+                            </div>
+                            <p className="text-[13px] font-semibold text-slate-500 truncate">
+                              {client.name}
+                            </p>
+                          </div>
                         )}
-                        <h4 className="text-sm font-bold text-[#18254D] truncate">
+                        <h4 className="text-[15px] font-bold text-[#18254D] truncate group-hover:text-primary transition-colors">
                           {f.title}
                         </h4>
                       </div>
@@ -1000,7 +1007,7 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
                     orientation="right"
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fill: "#8B5CF6", fontSize: 10, fontWeight: 600 }}
+                    tick={{ fill: "#F97316", fontSize: 10, fontWeight: 600 }}
                     tickFormatter={(v) => `${v}%`}
                     domain={[0, 100]}
                   />
@@ -1019,19 +1026,19 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
                     yAxisId="left"
                     type="monotone"
                     dataKey="enquiries"
-                    stroke="#18254D"
-                    fill="#18254D"
-                    fillOpacity={0.05}
+                    stroke="#3B82F6"
+                    fill="#3B82F6"
+                    fillOpacity={0.1}
                     strokeWidth={2}
                     name="Enquiries"
                     dot={false}
-                    activeDot={{ r: 6, fill: "#18254D" }}
+                    activeDot={{ r: 6, fill: "#3B82F6" }}
                   />
                   <Line
                     yAxisId="left"
                     type="monotone"
                     dataKey="leads"
-                    stroke="#F97316"
+                    stroke="#2DD4BF"
                     strokeWidth={2}
                     strokeDasharray="5 5"
                     dot={false}
@@ -1041,9 +1048,9 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
                     yAxisId="left"
                     type="monotone"
                     dataKey="clients"
-                    stroke="#2DD4BF"
+                    stroke="#A855F7"
                     strokeWidth={2}
-                    dot={{ r: 3.5, stroke: "#2DD4BF", strokeWidth: 2, fill: "#FFF" }}
+                    dot={{ r: 3.5, stroke: "#A855F7", strokeWidth: 2, fill: "#FFF" }}
                     activeDot={{ r: 5 }}
                     name="Active Clients"
                   />
@@ -1051,10 +1058,10 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
                     yAxisId="right"
                     type="monotone"
                     dataKey="engagement"
-                    stroke="#8B5CF6"
+                    stroke="#F97316"
                     strokeWidth={2.5}
-                    dot={{ r: 3.5, stroke: "#8B5CF6", strokeWidth: 2, fill: "#FFF" }}
-                    activeDot={{ r: 6, fill: "#8B5CF6" }}
+                    dot={{ r: 3.5, stroke: "#F97316", strokeWidth: 2, fill: "#FFF" }}
+                    activeDot={{ r: 6, fill: "#F97316" }}
                     name="Engagement Rate %"
                   />
                 </ComposedChart>

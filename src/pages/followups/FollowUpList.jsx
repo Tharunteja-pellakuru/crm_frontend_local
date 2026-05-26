@@ -123,6 +123,7 @@ const FollowUpList = ({
   const [isModeDropdownOpen, setIsModeDropdownOpen] = useState(false);
   const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
   const [showCompletionModal, setShowCompletionModal] = useState(false);
+  const [showAddAnotherPrompt, setShowAddAnotherPrompt] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedFollowUpForDetails, setSelectedFollowUpForDetails] = useState(null);
   const [completionBrief, setCompletionBrief] = useState("");
@@ -215,7 +216,7 @@ const FollowUpList = ({
     };
   }, [isFilterPopupOpen]);
 
-  useScrollLock(showAddModal || showCompletionModal || showDetailsModal);
+  useScrollLock(showAddModal || showCompletionModal || showDetailsModal || showAddAnotherPrompt);
 
   const getClientById = (id, leadId, projectId) => {
     if (!id && !leadId && !projectId) return null;
@@ -832,23 +833,23 @@ const FollowUpList = ({
         </div>
         
         {/* View Toggles */}
-        <div className="flex flex-wrap justify-center sm:justify-start gap-2 sm:gap-3 my-4 w-full px-1 sm:px-0">
-          <button onClick={() => setActiveFilter("All")} className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${activeFilter === "All" || !["Overdue","Today","Upcoming"].includes(activeFilter) ? "bg-[#0F172A] text-white border-[#0F172A] shadow-sm" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700"}`}>
+        <div className="flex overflow-x-auto no-scrollbar [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] gap-2 sm:gap-3 my-4 w-full px-1 sm:px-0 pb-1">
+          <button onClick={() => setActiveFilter("All")} className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border whitespace-nowrap flex-shrink-0 ${activeFilter === "All" || !["Overdue","Today","Upcoming"].includes(activeFilter) ? "bg-[#0F172A] text-white border-[#0F172A] shadow-sm" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700"}`}>
              <LayoutGrid size={16} /> All
           </button>
-          <button onClick={() => setActiveFilter("Overdue")} className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${activeFilter === "Overdue" ? "bg-[#FEF2F2] text-[#E11D48] border-[#FECACA] shadow-sm" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700"}`}>
+          <button onClick={() => setActiveFilter("Overdue")} className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border whitespace-nowrap flex-shrink-0 ${activeFilter === "Overdue" ? "bg-[#FEF2F2] text-[#E11D48] border-[#FECACA] shadow-sm" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700"}`}>
              <AlertTriangle size={16} /> Overdue
           </button>
-          <button onClick={() => setActiveFilter("Today")} className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${activeFilter === "Today" ? "bg-[#FFF9ED] text-[#B45309] border-[#FDE68A] shadow-sm" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700"}`}>
+          <button onClick={() => setActiveFilter("Today")} className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border whitespace-nowrap flex-shrink-0 ${activeFilter === "Today" ? "bg-[#FFF9ED] text-[#B45309] border-[#FDE68A] shadow-sm" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700"}`}>
              <Clock size={16} /> Today
           </button>
-          <button onClick={() => setActiveFilter("Upcoming")} className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${activeFilter === "Upcoming" ? "bg-[#F0F9FF] text-[#0284C7] border-[#BAE6FD] shadow-sm" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700"}`}>
+          <button onClick={() => setActiveFilter("Upcoming")} className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border whitespace-nowrap flex-shrink-0 ${activeFilter === "Upcoming" ? "bg-[#F0F9FF] text-[#0284C7] border-[#BAE6FD] shadow-sm" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700"}`}>
              <Calendar size={16} /> Upcoming
           </button>
         </div>
 
         {/* Mobile/Tablet Card List View */}
-        <div className="lg:hidden grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+        <div className="lg:hidden grid grid-cols-1 gap-4 w-full">
           {filteredFollowUps.length === 0 ? (
             <div className="col-span-1 md:col-span-2 flex flex-col items-center justify-center py-16 bg-white rounded-2xl border border-slate-200 shadow-sm w-full">
               <Bell size={24} className="text-slate-100 mb-3" />
@@ -1559,7 +1560,7 @@ const FollowUpList = ({
                             <ChevronDown size={12} />
                           </button>
                           {isCompHourOpen && (
-                            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-100 rounded-lg shadow-xl z-[100] max-h-32 overflow-y-auto">
+                            <div className="absolute bottom-full left-0 right-0 mb-1 bg-white border border-slate-100 rounded-lg shadow-xl z-[100] max-h-32 overflow-y-auto">
                               {Array.from({ length: 12 }, (_, i) => i + 1).map(
                                 (h) => (
                                   <button
@@ -1591,7 +1592,7 @@ const FollowUpList = ({
                             <ChevronDown size={12} />
                           </button>
                           {isCompMinOpen && (
-                            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-100 rounded-lg shadow-xl z-[100] max-h-32 overflow-y-auto">
+                            <div className="absolute bottom-full left-0 right-0 mb-1 bg-white border border-slate-100 rounded-lg shadow-xl z-[100] max-h-32 overflow-y-auto">
                               {Array.from({ length: 60 }, (_, i) => i).map(
                                 (m) => (
                                   <button
@@ -1625,7 +1626,7 @@ const FollowUpList = ({
                             <ChevronDown size={12} />
                           </button>
                           {isCompPeriodOpen && (
-                            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-100 rounded-lg shadow-xl z-[100]">
+                            <div className="absolute bottom-full left-0 right-0 mb-1 bg-white border border-slate-100 rounded-lg shadow-xl z-[100]">
                               {["AM", "PM"].map((p) => (
                                 <button
                                   key={p}
@@ -1692,8 +1693,7 @@ const FollowUpList = ({
                           );
                         }
                         setShowCompletionModal(false);
-                        setCompletingFollowUpId(null);
-                        setCompletionBrief("");
+                        setShowAddAnotherPrompt(true);
                       }}
                       className="w-full py-3 bg-[#18254D] text-white rounded-2xl text-[13px] font-bold tracking-[0.2em] shadow-lg active:scale-[0.97] transition-all hover:bg-[#1e2e5e] flex items-center justify-center gap-2"
                     >
@@ -1705,6 +1705,59 @@ const FollowUpList = ({
             </div>,
             document.body,
           )}
+
+      {showAddAnotherPrompt &&
+        createPortal(
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[99999] flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl animate-fade-in text-center">
+              <h3 className="text-lg font-bold text-[#18254D] mb-2">Follow-up Completed</h3>
+              <p className="text-sm text-slate-500 mb-6">Want to add another follow up or close?</p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setShowAddAnotherPrompt(false);
+                    setCompletingFollowUpId(null);
+                    setCompletionBrief("");
+                  }}
+                  className="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-semibold text-sm hover:bg-slate-50 transition-colors"
+                >
+                  Close
+                </button>
+                <button
+                  onClick={() => {
+                    setShowAddAnotherPrompt(false);
+                    setCompletingFollowUpId(null);
+                    setCompletionBrief("");
+                    setFormData({
+                      clientId: "",
+                      projectId: "",
+                      title: "",
+                      description: "",
+                      followup_date: new Date().toLocaleDateString("en-CA"),
+                      followup_mode: "Call",
+                      followup_status: "pending",
+                      follow_brief: "",
+                      priority: "High",
+                      timeHour: "12",
+                      timeMinute: "00",
+                      timePeriod: "PM",
+                      completed_by: "",
+                      completionDate: new Date().toLocaleDateString("en-CA"),
+                      completionHour: "12",
+                      completionMinute: "00",
+                      completionPeriod: "PM",
+                    });
+                    setShowAddModal(true);
+                  }}
+                  className="flex-1 py-2.5 rounded-xl bg-[#18254D] text-white font-semibold text-sm hover:bg-[#1e2e5e] transition-colors"
+                >
+                  Add Another
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body,
+        )}
       </div>
 
       {showAddModal &&
@@ -1794,7 +1847,7 @@ const FollowUpList = ({
                               className="fixed inset-0 z-[80] pointer-events-none"
                               onClick={() => setIsProjectDropdownOpen(false)}
                             />
-                            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top max-h-80 flex flex-col">
+                            <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-bottom max-h-80 flex flex-col">
                               <div className="p-3 border-b border-slate-100 bg-slate-50">
                                 <div className="relative">
                                   <Search
@@ -1909,7 +1962,7 @@ const FollowUpList = ({
                               className="fixed inset-0 z-[80] pointer-events-none"
                               onClick={() => setIsClientDropdownOpen(false)}
                             />
-                            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top max-h-80 flex flex-col">
+                            <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-bottom max-h-80 flex flex-col">
                               <div className="p-3 border-b border-slate-100 bg-slate-50">
                                 <div className="relative">
                                   <Search
@@ -2080,7 +2133,7 @@ const FollowUpList = ({
                                 className="fixed inset-0 z-[80] pointer-events-none"
                                 onClick={() => setIsHourDropdownOpen(false)}
                               />
-                              <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-y-auto max-h-48 z-[90] animate-fade-in-up origin-top">
+                              <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-y-auto max-h-48 z-[90] animate-fade-in-up origin-bottom">
                                 {Array.from(
                                   { length: 12 },
                                   (_, i) => i + 1,
@@ -2129,7 +2182,7 @@ const FollowUpList = ({
                                 className="fixed inset-0 z-[80] pointer-events-none"
                                 onClick={() => setIsMinuteDropdownOpen(false)}
                               />
-                              <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-y-auto max-h-48 z-[90] animate-fade-in-up origin-top">
+                              <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-y-auto max-h-48 z-[90] animate-fade-in-up origin-bottom">
                                 {Array.from({ length: 60 }, (_, i) => i).map(
                                   (m) => (
                                     <button
@@ -2179,7 +2232,7 @@ const FollowUpList = ({
                                 className="fixed inset-0 z-[80] pointer-events-none"
                                 onClick={() => setIsPeriodDropdownOpen(false)}
                               />
-                              <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top">
+                              <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-bottom">
                                 {["AM", "PM"].map((p) => (
                                   <button
                                     key={`period-${p}`}
@@ -2232,7 +2285,7 @@ const FollowUpList = ({
                             className="fixed inset-0 z-[80] pointer-events-none"
                             onClick={() => setIsPriorityDropdownOpen(false)}
                           />
-                          <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top">
+                          <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-bottom">
                             {["Low", "Medium", "High"].map((p) => (
                               <button
                                 key={`priority-${p}`}
@@ -2390,7 +2443,7 @@ const FollowUpList = ({
                                     className="fixed inset-0 z-[80] pointer-events-none"
                                     onClick={() => setIsCompHourOpen(false)}
                                   />
-                                  <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-y-auto max-h-48 z-[90] animate-fade-in-up origin-top">
+                                  <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-y-auto max-h-48 z-[90] animate-fade-in-up origin-bottom">
                                     {Array.from(
                                       { length: 12 },
                                       (_, i) => i + 1,
@@ -2433,7 +2486,7 @@ const FollowUpList = ({
                                     className="fixed inset-0 z-[80] pointer-events-none"
                                     onClick={() => setIsCompMinOpen(false)}
                                   />
-                                  <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-y-auto max-h-48 z-[90] animate-fade-in-up origin-top">
+                                  <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-y-auto max-h-48 z-[90] animate-fade-in-up origin-bottom">
                                     {Array.from(
                                       { length: 60 },
                                       (_, i) => i,
@@ -2480,7 +2533,7 @@ const FollowUpList = ({
                                     className="fixed inset-0 z-[80] pointer-events-none"
                                     onClick={() => setIsCompPeriodOpen(false)}
                                   />
-                                  <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top">
+                                  <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-bottom">
                                     {["AM", "PM"].map((p) => (
                                       <button
                                         key={p}

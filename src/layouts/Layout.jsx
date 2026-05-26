@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { X } from "lucide-react";
 import Sidebar from "./Sidebar";
 import Footer from "./Footer";
-import parivartanLogo from "../assets/Parivartan_Logo.png";
 import favIcon from "../assets/Parivartan-Leaf.png";
 import "remixicon/fonts/remixicon.css";
 

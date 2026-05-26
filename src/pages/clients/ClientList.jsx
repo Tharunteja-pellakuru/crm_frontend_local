@@ -816,31 +816,31 @@ const ClientList = ({
         </div>
 
         {/* Client View Toggles (Pill Style) */}
-        <div className="flex flex-wrap justify-center sm:justify-start gap-2 sm:gap-3 w-full px-1 sm:px-0">
+        <div className="flex overflow-x-auto no-scrollbar [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] justify-start gap-2 sm:gap-3 w-full px-1 sm:px-0 pb-1">
           <button
             onClick={() => setFilterStatus("All")}
-            className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${filterStatus === "All" ? "bg-[#0F172A] text-white border-[#0F172A] shadow-sm" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700"}`}
+            className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border whitespace-nowrap flex-shrink-0 ${filterStatus === "All" ? "bg-[#0F172A] text-white border-[#0F172A] shadow-sm" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700"}`}
           >
             <LayoutGrid size={16} />
             All
           </button>
           <button
             onClick={() => setFilterStatus("Active")}
-            className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${filterStatus === "Active" ? "bg-[#ECFDF5] text-[#059669] border-[#A7F3D0] shadow-sm" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700"}`}
+            className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border whitespace-nowrap flex-shrink-0 ${filterStatus === "Active" ? "bg-[#ECFDF5] text-[#059669] border-[#A7F3D0] shadow-sm" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700"}`}
           >
             <UserCheck size={16} />
             Active
           </button>
           <button
             onClick={() => setFilterStatus("Inactive")}
-            className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${filterStatus === "Inactive" ? "bg-[#FFF7ED] text-[#C2410C] border-[#FDBA74] shadow-sm" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700"}`}
+            className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border whitespace-nowrap flex-shrink-0 ${filterStatus === "Inactive" ? "bg-[#FFF7ED] text-[#C2410C] border-[#FDBA74] shadow-sm" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700"}`}
           >
             <Users size={16} />
             Inactive
           </button>
           <button
             onClick={() => setFilterStatus("Dismissed")}
-            className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${filterStatus === "Dismissed" ? "bg-[#FEF2F2] text-[#E11D48] border-[#FECACA] shadow-sm" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700"}`}
+            className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border whitespace-nowrap flex-shrink-0 ${filterStatus === "Dismissed" ? "bg-[#FEF2F2] text-[#E11D48] border-[#FECACA] shadow-sm" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700"}`}
           >
             <UserX size={16} />
             Dismissed
@@ -947,10 +947,10 @@ const ClientList = ({
                                 e.stopPropagation();
                                 handleOpenFollowUpModal(client);
                               }}
-                              className="p-2 bg-indigo-50 text-indigo-600 border border-indigo-100 rounded-lg hover:bg-indigo-100 transition-all active:scale-90"
-                              title="Add Follow Up"
+                              className="w-[34px] h-[34px] flex items-center justify-center bg-indigo-50 text-indigo-600 border border-indigo-100 rounded-[10px] hover:bg-indigo-100 transition-all active:scale-90 shadow-sm relative group/btn"
                             >
                               <BellRing size={16} />
+                              <div className="absolute bottom-[calc(100%+8px)] right-0 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">Add Follow Up</div>
                             </button>
                           )}
                           {onOnboardClient && client.status === "Lead" && (
@@ -977,10 +977,10 @@ const ClientList = ({
                                 });
                                 setShowOnboardModal(true);
                               }}
-                              className="p-2 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-lg hover:bg-emerald-100 transition-all active:scale-90"
-                              title="Convert to Client"
+                              className="w-[34px] h-[34px] flex items-center justify-center bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-[10px] hover:bg-emerald-100 transition-all active:scale-90 shadow-sm relative group/btn"
                             >
                               <UserCheck size={16} />
+                              <div className="absolute bottom-[calc(100%+8px)] right-0 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">Convert to Client</div>
                             </button>
                           )}
                           <button
@@ -988,21 +988,21 @@ const ClientList = ({
                               e.stopPropagation();
                               handleEditClick(client);
                             }}
-                            className="p-2 bg-blue-50 text-blue-600 border border-blue-100 rounded-lg hover:bg-blue-100 transition-all active:scale-90"
-                            title="Edit Client"
-                          >
-                            <Pencil size={16} />
-                          </button>
+                            className="w-[34px] h-[34px] flex items-center justify-center bg-blue-50 text-blue-600 border border-blue-100 rounded-[10px] hover:bg-blue-100 transition-all active:scale-90 shadow-sm relative group/btn"
+                            >
+                              <Pencil size={16} />
+                              <div className="absolute bottom-[calc(100%+8px)] right-0 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">Edit Client</div>
+                            </button>
                           {onUpdateClient && client.status === "Active" && (
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleClientStatusUpdate(client, "Inactive");
                               }}
-                              className="p-2 bg-orange-50 text-orange-600 border border-orange-100 rounded-lg hover:bg-orange-100 transition-all active:scale-90"
-                              title="Mark Inactive"
+                              className="w-[34px] h-[34px] flex items-center justify-center bg-orange-50 text-orange-600 border border-orange-100 rounded-[10px] hover:bg-orange-100 transition-all active:scale-90 shadow-sm relative group/btn"
                             >
                               <UserMinus size={16} />
+                              <div className="absolute bottom-[calc(100%+8px)] right-0 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">Mark Inactive</div>
                             </button>
                           )}
                           {onUpdateClient && client.status === "Inactive" && (
@@ -1011,10 +1011,10 @@ const ClientList = ({
                                 e.stopPropagation();
                                 handleClientStatusUpdate(client, "Active");
                               }}
-                              className="p-2 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-lg hover:bg-emerald-100 transition-all active:scale-90"
-                              title="Mark Active"
+                              className="w-[34px] h-[34px] flex items-center justify-center bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-[10px] hover:bg-emerald-100 transition-all active:scale-90 shadow-sm relative group/btn"
                             >
                               <UserCheck size={16} />
+                              <div className="absolute bottom-[calc(100%+8px)] right-0 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">Mark Active</div>
                             </button>
                           )}
                           {onUpdateClient && client.status === "Dismissed" && (
@@ -1024,21 +1024,21 @@ const ClientList = ({
                                   e.stopPropagation();
                                   handleClientStatusUpdate(client, "Active");
                                 }}
-                                className="p-2 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-lg hover:bg-emerald-100 transition-all active:scale-90"
-                                title="Mark Active"
-                              >
-                                <UserCheck size={16} />
-                              </button>
+                                className="w-[34px] h-[34px] flex items-center justify-center bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-[10px] hover:bg-emerald-100 transition-all active:scale-90 shadow-sm relative group/btn"
+                            >
+                              <UserCheck size={16} />
+                              <div className="absolute bottom-[calc(100%+8px)] right-0 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">Mark Active</div>
+                            </button>
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleClientStatusUpdate(client, "Inactive");
                                 }}
-                                className="p-2 bg-orange-50 text-orange-600 border border-orange-100 rounded-lg hover:bg-orange-100 transition-all active:scale-90"
-                                title="Mark Inactive"
-                              >
-                                <UserMinus size={16} />
-                              </button>
+                                className="w-[34px] h-[34px] flex items-center justify-center bg-orange-50 text-orange-600 border border-orange-100 rounded-[10px] hover:bg-orange-100 transition-all active:scale-90 shadow-sm relative group/btn"
+                            >
+                              <UserMinus size={16} />
+                              <div className="absolute bottom-[calc(100%+8px)] right-0 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">Mark Inactive</div>
+                            </button>
                             </>
                           )}
                           {onUpdateClient && client.status !== "Dismissed" && (
@@ -1047,10 +1047,10 @@ const ClientList = ({
                                 e.stopPropagation();
                                 handleClientStatusUpdate(client, "Dismissed");
                               }}
-                              className="p-2 bg-rose-50 text-rose-600 border border-rose-100 rounded-lg hover:bg-rose-100 transition-all active:scale-90"
-                              title="Dismiss Client"
+                              className="w-[34px] h-[34px] flex items-center justify-center bg-rose-50 text-rose-600 border border-rose-100 rounded-[10px] hover:bg-rose-100 transition-all active:scale-90 shadow-sm relative group/btn"
                             >
                               <UserX size={16} />
+                              <div className="absolute bottom-[calc(100%+8px)] right-0 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">Dismiss Client</div>
                             </button>
                           )}
                           {client.status === "Dismissed" && onRestoreLead && (
@@ -1059,10 +1059,10 @@ const ClientList = ({
                                 e.stopPropagation();
                                 onRestoreLead(client.id);
                               }}
-                              className="p-2 bg-blue-50 text-blue-600 border border-blue-100 rounded-lg hover:bg-blue-100 transition-all active:scale-90"
-                              title="Restore Client"
+                              className="w-[34px] h-[34px] flex items-center justify-center bg-blue-50 text-blue-600 border border-blue-100 rounded-[10px] hover:bg-blue-100 transition-all active:scale-90 shadow-sm relative group/btn"
                             >
                               <RotateCcw size={16} />
+                              <div className="absolute bottom-[calc(100%+8px)] right-0 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">Restore Client</div>
                             </button>
                           )}
                           {client.status === "Dismissed" && onDeleteClient && (
@@ -1071,10 +1071,10 @@ const ClientList = ({
                                 e.stopPropagation();
                                 onDeleteClient(client.id);
                               }}
-                              className="p-2 bg-red-50 text-red-600 border border-red-200 rounded-lg hover:bg-red-100 transition-all active:scale-90"
-                              title="Delete Client"
+                              className="w-[34px] h-[34px] flex items-center justify-center bg-red-50 text-red-600 border border-red-200 rounded-[10px] hover:bg-red-100 transition-all active:scale-90 shadow-sm relative group/btn"
                             >
                               <Trash2 size={16} />
+                              <div className="absolute bottom-[calc(100%+8px)] right-0 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">Delete Client</div>
                             </button>
                           )}
                         </div>
@@ -1100,7 +1100,7 @@ const ClientList = ({
         </div>
 
         {/* Mobile Card List View */}
-        <div className="lg:hidden grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="lg:hidden grid grid-cols-1 gap-4">
           {currentClients.map((client, index) => {
             const status = getStatusBadge(client);
             return (
@@ -1209,33 +1209,33 @@ const ClientList = ({
                             e.stopPropagation();
                             onDeleteClient(client.id);
                           }}
-                          className="p-2 bg-red-50 text-red-600 border border-red-200 rounded-lg hover:bg-red-100 transition-all active:scale-90"
-                          title="Delete"
-                        >
-                          <Trash2 size={16} />
-                        </button>
+                          className="w-[34px] h-[34px] flex items-center justify-center bg-red-50 text-red-600 border border-red-200 rounded-[10px] hover:bg-red-100 transition-all active:scale-90 shadow-sm relative group/btn"
+                            >
+                              <Trash2 size={16} />
+                              <div className="absolute bottom-[calc(100%+8px)] right-0 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">Delete</div>
+                            </button>
                       )}
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         handleEditClick(client);
                       }}
-                      className="p-2 bg-slate-50 text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-100 transition-all active:scale-90"
-                      title="Edit Client"
-                    >
-                      <Pencil size={16} />
-                    </button>
+                      className="w-[34px] h-[34px] flex items-center justify-center bg-slate-50 text-slate-600 border border-slate-200 rounded-[10px] hover:bg-slate-100 transition-all active:scale-90 shadow-sm relative group/btn"
+                            >
+                              <Pencil size={16} />
+                              <div className="absolute bottom-[calc(100%+8px)] right-0 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">Edit Client</div>
+                            </button>
                     {onUpdateClient && client.status === "Active" && (
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           handleClientStatusUpdate(client, "Inactive");
                         }}
-                        className="p-2 bg-orange-50 text-orange-600 border border-orange-100 rounded-lg hover:bg-orange-100 transition-all active:scale-90"
-                        title="Mark Inactive"
-                      >
-                        <UserMinus size={16} />
-                      </button>
+                        className="w-[34px] h-[34px] flex items-center justify-center bg-orange-50 text-orange-600 border border-orange-100 rounded-[10px] hover:bg-orange-100 transition-all active:scale-90 shadow-sm relative group/btn"
+                            >
+                              <UserMinus size={16} />
+                              <div className="absolute bottom-[calc(100%+8px)] right-0 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">Mark Inactive</div>
+                            </button>
                     )}
                     {onUpdateClient && client.status === "Inactive" && (
                       <button
@@ -1243,11 +1243,11 @@ const ClientList = ({
                           e.stopPropagation();
                           handleClientStatusUpdate(client, "Active");
                         }}
-                        className="p-2 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-lg hover:bg-emerald-100 transition-all active:scale-90"
-                        title="Mark Active"
-                      >
-                        <UserCheck size={16} />
-                      </button>
+                        className="w-[34px] h-[34px] flex items-center justify-center bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-[10px] hover:bg-emerald-100 transition-all active:scale-90 shadow-sm relative group/btn"
+                            >
+                              <UserCheck size={16} />
+                              <div className="absolute bottom-[calc(100%+8px)] right-0 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">Mark Active</div>
+                            </button>
                     )}
                     {onUpdateClient && client.status === "Dismissed" && (
                       <>
@@ -1256,21 +1256,21 @@ const ClientList = ({
                             e.stopPropagation();
                             handleClientStatusUpdate(client, "Active");
                           }}
-                          className="p-2 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-lg hover:bg-emerald-100 transition-all active:scale-90"
-                          title="Mark Active"
-                        >
-                          <UserCheck size={16} />
-                        </button>
+                          className="w-[34px] h-[34px] flex items-center justify-center bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-[10px] hover:bg-emerald-100 transition-all active:scale-90 shadow-sm relative group/btn"
+                            >
+                              <UserCheck size={16} />
+                              <div className="absolute bottom-[calc(100%+8px)] right-0 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">Mark Active</div>
+                            </button>
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             handleClientStatusUpdate(client, "Inactive");
                           }}
-                          className="p-2 bg-orange-50 text-orange-600 border border-orange-100 rounded-lg hover:bg-orange-100 transition-all active:scale-90"
-                          title="Mark Inactive"
-                        >
-                          <UserMinus size={16} />
-                        </button>
+                          className="w-[34px] h-[34px] flex items-center justify-center bg-orange-50 text-orange-600 border border-orange-100 rounded-[10px] hover:bg-orange-100 transition-all active:scale-90 shadow-sm relative group/btn"
+                            >
+                              <UserMinus size={16} />
+                              <div className="absolute bottom-[calc(100%+8px)] right-0 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">Mark Inactive</div>
+                            </button>
                       </>
                     )}
                     {onUpdateClient && client.status !== "Dismissed" && (
@@ -1279,11 +1279,11 @@ const ClientList = ({
                           e.stopPropagation();
                           handleClientStatusUpdate(client, "Dismissed");
                         }}
-                        className="p-2 bg-rose-50 text-rose-600 border border-rose-100 rounded-lg hover:bg-rose-100 transition-all active:scale-90"
-                        title="Dismiss Client"
-                      >
-                        <UserX size={16} />
-                      </button>
+                        className="w-[34px] h-[34px] flex items-center justify-center bg-rose-50 text-rose-600 border border-rose-100 rounded-[10px] hover:bg-rose-100 transition-all active:scale-90 shadow-sm relative group/btn"
+                            >
+                              <UserX size={16} />
+                              <div className="absolute bottom-[calc(100%+8px)] right-0 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">Dismiss Client</div>
+                            </button>
                     )}
                     {onDismissLead && title === "Leads" &&
                       (client.status === "Lead" || client.isConverted) &&
@@ -1293,11 +1293,11 @@ const ClientList = ({
                             e.stopPropagation();
                             onDismissLead(client.id);
                           }}
-                          className="p-2 bg-rose-50 text-rose-600 border border-rose-100 rounded-lg hover:bg-rose-100 transition-all active:scale-90"
-                          title="Dismiss Lead"
-                        >
-                          <UserX size={16} />
-                        </button>
+                          className="w-[34px] h-[34px] flex items-center justify-center bg-rose-50 text-rose-600 border border-rose-100 rounded-[10px] hover:bg-rose-100 transition-all active:scale-90 shadow-sm relative group/btn"
+                            >
+                              <UserX size={16} />
+                              <div className="absolute bottom-[calc(100%+8px)] right-0 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">Dismiss Lead</div>
+                            </button>
                       )}
                   </div>
                 </div>
@@ -1723,7 +1723,7 @@ const ClientList = ({
                         {isStatusDropdownOpen && (
                           <>
                             <div className="fixed inset-0 z-[80]" onClick={() => setIsStatusDropdownOpen(false)} />
-                            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-pop origin-top">
+                            <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-pop origin-bottom">
                               <div className="bg-[#18254D] px-4 py-2.5 border-b border-white/10">
                                 <p className="text-[10px] font-bold text-white/50 tracking-wider uppercase">Select Status</p>
                               </div>
@@ -1792,7 +1792,7 @@ const ClientList = ({
                         {isPriorityDropdownOpen && (
                           <>
                             <div className="fixed inset-0 z-[80]" onClick={() => setIsPriorityDropdownOpen(false)} />
-                            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-pop origin-top">
+                            <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-pop origin-bottom">
                               <div className="bg-[#18254D] px-4 py-2.5 border-b border-white/10">
                                 <p className="text-[10px] font-bold text-white/50 tracking-wider uppercase">Select Status</p>
                               </div>
@@ -2033,7 +2033,7 @@ const ClientList = ({
                         {isClientDropdownOpen && (
                           <>
                             <div className="fixed inset-0 z-[80]" onClick={() => setIsClientDropdownOpen(false)} />
-                            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-pop origin-top">
+                            <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-pop origin-bottom">
                               <div className="p-3 border-b border-slate-100 bg-slate-50/50">
                                 <div className="relative">
                                   <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -2239,7 +2239,7 @@ const ClientList = ({
                     {isStatusDropdownOpen && (
                       <>
                         <div className="fixed inset-0 z-[80]" onClick={() => setIsStatusDropdownOpen(false)} />
-                        <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-pop origin-top">
+                        <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-pop origin-bottom">
                           <div className="bg-[#18254D] px-4 py-2.5 border-b border-white/10">
                             <p className="text-[10px] font-bold text-white/50 tracking-wider uppercase">Select Status</p>
                           </div>
@@ -2308,7 +2308,7 @@ const ClientList = ({
                     {isOnboardStatusDropdownOpen && (
                       <>
                         <div className="fixed inset-0 z-[80]" onClick={() => setIsOnboardStatusDropdownOpen(false)} />
-                        <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-pop origin-top">
+                        <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-pop origin-bottom">
                           <div className="bg-[#18254D] px-4 py-2.5 border-b border-white/10">
                             <p className="text-[10px] font-bold text-white/50 tracking-wider uppercase">Select Status</p>
                           </div>
@@ -2371,7 +2371,7 @@ const ClientList = ({
                     {isOnboardPriorityDropdownOpen && (
                       <>
                         <div className="fixed inset-0 z-[80]" onClick={() => setIsOnboardPriorityDropdownOpen(false)} />
-                        <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-pop origin-top">
+                        <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-pop origin-bottom">
                           <div className="bg-[#18254D] px-4 py-2.5 border-b border-white/10">
                             <p className="text-[10px] font-bold text-white/50 tracking-wider uppercase">Select Priority</p>
                           </div>
@@ -2687,7 +2687,7 @@ const ClientList = ({
                           className="fixed inset-0 z-[110]"
                           onClick={() => setIsEditStatusDropdownOpen(false)}
                         />
-                        <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[120] animate-pop origin-top">
+                        <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[120] animate-pop origin-bottom">
                           <div className="bg-[#18254D] px-4 py-2.5 border-b border-white/10">
                             <p className="text-[10px] font-bold text-white/50 tracking-wider uppercase">
                               Select Status

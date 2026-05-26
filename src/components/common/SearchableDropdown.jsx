@@ -28,7 +28,7 @@ const SearchableDropdown = ({
         const windowHeight = window.innerHeight;
         const dropdownHeight = 300; // Expected max height
         const spaceBelow = windowHeight - rect.bottom;
-        const shouldOpenUp = spaceBelow < dropdownHeight && rect.top > dropdownHeight;
+        const shouldOpenUp = true;
 
         setPortalStyle({
           position: "fixed",

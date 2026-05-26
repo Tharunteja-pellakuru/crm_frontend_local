@@ -91,7 +91,7 @@ const EnquiryList = ({
       const rect = aiModelRef.current.getBoundingClientRect();
       setModelDropdownStyle({
         position: "fixed",
-        top: `${rect.bottom + 8}px`,
+        bottom: `${window.innerHeight - rect.top + 8}px`,
         left: `${rect.left}px`,
         width: `${rect.width}px`,
         zIndex: 9999,
@@ -940,7 +940,7 @@ const EnquiryList = ({
                                     {isModelDropdownOpen && createPortal(
                                       <>
                                         <div className="fixed inset-0 z-[100000]" onClick={() => setIsModelDropdownOpen(false)} />
-                                        <div className="absolute bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[100001] animate-pop origin-top" style={modelDropdownStyle}>
+                                        <div className="absolute bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[100001] animate-pop origin-bottom" style={modelDropdownStyle}>
                                           <div className="bg-[#18254D] px-4 py-2.5 border-b border-white/10">
                                             <p className="text-[10px] font-bold text-white/50 tracking-wider uppercase">Available Models</p>
                                           </div>
@@ -1035,17 +1035,17 @@ const EnquiryList = ({
           </div>
         </div>
 
-        <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-2 pt-2">
-          <button onClick={() => setActiveTab("new")} className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${activeTab === "new" ? "bg-[#EFF6FF] text-[#2563EB] border-[#3B82F6] shadow-sm" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700"}`}>
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] pb-2 pt-2">
+          <button onClick={() => setActiveTab("new")} className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border whitespace-nowrap flex-shrink-0 ${activeTab === "new" ? "bg-[#EFF6FF] text-[#2563EB] border-[#3B82F6] shadow-sm" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700"}`}>
             Inbox
           </button>
-          <button onClick={() => setActiveTab("hold")} className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${activeTab === "hold" ? "bg-[#FFF7ED] text-[#C2410C] border-[#F97316] shadow-sm" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700"}`}>
+          <button onClick={() => setActiveTab("hold")} className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border whitespace-nowrap flex-shrink-0 ${activeTab === "hold" ? "bg-[#FFF7ED] text-[#C2410C] border-[#F97316] shadow-sm" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700"}`}>
             On Hold
           </button>
-          <button onClick={() => setActiveTab("converted")} className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${activeTab === "converted" ? "bg-[#F0FDF4] text-[#15803D] border-[#16A34A] shadow-sm" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700"}`}>
+          <button onClick={() => setActiveTab("converted")} className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border whitespace-nowrap flex-shrink-0 ${activeTab === "converted" ? "bg-[#F0FDF4] text-[#15803D] border-[#16A34A] shadow-sm" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700"}`}>
             Converted
           </button>
-          <button onClick={() => setActiveTab("dismissed")} className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${activeTab === "dismissed" ? "bg-[#FFF1F2] text-[#BE123C] border-[#F43F5E] shadow-sm" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700"}`}>
+          <button onClick={() => setActiveTab("dismissed")} className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border whitespace-nowrap flex-shrink-0 ${activeTab === "dismissed" ? "bg-[#FFF1F2] text-[#BE123C] border-[#F43F5E] shadow-sm" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700"}`}>
             Dismissed
           </button>
         </div>
@@ -1134,22 +1134,22 @@ const EnquiryList = ({
                       <div className="flex items-center justify-end gap-2">
                         {activeTab === "new" ? (
                           <>
-                            <button onClick={(e) => { e.stopPropagation(); openLeadModal(enquiry); }} className="p-2 bg-indigo-50 text-indigo-600 border border-indigo-100 rounded-lg hover:bg-indigo-100 transition-all active:scale-90" title="Add to Lead"><CheckCircle size={16} /></button>
-                            <button onClick={(e) => { e.stopPropagation(); openHoldModal(enquiry); }} className="p-2 bg-amber-50 text-amber-600 border border-amber-100 rounded-lg hover:bg-amber-100 transition-all active:scale-90" title="Hold"><PauseCircle size={16} /></button>
-                            <button onClick={(e) => { e.stopPropagation(); onDismiss(enquiry.id); }} className="p-2 bg-rose-50 text-rose-600 border border-rose-100 rounded-lg hover:bg-rose-100 transition-all active:scale-90" title="Dismiss"><UserX size={16} /></button>
-                            <button onClick={(e) => { e.stopPropagation(); openEditModal(enquiry); }} className="p-2 bg-slate-50 text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-100 transition-all active:scale-90" title="Edit"><Pencil size={16} /></button>
+                            <button onClick={(e) => { e.stopPropagation(); openLeadModal(enquiry); }} className="w-[34px] h-[34px] flex items-center justify-center bg-indigo-50 text-indigo-600 border border-indigo-100 rounded-[10px] hover:bg-indigo-100 transition-all active:scale-90 shadow-sm relative group/btn"><CheckCircle size={16} /><div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">Add to Lead</div></button>
+                            <button onClick={(e) => { e.stopPropagation(); openHoldModal(enquiry); }} className="w-[34px] h-[34px] flex items-center justify-center bg-amber-50 text-amber-600 border border-amber-100 rounded-[10px] hover:bg-amber-100 transition-all active:scale-90 shadow-sm relative group/btn"><PauseCircle size={16} /><div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">Hold</div></button>
+                            <button onClick={(e) => { e.stopPropagation(); onDismiss(enquiry.id); }} className="w-[34px] h-[34px] flex items-center justify-center bg-rose-50 text-rose-600 border border-rose-100 rounded-[10px] hover:bg-rose-100 transition-all active:scale-90 shadow-sm relative group/btn"><UserX size={16} /><div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">Dismiss</div></button>
+                            <button onClick={(e) => { e.stopPropagation(); openEditModal(enquiry); }} className="w-[34px] h-[34px] flex items-center justify-center bg-slate-50 text-slate-600 border border-slate-200 rounded-[10px] hover:bg-slate-100 transition-all active:scale-90 shadow-sm relative group/btn"><Pencil size={16} /><div className="absolute bottom-[calc(100%+8px)] right-0 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">Edit</div></button>
                           </>
                         ) : activeTab === "hold" ? (
                           <>
-                            <button onClick={(e) => { e.stopPropagation(); onRestore(enquiry.id); }} className="p-2 bg-blue-50 text-blue-600 border border-blue-100 rounded-lg hover:bg-blue-100 transition-all active:scale-90" title="Restore"><RefreshCcw size={16} /></button>
-                            <button onClick={(e) => { e.stopPropagation(); onDismiss(enquiry.id); }} className="p-2 bg-rose-50 text-rose-600 border border-rose-100 rounded-lg hover:bg-rose-100 transition-all active:scale-90" title="Dismiss"><UserX size={16} /></button>
-                            <button onClick={(e) => { e.stopPropagation(); openEditModal(enquiry); }} className="p-2 bg-slate-50 text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-100 transition-all active:scale-90" title="Edit"><Pencil size={16} /></button>
+                            <button onClick={(e) => { e.stopPropagation(); onRestore(enquiry.id); }} className="w-[34px] h-[34px] flex items-center justify-center bg-blue-50 text-blue-600 border border-blue-100 rounded-[10px] hover:bg-blue-100 transition-all active:scale-90 shadow-sm relative group/btn"><RefreshCcw size={16} /><div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">Restore</div></button>
+                            <button onClick={(e) => { e.stopPropagation(); onDismiss(enquiry.id); }} className="w-[34px] h-[34px] flex items-center justify-center bg-rose-50 text-rose-600 border border-rose-100 rounded-[10px] hover:bg-rose-100 transition-all active:scale-90 shadow-sm relative group/btn"><UserX size={16} /><div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">Dismiss</div></button>
+                            <button onClick={(e) => { e.stopPropagation(); openEditModal(enquiry); }} className="w-[34px] h-[34px] flex items-center justify-center bg-slate-50 text-slate-600 border border-slate-200 rounded-[10px] hover:bg-slate-100 transition-all active:scale-90 shadow-sm relative group/btn"><Pencil size={16} /><div className="absolute bottom-[calc(100%+8px)] right-0 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">Edit</div></button>
                           </>
                         ) : (
                           <>
-                            <button onClick={(e) => { e.stopPropagation(); onRestore(enquiry.id); }} className="p-2 bg-blue-50 text-blue-600 border border-blue-100 rounded-lg hover:bg-blue-100 transition-all active:scale-90" title="Restore"><RefreshCcw size={16} /></button>
-                            <button onClick={(e) => { e.stopPropagation(); onDelete(enquiry.id); }} className="p-2 bg-red-50 text-red-600 border border-red-200 rounded-lg hover:bg-red-100 transition-all active:scale-90" title="Delete Permanently"><Trash2 size={16} /></button>
-                            <button onClick={(e) => { e.stopPropagation(); openEditModal(enquiry); }} className="p-2 bg-slate-50 text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-100 transition-all active:scale-90" title="Edit"><Pencil size={16} /></button>
+                            <button onClick={(e) => { e.stopPropagation(); onRestore(enquiry.id); }} className="w-[34px] h-[34px] flex items-center justify-center bg-blue-50 text-blue-600 border border-blue-100 rounded-[10px] hover:bg-blue-100 transition-all active:scale-90 shadow-sm relative group/btn"><RefreshCcw size={16} /><div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">Restore</div></button>
+                            <button onClick={(e) => { e.stopPropagation(); onDelete(enquiry.id); }} className="w-[34px] h-[34px] flex items-center justify-center bg-red-50 text-red-600 border border-red-200 rounded-[10px] hover:bg-red-100 transition-all active:scale-90 shadow-sm relative group/btn"><Trash2 size={16} /><div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">Delete</div></button>
+                            <button onClick={(e) => { e.stopPropagation(); openEditModal(enquiry); }} className="w-[34px] h-[34px] flex items-center justify-center bg-slate-50 text-slate-600 border border-slate-200 rounded-[10px] hover:bg-slate-100 transition-all active:scale-90 shadow-sm relative group/btn"><Pencil size={16} /><div className="absolute bottom-[calc(100%+8px)] right-0 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">Edit</div></button>
                           </>
                         )}
                       </div>
@@ -1172,7 +1172,7 @@ const EnquiryList = ({
         </div>
 
         {/* Mobile Card List View */}
-        <div className="lg:hidden grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="lg:hidden grid grid-cols-1 gap-4">
           {paginatedEnquiries.map((enquiry) => (
             <div key={enquiry.id} onClick={() => { setSelectedEnquiry(enquiry); setShowDetailsModal(true); }} className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all cursor-pointer">
               <div className="flex items-center justify-between mb-4">
@@ -1239,22 +1239,22 @@ const EnquiryList = ({
               <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
                 {activeTab === "new" ? (
                   <>
-                    <button onClick={(e) => { e.stopPropagation(); openLeadModal(enquiry); }} className="p-2 bg-indigo-50 text-indigo-600 border border-indigo-100 rounded-lg hover:bg-indigo-100 transition-all active:scale-90" title="Add to Lead"><CheckCircle size={16} /></button>
-                    <button onClick={(e) => { e.stopPropagation(); openHoldModal(enquiry); }} className="p-2 bg-amber-50 text-amber-600 border border-amber-100 rounded-lg hover:bg-amber-100 transition-all active:scale-90" title="Hold"><PauseCircle size={16} /></button>
-                    <button onClick={(e) => { e.stopPropagation(); onDismiss(enquiry.id); }} className="p-2 bg-rose-50 text-rose-600 border border-rose-100 rounded-lg hover:bg-rose-100 transition-all active:scale-90" title="Dismiss"><UserX size={16} /></button>
-                    <button onClick={(e) => { e.stopPropagation(); openEditModal(enquiry); }} className="p-2 bg-slate-50 text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-100 transition-all active:scale-90" title="Edit"><Pencil size={16} /></button>
+                    <button onClick={(e) => { e.stopPropagation(); openLeadModal(enquiry); }} className="w-[34px] h-[34px] flex items-center justify-center bg-indigo-50 text-indigo-600 border border-indigo-100 rounded-[10px] hover:bg-indigo-100 transition-all active:scale-90 shadow-sm relative group/btn"><CheckCircle size={16} /><div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">Add to Lead</div></button>
+                    <button onClick={(e) => { e.stopPropagation(); openHoldModal(enquiry); }} className="w-[34px] h-[34px] flex items-center justify-center bg-amber-50 text-amber-600 border border-amber-100 rounded-[10px] hover:bg-amber-100 transition-all active:scale-90 shadow-sm relative group/btn"><PauseCircle size={16} /><div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">Hold</div></button>
+                    <button onClick={(e) => { e.stopPropagation(); onDismiss(enquiry.id); }} className="w-[34px] h-[34px] flex items-center justify-center bg-rose-50 text-rose-600 border border-rose-100 rounded-[10px] hover:bg-rose-100 transition-all active:scale-90 shadow-sm relative group/btn"><UserX size={16} /><div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">Dismiss</div></button>
+                    <button onClick={(e) => { e.stopPropagation(); openEditModal(enquiry); }} className="w-[34px] h-[34px] flex items-center justify-center bg-slate-50 text-slate-600 border border-slate-200 rounded-[10px] hover:bg-slate-100 transition-all active:scale-90 shadow-sm relative group/btn"><Pencil size={16} /><div className="absolute bottom-[calc(100%+8px)] right-0 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">Edit</div></button>
                   </>
                 ) : activeTab === "hold" ? (
                   <>
-                    <button onClick={(e) => { e.stopPropagation(); onRestore(enquiry.id); }} className="p-2 bg-blue-50 text-blue-600 border border-blue-100 rounded-lg hover:bg-blue-100 transition-all active:scale-90" title="Restore"><RefreshCcw size={16} /></button>
-                    <button onClick={(e) => { e.stopPropagation(); onDismiss(enquiry.id); }} className="p-2 bg-rose-50 text-rose-600 border border-rose-100 rounded-lg hover:bg-rose-100 transition-all active:scale-90" title="Dismiss"><UserX size={16} /></button>
-                    <button onClick={(e) => { e.stopPropagation(); openEditModal(enquiry); }} className="p-2 bg-slate-50 text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-100 transition-all active:scale-90" title="Edit"><Pencil size={16} /></button>
+                    <button onClick={(e) => { e.stopPropagation(); onRestore(enquiry.id); }} className="w-[34px] h-[34px] flex items-center justify-center bg-blue-50 text-blue-600 border border-blue-100 rounded-[10px] hover:bg-blue-100 transition-all active:scale-90 shadow-sm relative group/btn"><RefreshCcw size={16} /><div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">Restore</div></button>
+                    <button onClick={(e) => { e.stopPropagation(); onDismiss(enquiry.id); }} className="w-[34px] h-[34px] flex items-center justify-center bg-rose-50 text-rose-600 border border-rose-100 rounded-[10px] hover:bg-rose-100 transition-all active:scale-90 shadow-sm relative group/btn"><UserX size={16} /><div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">Dismiss</div></button>
+                    <button onClick={(e) => { e.stopPropagation(); openEditModal(enquiry); }} className="w-[34px] h-[34px] flex items-center justify-center bg-slate-50 text-slate-600 border border-slate-200 rounded-[10px] hover:bg-slate-100 transition-all active:scale-90 shadow-sm relative group/btn"><Pencil size={16} /><div className="absolute bottom-[calc(100%+8px)] right-0 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">Edit</div></button>
                   </>
                 ) : (
                   <>
-                    <button onClick={(e) => { e.stopPropagation(); onRestore(enquiry.id); }} className="p-2 bg-blue-50 text-blue-600 border border-blue-100 rounded-lg hover:bg-blue-100 transition-all active:scale-90" title="Restore"><RefreshCcw size={16} /></button>
-                    <button onClick={(e) => { e.stopPropagation(); onDelete(enquiry.id); }} className="p-2 bg-red-50 text-red-600 border border-red-200 rounded-lg hover:bg-red-100 transition-all active:scale-90" title="Delete Permanently"><Trash2 size={16} /></button>
-                    <button onClick={(e) => { e.stopPropagation(); openEditModal(enquiry); }} className="p-2 bg-slate-50 text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-100 transition-all active:scale-90" title="Edit"><Pencil size={16} /></button>
+                    <button onClick={(e) => { e.stopPropagation(); onRestore(enquiry.id); }} className="w-[34px] h-[34px] flex items-center justify-center bg-blue-50 text-blue-600 border border-blue-100 rounded-[10px] hover:bg-blue-100 transition-all active:scale-90 shadow-sm relative group/btn"><RefreshCcw size={16} /><div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">Restore</div></button>
+                    <button onClick={(e) => { e.stopPropagation(); onDelete(enquiry.id); }} className="w-[34px] h-[34px] flex items-center justify-center bg-red-50 text-red-600 border border-red-200 rounded-[10px] hover:bg-red-100 transition-all active:scale-90 shadow-sm relative group/btn"><Trash2 size={16} /><div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">Delete Permanently</div></button>
+                    <button onClick={(e) => { e.stopPropagation(); openEditModal(enquiry); }} className="w-[34px] h-[34px] flex items-center justify-center bg-slate-50 text-slate-600 border border-slate-200 rounded-[10px] hover:bg-slate-100 transition-all active:scale-90 shadow-sm relative group/btn"><Pencil size={16} /><div className="absolute bottom-[calc(100%+8px)] right-0 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">Edit</div></button>
                   </>
                 )}
               </div>
@@ -1448,7 +1448,7 @@ const EnquiryList = ({
                               className="fixed inset-0 z-[80]"
                               onClick={() => setIsSourceDropdownOpen(false)}
                             />
-                            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-pop origin-top">
+                            <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-pop origin-bottom">
                               <div className="bg-[#18254D] px-4 py-2.5 border-b border-white/10">
                                 <p className="text-[10px] font-bold text-white/50 tracking-wider uppercase">
                                   Select Source
@@ -1686,7 +1686,7 @@ const EnquiryList = ({
                               className="fixed inset-0 z-[80]"
                               onClick={() => setIsEditSourceDropdownOpen(false)}
                             />
-                            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-pop origin-top">
+                            <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-pop origin-bottom">
                               <div className="bg-[#18254D] px-4 py-2.5 border-b border-white/10">
                                 <p className="text-[10px] font-bold text-white/50 tracking-wider uppercase">
                                   Select Source
@@ -2078,7 +2078,7 @@ const EnquiryList = ({
                           className="fixed inset-0 z-[80]"
                           onClick={() => setIsEnquiryStatusDropdownOpen(false)}
                         />
-                        <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-pop origin-top">
+                        <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-pop origin-bottom">
                           <div className="bg-[#18254D] px-4 py-2.5 border-b border-white/10">
                             <p className="text-[10px] font-bold text-white/50 tracking-wider uppercase">
                               Select Status

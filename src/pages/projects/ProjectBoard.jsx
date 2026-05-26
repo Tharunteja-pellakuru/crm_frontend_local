@@ -29,6 +29,8 @@ import {
   Trash2,
   ChevronRight,
   ChevronLeft,
+  PlayCircle,
+  PauseCircle,
 } from "lucide-react";
 import DatePicker from "../../components/ui/DatePicker";
 import {
@@ -143,9 +145,6 @@ const ProjectCard = ({
   onSelectProject,
   onDelete,
 }) => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [menuStyle, setMenuStyle] = useState({});
-  const menuButtonRef = useRef(null);
   const client = clients.find((c) => c.id == project.clientId || c.client_id == project.clientId);
 
   const getPriorityStyles = (priority) => {
@@ -198,46 +197,7 @@ const ProjectCard = ({
         progress: newProgress,
       });
     }
-    setIsMenuOpen(false);
   };
-
-  useEffect(() => {
-    if (!isMenuOpen || !menuButtonRef.current) return;
-
-    const rect = menuButtonRef.current.getBoundingClientRect();
-    const menuWidth = 192;
-    const menuHeight = 180;
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-    let left = rect.right - menuWidth;
-    if (left < 12) left = 12;
-    if (left + menuWidth > viewportWidth - 12) left = viewportWidth - menuWidth - 12;
-
-    let top = rect.bottom + 8;
-    if (top + menuHeight > viewportHeight - 12) {
-      top = rect.top - menuHeight - 8;
-    }
-
-    setMenuStyle({
-      position: "fixed",
-      top: `${top}px`,
-      left: `${left}px`,
-      width: `${menuWidth}px`,
-      zIndex: 99999,
-    });
-  }, [isMenuOpen]);
-
-  useEffect(() => {
-    if (!isMenuOpen) return;
-
-    const closeMenu = () => setIsMenuOpen(false);
-    window.addEventListener("scroll", closeMenu, true);
-    window.addEventListener("resize", closeMenu);
-    return () => {
-      window.removeEventListener("scroll", closeMenu, true);
-      window.removeEventListener("resize", closeMenu);
-    };
-  }, [isMenuOpen]);
 
   const priorityStyle = getPriorityStyles(project.priority);
   const PriorityIcon = priorityStyle.icon;
@@ -247,37 +207,37 @@ const ProjectCard = ({
       onClick={() => onSelectProject && onSelectProject(project)}
       className="group transition-all hover:bg-slate-50/50 cursor-pointer"
     >
-      <td className="px-6 py-5 border-y border-slate-100 first:border-l first:rounded-l-xl">
+      <td className="px-4 py-5 border-y border-slate-100 first:border-l first:rounded-l-xl">
         <div className="min-w-0">
           <div className="font-bold text-[13px] text-[#18254D] tracking-tight leading-none mb-1 group-hover:text-secondary transition-colors truncate">
             {project.name}
           </div>
-          <div className="text-[12px] font-medium text-slate-400 truncate max-w-[140px] sm:max-w-[220px] xl:max-w-[320px]">
+          <div className="text-[12px] font-medium text-slate-400 truncate">
             {project.description || "No description provided"}
           </div>
         </div>
       </td>
 
-      <td className="px-6 py-5 border-y border-slate-100">
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-secondary" />
-          <span className="text-[12px] font-semibold text-slate-600">
+      <td className="px-4 py-5 border-y border-slate-100">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="w-2 h-2 rounded-full bg-secondary shrink-0" />
+          <span className="text-[12px] font-semibold text-slate-600 truncate">
             {client?.name || client?.company || "System"}
           </span>
         </div>
       </td>
 
-      <td className="px-6 py-5 border-y border-slate-100">
+      <td className="px-4 py-5 border-y border-slate-100">
         <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold border tracking-wider uppercase ${priorityStyle.badge}`}>
           <PriorityIcon size={10} />
           {project.priority || "MEDIUM"}
         </span>
       </td>
 
-      <td className="px-6 py-5 border-y border-slate-100">
-        <div className="flex items-center gap-1.5 text-[12px] font-bold text-slate-500">
-          <Calendar size={12} className="text-secondary" />
-          <span>
+      <td className="px-4 py-5 border-y border-slate-100">
+        <div className="flex items-center gap-1.5 text-[12px] font-bold text-slate-500 whitespace-nowrap">
+          <Calendar size={12} className="text-secondary shrink-0" />
+          <span className="truncate">
             {project.onboardingDate
               ? new Date(project.onboardingDate).toLocaleDateString(undefined, {
                   month: "short",
@@ -289,10 +249,10 @@ const ProjectCard = ({
         </div>
       </td>
 
-      <td className="px-6 py-5 border-y border-slate-100">
-        <div className="flex items-center gap-1.5 text-[12px] font-bold text-slate-500">
-          <Calendar size={12} className="text-secondary" />
-          <span>
+      <td className="px-4 py-5 border-y border-slate-100">
+        <div className="flex items-center gap-1.5 text-[12px] font-bold text-slate-500 whitespace-nowrap">
+          <Calendar size={12} className="text-secondary shrink-0" />
+          <span className="truncate">
             {project.deadline
               ? new Date(project.deadline).toLocaleDateString(undefined, {
                   month: "short",
@@ -304,13 +264,13 @@ const ProjectCard = ({
         </div>
       </td>
 
-      <td className="px-6 py-5 border-y border-slate-100">
-        <span className="text-[12px] font-semibold text-slate-600">
+      <td className="px-4 py-5 border-y border-slate-100">
+        <span className="text-[12px] font-semibold text-slate-600 truncate block">
           {project.createdByName || "System"}
         </span>
       </td>
 
-      <td className="px-6 py-5 border-y border-slate-100 last:border-r last:rounded-r-xl text-right">
+      <td className="px-4 py-5 border-y border-slate-100 last:border-r last:rounded-r-xl text-right">
         <div className="flex justify-end gap-2 flex-nowrap" onClick={(e) => e.stopPropagation()}>
           <button
             onClick={(e) => {
@@ -338,55 +298,42 @@ const ProjectCard = ({
               Delete Project
             </div>
           </button>
-          <div className="relative">
-            <button
-              ref={menuButtonRef}
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsMenuOpen(!isMenuOpen);
-              }}
-              type="button"
-              className={`w-[34px] h-[34px] flex items-center justify-center bg-white border rounded-[10px] shadow-sm transition-all ${isMenuOpen ? "border-primary text-primary" : "border-slate-200 text-slate-400 hover:border-slate-300 hover:text-primary"}`}
-              title="Change Status"
-            >
-              <MoreVertical size={16} />
-            </button>
-            {isMenuOpen && (
-              createPortal(
-                <>
-                  <div
-                    className="fixed inset-0 z-[99990]"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setIsMenuOpen(false);
-                    }}
-                  />
-                  <div
-                    onClick={(e) => e.stopPropagation()}
-                    style={menuStyle}
-                    className="bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden animate-pop origin-top-right py-2"
-                  >
-                    <div className="bg-[#18254D] px-4 py-2.5 border-b border-white/10 mb-1">
-                      <p className="text-[10px] font-bold text-white/50 tracking-wider uppercase">
-                        Quick Actions
-                      </p>
-                    </div>
-                    {availableStatuses.map((status) => (
-                      <button
-                        key={status}
-                        type="button"
-                        onClick={() => handleStatusUpdate(status)}
-                        className="w-full text-left px-4 py-2.5 text-xs font-semibold tracking-wider text-[#18254D] hover:bg-slate-50 transition-colors"
-                      >
-                        Move to {status}
-                      </button>
-                    ))}
-                  </div>
-                </>,
-                document.body,
-              )
-            )}
-          </div>
+          {availableStatuses.map((status, index) => {
+            let Icon = AlertCircle;
+            let btnClass = "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 hover:border-slate-300";
+            if (status === "In Progress") {
+              Icon = PlayCircle;
+              btnClass = "bg-[#FFFbeb] text-[#D97706] border-[#FDE68A] hover:bg-[#FEF3C7] hover:border-[#FCD34D]";
+            } else if (status === "Completed") {
+              Icon = CheckCircle;
+              btnClass = "bg-[#ECFDF5] text-[#059669] border-[#A7F3D0] hover:bg-[#D1FAE5] hover:border-[#6EE7B7]";
+            } else if (status === "Hold") {
+              Icon = PauseCircle;
+              btnClass = "bg-[#FEF2F2] text-[#DC2626] border-[#FECACA] hover:bg-[#FEE2E2] hover:border-[#FCA5A5]";
+            } else if (status === "Planning" || status === "Pending") {
+              Icon = AlertCircle;
+              btnClass = "bg-[#EFF6FF] text-[#2563EB] border-[#BFDBFE] hover:bg-[#DBEAFE] hover:border-[#93C5FD]";
+            }
+
+            const isLast = index === availableStatuses.length - 1;
+
+            return (
+              <button
+                key={status}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleStatusUpdate(status);
+                }}
+                className={`w-[34px] h-[34px] flex items-center justify-center border rounded-[10px] transition-all active:scale-90 shadow-sm relative group/btn ${btnClass}`}
+                title={`Move to ${status}`}
+              >
+                <Icon size={16} />
+                <div className={`absolute bottom-[calc(100%+8px)] ${isLast ? "right-0" : "left-1/2 -translate-x-1/2"} opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md`}>
+                  Move to {status}
+                </div>
+              </button>
+            );
+          })}
         </div>
       </td>
     </tr>
@@ -425,6 +372,7 @@ const ProjectBoard = ({
     }
   }, [selectedCategory, COLUMNS, activeStage]);
 
+  const [editingProject, setEditingProject] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false); // Added isSubmitting state
   const [showAddModal, setShowAddModal] = useState(false);
 
@@ -563,9 +511,30 @@ const ProjectBoard = ({
   };
 
   const handleEditProject = (project) => {
-    if (onSelectProject) {
-      onSelectProject(project);
-    }
+    setEditingProject(project);
+    const client = clients.find((c) => c.id == project.clientId || c.client_id == project.clientId);
+    setFormData({
+      name: client?.name || "",
+      email: client?.email || "",
+      phone: client?.phone || "",
+      projectName: project.name || project.projectName || "",
+      projectStatus: project.status || "Planning",
+      projectCategory: project.category || 1,
+      projectPriority: project.priority || "High",
+      projectDescription: project.description || "",
+      country: client?.country || "India",
+      state: client?.state || "",
+      currency: client?.currency || "INR",
+      organisationName: client?.company || client?.organisation_name || "",
+      clientStatus: client?.status || "Active",
+      onboardingDate: project.onboardingDate ? new Date(project.onboardingDate).toISOString().split("T")[0] : "",
+      deadline: project.deadline ? new Date(project.deadline).toISOString().split("T")[0] : "",
+      budget: project.budget || "",
+      scopeDocument: project.scopeDocument || null,
+    });
+    setSelectedClientId(project.clientId || null);
+    setClientSearch(client?.name || "");
+    setShowAddModal(true);
   };
 
   const totalProjectsCount = projects.length;
@@ -598,7 +567,21 @@ const ProjectBoard = ({
     setIsSubmitting(true);
 
     try {
-      if (onAddProject) {
+      if (editingProject && onUpdateProject) {
+        await onUpdateProject({
+          ...editingProject,
+          clientId: selectedClientId,
+          name: formData.projectName,
+          description: formData.projectDescription,
+          category: formData.projectCategory,
+          status: formData.projectStatus,
+          priority: formData.projectPriority,
+          budget: formData.budget,
+          onboardingDate: formData.onboardingDate,
+          deadline: formData.deadline,
+          scopeDocument: formData.scopeDocument,
+        });
+      } else if (onAddProject && !editingProject) {
         await onAddProject({
           clientId: selectedClientId,
           name: formData.projectName,
@@ -614,6 +597,7 @@ const ProjectBoard = ({
       }
 
       setShowAddModal(false);
+      setEditingProject(null);
       // Reset form
       setSelectedClientId(null);
       setClientSearch("");
@@ -659,7 +643,7 @@ const ProjectBoard = ({
           </div>
           <div className="w-full lg:w-auto">
             <button
-              onClick={() => setShowAddModal(true)}
+              onClick={() => { setEditingProject(null); setShowAddModal(true); }}
               className="w-full lg:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-[#18254D] text-white rounded-2xl hover:bg-slate-800 transition-all text-[13px] font-bold tracking-wider shadow-lg active:scale-95 group"
             >
               <Plus
@@ -673,7 +657,7 @@ const ProjectBoard = ({
         </div>
 
         {/* Stat Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <div className="bg-white p-4 sm:p-5 lg:p-6 rounded-2xl shadow-sm border border-slate-200 hover:-translate-y-1 hover:shadow-md transition-all duration-300">
             <div className="flex items-center gap-2 sm:gap-4">
               <div className="p-2 sm:p-3 rounded-full bg-blue-50 text-blue-500 shrink-0">
@@ -901,7 +885,10 @@ const ProjectBoard = ({
                 }}
                 className={`shrink-0 whitespace-nowrap px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border ${isActive ? activeStyles : inactiveStyles}`}
               >
-                <LayoutGrid size={16} />
+                {status === "All" && <LayoutGrid size={16} />}
+                {status === "In Progress" && <PlayCircle size={16} />}
+                {status === "Hold" && <PauseCircle size={16} />}
+                {status === "Completed" && <CheckCircle size={16} />}
                 {status}
               </button>
             );
@@ -910,29 +897,29 @@ const ProjectBoard = ({
 
         {/* Desktop Table */}
         <div className="hidden lg:block bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden w-full">
-          <div className="w-full overflow-x-auto custom-scrollbar rounded-2xl">
-            <table className="min-w-[1100px] w-full border-collapse">
+          <div className="w-full">
+            <table className="w-full border-collapse table-fixed">
               <thead className="bg-slate-50/50">
                 <tr>
-                  <th className="px-6 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100 first:border-l first:rounded-l-xl">
+                  <th className="w-[22%] px-4 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100 first:border-l first:rounded-l-xl whitespace-nowrap">
                     Project Name
                   </th>
-                  <th className="px-6 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">
+                  <th className="w-[16%] px-4 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100 whitespace-nowrap">
                     Client
                   </th>
-                  <th className="px-6 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">
+                  <th className="w-[10%] px-4 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100 whitespace-nowrap">
                     Priority
                   </th>
-                  <th className="px-6 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">
+                  <th className="w-[12%] px-4 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100 whitespace-nowrap">
                     Onboard Date
                   </th>
-                  <th className="px-6 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">
+                  <th className="w-[12%] px-4 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100 whitespace-nowrap">
                     Deadline
                   </th>
-                  <th className="px-6 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">
+                  <th className="w-[10%] px-4 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100 whitespace-nowrap">
                     Created By
                   </th>
-                  <th className="px-6 py-5 text-right text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100 last:border-r last:rounded-r-xl">
+                  <th className="w-[18%] px-4 py-5 text-right text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100 last:border-r last:rounded-r-xl whitespace-nowrap">
                     Actions
                   </th>
                 </tr>
@@ -968,29 +955,52 @@ const ProjectBoard = ({
         </div>
 
         {/* Mobile Card List */}
-        <div className="lg:hidden grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="lg:hidden grid grid-cols-1 gap-4">
           {currentProjects.map((project, index) => {
             const client = clients.find((c) => c.id == project.clientId || c.client_id == project.clientId);
+            let priorityBadge = "bg-slate-100 text-slate-600 border-slate-200";
+            let PriorityIcon = Tag;
+            switch ((project.priority || "").toLowerCase()) {
+              case "critical": priorityBadge = "bg-rose-100 text-rose-600 border-rose-200"; PriorityIcon = AlertCircle; break;
+              case "high": priorityBadge = "bg-amber-100 text-amber-600 border-amber-200"; PriorityIcon = Zap; break;
+              case "medium": priorityBadge = "bg-emerald-100 text-emerald-600 border-emerald-200"; PriorityIcon = CheckCircle; break;
+              case "low": priorityBadge = "bg-sky-100 text-sky-600 border-sky-200"; PriorityIcon = Tag; break;
+            }
+
             return (
               <div
                 key={project.id ? `project-mobile-${project.id}` : `project-mobile-idx-${index}`}
                 onClick={() => onSelectProject && onSelectProject(project)}
                 className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md active:scale-[0.98] cursor-pointer transition-all"
               >
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 border border-indigo-100 shadow-sm shrink-0">
                       <Briefcase size={20} strokeWidth={2} />
                     </div>
-                    <div className="min-w-0">
-                      <div className="font-bold text-sm text-[#18254D] truncate">{project.projectName}</div>
-                      <div className="text-xs text-slate-400 truncate">{client ? client.name : "Internal Project"}</div>
+                    <div className="min-w-0 flex flex-col justify-center">
+                      <div className="font-bold text-sm text-[#18254D] truncate">{project.name || project.projectName}</div>
+                      <div className="text-xs text-slate-400 truncate flex items-center gap-1.5 mt-0.5">
+                        <div className="w-1.5 h-1.5 rounded-full bg-secondary shrink-0" />
+                        <span>{client ? (client.name || client.company) : "System"}</span>
+                      </div>
                     </div>
                   </div>
-                  <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black tracking-widest uppercase border flex items-center gap-1.5 shadow-sm shrink-0 ml-2 ${project.status === "Completed" ? "bg-emerald-50 text-emerald-600 border-emerald-100" : project.status === "In Progress" ? "bg-amber-50 text-amber-600 border-amber-100" : "bg-slate-50 text-slate-600 border-slate-100"}`}>
-                    {project.status}
-                  </span>
+                  <div className="flex flex-col items-end gap-1.5 shrink-0 ml-2">
+                    <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black tracking-widest uppercase border flex items-center gap-1.5 shadow-sm ${project.status === "Completed" ? "bg-emerald-50 text-emerald-600 border-emerald-100" : project.status === "In Progress" ? "bg-amber-50 text-amber-600 border-amber-100" : "bg-slate-50 text-slate-600 border-slate-100"}`}>
+                      {project.status}
+                    </span>
+                    <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold border tracking-wider uppercase flex items-center gap-1 ${priorityBadge}`}>
+                      <PriorityIcon size={10} />
+                      {project.priority || "MEDIUM"}
+                    </span>
+                  </div>
                 </div>
+                
+                <div className="mb-4 text-[12px] font-medium text-slate-400 line-clamp-2 leading-relaxed">
+                  {project.description || "No description provided"}
+                </div>
+
                 <div className="mb-4 rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-[12px] font-medium text-slate-500">
                   Created By: <span className="font-semibold text-slate-700">{project.createdByName || "System"}</span>
                 </div>
@@ -998,11 +1008,17 @@ const ProjectBoard = ({
                   <div className="grid grid-cols-2 gap-2">
                      <div className="text-[11px]">
                        <span className="text-slate-400 block mb-1">Onboard Date</span>
-                       <span className="font-semibold text-[#18254D]">{project.onboardingDate ? new Date(project.onboardingDate).toLocaleDateString() : "—"}</span>
+                       <div className="flex items-center gap-1.5 font-semibold text-[#18254D]">
+                         <Calendar size={12} className="text-secondary shrink-0" />
+                         <span>{project.onboardingDate ? new Date(project.onboardingDate).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : "N/A"}</span>
+                       </div>
                      </div>
                      <div className="text-[11px]">
                        <span className="text-slate-400 block mb-1">Deadline</span>
-                       <span className="font-semibold text-[#18254D]">{project.deadline ? new Date(project.deadline).toLocaleDateString() : "—"}</span>
+                       <div className="flex items-center gap-1.5 font-semibold text-[#18254D]">
+                         <Calendar size={12} className="text-secondary shrink-0" />
+                         <span>{project.deadline ? new Date(project.deadline).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : "N/A"}</span>
+                       </div>
                      </div>
                   </div>
                 </div>
@@ -1011,8 +1027,84 @@ const ProjectBoard = ({
                     <span className="truncate">View Details</span> <ChevronRight size={14} className="shrink-0" />
                   </button>
                   <div className="flex items-center gap-2 shrink-0 ml-2" onClick={(e) => e.stopPropagation()}>
-                    <button onClick={(e) => { e.stopPropagation(); handleEditProject(project); }} className="p-2 bg-blue-50 text-blue-600 border border-blue-100 rounded-lg hover:bg-blue-100 transition-all active:scale-90"><Pencil size={16} /></button>
-                    <button onClick={(e) => { e.stopPropagation(); setProjectToDelete(project); }} className="p-2 bg-rose-50 text-rose-600 border border-rose-100 rounded-lg hover:bg-rose-100 transition-all active:scale-90"><Trash2 size={16} /></button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEditProject(project);
+                      }}
+                      className="w-[34px] h-[34px] flex items-center justify-center bg-blue-50 text-blue-600 border border-blue-100 rounded-[10px] hover:bg-blue-100 transition-all active:scale-90 shadow-sm relative group/btn"
+                      title="Edit Project"
+                    >
+                      <Pencil size={16} />
+                      <div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">
+                        Edit Project
+                      </div>
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setProjectToDelete(project);
+                      }}
+                      className="w-[34px] h-[34px] flex items-center justify-center bg-[#FEF2F2] border border-[#FECACA] rounded-[10px] text-[#EF4444] hover:text-[#DC2626] hover:border-[#FCA5A5] transition-all active:scale-90 shadow-sm relative group/btn"
+                      title="Delete Project"
+                    >
+                      <Trash2 size={16} />
+                      <div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">
+                        Delete Project
+                      </div>
+                    </button>
+                    {getAvailableStatuses(project.status).map((status, index, arr) => {
+                      let Icon = AlertCircle;
+                      let btnClass = "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 hover:border-slate-300";
+                      if (status === "In Progress") {
+                        Icon = PlayCircle;
+                        btnClass = "bg-[#FFFbeb] text-[#D97706] border-[#FDE68A] hover:bg-[#FEF3C7] hover:border-[#FCD34D]";
+                      } else if (status === "Completed") {
+                        Icon = CheckCircle;
+                        btnClass = "bg-[#ECFDF5] text-[#059669] border-[#A7F3D0] hover:bg-[#D1FAE5] hover:border-[#6EE7B7]";
+                      } else if (status === "Hold") {
+                        Icon = PauseCircle;
+                        btnClass = "bg-[#FEF2F2] text-[#DC2626] border-[#FECACA] hover:bg-[#FEE2E2] hover:border-[#FCA5A5]";
+                      } else if (status === "Planning" || status === "Pending") {
+                        Icon = AlertCircle;
+                        btnClass = "bg-[#EFF6FF] text-[#2563EB] border-[#BFDBFE] hover:bg-[#DBEAFE] hover:border-[#93C5FD]";
+                      }
+
+                      const handleMobileStatusUpdate = (newStatus) => {
+                        if (onUpdateProject) {
+                          let newProgress = project.progress;
+                          if (newStatus === "Live" || newStatus === "Completed") newProgress = 100;
+                          else if (newStatus === "Testing") newProgress = 75;
+                          else if (newStatus === "In Progress") newProgress = 40;
+                          else if (newStatus === "Planning" || newStatus === "Pending") newProgress = 10;
+
+                          onUpdateProject({
+                            ...project,
+                            status: newStatus,
+                            progress: newProgress,
+                          });
+                        }
+                      };
+
+                      const isLast = index === arr.length - 1;
+
+                      return (
+                        <button
+                          key={status}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleMobileStatusUpdate(status);
+                          }}
+                          className={`w-[34px] h-[34px] flex items-center justify-center border rounded-[10px] transition-all active:scale-90 shadow-sm relative group/btn ${btnClass}`}
+                          title={`Move to ${status}`}
+                        >
+                          <Icon size={16} />
+                          <div className={`absolute bottom-[calc(100%+8px)] ${isLast ? "right-0" : "left-1/2 -translate-x-1/2"} opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md`}>
+                            Move to {status}
+                          </div>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
@@ -1054,9 +1146,9 @@ const ProjectBoard = ({
       {/* Add Modal */}
       {showAddModal &&
         createPortal(
-          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[99999] flex items-center justify-center p-4 sm:p-6 overflow-y-auto no-scrollbar">
-            <div className="absolute inset-0" onClick={() => setShowAddModal(false)} />
-            <div className="relative z-10 bg-white w-full max-w-[95vw] sm:max-w-xl rounded-3xl shadow-2xl border border-slate-100 overflow-hidden animate-pop flex flex-col h-[100dvh] sm:h-auto sm:max-h-[90vh]">
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[99999] flex items-center justify-center p-4 overflow-y-auto overflow-x-hidden pt-[10dvh]">
+            <div className="absolute inset-0" onClick={() => { setShowAddModal(false); setEditingProject(null); }} />
+            <div className="relative z-10 bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-slate-100 overflow-hidden animate-fade-in-up flex flex-col max-h-[85dvh]">
               <div className="p-4 sm:p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 shrink-0">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 bg-[#EFF6FF] text-[#3B82F6] rounded-xl flex items-center justify-center border border-[#DBEAFE] shadow-sm">
@@ -1064,15 +1156,15 @@ const ProjectBoard = ({
                   </div>
                   <div>
                     <h3 className="text-base font-bold text-[#18254D] tracking-tight">
-                      New Project
+                      {editingProject ? "Edit Project" : "New Project"}
                     </h3>
                     <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider mt-0.5">
-                      Create Project & Link Client
+                      {editingProject ? "Update Project Details" : "Create Project & Link Client"}
                     </p>
                   </div>
                 </div>
                 <button
-                  onClick={() => setShowAddModal(false)}
+                  onClick={() => { setShowAddModal(false); setEditingProject(null); }}
                   className="p-1.5 hover:bg-slate-200 rounded-xl text-slate-400 transition-all"
                 >
                   <X size={18} />
@@ -1133,7 +1225,7 @@ const ProjectBoard = ({
                           setIsClientDropdownOpen(false);
                         }}
                       />
-                      <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top max-h-[200px] overflow-y-auto custom-scrollbar">
+                      <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-bottom max-h-[200px] overflow-y-auto custom-scrollbar">
                         <div className="bg-[#18254D] px-4 py-2.5 border-b border-white/10 sticky top-0">
                           <p className="text-[10px] font-bold text-white/50 tracking-wider uppercase">
                             Select Client
@@ -1342,7 +1434,7 @@ const ProjectBoard = ({
                             setIsCategoryDropdownOpen(false);
                           }}
                         />
-                        <div className="absolute top-full left-0 right-0 max-h-[260px] overflow-y-auto mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top">
+                        <div className="absolute bottom-full left-0 right-0 max-h-[260px] overflow-y-auto mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-bottom">
                           <div className="bg-[#18254D] px-4 py-2.5 border-b border-white/10">
                             <p className="text-[10px] font-bold text-white/50 tracking-wider uppercase">
                               Select Category
@@ -1404,7 +1496,7 @@ const ProjectBoard = ({
                             setIsStatusDropdownOpen(false);
                           }}
                         />
-                        <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top">
+                        <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-bottom">
                           <div className="bg-[#18254D] px-4 py-2.5 border-b border-white/10">
                             <p className="text-[10px] font-bold text-white/50 tracking-wider uppercase">
                               Select Status
@@ -1467,7 +1559,7 @@ const ProjectBoard = ({
                             setIsPriorityDropdownOpen(false);
                           }}
                         />
-                        <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-top">
+                        <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-bottom">
                           <div className="bg-[#18254D] px-4 py-2.5 border-b border-white/10">
                             <p className="text-[10px] font-bold text-white/50 tracking-wider uppercase">
                               Select Priority
@@ -1610,12 +1702,12 @@ const ProjectBoard = ({
                   >
                     {isSubmitting ? (
                       <>
-                        <span>ADDING PROJECT...</span>
+                        <span>{editingProject ? "UPDATING PROJECT..." : "ADDING PROJECT..."}</span>
                         <Loader2 size={16} className="animate-spin" />
                       </>
                     ) : (
                       <>
-                        <span>ADD PROJECT</span>
+                        <span>{editingProject ? "UPDATE PROJECT" : "ADD PROJECT"}</span>
                         <Briefcase
                           size={14}
                           strokeWidth={2.5}

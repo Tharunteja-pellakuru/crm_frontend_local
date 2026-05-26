@@ -492,6 +492,7 @@ const ClientDetail = ({
 
   // ── Completion Modal State ───────────────────────────────────────────────────
   const [showCompletionModal, setShowCompletionModal] = useState(false);
+  const [showAddAnotherPrompt, setShowAddAnotherPrompt] = useState(false);
   const [completionBrief, setCompletionBrief] = useState("");
   const [completingFollowUpId, setCompletingFollowUpId] = useState(null);
   const [completionDate, setCompletionDate] = useState(new Date().toLocaleDateString("en-CA"));
@@ -521,7 +522,7 @@ const ClientDetail = ({
 
   useScrollLock(
     showEditModal || showAddFollowUpModal || isLogging ||
-    showCompletionModal || showOnboardModal || showEditFollowUpModal
+    showCompletionModal || showOnboardModal || showEditFollowUpModal || showAddAnotherPrompt
   );
 
   useEffect(() => setActiveTab(initialTab), [initialTab]);
@@ -1591,6 +1592,7 @@ const handleEditFollowUpSubmit = async (e) => {
                   fetchClientFollowups();
                 }
                 setShowCompletionModal(false);
+                setShowAddAnotherPrompt(true);
               }}
               className="p-6 space-y-4 overflow-y-auto no-scrollbar"
             >
@@ -1623,6 +1625,45 @@ const handleEditFollowUpSubmit = async (e) => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Add Another Prompt */}
+      {showAddAnotherPrompt && createPortal(
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[99999] flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl animate-pop text-center">
+            <h3 className="text-lg font-bold text-[#18254D] mb-2">Follow-up Completed</h3>
+            <p className="text-sm text-slate-500 mb-6">Want to add another follow up or close?</p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowAddAnotherPrompt(false);
+                  setCompletingFollowUpId(null);
+                  setCompletionBrief("");
+                }}
+                className="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-semibold text-sm hover:bg-slate-50 transition-colors"
+              >
+                Close
+              </button>
+              <button
+                onClick={() => {
+                  setShowAddAnotherPrompt(false);
+                  setCompletingFollowUpId(null);
+                  setCompletionBrief("");
+                  setFollowUpFormData({
+                    title: "", description: "", followup_date: new Date().toLocaleDateString("en-CA"),
+                    timeHour: "12", timeMinute: "00", timePeriod: "PM", priority: "Medium",
+                    followup_mode: "Call", followup_status: "Pending", projectId: "",
+                  });
+                  setShowAddFollowUpModal(true);
+                }}
+                className="flex-1 py-2.5 rounded-xl bg-[#18254D] text-white font-semibold text-sm hover:bg-[#1e2e5e] transition-colors"
+              >
+                Add Another
+              </button>
+            </div>
           </div>
         </div>,
         document.body

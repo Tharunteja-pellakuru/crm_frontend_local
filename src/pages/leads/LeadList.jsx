@@ -887,7 +887,7 @@ const LeadList = ({
 
         {/* Lead View Toggles */}
         {/* FIX: replaced flex-wrap with a horizontally scrollable row — prevents the 3+1 orphan-pill wrap on 375px */}
-        <div className="flex overflow-x-auto scrollbar-hide gap-2 sm:gap-3 my-4 w-full px-1 sm:px-0 pb-1">
+        <div className="flex overflow-x-auto no-scrollbar [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] gap-2 sm:gap-3 my-4 w-full px-1 sm:px-0 pb-1">
           <button onClick={() => setLeadView("All")} className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border whitespace-nowrap flex-shrink-0 ${leadView === "All" || !["Pending","Converted","Dismissed"].includes(leadView) ? "bg-[#0F172A] text-white border-[#0F172A] shadow-sm" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700"}`}>
             <LayoutGrid size={16} /> All
           </button>
@@ -1037,7 +1037,7 @@ const LeadList = ({
         </div>
 
         {/* Mobile Card List */}
-        <div className="lg:hidden grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="lg:hidden grid grid-cols-1 gap-4">
           {currentLeads.map((lead, index) => {
             const status = getStatusBadge(lead);
             return (
@@ -1265,7 +1265,7 @@ const LeadList = ({
                     {isAddStatusDropdownOpen && (
                       <>
                         <div className="fixed inset-0 z-[80]" onClick={() => setIsAddStatusDropdownOpen(false)} />
-                        <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-pop origin-top">
+                        <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-pop origin-bottom">
                           <div className="bg-[#18254D] px-4 py-2.5 border-b border-white/10">
                             <p className="text-[10px] font-bold text-white/50 tracking-wider uppercase">Select Status</p>
                           </div>
@@ -1364,7 +1364,7 @@ const LeadList = ({
                         {isExistingClientDropdownOpen && (
                           <>
                             <div className="fixed inset-0 z-[80]" onClick={() => setIsExistingClientDropdownOpen(false)} />
-                            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-pop origin-top max-h-[200px] overflow-y-auto">
+                            <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-pop origin-bottom max-h-[200px] overflow-y-auto">
                               <div className="bg-[#18254D] px-4 py-2.5 border-b border-white/10 sticky top-0">
                                 <p className="text-[10px] font-bold text-white/50 tracking-wider uppercase">Select Client</p>
                               </div>
@@ -1446,7 +1446,7 @@ const LeadList = ({
                           {isOnboardClientStatusDropdownOpen && (
                             <>
                               <div className="fixed inset-0 z-[80]" onClick={() => setIsOnboardClientStatusDropdownOpen(false)} />
-                              <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-pop origin-top">
+                              <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-pop origin-bottom">
                                 <div className="bg-[#18254D] px-4 py-2.5 border-b border-white/10"><p className="text-[10px] font-bold text-white/50 tracking-wider uppercase">Select Status</p></div>
                                 {["Active", "Inactive"].map((status) => (
                                   <button key={status} type="button" onClick={() => { setOnboardingData({ ...onboardingData, clientStatus: status }); setIsOnboardClientStatusDropdownOpen(false); }} className={`w-full text-left px-4 py-2.5 text-xs font-semibold tracking-wider transition-colors ${onboardingData.clientStatus === status ? "bg-indigo-50 text-indigo-700" : "text-[#18254D] hover:bg-slate-50"}`}>{status}</button>
@@ -1486,7 +1486,7 @@ const LeadList = ({
                         {isOnboardCategoryDropdownOpen && (
                           <>
                             <div className="fixed inset-0 z-[80]" onClick={() => setIsOnboardCategoryDropdownOpen(false)} />
-                            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-pop origin-top">
+                            <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-pop origin-bottom">
                               <div className="bg-[#18254D] px-4 py-2.5 border-b border-white/10"><p className="text-[10px] font-bold text-white/50 tracking-wider uppercase">Select Category</p></div>
                               {[1, 2].map((catId) => (
                                 <button key={`onboard-cat-${catId}`} type="button" onClick={() => { setOnboardingData({ ...onboardingData, projectCategory: catId }); setIsOnboardCategoryDropdownOpen(false); }} className={`w-full text-left px-4 py-2.5 text-xs font-semibold tracking-wider transition-colors ${onboardingData.projectCategory === catId ? "bg-indigo-50 text-indigo-700" : "text-[#18254D] hover:bg-slate-50"}`}>{CATEGORY_MAP[catId]}</button>
@@ -1506,7 +1506,7 @@ const LeadList = ({
                         {isOnboardStatusDropdownOpen && (
                           <>
                             <div className="fixed inset-0 z-[80]" onClick={() => setIsOnboardStatusDropdownOpen(false)} />
-                            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-pop origin-top">
+                            <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-pop origin-bottom">
                               <div className="bg-[#18254D] px-4 py-2.5 border-b border-white/10"><p className="text-[10px] font-bold text-white/50 tracking-wider uppercase">Select Status</p></div>
                               {["Hold", "In Progress", "Completed"].map((status) => (
                                 <button key={status} type="button" onClick={() => { setOnboardingData({ ...onboardingData, projectStatus: status }); setIsOnboardStatusDropdownOpen(false); }} className={`w-full text-left px-4 py-2.5 text-xs font-semibold tracking-wider transition-colors ${onboardingData.projectStatus === status ? "bg-indigo-50 text-indigo-700" : "text-[#18254D] hover:bg-slate-50"}`}>{status}</button>
@@ -1526,7 +1526,7 @@ const LeadList = ({
                         {isOnboardPriorityDropdownOpen && (
                           <>
                             <div className="fixed inset-0 z-[80]" onClick={() => setIsOnboardPriorityDropdownOpen(false)} />
-                            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-pop origin-top">
+                            <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-pop origin-bottom">
                               <div className="bg-[#18254D] px-4 py-2.5 border-b border-white/10"><p className="text-[10px] font-bold text-white/50 tracking-wider uppercase">Select Priority</p></div>
                               {["High", "Medium", "Low"].map((level) => (
                                 <button key={level} type="button" onClick={() => { setOnboardingData({ ...onboardingData, projectPriority: level }); setIsOnboardPriorityDropdownOpen(false); }} className={`w-full text-left px-4 py-2.5 text-xs font-semibold tracking-wider transition-colors ${onboardingData.projectPriority === level ? "bg-indigo-50 text-indigo-700" : "text-[#18254D] hover:bg-slate-50"}`}>{level}</button>
@@ -1670,7 +1670,7 @@ const LeadList = ({
                       {isEditLeadStatusDropdownOpen && (
                         <>
                           <div className="fixed inset-0 z-[80]" onClick={() => setIsEditLeadStatusDropdownOpen(false)} />
-                          <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-pop origin-top">
+                          <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-pop origin-bottom">
                             <div className="bg-[#18254D] px-4 py-2.5 border-b border-white/10"><p className="text-[10px] font-bold text-white/50 tracking-wider uppercase">Select Status</p></div>
                             {["Hot", "Warm", "Cold"].map((status) => (
                               <button key={`edit-lead-status-${status}`} type="button" onClick={() => { setEditFormData({ ...editFormData, leadType: status }); setIsEditLeadStatusDropdownOpen(false); }} className={`w-full text-left px-4 py-2.5 text-xs font-semibold tracking-wider transition-colors flex items-center gap-2 ${editFormData.leadType === status ? "bg-indigo-50 text-indigo-700" : "text-[#18254D] hover:bg-slate-50"}`}>
@@ -1757,7 +1757,7 @@ const LeadList = ({
                     {isEditStatusDropdownOpen && (
                       <>
                         <div className="fixed inset-0 z-[80]" onClick={() => setIsEditStatusDropdownOpen(false)} />
-                        <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-pop origin-top edit-status-dropdown">
+                        <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-pop origin-bottom edit-status-dropdown">
                           <div className="bg-[#18254D] px-4 py-2.5 border-b border-white/10"><p className="text-[10px] font-bold text-white/50 tracking-wider uppercase">Select Status</p></div>
                           {["Hot", "Warm", "Cold", "Converted"].map((status) => (
                             <button key={`edit-status-${status}`} type="button" onClick={() => { setEditConvertedData({ ...editConvertedData, leadType: status }); setIsEditStatusDropdownOpen(false); }} className={`w-full text-left px-4 py-2.5 text-xs font-semibold tracking-wider transition-colors flex items-center gap-2 ${editConvertedData.leadType === status ? "bg-indigo-50 text-indigo-700" : "text-[#18254D] hover:bg-slate-50"}`}>
@@ -1873,66 +1873,199 @@ const LeadList = ({
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">Follow-up Time <span className="text-rose-500">*</span></label>
-                    <div className="flex gap-2">
-                      <select className="flex-1 min-w-0 px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] focus:outline-none focus:ring-4 focus:ring-[#18254D]/5 focus:border-[#18254D]/30" value={followUpData.timeHour} onChange={(e) => setFollowUpData({ ...followUpData, timeHour: e.target.value })}>
-                        {Array.from({ length: 12 }, (_, i) => i + 1).map((h) => (<option key={`lead-follow-hour-${h}`} value={String(h).padStart(2, "0")}>{String(h).padStart(2, "0")}</option>))}
-                      </select>
-                      <select className="flex-1 min-w-0 px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] focus:outline-none focus:ring-4 focus:ring-[#18254D]/5 focus:border-[#18254D]/30" value={followUpData.timeMinute || "00"} onChange={(e) => setFollowUpData({ ...followUpData, timeMinute: e.target.value })}>
-                        {Array.from({ length: 60 }, (_, i) => i).map((m) => (<option key={`lead-follow-min-${m}`} value={String(m).padStart(2, "0")}>{String(m).padStart(2, "0")}</option>))}
-                      </select>
-                      <select className="w-16 shrink-0 px-2 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] focus:outline-none focus:ring-4 focus:ring-[#18254D]/5 focus:border-[#18254D]/30" value={(followUpData.timePeriod || "PM").toUpperCase()} onChange={(e) => setFollowUpData({ ...followUpData, timePeriod: e.target.value })}>
-                        <option value="AM">AM</option>
-                        <option value="PM">PM</option>
-                      </select>
+                    <div className="flex gap-2 relative">
+                      <div className="flex-1 relative">
+                        <button
+                          type="button"
+                          onClick={() => setIsHourDropdownOpen(!isHourDropdownOpen)}
+                          className="w-full flex items-center justify-between px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] hover:border-[#18254D]/30 transition-all"
+                        >
+                          <span>{followUpData.timeHour || "12"}</span>
+                          <ChevronDown size={14} className={`text-slate-400 transition-transform ${isHourDropdownOpen ? "rotate-180" : ""}`} />
+                        </button>
+                        {isHourDropdownOpen && (
+                          <>
+                            <div className="fixed inset-0 z-[80] pointer-events-auto" onClick={() => setIsHourDropdownOpen(false)} />
+                            <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-y-auto max-h-48 z-[90] animate-fade-in-up origin-bottom">
+                              {Array.from({ length: 12 }, (_, i) => i + 1).map((h) => (
+                                <button
+                                  key={`lead-follow-hour-${h}`}
+                                  type="button"
+                                  onClick={() => { setFollowUpData({ ...followUpData, timeHour: String(h).padStart(2, "0") }); setIsHourDropdownOpen(false); }}
+                                  className={`w-full text-left px-3 py-2 text-[12px] font-bold tracking-widest transition-colors ${followUpData.timeHour === String(h).padStart(2, "0") ? "bg-slate-100 text-indigo-600" : "text-[#18254D] hover:bg-slate-50"}`}
+                                >
+                                  {String(h).padStart(2, "0")}
+                                </button>
+                              ))}
+                            </div>
+                          </>
+                        )}
+                      </div>
+                      <div className="flex-1 relative">
+                        <button
+                          type="button"
+                          onClick={() => setIsMinuteDropdownOpen(!isMinuteDropdownOpen)}
+                          className="w-full flex items-center justify-between px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] hover:border-[#18254D]/30 transition-all"
+                        >
+                          <span>{followUpData.timeMinute || "00"}</span>
+                          <ChevronDown size={14} className={`text-slate-400 transition-transform ${isMinuteDropdownOpen ? "rotate-180" : ""}`} />
+                        </button>
+                        {isMinuteDropdownOpen && (
+                          <>
+                            <div className="fixed inset-0 z-[80] pointer-events-auto" onClick={() => setIsMinuteDropdownOpen(false)} />
+                            <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-y-auto max-h-48 z-[90] animate-fade-in-up origin-bottom">
+                              {Array.from({ length: 60 }, (_, i) => i).map((m) => (
+                                <button
+                                  key={`lead-follow-min-${m}`}
+                                  type="button"
+                                  onClick={() => { setFollowUpData({ ...followUpData, timeMinute: String(m).padStart(2, "0") }); setIsMinuteDropdownOpen(false); }}
+                                  className={`w-full text-left px-3 py-2 text-[12px] font-bold tracking-widest transition-colors ${(followUpData.timeMinute || "00") === String(m).padStart(2, "0") ? "bg-slate-100 text-indigo-600" : "text-[#18254D] hover:bg-slate-50"}`}
+                                >
+                                  {String(m).padStart(2, "0")}
+                                </button>
+                              ))}
+                            </div>
+                          </>
+                        )}
+                      </div>
+                      <div className="w-16 shrink-0 relative">
+                        <button
+                          type="button"
+                          onClick={() => setIsPeriodDropdownOpen(!isPeriodDropdownOpen)}
+                          className="w-full flex items-center justify-between px-2 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] hover:border-[#18254D]/30 transition-all"
+                        >
+                          <span>{(followUpData.timePeriod || "PM").toUpperCase()}</span>
+                          <ChevronDown size={14} className={`text-slate-400 transition-transform ${isPeriodDropdownOpen ? "rotate-180" : ""}`} />
+                        </button>
+                        {isPeriodDropdownOpen && (
+                          <>
+                            <div className="fixed inset-0 z-[80] pointer-events-auto" onClick={() => setIsPeriodDropdownOpen(false)} />
+                            <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-bottom">
+                              {["AM", "PM"].map((p) => (
+                                <button
+                                  key={`lead-follow-period-${p}`}
+                                  type="button"
+                                  onClick={() => { setFollowUpData({ ...followUpData, timePeriod: p }); setIsPeriodDropdownOpen(false); }}
+                                  className={`w-full text-center px-2 py-2.5 text-[12px] font-bold tracking-widest transition-colors ${(followUpData.timePeriod || "PM").toUpperCase() === p ? "bg-slate-100 text-indigo-600" : "text-[#18254D] hover:bg-slate-50"}`}
+                                >
+                                  {p}
+                                </button>
+                              ))}
+                            </div>
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
+                  <div className="space-y-1.5 relative">
                     <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">Priority <span className="text-rose-500">*</span></label>
-                    <select className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] focus:outline-none focus:ring-4 focus:ring-[#18254D]/5 focus:border-[#18254D]/30 transition-all" value={followUpData.priority} onChange={(e) => setFollowUpData({ ...followUpData, priority: e.target.value })}>
-                      <option value="High">High</option>
-                      <option value="Medium">Medium</option>
-                      <option value="Low">Low</option>
-                    </select>
+                    <div className="relative">
+                      <button
+                        type="button"
+                        onClick={() => setIsPriorityDropdownOpen(!isPriorityDropdownOpen)}
+                        className="w-full flex items-center justify-between px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold shadow-sm hover:border-[#18254D]/30 transition-all text-[#18254D]"
+                      >
+                        <span>{followUpData.priority || "Medium"}</span>
+                        <ChevronDown size={16} className={`text-slate-400 transition-transform ${isPriorityDropdownOpen ? "rotate-180" : ""}`} />
+                      </button>
+                      {isPriorityDropdownOpen && (
+                        <>
+                          <div className="fixed inset-0 z-[80]" onClick={() => setIsPriorityDropdownOpen(false)} />
+                          <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-bottom">
+                            {["High", "Medium", "Low"].map((level) => (
+                              <button
+                                key={`fu-pri-${level}`}
+                                type="button"
+                                onClick={() => { setFollowUpData({ ...followUpData, priority: level }); setIsPriorityDropdownOpen(false); }}
+                                className={`w-full text-left px-4 py-2.5 text-xs font-semibold tracking-wider transition-colors ${followUpData.priority === level ? "bg-slate-100 text-indigo-600" : "text-[#18254D] hover:bg-slate-50"}`}
+                              >
+                                {level}
+                              </button>
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </div>
                   </div>
-                  <div className="space-y-1.5">
+                  <div className="space-y-1.5 relative">
                     <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">Follow-up Mode <span className="text-rose-500">*</span></label>
-                    <select className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] focus:outline-none focus:ring-4 focus:ring-[#18254D]/5 focus:border-[#18254D]/30 transition-all" value={followUpData.followup_mode} onChange={(e) => setFollowUpData({ ...followUpData, followup_mode: e.target.value })}>
-                      <option value="Call">Call</option>
-                      <option value="Email">Email</option>
-                      <option value="Meeting">Meeting</option>
-                      <option value="Whatsapp">Whatsapp</option>
-                    </select>
+                    <div className="relative">
+                      <button
+                        type="button"
+                        onClick={() => setIsModeDropdownOpen(!isModeDropdownOpen)}
+                        className="w-full flex items-center justify-between px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold shadow-sm hover:border-[#18254D]/30 transition-all text-[#18254D]"
+                      >
+                        <span>{followUpData.followup_mode || "Call"}</span>
+                        <ChevronDown size={16} className={`text-slate-400 transition-transform ${isModeDropdownOpen ? "rotate-180" : ""}`} />
+                      </button>
+                      {isModeDropdownOpen && (
+                        <>
+                          <div className="fixed inset-0 z-[80]" onClick={() => setIsModeDropdownOpen(false)} />
+                          <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-bottom">
+                            {["Call", "Email", "Meeting", "Whatsapp"].map((mode) => (
+                              <button
+                                key={`fu-mode-${mode}`}
+                                type="button"
+                                onClick={() => { setFollowUpData({ ...followUpData, followup_mode: mode }); setIsModeDropdownOpen(false); }}
+                                className={`w-full text-left px-4 py-2.5 text-xs font-semibold tracking-wider transition-colors ${followUpData.followup_mode === mode ? "bg-slate-100 text-indigo-600" : "text-[#18254D] hover:bg-slate-50"}`}
+                              >
+                                {mode}
+                              </button>
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-1.5 relative">
                   <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">Follow-up Status <span className="text-rose-500">*</span></label>
-                  <select
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] focus:outline-none focus:ring-4 focus:ring-[#18254D]/5 focus:border-[#18254D]/30 transition-all"
-                    value={followUpData.followup_status}
-                    onChange={(e) => {
-                      const status = e.target.value;
-                      const updates = { followup_status: status };
-                      if (status === "Completed") {
-                        const user = JSON.parse(localStorage.getItem("user") || "{}");
-                        if (!followUpData.completed_by) updates.completed_by = user.full_name || "";
-                        if (!followUpData.completionDate) updates.completionDate = new Date().toISOString().split("T")[0];
-                        if (!followUpData.completionHour) {
-                          const now = new Date();
-                          updates.completionHour = (now.getHours() % 12 || 12).toString();
-                          updates.completionMinute = now.getMinutes().toString().padStart(2, "0");
-                          updates.completionPeriod = now.getHours() >= 12 ? "PM" : "AM";
-                        }
-                      }
-                      setFollowUpData({ ...followUpData, ...updates });
-                    }}
-                  >
-                    <option value="Pending">Pending</option>
-                    <option value="Completed">Completed</option>
-                  </select>
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
+                      className="w-full flex items-center justify-between px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold shadow-sm hover:border-[#18254D]/30 transition-all text-[#18254D]"
+                    >
+                      <span>{followUpData.followup_status || "Pending"}</span>
+                      <ChevronDown size={16} className={`text-slate-400 transition-transform ${isStatusDropdownOpen ? "rotate-180" : ""}`} />
+                    </button>
+                    {isStatusDropdownOpen && (
+                      <>
+                        <div className="fixed inset-0 z-[80]" onClick={() => setIsStatusDropdownOpen(false)} />
+                        <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-bottom">
+                          {["Pending", "Completed"].map((status) => (
+                            <button
+                              key={`fu-status-${status}`}
+                              type="button"
+                              onClick={() => {
+                                const updates = { followup_status: status };
+                                if (status === "Completed") {
+                                  const user = JSON.parse(localStorage.getItem("user") || "{}");
+                                  if (!followUpData.completed_by) updates.completed_by = user.full_name || "";
+                                  if (!followUpData.completionDate) updates.completionDate = new Date().toISOString().split("T")[0];
+                                  if (!followUpData.completionHour) {
+                                    const now = new Date();
+                                    updates.completionHour = (now.getHours() % 12 || 12).toString();
+                                    updates.completionMinute = now.getMinutes().toString().padStart(2, "0");
+                                    updates.completionPeriod = now.getHours() >= 12 ? "PM" : "AM";
+                                  }
+                                }
+                                setFollowUpData({ ...followUpData, ...updates });
+                                setIsStatusDropdownOpen(false);
+                              }}
+                              className={`w-full text-left px-4 py-2.5 text-xs font-semibold tracking-wider transition-colors ${followUpData.followup_status === status ? "bg-slate-100 text-indigo-600" : "text-[#18254D] hover:bg-slate-50"}`}
+                            >
+                              {status}
+                            </button>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
                 </div>
 
                 {followUpData.followup_status === "Completed" && (
@@ -1952,17 +2085,88 @@ const LeadList = ({
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">Completion Time</label>
-                        <div className="flex gap-2">
-                          <select className="flex-1 min-w-0 px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] focus:outline-none focus:ring-4 focus:ring-[#18254D]/5 focus:border-[#18254D]/30" value={followUpData.completionHour} onChange={(e) => setFollowUpData({ ...followUpData, completionHour: e.target.value })}>
-                            {Array.from({ length: 12 }, (_, i) => i + 1).map((h) => (<option key={`comp-hour-${h}`} value={String(h).padStart(2, "0")}>{String(h).padStart(2, "0")}</option>))}
-                          </select>
-                          <select className="flex-1 min-w-0 px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] focus:outline-none focus:ring-4 focus:ring-[#18254D]/5 focus:border-[#18254D]/30" value={followUpData.completionMinute} onChange={(e) => setFollowUpData({ ...followUpData, completionMinute: e.target.value })}>
-                            {Array.from({ length: 60 }, (_, i) => i).map((m) => (<option key={`comp-min-${m}`} value={String(m).padStart(2, "0")}>{String(m).padStart(2, "0")}</option>))}
-                          </select>
-                          <select className="w-16 shrink-0 px-2 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] focus:outline-none focus:ring-4 focus:ring-[#18254D]/5 focus:border-[#18254D]/30" value={followUpData.completionPeriod} onChange={(e) => setFollowUpData({ ...followUpData, completionPeriod: e.target.value })}>
-                            <option value="AM">AM</option>
-                            <option value="PM">PM</option>
-                          </select>
+                        <div className="flex gap-2 relative">
+                          <div className="flex-1 relative">
+                            <button
+                              type="button"
+                              onClick={() => setIsCompHourOpen(!isCompHourOpen)}
+                              className="w-full flex items-center justify-between px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] hover:border-[#18254D]/30 transition-all"
+                            >
+                              <span>{followUpData.completionHour || "12"}</span>
+                              <ChevronDown size={14} className={`text-slate-400 transition-transform ${isCompHourOpen ? "rotate-180" : ""}`} />
+                            </button>
+                            {isCompHourOpen && (
+                              <>
+                                <div className="fixed inset-0 z-[80] pointer-events-auto" onClick={() => setIsCompHourOpen(false)} />
+                                <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-y-auto max-h-48 z-[90] animate-fade-in-up origin-bottom">
+                                  {Array.from({ length: 12 }, (_, i) => i + 1).map((h) => (
+                                    <button
+                                      key={`comp-hour-${h}`}
+                                      type="button"
+                                      onClick={() => { setFollowUpData({ ...followUpData, completionHour: String(h).padStart(2, "0") }); setIsCompHourOpen(false); }}
+                                      className={`w-full text-left px-3 py-2 text-[12px] font-bold tracking-widest transition-colors ${followUpData.completionHour === String(h).padStart(2, "0") ? "bg-slate-100 text-indigo-600" : "text-[#18254D] hover:bg-slate-50"}`}
+                                    >
+                                      {String(h).padStart(2, "0")}
+                                    </button>
+                                  ))}
+                                </div>
+                              </>
+                            )}
+                          </div>
+                          <div className="flex-1 relative">
+                            <button
+                              type="button"
+                              onClick={() => setIsCompMinOpen(!isCompMinOpen)}
+                              className="w-full flex items-center justify-between px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] hover:border-[#18254D]/30 transition-all"
+                            >
+                              <span>{followUpData.completionMinute || "00"}</span>
+                              <ChevronDown size={14} className={`text-slate-400 transition-transform ${isCompMinOpen ? "rotate-180" : ""}`} />
+                            </button>
+                            {isCompMinOpen && (
+                              <>
+                                <div className="fixed inset-0 z-[80] pointer-events-auto" onClick={() => setIsCompMinOpen(false)} />
+                                <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-y-auto max-h-48 z-[90] animate-fade-in-up origin-bottom">
+                                  {Array.from({ length: 60 }, (_, i) => i).map((m) => (
+                                    <button
+                                      key={`comp-min-${m}`}
+                                      type="button"
+                                      onClick={() => { setFollowUpData({ ...followUpData, completionMinute: String(m).padStart(2, "0") }); setIsCompMinOpen(false); }}
+                                      className={`w-full text-left px-3 py-2 text-[12px] font-bold tracking-widest transition-colors ${(followUpData.completionMinute || "00") === String(m).padStart(2, "0") ? "bg-slate-100 text-indigo-600" : "text-[#18254D] hover:bg-slate-50"}`}
+                                    >
+                                      {String(m).padStart(2, "0")}
+                                    </button>
+                                  ))}
+                                </div>
+                              </>
+                            )}
+                          </div>
+                          <div className="w-16 shrink-0 relative">
+                            <button
+                              type="button"
+                              onClick={() => setIsCompPeriodOpen(!isCompPeriodOpen)}
+                              className="w-full flex items-center justify-between px-2 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] hover:border-[#18254D]/30 transition-all"
+                            >
+                              <span>{(followUpData.completionPeriod || "PM").toUpperCase()}</span>
+                              <ChevronDown size={14} className={`text-slate-400 transition-transform ${isCompPeriodOpen ? "rotate-180" : ""}`} />
+                            </button>
+                            {isCompPeriodOpen && (
+                              <>
+                                <div className="fixed inset-0 z-[80] pointer-events-auto" onClick={() => setIsCompPeriodOpen(false)} />
+                                <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-bottom">
+                                  {["AM", "PM"].map((p) => (
+                                    <button
+                                      key={`comp-period-${p}`}
+                                      type="button"
+                                      onClick={() => { setFollowUpData({ ...followUpData, completionPeriod: p }); setIsCompPeriodOpen(false); }}
+                                      className={`w-full text-center px-2 py-2.5 text-[12px] font-bold tracking-widest transition-colors ${(followUpData.completionPeriod || "PM").toUpperCase() === p ? "bg-slate-100 text-indigo-600" : "text-[#18254D] hover:bg-slate-50"}`}
+                                    >
+                                      {p}
+                                    </button>
+                                  ))}
+                                </div>
+                              </>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
