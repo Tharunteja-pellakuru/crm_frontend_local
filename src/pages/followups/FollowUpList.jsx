@@ -558,7 +558,7 @@ const FollowUpList = ({
       <div className="space-y-5 animate-fade-in w-full">
         <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
           <div className="flex flex-col items-start max-w-2xl text-left">
-            <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-primary tracking-tight mb-2">
+            <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-primary tracking-tight mb-2">
               {typeFilter === "Active"
                 ? "Reference Follow-Ups"
                 : typeFilter === "Lead"

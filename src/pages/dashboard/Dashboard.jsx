@@ -558,13 +558,13 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
   return (
     <div className="w-full relative flex flex-col lg:h-[calc(100vh-150px)]">
       <div className="flex-1 min-h-0 flex flex-col space-y-4 md:space-y-5 relative z-0">
-        <div className="flex flex-row flex-wrap justify-between items-center gap-4 animate-fade-in relative z-50 shrink-0" style={{ animationDelay: '100ms' }}>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 animate-fade-in relative z-50 shrink-0" style={{ animationDelay: '100ms' }}>
           <div className="max-w-2xl shrink-0">
-            <h2 className="text-base md:text-lg lg:text-xl font-bold text-[#18254D] tracking-tight mb-1 flex items-center gap-2">
+            <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-primary tracking-tight mb-2">
               Welcome {currentUser?.full_name?.split(' ')[0] || 'Admin'} <span className="text-2xl animate-waving-hand inline-block origin-[70%_70%]">👋</span>
             </h2>
-            <p className="text-[11px] md:text-xs text-textMuted font-medium leading-relaxed">
-              Let's build something remarkable today.
+            <p className="text-sm text-textMuted font-medium leading-relaxed">
+                Let's build something remarkable today.
             </p>
           </div>
 

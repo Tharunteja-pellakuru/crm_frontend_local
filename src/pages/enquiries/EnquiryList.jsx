@@ -696,7 +696,7 @@ const EnquiryList = ({
         {/* Header */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
           <div className="max-w-2xl">
-            <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-primary tracking-tight mb-2 flex items-center gap-2">
+            <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-primary tracking-tight mb-2">
               Enquiry Hub
             </h2>
             <p className="text-xs md:text-sm text-textMuted font-medium leading-relaxed">

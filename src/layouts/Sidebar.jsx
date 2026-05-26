@@ -254,7 +254,7 @@ function Sidebar({
       </nav>
 
       {/* Logout at the bottom - pinned */}
-      <div className={`p-4 border-t border-slate-200 bg-white mt-auto ${isCollapsed ? "px-2" : "px-4"}`}>
+      <div className={`p-4 bg-white mt-auto ${isCollapsed ? "px-2" : "px-4"}`}>
         <button
           onClick={onLogout}
           onMouseEnter={() => setHoveredItem("logout")}
@@ -265,7 +265,7 @@ function Sidebar({
           <LogOut size={20} strokeWidth={1.8} className="transition-colors" />
           {!isCollapsed && (
             <span className="text-[13.5px] font-medium tracking-wide">
-              Log Out
+              Log Outs
             </span>
           )}
         </button>

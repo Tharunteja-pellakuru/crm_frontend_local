@@ -46,7 +46,7 @@ const CustomDropdown = ({ label, value, options, field, icon: Icon, onChange, ac
     const vw = window.innerWidth;
     let left = r.left;
     if (left + menuW > vw - 8) left = vw - menuW - 8;
-    setDropdownStyles({ position: "fixed", top: `${r.bottom + 6}px`, left: `${Math.max(8, left)}px`, width: `${menuW}px`, zIndex: 9999 });
+    setDropdownStyles({ position: "fixed", top: `${r.bottom + 6}px`, left: `${Math.max(8, left)}px`, width: `${menuW}px`, zIndex: 100001 });
   };
 
   useEffect(() => {
@@ -425,7 +425,7 @@ const Settings = ({ aiModels = [], onAddAiModel, onUpdateAiModel, onDeleteAiMode
         </div>
 
         {/* ── Tab Pills ──────────────────────────────────────────────── */}
-        <div className="flex overflow-x-auto scrollbar-hide gap-2 pb-0.5 w-full">
+        <div className="flex overflow-x-auto no-scrollbar gap-2 pb-0.5 w-full">
           {TABS.map(({ id, label, icon: Icon }) => {
             const active = activeTab === id;
             return (
@@ -511,25 +511,25 @@ const Settings = ({ aiModels = [], onAddAiModel, onUpdateAiModel, onDeleteAiMode
               </div>
 
               {/* Fields */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl">
                 <div className="space-y-1.5">
                   <FieldLabel>Full Name</FieldLabel>
                   <input type="text" value={profile?.full_name || ""}
                     onChange={e => setProfile({ ...profile, full_name: e.target.value })}
                     disabled={!isProfileEditing}
-                    className={`w-full px-4 py-2.5 border rounded-xl text-sm font-semibold outline-none transition-all
+                    className={`w-full px-3.5 py-2 border rounded-lg text-[13px] font-medium outline-none transition-all
                       ${isProfileEditing ? "bg-slate-50 border-slate-200 text-[#18254D] focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5"
                         : "bg-slate-50 border-slate-100 text-slate-400 cursor-not-allowed"}`} />
                 </div>
                 <div className="space-y-1.5">
                   <FieldLabel>Designation</FieldLabel>
                   <input type="text" value={profile?.role || ""} disabled
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-sm font-semibold text-slate-400 cursor-not-allowed" />
+                    className="w-full px-3.5 py-2 bg-slate-50 border border-slate-100 rounded-lg text-[13px] font-medium text-slate-400 cursor-not-allowed" />
                 </div>
                 <div className="space-y-1.5 sm:col-span-2">
                   <FieldLabel>Email Address</FieldLabel>
                   <input type="email" value={profile?.email || ""} readOnly
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-sm font-semibold text-slate-400 cursor-not-allowed" />
+                    className="w-full px-3.5 py-2 bg-slate-50 border border-slate-100 rounded-lg text-[13px] font-medium text-slate-400 cursor-not-allowed" />
                 </div>
               </div>
 
