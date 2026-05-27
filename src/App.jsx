@@ -25,6 +25,7 @@ import EnquiryList from "./pages/enquiries/EnquiryList";
 import FollowUpList from "./pages/followups/FollowUpList";
 import Settings from "./pages/settings/Settings";
 import LoginPage from "./pages/auth/LoginPage";
+import SSODashboard from "./pages/dashboard/SSODashboard";
 import {
   MOCK_CLIENTS,
   MOCK_ENQUIRIES,
@@ -1938,10 +1939,29 @@ function AppRoutes() {
     ]);
   }
 
-  function handleClearNotifications() {
-    setEnquiries((prev) =>
-      prev.map((e) => (e.status === "new" ? { ...e, status: "read" } : e)),
-    );
+  async function handleClearNotifications() {
+    const newEnquiries = enquiries.filter(e => e.status === "new");
+    if (newEnquiries.length === 0) return;
+
+    try {
+      await Promise.all(
+        newEnquiries.map(e => 
+          fetch(`${BASE_URL}/api/update-enquiry-status/${e.id}`, {
+            method: "PUT",
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ status: "read" })
+          })
+        )
+      );
+      
+      setEnquiries((prev) =>
+        prev.map((e) => (e.status === "new" ? { ...e, status: "read" } : e)),
+      );
+      toast.success("All notifications marked as read");
+    } catch (err) {
+      console.error("Failed to clear notifications:", err);
+      toast.error("Failed to clear notifications");
+    }
   }
 
   // AI Model handlers
@@ -2168,9 +2188,20 @@ function AppRoutes() {
         path="/login"
         element={
           isLoggedIn ? (
-            <Navigate to="/dashboard" replace />
+            <Navigate to="/sso-dashboard" replace />
           ) : (
             <LoginPage onLogin={handleLogin} />
+          )
+        }
+      />
+
+      <Route
+        path="/sso-dashboard"
+        element={
+          isLoggedIn ? (
+            <SSODashboard onLogout={handleLogout} />
+          ) : (
+            <Navigate to="/login" replace />
           )
         }
       />

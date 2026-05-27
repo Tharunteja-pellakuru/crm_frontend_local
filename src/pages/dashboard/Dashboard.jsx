@@ -2,10 +2,12 @@ import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useScrollLock } from "../../hooks/useScrollLock";
 import { Area, Line, ComposedChart, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart } from "recharts";
-import { Users, UserPlus, Clock, CheckCircle2, ChevronRight, ChevronDown, Filter, Calendar, TrendingUp, X, Bell, Info, Inbox, Activity, Mail, ArrowUpRight, ArrowRight, Lightbulb, BarChart2 } from "lucide-react";
+import { Users, UserPlus, Clock, CheckCircle2, ChevronRight, ChevronDown, Filter, Calendar, TrendingUp, X, Bell, Info, Inbox, Activity, Mail, ArrowUpRight, ArrowRight, Lightbulb, BarChart2, LayoutGrid, FileText, BarChart3, Grip, Globe } from "lucide-react";
 import { BASE_URL } from "../../constants/config";
 import { addToGoogleCalendar } from "../../utils/calendar";
 import { toast } from "react-hot-toast";
+import { getAuthHeaders } from "../../utils/auth";
+import favIcon from "../../assets/Parivartan-Leaf.png";
 
 
 const parseLocalDate = (dateStr) => {
@@ -80,6 +82,7 @@ function StatCard({ title, value, trend, trendUp, badge, icon, description, dela
 
 function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], onSelectFollowUp, onNavigate, onClearNotifications, loading = false }) {
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showAppSwitcher, setShowAppSwitcher] = useState(false);
   const [notifications, setNotifications] = useState([]);
 
   // Combine db new enquiries with our mock ones
@@ -127,8 +130,19 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
     return subtitle;
   };
 
-  const handleNotifClick = (n) => {
+  const handleNotifClick = async (n) => {
     if (n.isDb) {
+      if (n.status === "new") {
+        try {
+          await fetch(`${BASE_URL}/api/update-enquiry-status/${n.dbId}`, {
+            method: "PUT",
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ status: "read" })
+          });
+        } catch (err) {
+          console.error("Failed to mark notification as read:", err);
+        }
+      }
       onNavigate("enquiries");
     } else {
       setNotifications(prev =>
@@ -189,7 +203,7 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
   }, []);
 
   // Lock scroll when any modal is open
-  useScrollLock(showNotifications || showViewAllModal);
+  useScrollLock(showNotifications || showViewAllModal || showAppSwitcher);
 
   // Load user from localStorage and sync year with data
   useEffect(() => {
@@ -569,6 +583,82 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
           </div>
 
           <div className="flex items-center justify-between w-full lg:w-auto gap-4 relative z-20">
+            {/* Icons Group */}
+            <div className="flex items-center gap-4 order-2 lg:order-1">
+              {/* App Switcher */}
+              <div className="relative shrink-0 group">
+                <button
+                  onClick={() => setShowAppSwitcher(!showAppSwitcher)}
+                  className={`w-[42px] h-[42px] rounded-full border border-slate-200 bg-white flex items-center justify-center transition-all ${showAppSwitcher
+                    ? "text-primary shadow-md"
+                    : "text-slate-500 hover:bg-slate-50 shadow-sm"
+                    }`}
+                >
+                  <Globe size={18} strokeWidth={2.5} />
+                </button>
+                <div className="absolute top-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1.5 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">
+                  Parivartan Hub
+                </div>
+                {showAppSwitcher && createPortal(
+                <>
+                  <div
+                    className="fixed inset-0 z-[1000] bg-slate-900/10 backdrop-blur-[2px]"
+                    onClick={() => setShowAppSwitcher(false)}
+                  />
+                  <div className="fixed top-24 left-4 right-4 sm:left-auto md:right-24 w-auto sm:w-[320px] bg-white rounded-2xl shadow-[0_20px_50px_-12px_rgba(24,37,77,0.15)] border border-slate-100/85 overflow-hidden animate-pop z-[1001] p-5">
+                    <h3 className="text-[13px] font-bold text-slate-400 tracking-wider mb-4 px-1">Parivartan Hub</h3>
+                    <div className="grid grid-cols-2 gap-3">
+
+                      {/* HR Portal App */}
+                      <button 
+                        onClick={() => {
+                          setShowAppSwitcher(false);
+                          const form = document.createElement("form");
+                          form.method = "POST";
+                          form.action = "https://hrportal.eparivartan.com/admin/login";
+                          form.target = "_blank";
+                          const emailInput = document.createElement("input");
+                          emailInput.type = "hidden";
+                          emailInput.name = "email";
+                          emailInput.value = "eparivartan@gmail.com";
+                          form.appendChild(emailInput);
+                          const passwordInput = document.createElement("input");
+                          passwordInput.type = "hidden";
+                          passwordInput.name = "password";
+                          passwordInput.value = "admin@2026";
+                          form.appendChild(passwordInput);
+                          document.body.appendChild(form);
+                          form.submit();
+                          document.body.removeChild(form);
+                        }}
+                        className="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl hover:bg-slate-50 transition-colors group"
+                        title="Shift to HR Portal"
+                      >
+                        <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-md border-1 border-gray-300 group-hover:shadow-xl transition-all">
+                          <img src={favIcon} alt="HR" className="w-8 h-8 object-contain" />
+                        </div>
+                        <span className="text-[11px] font-bold text-[#18254D]">HR Portal </span>
+                      </button>
+
+                      {/* Invoice App */}
+                      <button 
+                        className="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl opacity-60 cursor-not-allowed group relative"
+                        title="Coming Soon"
+                      >
+                        <div className="absolute -top-1 -right-1 z-10 w-2.5 h-2.5 rounded-full border-2 border-white" />
+                        <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-md group-hover:shadow-xl transition-all">
+                          <img src={favIcon} alt="HR" className="w-8 h-8 object-contain" />
+                        </div>
+                        <span className="text-[11px] font-bold text-slate-500">Invoice</span>
+                      </button>
+                    </div>
+                  </div>
+                </>,
+                document.body
+              )}
+            </div>
+
+            {/* Notifications */}
             <div
               className="relative shrink-0"
               ref={dropdownRef}
@@ -702,7 +792,10 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
                 document.body
               )}
             </div>
-            <div className="flex items-center bg-white py-1.5 pl-4 pr-1.5 rounded-full border border-slate-200 shadow-sm min-w-max cursor-pointer hover:bg-slate-50 transition-colors">
+            </div> {/* End Icons Group */}
+
+            {/* Profile */}
+            <div className="order-1 lg:order-2 flex items-center bg-white py-1.5 pl-4 pr-1.5 rounded-full border border-slate-200 shadow-sm min-w-max cursor-pointer hover:bg-slate-50 transition-colors">
               <div className="text-left flex flex-col justify-center mr-3">
                 <p className="text-sm font-bold text-[#18254D] leading-none mb-1">
                   {currentUser?.full_name?.split(' ')[0] || 'Anand'}

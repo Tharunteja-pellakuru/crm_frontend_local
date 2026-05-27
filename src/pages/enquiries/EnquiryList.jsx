@@ -137,6 +137,8 @@ const EnquiryList = ({
   const [selectedEnquiry, setSelectedEnquiry] = useState(null);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [sourceFilter, setSourceFilter] = useState("All");
+  const [isFilterSourceDropdownOpen, setIsFilterSourceDropdownOpen] = useState(false);
   const [isFilterPopupOpen, setIsFilterPopupOpen] = useState(false);
   const filterButtonRef = useRef(null);
   const filterPopupRef = useRef(null);
@@ -438,6 +440,9 @@ const EnquiryList = ({
       (e.message && e.message.toLowerCase().includes(searchTerm.toLowerCase()));
 
     if (!matchesSearch) return false;
+
+    // Source Filter
+    if (sourceFilter !== "All" && (e.source || "Other") !== sourceFilter) return false;
 
     // Date Range Filter
     if (startDate || endDate) {
@@ -798,19 +803,19 @@ const EnquiryList = ({
               <button
                 onClick={() => setIsFilterPopupOpen(!isFilterPopupOpen)}
                 className={`w-full md:w-auto h-[38px] flex items-center justify-center gap-2.5 px-6 py-2 rounded-xl text-[12px] font-bold tracking-widest transition-all shadow-sm active:scale-95 group border ${
-                  startDate || endDate || aiAnalysisEnabled
+                  startDate || endDate || aiAnalysisEnabled || sourceFilter !== "All"
                     ? "bg-indigo-50 border-indigo-500 text-indigo-600"
                     : "bg-slate-50 border-slate-100 text-[#18254D] hover:bg-white hover:border-slate-200 shadow-slate-200/50"
                 }`}
               >
                 <Filter
                   size={14}
-                  className={startDate || endDate || aiAnalysisEnabled ? "text-indigo-600" : "text-slate-400"}
+                  className={startDate || endDate || aiAnalysisEnabled || sourceFilter !== "All" ? "text-indigo-600" : "text-slate-400"}
                 />
                 <span>FILTERS</span>
-                {(startDate || endDate || aiAnalysisEnabled) && (
+                {(startDate || endDate || aiAnalysisEnabled || sourceFilter !== "All") && (
                   <span className="flex items-center justify-center w-5 h-5 bg-indigo-600 text-white text-[10px] font-black rounded-full ml-1 shadow-sm">
-                    {[!!startDate, !!endDate, aiAnalysisEnabled].filter(Boolean).length}
+                    {[!!startDate, !!endDate, aiAnalysisEnabled, sourceFilter !== "All"].filter(Boolean).length}
                   </span>
                 )}
                 <ChevronDown
@@ -845,11 +850,12 @@ const EnquiryList = ({
                               Filter Enquiries
                             </h3>
                           </div>
-                          {(startDate || endDate || aiAnalysisEnabled) && (
+                          {(startDate || endDate || aiAnalysisEnabled || sourceFilter !== "All") && (
                             <button
                               onClick={() => {
                                 setStartDate("");
                                 setEndDate("");
+                                setSourceFilter("All");
                                 setAiAnalysisEnabled(false);
                                 setHideIrrelevant(false);
                                 setIsFilterPopupOpen(false);
@@ -977,6 +983,54 @@ const EnquiryList = ({
                               )}
                             </>
                           )}
+
+                          {/* Source Filter Section */}
+                          <div className="space-y-1.5">
+                            <label className="text-[10px] font-black text-slate-400 tracking-wider uppercase ml-1 flex items-center gap-1.5">
+                              <Share2 size={12} /> Source
+                            </label>
+                            <div className="relative">
+                              <button
+                                type="button"
+                                onClick={() => setIsFilterSourceDropdownOpen(!isFilterSourceDropdownOpen)}
+                                className="w-full h-11 flex items-center justify-between px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold shadow-sm hover:border-[#18254D]/30 transition-all text-[#18254D]"
+                              >
+                                <span className={sourceFilter !== "All" ? "text-[#18254D]" : "text-slate-400 font-medium"}>
+                                  {sourceFilter === "All" ? "All Sources" : sourceFilter}
+                                </span>
+                                <ChevronDown size={14} className={`text-slate-400 transition-transform duration-200 ${isFilterSourceDropdownOpen ? "rotate-180" : ""}`} />
+                              </button>
+
+                              {isFilterSourceDropdownOpen && (
+                                <>
+                                  <div className="fixed inset-0 z-[100000]" onClick={() => setIsFilterSourceDropdownOpen(false)} />
+                                  <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[100001] animate-pop origin-top">
+                                    <div className="bg-[#18254D] px-4 py-2.5 border-b border-white/10">
+                                      <p className="text-[10px] font-bold text-white/50 tracking-wider uppercase">Select Source</p>
+                                    </div>
+                                    <div className="max-h-[200px] overflow-y-auto custom-scrollbar p-1.5">
+                                      {["All", "Meta Ad (Insta/FB)", "LinkedIn", "Referral", "Selyst", "eParivartan", "Other"].map((src) => (
+                                        <button
+                                          key={src}
+                                          type="button"
+                                          onClick={() => {
+                                            setSourceFilter(src);
+                                            setIsFilterSourceDropdownOpen(false);
+                                          }}
+                                          className={`w-full text-left px-3 py-2 text-xs font-semibold tracking-wider transition-all rounded-xl flex items-center justify-between ${sourceFilter === src ? "bg-indigo-50 text-indigo-700" : "text-[#18254D] hover:bg-slate-50"}`}
+                                        >
+                                          <div className="flex items-center gap-2">
+                                            {src === "All" ? <Share2 size={12} /> : getSourceIcon(src)}
+                                            <span>{src === "All" ? "All Sources" : src}</span>
+                                          </div>
+                                        </button>
+                                      ))}
+                                    </div>
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                          </div>
 
                           {/* Date Range Section */}
                           <div className="space-y-1.5">
