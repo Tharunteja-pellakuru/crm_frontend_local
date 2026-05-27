@@ -686,6 +686,7 @@ function AppRoutes() {
           country: data.country || "",
           country_code: data.countryCode || "",
           enquiry_id: data.enquiry_id || null,
+          source: data.source || "",
         };
 
         const res = await fetch(`${BASE_URL}/api/add-lead`, {
@@ -1341,6 +1342,10 @@ function AppRoutes() {
             ? editData.projectCategory
             : leadToUpdate.projectCategory || 1,
         website: websiteValue,
+        source:
+          editData.source !== undefined && editData.source !== null
+            ? editData.source
+            : leadToUpdate.source || "",
         notes:
           editData.notes !== undefined && editData.notes !== null
             ? editData.notes
@@ -1389,6 +1394,7 @@ function AppRoutes() {
           website_url: optimisticLead.website,
           country: optimisticLead.country,
           country_code: sanitizeDialCode(optimisticLead.country_code),
+          source: optimisticLead.source,
           message: optimisticLead.notes,
         }),
       });

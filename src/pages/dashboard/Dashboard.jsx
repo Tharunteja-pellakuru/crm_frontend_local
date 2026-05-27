@@ -875,39 +875,51 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
         </div>
 
         <div className="flex flex-col lg:flex-row gap-4 md:gap-5 animate-fade-in-up lg:flex-1 lg:min-h-0" style={{ animationDelay: '350ms' }}>
-          <div className="w-full lg:w-[35%] xl:w-[30%] bg-[#FFFFFF] p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col min-h-[420px] lg:min-h-0 lg:h-full">
-            <div className="flex flex-row justify-between items-center mb-4">
-              <h3 className="text-base font-bold text-[#18254D]">Tasks</h3>
-              <button
-                onClick={() => {
-                  onNavigate("followups");
-                }}
-                className="text-xs font-semibold text-teal-500 hover:text-teal-600 flex items-center gap-1"
-              >
-                View all <ArrowRight size={14} />
-              </button>
+          <div className="w-full lg:w-[35%] xl:w-[30%] bg-white rounded-[24px] shadow-sm border border-slate-200 flex flex-col min-h-[420px] lg:min-h-0 lg:h-full overflow-hidden">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-[#0A578E] to-[#15B49F] p-5">
+              <div className="flex flex-row justify-between items-start">
+                <div className="flex gap-3 items-center">
+                  <div className="text-white">
+                    <CheckCircle2 size={24} strokeWidth={2.5} />
+                  </div>
+                  <div>
+                    <h3 className="text-[18px] font-extrabold text-white tracking-wide">Tasks</h3>
+                    <p className="text-[13px] text-white/90 font-medium">{displayTasks.length} {activeTaskTab.toLowerCase()}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    onNavigate("followups");
+                  }}
+                  className="text-[14px] font-bold text-white hover:text-white/80 flex items-center gap-1 transition-colors"
+                >
+                  View all <ChevronRight size={16} strokeWidth={3} />
+                </button>
+              </div>
             </div>
 
-            <div className="flex items-center gap-2 mb-5">
+            {/* Tabs */}
+            <div className="flex items-center gap-3 px-5 py-4 border-b border-slate-100 bg-white">
               <button
                 onClick={() => setActiveTaskTab("Pending")}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${activeTaskTab === "Pending" ? "text-teal-500 border-teal-500 bg-teal-50/50" : "text-slate-400 border-slate-200 hover:border-slate-300"}`}
+                className={`px-5 py-2 rounded-xl text-[13px] font-bold transition-all ${activeTaskTab === "Pending" ? "text-white bg-[#15B49F] shadow-sm" : "text-slate-500 bg-slate-50 border border-slate-200 hover:bg-slate-100"}`}
               >
                 Pending
               </button>
               <button
                 onClick={() => setActiveTaskTab("Overdue")}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${activeTaskTab === "Overdue" ? "text-red-500 border-red-500 bg-red-50/50" : "text-slate-400 border-slate-200 hover:border-slate-300"}`}
+                className={`px-5 py-2 rounded-xl text-[13px] font-bold transition-all ${activeTaskTab === "Overdue" ? "text-white bg-red-500 shadow-sm" : "text-slate-500 bg-slate-50 border border-slate-200 hover:bg-slate-100"}`}
               >
                 Overdue
               </button>
             </div>
 
-            <div className="space-y-3 flex-1 overflow-y-auto pr-1 no-scrollbar animate-fade-in" key={activeTaskTab}>
+            <div className="flex-1 overflow-y-auto no-scrollbar animate-fade-in bg-slate-50/50" key={activeTaskTab}>
               {displayTasks.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-center">
-                  <CheckCircle2 size={24} className="text-slate-200 mb-3" />
-                  <p className="text-[12px] font-bold text-slate-300 tracking-widest">
+                <div className="flex flex-col items-center justify-center h-full text-center p-6">
+                  <CheckCircle2 size={32} className="text-slate-200 mb-3" />
+                  <p className="text-[14px] font-bold text-slate-400 tracking-wider">
                     No Tasks Here
                   </p>
                 </div>
@@ -926,46 +938,44 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
                         if (!client) return;
                         onSelectFollowUp(client);
                       }}
-                      className={`p-4 sm:p-5 border rounded-2xl transition-all duration-300 cursor-pointer shadow-sm group relative overflow-hidden ${isOverdue ? "bg-[#FFF5F5] border-red-100 hover:border-red-200 hover:shadow-md hover:-translate-y-0.5" : "bg-white border-slate-100 hover:border-slate-200 hover:shadow-md hover:-translate-y-0.5"}`}
+                      className={`px-5 py-4 flex items-center justify-between border-b border-slate-100 last:border-0 hover:bg-white transition-colors cursor-pointer bg-slate-50/30 group`}
                     >
-                      {/* Left Accent Bar */}
-                      <div className={`absolute left-0 top-0 bottom-0 w-1.5 transition-colors ${isOverdue ? "bg-red-500 group-hover:bg-red-600" : "bg-teal-400 group-hover:bg-teal-500"}`} />
-                      
-                      <div className="flex justify-between items-start mb-3 pl-1">
-                        <div className="flex items-center gap-1.5">
-                          {isOverdue ? (
-                            <span className="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-red-100 text-red-600 uppercase tracking-widest border border-red-200/50">
-                              OVERDUE
-                            </span>
-                          ) : (
-                            <span className="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-teal-50 text-teal-600 uppercase tracking-widest border border-teal-100">
-                              PENDING
-                            </span>
-                          )}
-                          <span className="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-[#18254D] text-white uppercase tracking-widest shadow-sm">
-                            NEW
-                          </span>
+                      <div className="flex items-center gap-4 min-w-0">
+                        {/* Avatar */}
+                        <div className="w-[46px] h-[46px] rounded-full bg-slate-900 text-white flex items-center justify-center text-[18px] font-bold shrink-0 border-2 border-white shadow-sm">
+                          {client ? client.name.charAt(0).toUpperCase() : "T"}
                         </div>
-                        <span className={`text-[10px] font-bold flex items-center gap-1.5 px-2.5 py-1 rounded-lg ${isOverdue ? "text-red-600 bg-red-50 border border-red-100/50" : "text-slate-500 bg-slate-50 border border-slate-100"}`}>
-                          <Calendar size={12} strokeWidth={2.5} className={isOverdue ? "text-red-500" : "text-slate-400"} />
-                          {parseLocalDate(f.dueDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
-                        </span>
-                      </div>
-                      
-                      <div className="flex flex-col gap-1.5 pl-1">
-                        {client && (
-                          <div className="flex items-center gap-2">
-                            <div className="w-5 h-5 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-[10px] font-bold border border-indigo-100/50 shrink-0">
-                              {client.name.charAt(0).toUpperCase()}
-                            </div>
-                            <p className="text-[13px] font-semibold text-slate-500 truncate">
-                              {client.name}
-                            </p>
+                        
+                        <div className="flex flex-col min-w-0 pr-2">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h4 className="text-[15px] font-bold text-[#18254D] truncate group-hover:text-primary transition-colors">
+                              {f.title}
+                            </h4>
+                            {isOverdue ? (
+                              <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-red-100 text-red-600 shrink-0 tracking-wider">OVERDUE</span>
+                            ) : (
+                              <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-[#18254D] text-white shrink-0 tracking-wider">NEW</span>
+                            )}
                           </div>
-                        )}
-                        <h4 className="text-[15px] font-bold text-[#18254D] truncate group-hover:text-primary transition-colors">
-                          {f.title}
-                        </h4>
+                          
+                          <div className="flex items-center gap-1.5 text-[13px] font-bold">
+                            {client && (
+                              <span className="text-slate-500 truncate max-w-[120px]">
+                                {client.name}
+                              </span>
+                            )}
+                            {client && <span className="text-slate-300">•</span>}
+                            <span className={`flex items-center gap-1 ${isOverdue ? "text-red-500" : "text-[#15B49F]"}`}>
+                              <Calendar size={12} strokeWidth={3} />
+                              {parseLocalDate(f.dueDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Right Icon */}
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${isOverdue ? "bg-red-50 text-red-500" : "bg-[#E6F8F5] text-[#15B49F]"}`}>
+                         <CheckCircle2 size={18} strokeWidth={3} />
                       </div>
                     </div>
                   );
