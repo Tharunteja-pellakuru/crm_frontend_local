@@ -25,7 +25,6 @@ import EnquiryList from "./pages/enquiries/EnquiryList";
 import FollowUpList from "./pages/followups/FollowUpList";
 import Settings from "./pages/settings/Settings";
 import LoginPage from "./pages/auth/LoginPage";
-import SSODashboard from "./pages/dashboard/SSODashboard";
 import {
   MOCK_CLIENTS,
   MOCK_ENQUIRIES,
@@ -234,6 +233,7 @@ function AppRoutes() {
           lastContact: lead.updated_at ? lead.updated_at.split("T")[0] : new Date().toISOString().split("T")[0],
           avatar: `https://picsum.photos/100/100?random=${lead.lead_id || Math.floor(Math.random() * 100)}`,
           enquiry_id: lead.enquiry_id,
+          source: lead.source || "",
         };
       });
       setLeads(transformedLeads);
@@ -409,6 +409,7 @@ function AppRoutes() {
               : new Date().toISOString().split("T")[0],
             avatar: `https://picsum.photos/100/100?random=${lead.lead_id || Math.floor(Math.random() * 100)}`,
             enquiry_id: lead.enquiry_id,
+            source: lead.source || "",
             createdByName: lead.created_by_name || null,
             convertedByName: lead.converted_by_name || null,
           };
@@ -731,6 +732,7 @@ function AppRoutes() {
               : new Date().toISOString().split("T")[0],
             avatar: `https://picsum.photos/100/100?random=${result.lead?.lead_id || Date.now() % 100}`,
             enquiry_id: result.lead?.enquiry_id || data.enquiry_id,
+            source: result.lead?.source || data.source || "",
           };
 
           setLeads([newLead, ...leads]);
@@ -2194,20 +2196,9 @@ function AppRoutes() {
         path="/login"
         element={
           isLoggedIn ? (
-            <Navigate to="/sso-dashboard" replace />
+            <Navigate to="/dashboard" replace />
           ) : (
             <LoginPage onLogin={handleLogin} />
-          )
-        }
-      />
-
-      <Route
-        path="/sso-dashboard"
-        element={
-          isLoggedIn ? (
-            <SSODashboard onLogout={handleLogout} />
-          ) : (
-            <Navigate to="/login" replace />
           )
         }
       />

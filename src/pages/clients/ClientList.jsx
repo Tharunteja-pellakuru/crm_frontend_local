@@ -933,7 +933,7 @@ const ClientList = ({
                       <td className="px-6 py-4 border-y border-slate-100">
                         <div className="flex items-center gap-1.5 text-[12px] font-bold text-slate-600 bg-slate-50 px-2 py-1 rounded-lg border border-slate-100 w-fit">
                           <Users size={12} className="text-slate-400" />
-                          <span className="truncate max-w-[120px]">{client.createdByName || "System"}</span>
+                          <span className="truncate max-w-[120px]">{client.created_by_name || client.createdByName || "System"}</span>
                         </div>
                       </td>
                       <td className="px-6 py-4 border-y border-slate-100 last:border-r last:rounded-r-xl text-right">

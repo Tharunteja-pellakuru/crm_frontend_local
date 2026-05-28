@@ -18,7 +18,7 @@ import {
   ChevronRight, Zap, Target, Pencil, RotateCcw, Flame,
   Sun, Snowflake, Search, Check, CheckCircle2, ChevronDown,
   Globe, UserCheck, UserX, Tag, DollarSign, Bell,
-  Loader2, Upload,
+  Loader2, Upload, Info, User
 } from "lucide-react";
 import SearchableDropdown from "../../components/common/SearchableDropdown";
 
@@ -347,7 +347,7 @@ const ClientDetail = ({
   activities,
   followUps = [],
   onAddFollowUp,
-  initialTab = "overview",
+  initialTab,
   onSelectProject,
   projects = [],
   onDismissLead,
@@ -356,13 +356,29 @@ const ClientDetail = ({
   onOnboardClient,
   clients = [],
 }) => {
-  const isLead = client.status === "Lead" || client.status === "Dismissed";
-  const [activeTab, setActiveTab] = useState(initialTab);
+  const isLead = client?.isLead || client?.status === "Lead" || client?.status === "Dismissed";
+  
+  const getInitialTab = () => {
+    const validTabs = ["Details", "Conversations", "Projects"];
+    if (isLead) validTabs.push("Follow Ups");
+    
+    if (initialTab && validTabs.includes(initialTab) && initialTab !== "overview") {
+      return initialTab;
+    }
+    return isLead ? "Follow Ups" : "Details";
+  };
+
+  const [activeTab, setActiveTab] = useState(getInitialTab());
+  const [activeUpcomingTab, setActiveUpcomingTab] = useState("Today");
   const [isLeadConvOpen, setIsLeadConvOpen] = useState(true);
 
   const clientId = getClientId(client);
   const leadId = client?.lead_id || client?.id || client?._id;
   const orgName = getOrganisationName(client);
+
+  useEffect(() => {
+    setActiveTab(getInitialTab());
+  }, [clientId, leadId, isLead, initialTab]);
 
   // ── Onboard Modal State ──────────────────────────────────────────────────────
   const [showOnboardModal, setShowOnboardModal] = useState(false);
@@ -486,7 +502,7 @@ const ClientDetail = ({
   const [editFormData, setEditFormData] = useState({
     name: "", email: "", phone: "", countryCode: "", leadType: "Warm",
     notes: "", website: "", projectCategory: 1, country: "India",
-    state: "", currency: "INR", organisationName: "", clientStatus: "Active",
+    state: "", currency: "INR", organisationName: "", clientStatus: "Active", source: "",
   });
   const [showEditModal, setShowEditModal] = useState(false);
 
@@ -525,8 +541,6 @@ const ClientDetail = ({
     showCompletionModal || showOnboardModal || showEditFollowUpModal || showAddAnotherPrompt
   );
 
-  useEffect(() => setActiveTab(initialTab), [initialTab]);
-
   useEffect(() => {
     if (showEditModal && client) {
       const dialCode = client.country_code || "";
@@ -536,7 +550,7 @@ const ClientDetail = ({
         name: client.name || "",
         email: client.email || "",
         phone: phone,
-        countryCode: dialCode.startsWith('+') ? dialCode.slice(1) : dialCode,
+        countryCode: dialCode ? (dialCode.startsWith('+') ? dialCode : `+${dialCode}`) : "",
         leadType: client.leadType || "Hot",
         notes: client.notes || "",
         website: client.website || "",
@@ -546,6 +560,7 @@ const ClientDetail = ({
         currency: client.currency || "",
         organisationName: getOrganisationName(client),
         clientStatus: client.clientStatus || "Active",
+        source: client.source || "",
       });
     }
   }, [showEditModal, client]);
@@ -772,578 +787,379 @@ const handleEditFollowUpSubmit = async (e) => {
   };
 
   return (
-    <div className="w-full h-full relative space-y-6 pb-12">
+        <div className="w-full h-full relative space-y-6 pb-12">
+      {/* Breadcrumbs */}
+      <div className="flex items-center gap-2 text-[13px] font-medium text-slate-400 mb-6">
+        <button onClick={onBack} className="hover:text-blue-500 transition-colors">Clients & Leads</button>
+        <ChevronRight size={14} className="text-slate-300" />
+        <span className="text-[#18254D] truncate max-w-[200px]">{client.name || "Unknown Client"}</span>
+        <ChevronRight size={14} className="text-slate-300" />
+        <span className="text-slate-500">Details</span>
+      </div>
 
       {/* Header */}
-      <div className="flex flex-col gap-4 border-b border-slate-200 pb-4">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={onBack}
-                className="p-2 hover:bg-white hover:shadow-md bg-white rounded-full text-slate-500 hover:text-slate-900 transition-colors shrink-0"
-              >
-                <ArrowLeft className="w-5 h-5" strokeWidth={2} />
-              </button>
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-slate-900 flex items-center justify-center text-white font-bold text-xl shadow-sm shrink-0">
-                  {client.name?.charAt(0).toUpperCase() || "?"}
-                </div>
-                <div>
-                  <h1 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight leading-tight capitalize">
-                    {client.name}
-                  </h1>
-                  <p className="text-sm font-medium text-slate-500 flex items-center gap-2">
-                    {isLead
-                      ? (client.company && <span>{client.company}</span>)
-                      : (<span>{client.projectName || orgName || "Global Project"}</span>)
-                    }
-                    <span className="w-1 h-1 rounded-full bg-slate-300 inline-block" />
-                    <span className="text-slate-400">{isLead ? "Lead" : "Client"}</span>
-                  </p>
-                </div>
-              </div>
-            </div>
-
-<div className="flex items-center gap-2.5">
-  {/* Edit Button */}
-  <button
-    onClick={() => setShowEditModal(true)}
-    className="w-11 h-11 flex items-center justify-center bg-white border border-slate-200 rounded-2xl text-slate-500 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50/60 transition-all shadow-sm hover:shadow-md active:scale-95 group"
-    title="Edit"
-  >
-    <Pencil size={17} strokeWidth={1.8} className="group-hover:scale-110 transition-transform duration-200" />
-  </button>
-
-  {client.status !== "Dismissed" ? (
-    /* Dismiss Button */
-    <button
-      onClick={() => {
-        if (isLead) { onDismissLead && onDismissLead(leadId); }
-        else { onUpdateClient && onUpdateClient(clientId, { ...client, status: "Dismissed", clientStatus: "Dismissed",  organisationName:
-      client.organisationName ||
-      client.organization ||
-      client.organisation_name ||
-      client.client_organisation ||
-      client.org_name ||
-      client.business_name ||
-      client.company ||
-      "", }); }
-      }}
-      className="w-11 h-11 flex items-center justify-center bg-white border border-slate-200 rounded-2xl text-red-400 hover:text-red-600 hover:border-red-200 hover:bg-red-50/60 transition-all shadow-sm hover:shadow-md active:scale-95 group"
-      title="Dismiss"
-    >
-      <UserX size={17} strokeWidth={1.8} className="group-hover:scale-110 transition-transform duration-200" />
-    </button>
-  ) : (
-    /* Restore Button */
-    <button
-      onClick={() => onRestoreLead && onRestoreLead(leadId)}
-      className="w-11 h-11 flex items-center justify-center bg-white border border-slate-200 rounded-2xl text-blue-400 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50/60 transition-all shadow-sm hover:shadow-md active:scale-95 group"
-      title="Restore"
-    >
-      <RotateCcw size={17} strokeWidth={1.8} className="group-hover:scale-110 transition-transform duration-200" />
-    </button>
-  )}
-</div>
+      <div className="flex items-center justify-between gap-4 mb-8">
+        <div className="flex items-center gap-4 min-w-0">
+          <div className="w-12 h-12 bg-[#18254D] rounded-xl flex items-center justify-center shrink-0 shadow-sm text-white text-xl font-bold">
+            {client.name?.charAt(0).toUpperCase() || "?"}
           </div>
-          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
-            {/* Pill container */}
-            <div className="flex items-center gap-1 bg-slate-100/80 p-1 rounded-2xl border border-slate-200/60 shadow-inner">
-              {[
-                { id: "overview",  label: "Overview",       icon: <Target size={14}/>      },
-                { id: "activity",  label: "Conversations",  icon: <MessageSquare size={14}/> },
-                ...(!isLead ? [{ id: "projects", label: "Projects", icon: <Briefcase size={14}/> }] : []),
-              ].map((tab) => {
-                const isActive = activeTab === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`
-                      relative flex items-center gap-2 px-4 py-2 rounded-xl text-[13px] font-bold
-                      whitespace-nowrap transition-all duration-200 outline-none
-                      ${isActive
-                        ? "bg-white text-[#18254D] shadow-sm border border-slate-200/80"
-                        : "text-slate-500 hover:text-slate-700 hover:bg-white/50"
-                      }
-                    `}
-                  >
-                    {/* Icon with color shift */}
-                    <span className={`transition-colors duration-200 ${isActive ? "text-[#18254D]" : "text-slate-400"}`}>
-                      {tab.icon}
-                    </span>
-                    {tab.label}
+          <div className="min-w-0">
+            <h2 className="text-xl sm:text-[22px] font-medium text-[#18254D] leading-tight mb-0.5 capitalize truncate">
+              {client.name}
+            </h2>
+            <p className="text-xs sm:text-[13px] text-slate-500 font-medium flex items-center gap-1.5 sm:gap-2">
+              {isLead
+                ? (client.company && <span className="truncate">{client.company}</span>)
+                : (<span className="truncate">{client.projectName || orgName || "Global Client"}</span>)
+              }
+              <span className="w-1 h-1 rounded-full bg-slate-300 inline-block shrink-0" />
+              <span className="text-slate-400 shrink-0">{isLead ? "Lead" : "Client"}</span>
+            </p>
+          </div>
+        </div>
+        
+        <div className="flex items-center gap-2 shrink-0">
+          <button onClick={() => setShowEditModal(true)} className="w-[34px] h-[34px] flex items-center justify-center bg-blue-50 text-blue-600 border border-blue-100 rounded-[10px] hover:bg-blue-100 transition-all active:scale-90 shadow-sm relative group/btn" title="Edit Profile">
+            <Pencil size={16} />
+            <div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">
+              Edit
+            </div>
+          </button>
 
-                    {/* Active dot indicator */}
-                    {isActive && (
-                      <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-[#18254D] rounded-full border-2 border-slate-100 shadow-sm" />
-                    )}
-                  </button>
-                );
-              })}
+          {client.status !== "Dismissed" ? (
+            <button
+              onClick={() => {
+                if (isLead) { onDismissLead && onDismissLead(leadId); }
+                else { onUpdateClient && onUpdateClient(clientId, { ...client, status: "Dismissed", clientStatus: "Dismissed",  organisationName:
+              client.organisationName ||
+              client.organization ||
+              client.organisation_name ||
+              client.client_organisation ||
+              client.org_name ||
+              client.business_name ||
+              client.company ||
+              "", }); }
+              }}
+              className="w-[34px] h-[34px] flex items-center justify-center bg-[#FEF2F2] border border-[#FECACA] rounded-[10px] text-[#EF4444] hover:text-[#DC2626] hover:border-[#FCA5A5] transition-all active:scale-90 shadow-sm relative group/btn" title="Dismiss"
+            >
+              <UserX size={16} />
+              <div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">
+                Dismiss
+              </div>
+            </button>
+          ) : (
+            <button
+              onClick={() => onRestoreLead && onRestoreLead(leadId)}
+              className="w-[34px] h-[34px] flex items-center justify-center bg-blue-50 text-blue-600 border border-blue-100 rounded-[10px] hover:bg-blue-100 transition-all active:scale-90 shadow-sm relative group/btn" title="Restore"
+            >
+              <RotateCcw size={16} />
+              <div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">
+                Restore
+              </div>
+            </button>
+          )}
+
+          {isLead && client.status !== "Dismissed" && (
+            <button
+              onClick={() => setShowOnboardModal(true)}
+              className="w-[34px] h-[34px] flex items-center justify-center bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-[10px] hover:bg-emerald-100 transition-all active:scale-90 shadow-sm relative group/btn" title="Convert to Client"
+            >
+              <UserCheck size={16} />
+              <div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">
+                Convert
+              </div>
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* KPI Top Row */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
+        
+        {/* Status */}
+        <div className="bg-white p-4 sm:p-5 lg:p-6 rounded-2xl shadow-sm border border-slate-200 hover:-translate-y-1 hover:shadow-md transition-all duration-300">
+          <div className="flex items-center gap-2 sm:gap-4">
+            <div className="p-2 sm:p-3 rounded-full bg-emerald-50 text-emerald-500 shrink-0">
+              <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6" />
+            </div>
+            <div className="min-w-0 w-full">
+              <h3 className="text-slate-500 text-[10px] sm:text-xs font-semibold truncate uppercase tracking-wider">
+                {isLead ? "Lead Status" : "Client Status"}
+              </h3>
+              <p className="text-base sm:text-lg font-bold text-[#18254D] leading-none mt-1">
+                {isLead ? (client.leadType || "Warm") : (client.clientStatus || client.status || "Active")}
+              </p>
             </div>
           </div>
         </div>
 
-      {/* Main Content Area */}
-      <div>
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Currency / Projects Count */}
+        <div className="bg-white p-4 sm:p-5 lg:p-6 rounded-2xl shadow-sm border border-slate-200 hover:-translate-y-1 hover:shadow-md transition-all duration-300">
+          <div className="flex items-center gap-2 sm:gap-4">
+            <div className="p-2 sm:p-3 rounded-full bg-blue-50 text-blue-500 shrink-0 flex items-center justify-center min-w-[40px] sm:min-w-[48px] h-[40px] sm:h-[48px]">
+              {!isLead ? (
+                <span className="text-[20px] sm:text-[24px] font-bold font-serif leading-none mt-1">
+                  {(() => {
+                    const currency = client.currency || client.client_currency || "USD";
+                    switch (currency.toUpperCase()) {
+                      case 'INR': return '₹';
+                      case 'EUR': return '€';
+                      case 'GBP': return '£';
+                      case 'JPY': return '¥';
+                      case 'AUD': return 'A$';
+                      case 'CAD': return 'C$';
+                      case 'USD': return '$';
+                      default: return '$';
+                    }
+                  })()}
+                </span>
+              ) : (
+                <Briefcase className="w-5 h-5 sm:w-6 sm:h-6" />
+              )}
+            </div>
+            <div className="min-w-0 w-full">
+              <h3 className="text-slate-500 text-[10px] sm:text-xs font-semibold truncate uppercase tracking-wider">
+                {!isLead ? "Billing Currency" : "Interested In"}
+              </h3>
+              <p className="text-base sm:text-lg font-bold text-[#18254D] leading-none mt-1">
+                {!isLead ? (client.currency || client.client_currency || "N/A") : (CATEGORY_MAP[client.projectCategory || 1])}
+              </p>
+            </div>
+          </div>
+        </div>
 
-          {/* Left Sidebar */}
-          <div className="lg:col-span-4 space-y-6">
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-5">Contact Information</h3>
-              <div className="space-y-4">
-                <div className="flex items-start gap-3">
-                  <Mail className="w-5 h-5 text-slate-400 mt-0.5" />
-                  <div>
-                    <p className="text-xs font-medium text-slate-500">Email Address</p>
-                    <a href={`mailto:${client.email}`} className="text-sm font-semibold text-blue-600 hover:underline break-all">{client.email}</a>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <Phone className="w-5 h-5 text-slate-400 mt-0.5" />
-                  <div>
-                    <p className="text-xs font-medium text-slate-500">Phone Number</p>
-                    <p className="text-sm font-semibold text-slate-900">
-                      {(() => {
-                        let dialCode = client.country_code || "";
-                        if (dialCode && /^\d+$/.test(dialCode)) dialCode = `+${dialCode}`;
-                        if (!dialCode && client.country) {
-                          const match = client.country.trim().match(/\(([^)]+)\)/);
-                          if (match && match[1]) dialCode = match[1];
-                        }
-                        return dialCode ? `${dialCode} ${client.phone}` : client.phone;
-                      })()}
-                    </p>
-                  </div>
-                </div>
-                {!isLead && (client.state || client.country) && (
-                  <div className="flex items-start gap-3">
-                    <MapPin className="w-5 h-5 text-slate-400 mt-0.5" />
-                    <div>
-                      <p className="text-xs font-medium text-slate-500">Location</p>
-                      <p className="text-sm font-semibold text-slate-900">{client.state ? `${client.state}, ` : ""}{client.country}</p>
-                    </div>
-                  </div>
-                )}
-                {client.website && (
-                  <div className="flex items-start gap-3">
-                    <Globe className="w-5 h-5 text-slate-400 mt-0.5" />
-                    <div>
-                      <p className="text-xs font-medium text-slate-500">Website</p>
-                      <a
-                        href={client.website.startsWith("http") ? client.website : `https://${client.website}`}
-                        target="_blank" rel="noopener noreferrer"
-                        className="text-sm font-semibold text-blue-600 hover:underline break-all"
-                      >
-                        {client.website.replace(/^https?:\/\//, "")}
-                      </a>
-                    </div>
-                  </div>
-                )}
+        {/* Created By */}
+        <div className="bg-white p-4 sm:p-5 lg:p-6 rounded-2xl shadow-sm border border-slate-200 hover:-translate-y-1 hover:shadow-md transition-all duration-300">
+          <div className="flex items-center gap-2 sm:gap-4">
+            <div className="p-2 sm:p-3 rounded-full bg-purple-50 text-purple-500 shrink-0">
+              <UserCheck className="w-5 h-5 sm:w-6 sm:h-6" />
+            </div>
+            <div className="min-w-0 w-full">
+              <h3 className="text-slate-500 text-[10px] sm:text-xs font-semibold truncate uppercase tracking-wider">
+                Created By
+              </h3>
+              <p className="text-lg sm:text-xl font-bold text-[#18254D] leading-none mt-1 truncate">
+                {client.created_by_name || client.createdByName || "System"}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Interaction count */}
+        <div className="bg-white p-4 sm:p-5 lg:p-6 rounded-2xl shadow-sm border border-slate-200 hover:-translate-y-1 hover:shadow-md transition-all duration-300">
+          <div className="flex items-center gap-2 sm:gap-4">
+            <div className="p-2 sm:p-3 rounded-full bg-orange-50 text-orange-500 shrink-0">
+              <MessageSquare className="w-5 h-5 sm:w-6 sm:h-6" />
+            </div>
+            <div className="min-w-0 w-full">
+              <h3 className="text-slate-500 text-[10px] sm:text-xs font-semibold truncate uppercase tracking-wider">
+                Interactions
+              </h3>
+              <p className="text-base sm:text-lg font-bold text-[#18254D] leading-none mt-1">
+                {clientActivities.length + completedFollowUps.length}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Tabs UI */}
+      <div className="flex overflow-x-auto no-scrollbar [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] gap-2 sm:gap-3 my-4 w-full px-1 sm:px-0 pb-1">
+        {[
+          { id: "Details", label: "Details", icon: <Info size={16} /> },
+          ...(isLead ? [{ id: "Follow Ups", label: "Follow Ups", icon: <Clock size={16} /> }] : []),
+          { id: "Conversations", label: "Conversations", icon: <MessageSquare size={16} /> },
+          ...(isLead ? [] : [{ id: "Projects", label: "Projects", icon: <Briefcase size={16} /> }])
+        ].map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`px-4 py-2 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-bold flex items-center gap-2 transition-all cursor-pointer border whitespace-nowrap flex-shrink-0 ${
+              activeTab === tab.id
+                ? "bg-[#0F172A] text-white border-[#0F172A] shadow-sm"
+                : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700"
+            }`}
+          >
+            {tab.icon} {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Main Grid Layout */}
+      <div className="flex flex-col gap-6 items-stretch">
+        
+        {/* Left Column Wrapper */}
+        <div className="contents lg:flex lg:flex-col w-full lg:gap-6">
+          
+          {activeTab === "Details" && (
+          <>
+          {/* Main Details */}
+          <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 order-1 lg:order-none w-full flex flex-col">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center">
+                <Info size={16} />
               </div>
+              <h3 className="text-[15px] font-bold text-[#18254D]">Contact Information</h3>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-4 mb-4">
+              <div>
+                <h4 className="text-[10px] font-bold tracking-wider text-slate-400 uppercase mb-1.5">Email Address</h4>
+                <div className="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                  <Mail className="w-4 h-4 text-slate-400" />
+                  <a href={`mailto:${client.email}`} className="text-[13px] font-bold text-blue-600 hover:underline break-all">{client.email}</a>
+                </div>
+              </div>
+
+              <div>
+                <h4 className="text-[10px] font-bold tracking-wider text-slate-400 uppercase mb-1.5">Phone Number</h4>
+                <div className="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                  <Phone className="w-4 h-4 text-slate-400" />
+                  <p className="text-[13px] font-bold text-[#18254D]">
+                    {(() => {
+                      let dialCode = client.country_code || "";
+                      if (dialCode && /^\d+$/.test(dialCode)) dialCode = `+${dialCode}`;
+                      if (!dialCode && client.country) {
+                        const match = client.country.trim().match(/\(([^)]+)\)/);
+                        if (match && match[1]) dialCode = match[1];
+                      }
+                      return dialCode ? `${dialCode} ${client.phone}` : client.phone;
+                    })()}
+                  </p>
+                </div>
+              </div>
+
+              {(!isLead && (client.state || client.country)) && (
+                <div>
+                  <h4 className="text-[10px] font-bold tracking-wider text-slate-400 uppercase mb-1.5">Location</h4>
+                  <div className="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                    <MapPin className="w-4 h-4 text-slate-400" />
+                    <p className="text-[13px] font-bold text-[#18254D]">{client.state ? `${client.state}, ` : ""}{client.country}</p>
+                  </div>
+                </div>
+              )}
+
+              {client.website && (
+                <div>
+                  <h4 className="text-[10px] font-bold tracking-wider text-slate-400 uppercase mb-1.5">Website</h4>
+                  <div className="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                    <Globe className="w-4 h-4 text-slate-400" />
+                    <a
+                      href={client.website.startsWith("http") ? client.website : `https://${client.website}`}
+                      target="_blank" rel="noopener noreferrer"
+                      className="text-[13px] font-bold text-blue-600 hover:underline break-all"
+                    >
+                      {client.website.replace(/^https?:\/\//, "")}
+                    </a>
+                  </div>
+                </div>
+              )}
+
+              {client.source && (
+                <div>
+                  <h4 className="text-[10px] font-bold tracking-wider text-slate-400 uppercase mb-1.5">Lead Source</h4>
+                  <div className="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                    <Tag className="w-4 h-4 text-slate-400" />
+                    <p className="text-[13px] font-bold text-[#18254D]">{client.source}</p>
+                  </div>
+                </div>
+              )}
             </div>
 
             {client.notes && (
-              <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Notes & Message</h3>
-                <p className="text-sm text-slate-700 leading-relaxed bg-slate-50 p-4 rounded-xl border border-slate-100">
-                  {client.notes}
-                </p>
-              </div>
+              <>
+                <h4 className="text-[10px] font-bold tracking-wider text-slate-400 uppercase mb-1.5">Notes & Message</h4>
+                <div className="bg-slate-50 rounded-xl p-4 border border-slate-100 flex-1 flex flex-col">
+                  <p className="text-[13px] font-medium text-slate-500 leading-relaxed whitespace-pre-wrap">
+                    {client.notes}
+                  </p>
+                </div>
+              </>
             )}
           </div>
 
-          {/* Right Content */}
-          <div className="lg:col-span-8 space-y-6">
+                    </>
+          )}
 
-            {activeTab === "overview" && (
-              <div className="space-y-8 animate-fade-in">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {isLead ? (
-                    <>
-                      <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center">
-                          <Zap size={24} />
-                        </div>
-                        <div>
-                          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Lead Status</p>
-                          <p className={`text-xl font-bold ${client.leadType === "Hot" ? "text-red-600" : client.leadType === "Warm" ? "text-amber-500" : "text-blue-500"}`}>
-                            {client.leadType || "Warm"}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
-                          <UserCheck size={24} />
-                        </div>
-                        <div>
-                          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Created By</p>
-                          <p className="text-xl font-bold text-slate-900 truncate">{client.createdByName || "System"}</p>
-                        </div>
-                      </div>
-                      {client.status !== "Dismissed" && (
-                        <div className="col-span-1 sm:col-span-2 bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                          <div>
-                            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Quick Actions</p>
-                            <p className="text-sm font-medium text-slate-600">Manage next steps for this lead</p>
-                          </div>
-                          <div className="flex flex-wrap items-center gap-3">
-                            <button
-                              onClick={() => setShowAddFollowUpModal(true)}
-                              className="flex items-center gap-2 px-4 py-2.5 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 rounded-xl font-semibold transition-colors text-sm"
-                            >
-                              <Bell size={18} /> Add Follow Up
-                            </button>
-                            <button
-                              onClick={() => setShowOnboardModal(true)}
-                              className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 text-white hover:bg-emerald-700 rounded-xl font-semibold transition-colors text-sm shadow-sm"
-                            >
-                              <UserCheck size={18} /> Convert to Client
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                    </>
+          {activeTab === "Conversations" && (
+          <>
+          {/* Activity / Conversations */}
+          <div className="bg-white rounded-2xl p-5 lg:p-6 shadow-sm border border-slate-200 order-3 lg:order-none w-full">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-indigo-50 text-indigo-500 flex items-center justify-center">
+                  <MessageSquare size={16} />
+                </div>
+                <h3 className="text-[15px] font-bold text-[#18254D]">Recent Activity</h3>
+              </div>
+            </div>
+
+            {(() => {
+              const interactions = [
+                ...completedFollowUps.map(fu => ({
+                  ...fu, source: "followup",
+                  originalDescription: fu.description,
+                  description: fu.follow_brief || "No summary provided",
+                  completedBy: fu.completed_by
+                })),
+                ...clientActivities.map(a => ({ ...a, source: "activity", originalDescription: null }))
+              ].sort((a, b) =>
+                parseLocalDate(b.date || b.completed_at || b.dueDate || b.created_at || b.createdAt) -
+                parseLocalDate(a.date || a.completed_at || a.dueDate || a.created_at || a.createdAt)
+              );
+
+              return (
+                <div className="p-4 bg-slate-50/50 rounded-xl border border-slate-100">
+                  {interactions.length === 0 ? (
+                    <div className="text-center py-8 text-sm font-semibold text-slate-400">No conversations logged yet</div>
                   ) : (
-                    <>
-                      <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center">
-                          <UserCheck size={24} />
+                    <div id="lead-conv-carousel" className="flex overflow-x-auto gap-4 pb-2 snap-x snap-mandatory no-scrollbar scroll-smooth">
+                      {interactions.map((conv, idx) => (
+                        <div key={`conv-${conv.id || idx}`} className="w-full sm:w-[320px] shrink-0 snap-start">
+                          <ConversationCard conv={conv} onAddToCalendar={handleAddToCalendar} onClick={() => {}} />
                         </div>
-                        <div>
-                          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Client Status</p>
-                          <p className={`text-xl font-bold ${client.clientStatus === "Active" || client.status === "Active" ? "text-emerald-600" : "text-slate-500"}`}>
-                            {client.clientStatus || client.status || "Active"}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center">
-                          <DollarSign size={24} />
-                        </div>
-                        <div>
-                          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Billing Currency</p>
-                          <p className="text-xl font-bold text-slate-900">{client.currency || client.client_currency || "N/A"}</p>
-                        </div>
-                      </div>
-                    </>
+                      ))}
+                    </div>
                   )}
                 </div>
+              );
+            })()}
+          </div>
 
-                {/* Upcoming Follow-ups */}
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                      <Clock size={20} className="text-slate-500" /> Upcoming Follow-ups
-                    </h2>
-                  </div>
-                  <div className="space-y-6">
-                    {[
-                      { title: "Overdue", icon: <Bell size={16} />, tasks: overdueFUs, style: "text-red-600 bg-red-50 border-red-200" },
-                      { title: "Today",   icon: <Clock size={16} />, tasks: todayFUs,  style: "text-amber-600 bg-amber-50 border-amber-200" },
-                      { title: "Upcoming",icon: <Calendar size={16} />, tasks: futureFUs, style: "text-blue-600 bg-blue-50 border-blue-200" }
-                    ].map((section) => section.tasks.length > 0 && (
-                      <div key={section.title}>
-                        <div className="flex items-center gap-3 mb-4">
-                          <div className={`p-1.5 rounded-lg border ${section.style}`}>{section.icon}</div>
-                          <h3 className={`text-sm font-bold uppercase tracking-wider ${section.title === 'Overdue' ? 'text-red-600' : section.title === 'Today' ? 'text-amber-600' : 'text-blue-600'}`}>
-                            {section.title} ({section.tasks.length})
-                          </h3>
-                          <div className="flex-1 h-px bg-slate-100"></div>
-                        </div>
-                        <div className="space-y-4 pl-[11px] border-l-2 border-slate-100 ml-3">
-                          {section.tasks.map((fu, idx) => {
-                            const fuDate = parseLocalDate(fu.followup_date || fu.dueDate);
-                            const prevFu = section.tasks[idx - 1];
-                            const prevFuDate = prevFu ? parseLocalDate(prevFu.followup_date || prevFu.dueDate) : null;
-                            const hasConflict = prevFuDate && (fuDate - prevFuDate) < 30 * 60 * 1000;
-                            return (
-                              <div key={fu.id} className="relative pl-6">
-                                <div className={`absolute -left-[35px] top-5 w-3 h-3 rounded-full border-2 border-white shadow-sm ${fu.priority === 'High' ? 'bg-red-500' : 'bg-slate-300'}`}></div>
-                                <div className={`p-4 rounded-xl border bg-white transition-shadow hover:shadow-md ${hasConflict ? 'ring-2 ring-amber-400 ring-offset-1' : 'border-slate-200'}`}>
-                                  {hasConflict && (
-                                    <div className="inline-flex items-center gap-1 px-2 py-1 bg-amber-100 text-amber-800 text-[10px] font-bold uppercase rounded-md mb-2">
-                                      <Clock size={12} /> Time Conflict
-                                    </div>
-                                  )}
-                                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-                                    <div>
-                                      <div className="flex flex-wrap items-center gap-2 mb-2">
-                                        <span className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase ${fu.priority === 'High' ? 'bg-red-100 text-red-700' : fu.priority === 'Medium' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'}`}>
-                                          {fu.priority} Priority
-                                        </span>
-                                        <span className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase ${getModeBadge(fu.followup_mode)}`}>
-                                          {fu.followup_mode}
-                                        </span>
-                                      </div>
-                                      <h4 className="text-base font-bold text-slate-900 mb-1">
-                                        {fu.title} {fu.projectName && <span className="text-sm font-medium text-slate-500 ml-2">| {fu.projectName}</span>}
-                                      </h4>
-                                      {fu.description && <p className="text-sm text-slate-600 line-clamp-2 mb-3">{fu.description}</p>}
-                                      <div className="flex items-center gap-4 text-xs font-medium text-slate-500">
-                                        <span className="flex items-center gap-1.5"><Calendar size={14}/> {formatDateDMY(fuDate)}</span>
-                                        <span className="flex items-center gap-1.5 text-slate-700"><Clock size={14}/> {fuDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                                      </div>
-                                    </div>
-                                    <div className="flex gap-2 shrink-0 mt-2 sm:mt-0">
-                                      {/* Edit Button */}
-                                      <button
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          const fuDate = parseLocalDate(fu.followup_date || fu.dueDate);
-                                          let hours = fuDate.getHours();
-                                          const period = hours >= 12 ? "PM" : "AM";
-                                          hours = hours % 12 || 12;
-                                          const normalize = (str) =>
-                                            str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : "";
-                                          setEditingFollowUp(fu);
-                                          setEditFollowUpFormData({
-                                            title: fu.title || "",
-                                            description: fu.description || "",
-                                            followup_date: fuDate.toLocaleDateString("en-CA"),
-                                            timeHour: String(hours),
-                                            timeMinute: String(fuDate.getMinutes()).padStart(2, "0"),
-                                            timePeriod: period,
-                                            priority: normalize(fu.priority) || "Medium",
-                                            followup_mode: normalize(fu.followup_mode) || "Call",
-                                            followup_status: normalize(fu.followup_status || fu.status) || "Pending",
-                                            projectId: fu.projectId || fu.project_id || "",
-                                          });
-                                          setShowEditFollowUpModal(true);
-                                        }}
-                                        className="p-2 bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-200 text-slate-500 hover:text-blue-600 rounded-lg transition-colors"
-                                        title="Edit Follow-up"
-                                      >
-                                        <Pencil size={18} />
-                                      </button>
-                                      {/* Complete Button */}
-                                      <button
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          const now = new Date();
-                                          setCompletionDate(now.toLocaleDateString("en-CA"));
-                                          setCompletionHour((now.getHours() % 12 || 12).toString());
-                                          setCompletionMinute(now.getMinutes().toString().padStart(2, "0"));
-                                          setCompletionPeriod(now.getHours() >= 12 ? "PM" : "AM");
-                                          setCompletingFollowUpId(fu.id);
-                                          setCompletionBrief("");
-                                          setShowCompletionModal(true);
-                                        }}
-                                        className="p-2 bg-slate-50 hover:bg-emerald-50 border border-slate-200 hover:border-emerald-200 text-slate-500 hover:text-emerald-600 rounded-lg transition-colors"
-                                        title="Mark as Completed"
-                                      >
-                                        <CheckCircle2 size={18} />
-                                      </button>
-                                      {/* Calendar Button */}
-                                      <button
-                                        onClick={(e) => { e.stopPropagation(); handleAddToCalendar(fu); }}
-                                        className="p-2 bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-200 text-slate-500 hover:text-blue-600 rounded-lg transition-colors"
-                                        title="Add to Google Calendar"
-                                      >
-                                        <Calendar size={18} />
-                                      </button>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    ))}
-                    {upcomingFollowUps.length === 0 && (
-                      <div className="text-center py-12 px-4 bg-slate-50 rounded-xl border border-dashed border-slate-200">
-                        <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm border border-slate-100">
-                          <Check className="text-emerald-500 w-6 h-6" />
-                        </div>
-                        <h3 className="text-sm font-bold text-slate-700 mb-1">All caught up!</h3>
-                        <p className="text-xs text-slate-500">No pending follow-ups right now.</p>
-                      </div>
-                    )}
-                  </div>
+                    </>
+          )}
+
+          {activeTab === "Projects" && (
+          <>
+          {/* Projects */}
+          {!isLead && (
+            <div className="bg-white rounded-2xl p-5 lg:p-6 shadow-sm border border-slate-200 order-4 lg:order-none w-full flex-1 flex flex-col">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-8 h-8 rounded-full bg-purple-50 text-purple-500 flex items-center justify-center">
+                  <Briefcase size={16} />
                 </div>
+                <h3 className="text-[15px] font-bold text-[#18254D]">Projects</h3>
               </div>
-            )}
-
-            {activeTab === "activity" && (
-              <div className="space-y-6 animate-fade-in">
-                {isLead ? (
-                  (() => {
-                    const leadConversations = [
-                      ...completedFollowUps.map(fu => ({
-                        ...fu, source: "followup",
-                        originalDescription: fu.description,
-                        description: fu.follow_brief || "No summary provided",
-                        completedBy: fu.completed_by
-                      })),
-                      ...clientActivities.map(a => ({ ...a, source: "activity", originalDescription: null }))
-                    ].sort((a, b) =>
-                      parseLocalDate(b.date || b.completed_at || b.dueDate || b.created_at || b.createdAt) -
-                      parseLocalDate(a.date || a.completed_at || a.dueDate || a.created_at || a.createdAt)
-                    );
-                    return (
-                      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                        <div
-                          className="flex items-center justify-between p-5 bg-slate-50 border-b border-slate-200 cursor-pointer"
-                          onClick={() => setIsLeadConvOpen(!isLeadConvOpen)}
-                        >
-                          <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center">
-                              <MessageSquare size={20} />
-                            </div>
-                            <div>
-                              <h3 className="text-base font-bold text-slate-900">All Conversations</h3>
-                              <p className="text-sm font-medium text-slate-500">{leadConversations.length} logged interactions</p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            {leadConversations.length > 1 && isLeadConvOpen && (
-                              <div className="flex gap-2 mr-4" onClick={e => e.stopPropagation()}>
-                                <button onClick={() => scrollContainer('lead-conv-carousel', 'left')} className="p-2 border border-slate-200 rounded-lg hover:bg-slate-100 text-slate-600"><ChevronLeft size={16}/></button>
-                                <button onClick={() => scrollContainer('lead-conv-carousel', 'right')} className="p-2 border border-slate-200 rounded-lg hover:bg-slate-100 text-slate-600"><ChevronRight size={16}/></button>
-                              </div>
-                            )}
-                            <ChevronDown size={20} className={`text-slate-400 transition-transform ${isLeadConvOpen ? "rotate-180" : ""}`} />
-                          </div>
-                        </div>
-                        {isLeadConvOpen && (
-                          <div className="p-6 bg-slate-50/30">
-                            {leadConversations.length === 0 ? (
-                              <div className="text-center py-8 text-sm font-semibold text-slate-400">No conversations logged yet</div>
-                            ) : (
-                              <div id="lead-conv-carousel" className="flex overflow-x-auto gap-6 pb-2 snap-x snap-mandatory no-scrollbar scroll-smooth">
-                                {leadConversations.map((conv, idx) => (
-                                  <div key={`lead-conv-${conv.id || idx}`} className="w-full sm:w-[400px] shrink-0 snap-start">
-                                    <ConversationCard conv={conv} onAddToCalendar={handleAddToCalendar} />
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })()
-                ) : (
-                  (() => {
-                    const projectGroups = clientProjects.map((p) => ({
-                      id: p.id, projectName: p.name, projectStatus: p.status, interactions: [],
-                    }));
-                    const generalInteractions = [];
-                    const leadHistoryInteractions = [];
-
-                    const addToGroup = (interaction) => {
-                      const targetProject = projectGroups.find((p) =>
-                        (interaction.projectId && p.id == interaction.projectId) ||
-                        (interaction.projectName && p.projectName === interaction.projectName)
-                      );
-                      if (targetProject) targetProject.interactions.push(interaction);
-                      else if (client.lead_id && interaction.clientId == client.lead_id) leadHistoryInteractions.push(interaction);
-                      else generalInteractions.push(interaction);
-                    };
-
-                    clientActivities.forEach((a) => addToGroup({ ...a, source: "activity" }));
-                    completedFollowUps.forEach((f) => addToGroup({
-                      ...f, id: `fu-${f.id}`,
-                      type: (f.followup_mode || "call").toLowerCase(),
-                      date: f.completed_at || f.dueDate,
-                      description: f.follow_brief || "No summary provided",
-                      originalDescription: f.description, source: "followup"
-                    }));
-
-                    const allGroups = [
-                      ...projectGroups,
-                      ...(generalInteractions.length > 0 ? [{ projectName: "Other Conversations", projectStatus: "N/A", interactions: generalInteractions }] : []),
-                      ...(leadHistoryInteractions.length > 0 ? [{ projectName: "Lead History", projectStatus: "Archived", interactions: leadHistoryInteractions }] : []),
-                    ];
-
-                    return (
-                      <div className="space-y-6">
-                        {allGroups.length === 0 ? (
-                          <div className="text-center py-12 bg-white rounded-2xl border border-slate-200 text-slate-500 font-semibold">No conversations logged yet</div>
-                        ) : (
-                          allGroups.map((group, groupIdx) => (
-                            <div key={`group-${groupIdx}`} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                              <div
-                                className="flex items-center justify-between p-5 bg-slate-50 border-b border-slate-200 cursor-pointer"
-                                onClick={() => toggleProject(groupIdx)}
-                              >
-                                <div className="flex items-center gap-4">
-                                  <div className={`w-10 h-10 rounded-xl text-white flex items-center justify-center ${group.projectStatus === 'Active' ? 'bg-blue-600' : group.projectStatus === 'Completed' ? 'bg-emerald-500' : 'bg-slate-400'}`}>
-                                    <Briefcase size={20} />
-                                  </div>
-                                  <div>
-                                    <h3 className="text-base font-bold text-slate-900">{group.projectName}</h3>
-                                    <p className="text-sm font-medium text-slate-500">{group.interactions.length} interactions</p>
-                                  </div>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                  {group.projectStatus !== "N/A" && (
-                                    <span className="px-3 py-1 bg-white border border-slate-200 rounded-full text-xs font-bold text-slate-600 hidden sm:block">
-                                      {group.projectStatus}
-                                    </span>
-                                  )}
-                                  {group.interactions.length > 1 && expandedProjectIndex === groupIdx && (
-                                    <div className="flex gap-2" onClick={e => e.stopPropagation()}>
-                                      <button onClick={() => scrollContainer(`client-conv-carousel-${groupIdx}`, 'left')} className="p-2 border border-slate-200 bg-white rounded-lg hover:bg-slate-50 text-slate-600"><ChevronLeft size={16}/></button>
-                                      <button onClick={() => scrollContainer(`client-conv-carousel-${groupIdx}`, 'right')} className="p-2 border border-slate-200 bg-white rounded-lg hover:bg-slate-50 text-slate-600"><ChevronRight size={16}/></button>
-                                    </div>
-                                  )}
-                                  <ChevronDown size={20} className={`text-slate-400 transition-transform ${expandedProjectIndex === groupIdx ? "rotate-180" : ""}`} />
-                                </div>
-                              </div>
-                              {expandedProjectIndex === groupIdx && (
-                                <div className="p-6 bg-slate-50/30">
-                                  {group.interactions.length === 0 ? (
-                                    <div className="text-center py-6 text-sm font-semibold text-slate-400">No interactions</div>
-                                  ) : (
-                                    <div id={`client-conv-carousel-${groupIdx}`} className="flex overflow-x-auto gap-6 pb-2 snap-x snap-mandatory no-scrollbar scroll-smooth">
-                                      {group.interactions
-                                        .sort((a, b) =>
-                                          parseLocalDate(b.date || b.completed_at || b.dueDate || b.created_at || b.createdAt) -
-                                          parseLocalDate(a.date || a.completed_at || a.dueDate || a.created_at || a.createdAt)
-                                        )
-                                        .map((conv, idx) => (
-                                          <div key={`conv-${conv.id || idx}`} className="w-full sm:w-[400px] shrink-0 snap-start">
-                                            <ConversationCard conv={conv} onAddToCalendar={handleAddToCalendar}/>
-                                          </div>
-                                        ))}
-                                    </div>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          ))
-                        )}
-                      </div>
-                    );
-                  })()
-                )}
-              </div>
-            )}
-
-            {activeTab === "projects" && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 animate-fade-in">
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {clientProjects.map((project) => (
                   <div
                     key={project.id}
                     onClick={() => onSelectProject && onSelectProject(project)}
-                    className="p-6 bg-white border border-slate-200 rounded-2xl hover:border-slate-400 hover:shadow-lg cursor-pointer transition-all flex flex-col justify-between"
+                    className="p-5 bg-slate-50 border border-slate-200 rounded-xl hover:border-blue-300 hover:shadow-md cursor-pointer transition-all flex flex-col justify-between"
                   >
-                    <div className="mb-6">
+                    <div className="mb-4">
                       <div className="flex justify-between items-start mb-2">
-                        <h4 className="text-lg font-bold text-slate-900 line-clamp-1 pr-4">{project.name}</h4>
-                        <span className="px-3 py-1 bg-slate-100 text-slate-600 text-xs font-bold rounded-full whitespace-nowrap">
+                        <h4 className="text-[15px] font-bold text-slate-900 line-clamp-1 pr-4">{project.name}</h4>
+                        <span className="px-2 py-1 bg-white border border-slate-200 text-slate-600 text-[10px] font-bold rounded-md whitespace-nowrap">
                           {project.status}
                         </span>
                       </div>
                     </div>
-                    <div className="pt-4 border-t border-slate-100 flex items-end justify-between">
+                    <div className="pt-3 border-t border-slate-200/60 flex items-end justify-between">
                       <div>
-                        <p className="text-xs font-medium text-slate-500 mb-1">Budget</p>
-                        <p className="text-base font-bold text-slate-900">
+                        <p className="text-[10px] font-bold tracking-wider text-slate-400 uppercase mb-1">Budget</p>
+                        <p className="text-[13px] font-bold text-slate-900">
                           {(() => {
                             const currencyObj = commonCurrencies.find((c) => c.code === client.currency);
                             return currencyObj ? `${currencyObj.code} (${currencyObj.symbol})` : (client.currency || "$");
@@ -1351,22 +1167,237 @@ const handleEditFollowUpSubmit = async (e) => {
                           {formatBudget(project.budget, client.currency)}
                         </p>
                       </div>
-                      <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400">
-                        <ChevronRight size={20} />
+                      <div className="w-8 h-8 rounded-lg bg-white shadow-sm flex items-center justify-center text-slate-400 border border-slate-100">
+                        <ChevronRight size={16} />
                       </div>
                     </div>
                   </div>
                 ))}
                 {clientProjects.length === 0 && (
-                  <div className="col-span-full py-16 text-center bg-white rounded-2xl border border-dashed border-slate-300">
-                    <p className="text-slate-500 font-semibold">No active projects found.</p>
+                  <div className="col-span-full py-12 text-center bg-slate-50 rounded-xl border border-dashed border-slate-300">
+                    <p className="text-slate-500 text-sm font-semibold">No active projects found.</p>
                   </div>
                 )}
               </div>
-            )}
-
-          </div>
+            </div>
+          )}
+          </>
+          )}
         </div>
+
+        {/* Right Column Wrapper */}
+        <div className="contents lg:flex lg:flex-col w-full lg:gap-6">
+          
+          {activeTab === "Follow Ups" && (
+          <>
+          {/* Upcoming Follow-ups Card */}
+          <div className="bg-white rounded-2xl p-5 lg:p-6 shadow-sm border border-slate-200 order-2 lg:order-none w-full">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+              <div className="flex items-center justify-between w-full md:w-auto">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center shrink-0">
+                    <Clock size={16} />
+                  </div>
+                  <h3 className="text-[15px] font-bold text-[#18254D] whitespace-nowrap">Upcoming Follow-ups</h3>
+                </div>
+                <button
+                  onClick={() => setShowAddFollowUpModal(true)}
+                  className="md:hidden w-8 h-8 flex items-center justify-center bg-slate-50 text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors shrink-0"
+                  title="Add Follow-up"
+                >
+                  <Plus size={16} />
+                </button>
+              </div>
+              
+              <div className="flex items-center gap-3 w-full md:w-auto">
+                <div className="flex items-center gap-1 p-1 bg-slate-50 border border-slate-200 rounded-lg w-full md:w-auto grid grid-cols-3">
+                  <button
+                    onClick={() => setActiveUpcomingTab("Overdue")}
+                    className={`px-3 py-1.5 rounded-md text-[11px] font-bold uppercase tracking-wider transition-all ${
+                      activeUpcomingTab === "Overdue"
+                        ? "bg-white text-slate-800 shadow-sm border border-slate-200"
+                        : "text-slate-500 hover:text-slate-700 border border-transparent"
+                    }`}
+                  >
+                    Overdue
+                  </button>
+                  <button
+                    onClick={() => setActiveUpcomingTab("Today")}
+                    className={`px-3 py-1.5 rounded-md text-[11px] font-bold uppercase tracking-wider transition-all ${
+                      activeUpcomingTab === "Today"
+                        ? "bg-white text-slate-800 shadow-sm border border-slate-200"
+                        : "text-slate-500 hover:text-slate-700 border border-transparent"
+                    }`}
+                  >
+                    Today
+                  </button>
+                  <button
+                    onClick={() => setActiveUpcomingTab("Upcoming")}
+                    className={`px-3 py-1.5 rounded-md text-[11px] font-bold uppercase tracking-wider transition-all ${
+                      activeUpcomingTab === "Upcoming"
+                        ? "bg-white text-slate-800 shadow-sm border border-slate-200"
+                        : "text-slate-500 hover:text-slate-700 border border-transparent"
+                    }`}
+                  >
+                    Upcoming
+                  </button>
+                </div>
+                
+                <button
+                  onClick={() => setShowAddFollowUpModal(true)}
+                  className="hidden md:flex w-8 h-8 items-center justify-center bg-slate-50 text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors shrink-0"
+                  title="Add Follow-up"
+                >
+                  <Plus size={16} />
+                </button>
+              </div>
+            </div>
+            
+            <div className="border border-slate-200 rounded-2xl overflow-hidden bg-white shadow-sm mt-2">
+              <div className="hidden lg:grid grid-cols-[minmax(200px,2fr)_minmax(120px,1.5fr)_minmax(120px,1.5fr)_minmax(120px,1fr)_130px] gap-4 px-6 py-4 border-b border-slate-200 bg-slate-50/50">
+                <div className="text-[10px] font-bold text-slate-400 tracking-wider uppercase">Follow Up Title</div>
+                <div className="text-[10px] font-bold text-slate-400 tracking-wider uppercase">Details</div>
+                <div className="text-[10px] font-bold text-slate-400 tracking-wider uppercase">Date & Time</div>
+                <div className="text-[10px] font-bold text-slate-400 tracking-wider uppercase">Created By</div>
+                <div className="text-[10px] font-bold text-slate-400 tracking-wider uppercase text-right">Actions</div>
+              </div>
+              <div className="divide-y divide-slate-100">
+                {[
+                  { title: "Overdue", icon: <Bell size={14} />, tasks: overdueFUs, style: "text-red-600 bg-red-50 border-red-200" },
+                  { title: "Today",   icon: <Clock size={14} />, tasks: todayFUs,  style: "text-amber-600 bg-amber-50 border-amber-200" },
+                  { title: "Upcoming",icon: <Calendar size={14} />, tasks: futureFUs, style: "text-blue-600 bg-blue-50 border-blue-200" }
+                ].filter(section => section.title === activeUpcomingTab).map((section) => (
+                  <React.Fragment key={section.title}>
+                    <div className="px-6 py-2.5 flex items-center gap-2 border-b border-slate-100 bg-slate-50/30">
+                      <div className={`p-1 rounded-md border ${section.style}`}>{section.icon}</div>
+                      <span className={`text-[11px] font-bold uppercase tracking-wider ${section.title === 'Overdue' ? 'text-red-600' : section.title === 'Today' ? 'text-amber-600' : 'text-blue-600'}`}>
+                        {section.title} ({section.tasks.length})
+                      </span>
+                    </div>
+                    {section.tasks.length > 0 ? (
+                      section.tasks.map((fu) => {
+                        const fuDate = parseLocalDate(fu.followup_date || fu.dueDate);
+                      return (
+                        <div key={fu.id} className="grid grid-cols-1 lg:grid-cols-[minmax(200px,2fr)_minmax(120px,1.5fr)_minmax(120px,1.5fr)_minmax(120px,1fr)_130px] gap-4 px-6 py-4 items-center hover:bg-slate-50/50 transition-colors">
+                          <div className="flex flex-col gap-1">
+                            <div className="lg:hidden text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Follow Up Title</div>
+                            <h4 className="text-[14px] font-bold text-slate-900 leading-tight mb-1">{fu.title}</h4>
+                            {fu.description && <p className="text-[12px] text-slate-500 line-clamp-1">{fu.description}</p>}
+                            {fu.projectName && <span className="inline-block mt-1.5 px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-[10px] font-medium w-fit">{fu.projectName}</span>}
+                          </div>
+                          
+                          <div className="flex flex-col gap-1.5 items-start">
+                            <div className="lg:hidden text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Details</div>
+                            <div className="flex items-center gap-2">
+                              <span className={`inline-flex px-2 py-0.5 rounded-md text-[10px] font-bold uppercase ${getModeBadge(fu.followup_mode)}`}>
+                                {fu.followup_mode}
+                              </span>
+                              <span className={`inline-flex px-2 py-0.5 rounded-md text-[10px] font-bold uppercase ${fu.priority === 'High' ? 'bg-red-100 text-red-700' : fu.priority === 'Medium' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'}`}>
+                                {fu.priority} Priority
+                              </span>
+                            </div>
+                          </div>
+                          
+                          <div className="flex flex-col gap-1.5">
+                            <div className="lg:hidden text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Date & Time</div>
+                            <span className="flex items-center gap-1.5 text-[12px] font-medium text-slate-600">
+                              <Calendar size={13} className="text-slate-400"/> {formatDateDMY(fuDate)}
+                            </span>
+                            <span className="flex items-center gap-1.5 text-[12px] font-medium text-slate-600">
+                              <Clock size={13} className="text-slate-400"/> {fuDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          </div>
+                          
+                          <div>
+                            <div className="lg:hidden text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Created By</div>
+                            {fu.created_by_name ? (
+                              <span className="flex items-center gap-1.5 text-[12px] font-medium text-slate-600"><User size={13} className="text-slate-400"/> {fu.created_by_name}</span>
+                            ) : (
+                              <span className="text-[12px] font-medium text-slate-400">-</span>
+                            )}
+                          </div>
+                          
+                          <div className="flex gap-1.5 lg:justify-end">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const fuDate = parseLocalDate(fu.followup_date || fu.dueDate);
+                                let hours = fuDate.getHours();
+                                const period = hours >= 12 ? "PM" : "AM";
+                                hours = hours % 12 || 12;
+                                const normalize = (str) =>
+                                  str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : "";
+                                setEditingFollowUp(fu);
+                                setEditFollowUpFormData({
+                                  title: fu.title || "",
+                                  description: fu.description || "",
+                                  followup_date: fuDate.toLocaleDateString("en-CA"),
+                                  timeHour: String(hours),
+                                  timeMinute: String(fuDate.getMinutes()).padStart(2, "0"),
+                                  timePeriod: period,
+                                  priority: normalize(fu.priority) || "Medium",
+                                  followup_mode: normalize(fu.followup_mode) || "Call",
+                                  followup_status: normalize(fu.followup_status || fu.status) || "Pending",
+                                  projectId: fu.projectId || fu.project_id || "",
+                                });
+                                setShowEditFollowUpModal(true);
+                              }}
+                              className="w-8 h-8 flex items-center justify-center bg-blue-50 text-blue-500 border border-blue-100 hover:bg-blue-100 hover:text-blue-600 rounded-lg transition-colors"
+                              title="Edit Follow-up"
+                            >
+                              <Pencil size={14} />
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const now = new Date();
+                                setCompletionDate(now.toLocaleDateString("en-CA"));
+                                setCompletionHour((now.getHours() % 12 || 12).toString());
+                                setCompletionMinute(now.getMinutes().toString().padStart(2, "0"));
+                                setCompletionPeriod(now.getHours() >= 12 ? "PM" : "AM");
+                                setCompletingFollowUpId(fu.id);
+                                setCompletionBrief("");
+                                setShowCompletionModal(true);
+                              }}
+                              className="w-8 h-8 flex items-center justify-center bg-emerald-50 text-emerald-500 border border-emerald-100 hover:bg-emerald-100 hover:text-emerald-600 rounded-lg transition-colors"
+                              title="Mark as Completed"
+                            >
+                              <CheckCircle2 size={14} />
+                            </button>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleAddToCalendar(fu); }}
+                              className="w-8 h-8 flex items-center justify-center bg-indigo-50 text-indigo-500 border border-indigo-100 hover:bg-indigo-100 hover:text-indigo-600 rounded-lg transition-colors"
+                              title="Add to Google Calendar"
+                            >
+                              <Calendar size={14} />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div className="px-6 py-8 text-center text-[13px] font-medium text-slate-400 bg-slate-50/30">
+                      No {section.title.toLowerCase()} follow-ups.
+                    </div>
+                  )}
+                  </React.Fragment>
+                ))}
+                {upcomingFollowUps.length === 0 && (
+                  <div className="text-center py-8 px-4 bg-slate-50 border-t border-slate-200">
+                    <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm border border-slate-100">
+                      <Check className="text-emerald-500 w-5 h-5" />
+                    </div>
+                    <h3 className="text-[13px] font-bold text-slate-700 mb-1">All caught up!</h3>
+                    <p className="text-[11px] text-slate-500">No pending follow-ups right now.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+          </>
+          )}
+        </div>
+
       </div>
 
       {/* ══════════════════════ MODALS ══════════════════════ */}
@@ -1447,13 +1478,28 @@ const handleEditFollowUpSubmit = async (e) => {
                     <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">Website URL (Optional)</label>
                     <input type="text" placeholder="e.g. www.company.com" className="w-full px-4 py-2.5 bg-white border border-slate-200/70 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200 shadow-sm" value={editFormData.website} onChange={(e) => setEditFormData({ ...editFormData, website: e.target.value })} />
                   </div>
-                  <Dropdown
-                    label="Lead Status"
-                    options={[{ name: "Hot", value: "Hot" }, { name: "Warm", value: "Warm" }, { name: "Cold", value: "Cold" }]}
-                    value={editFormData.leadType}
-                    onChange={(val) => setEditFormData({ ...editFormData, leadType: val })}
-                    placeholder="Select Status"
-                  />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <Dropdown
+                      label="Lead Status"
+                      options={[{ name: "Hot", value: "Hot" }, { name: "Warm", value: "Warm" }, { name: "Cold", value: "Cold" }]}
+                      value={editFormData.leadType}
+                      onChange={(val) => setEditFormData({ ...editFormData, leadType: val })}
+                      placeholder="Select Status"
+                    />
+                    <Dropdown
+                      label="Lead Source"
+                      options={[
+                        { name: "Meta Ad (Insta/FB)", value: "Meta Ad (Insta/FB)" },
+                        { name: "LinkedIn", value: "LinkedIn" },
+                        { name: "Referral", value: "Referral" },
+                        { name: "Selyst", value: "Selyst" },
+                        { name: "eParivartan", value: "eParivartan" }
+                      ]}
+                      value={editFormData.source}
+                      onChange={(val) => setEditFormData({ ...editFormData, source: val })}
+                      placeholder="Select Source"
+                    />
+                  </div>
                   <div className="space-y-1.5">
                     <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">Note / Message</label>
                     <textarea rows={3} value={editFormData.notes} onChange={(e) => setEditFormData({ ...editFormData, notes: e.target.value })} className="w-full px-4 py-2.5 bg-white border border-slate-200/70 rounded-xl resize-none text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200 shadow-sm" />
@@ -1510,7 +1556,7 @@ const handleEditFollowUpSubmit = async (e) => {
               </div>
             </div>
             <form onSubmit={handleLogInteraction} className="p-6 space-y-5 overflow-y-auto custom-scrollbar">
-              <div className="grid grid-cols-2 gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Date</label>
                   <DatePicker value={logData.date} onChange={(val) => setLogData({ ...logData, date: val })} />
@@ -1537,7 +1583,7 @@ const handleEditFollowUpSubmit = async (e) => {
               )}
               <div className="space-y-2">
                 <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Interaction Type</label>
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {["call", "email", "meeting"].map((type) => (
                     <button key={type} type="button" onClick={() => setLogData({ ...logData, type: type })} className={`py-3 px-4 rounded-xl border text-sm font-bold uppercase tracking-wider transition-all ${logData.type === type ? "bg-[#18254D] border-[#18254D] text-white shadow-md" : "bg-white border-slate-200 text-slate-500 hover:border-slate-400"}`}>
                       {type}
@@ -1698,7 +1744,7 @@ const handleEditFollowUpSubmit = async (e) => {
                 <textarea required rows={3} value={followUpFormData.description} onChange={(e) => setFollowUpFormData({ ...followUpFormData, description: e.target.value })} className="w-full px-4 py-2.5 bg-white border border-slate-200/70 rounded-xl resize-none text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200 shadow-sm" placeholder="What will you discuss?" />
               </div>
               {/* Due Date + Time */}
-<div className="grid grid-cols-2 gap-4">
+<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
   <div className="space-y-1.5">
     <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
       Due Date <span className="text-rose-500">*</span>
@@ -1838,7 +1884,7 @@ const handleEditFollowUpSubmit = async (e) => {
               </div>
 
               {/* ✅ FIXED: Date + Time - clean two-column layout, no nesting, no duplication */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Due Date */}
                 <div className="space-y-1.5">
                   <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
@@ -1976,7 +2022,7 @@ const handleEditFollowUpSubmit = async (e) => {
               {/* Client Type Toggle */}
               <div className="space-y-2">
                 <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">Client Type</label>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {["New", "Existing"].map((type) => (
                     <label
                       key={type}
@@ -2069,7 +2115,7 @@ const handleEditFollowUpSubmit = async (e) => {
                   </div>
 
                   {selectedExistingClientId && (
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div className="col-span-2 space-y-1">
                         <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">Organisation</label>
                         <p className="px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-sm font-semibold text-[#18254D] truncate">{onboardingData.organisationName || "—"}</p>
