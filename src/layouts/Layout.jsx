@@ -3,6 +3,7 @@ import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { X } from "lucide-react";
 import Sidebar from "./Sidebar";
 import Footer from "./Footer";
+import AIAssistantWidget from "../components/AIAssistant/AIAssistantWidget";
 import favIcon from "../assets/Parivartan-Leaf.png";
 import "remixicon/fonts/remixicon.css";
 
@@ -149,6 +150,8 @@ const Layout = ({
           <Footer />
         </main>
       </div>
+
+      <AIAssistantWidget />
     </div>
   );
 };
