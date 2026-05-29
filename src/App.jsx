@@ -539,6 +539,7 @@ function AppRoutes() {
               ? (REVERSE_CATEGORY_MAP[p.project_category] || parseInt(p.project_category, 10) || 1)
               : (p.project_category || 1),
           scopeDocument: p.scope_document,
+          createdByName: p.created_by_name || null,
           updatedAt: p.updated_at?.split("T")[0],
           progress: 0, // Calculate or add to table if needed
         }));
