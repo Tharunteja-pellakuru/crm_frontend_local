@@ -223,7 +223,9 @@ const EnquiryList = ({
     country: "India",
     countryCode: "+91",
     notes: "",
+    source: "",
   });
+  const [isPromoteSourceDropdownOpen, setIsPromoteSourceDropdownOpen] = useState(false);
   const [showSimulateForm, setShowSimulateForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
   const [editFormData, setEditFormData] = useState({
@@ -511,6 +513,7 @@ const EnquiryList = ({
       country: enquiry.countryName || enquiry.country || "India",
       countryCode: enquiry.countryCode || "+91",
       notes: enquiry.message,
+      source: enquiry.source || "Web",
     });
     setLeadModalOpen(true);
   };
@@ -2102,75 +2105,138 @@ const EnquiryList = ({
                   </div>
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
-                    Lead Status <span className="text-rose-500">*</span>
-                  </label>
-                  <div className="relative">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setIsEnquiryStatusDropdownOpen(
-                          !isEnquiryStatusDropdownOpen,
-                        )
-                      }
-                      className="w-full h-10 flex items-center justify-between px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold shadow-sm hover:border-[#18254D]/30 transition-all text-[#18254D]"
-                    >
-                      <span>
-                        {promoteFormData.leadType || "Select Status"}
-                      </span>
-                      <ChevronDown
-                        size={16}
-                        className={`text-slate-400 transition-transform ${isEnquiryStatusDropdownOpen ? "rotate-180" : ""
-                          }`}
-                      />
-                    </button>
-
-                    {isEnquiryStatusDropdownOpen && (
-                      <>
-                        <div
-                          className="fixed inset-0 z-[80]"
-                          onClick={() => setIsEnquiryStatusDropdownOpen(false)}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
+                      Lead Status <span className="text-rose-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setIsEnquiryStatusDropdownOpen(
+                            !isEnquiryStatusDropdownOpen,
+                          )
+                        }
+                        className="w-full h-10 flex items-center justify-between px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold shadow-sm hover:border-[#18254D]/30 transition-all text-[#18254D]"
+                      >
+                        <span>
+                          {promoteFormData.leadType || "Select Status"}
+                        </span>
+                        <ChevronDown
+                          size={16}
+                          className={`text-slate-400 transition-transform ${isEnquiryStatusDropdownOpen ? "rotate-180" : ""
+                            }`}
                         />
-                        <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-pop origin-bottom">
-                          <div className="bg-[#18254D] px-4 py-2.5 border-b border-white/10">
-                            <p className="text-[10px] font-bold text-white/50 tracking-wider uppercase">
-                              Select Status
-                            </p>
+                      </button>
+
+                      {isEnquiryStatusDropdownOpen && (
+                        <>
+                          <div
+                            className="fixed inset-0 z-[80]"
+                            onClick={() => setIsEnquiryStatusDropdownOpen(false)}
+                          />
+                          <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-pop origin-bottom">
+                            <div className="bg-[#18254D] px-4 py-2.5 border-b border-white/10">
+                              <p className="text-[10px] font-bold text-white/50 tracking-wider uppercase">
+                                Select Status
+                              </p>
+                            </div>
+                            {["Hot", "Warm", "Cold"].map((status) => (
+                              <button
+                                key={`enq-status-${status}`}
+                                type="button"
+                                onClick={() => {
+                                  setPromoteFormData({
+                                    ...promoteFormData,
+                                    leadType: status,
+                                  });
+                                  setIsEnquiryStatusDropdownOpen(false);
+                                }}
+                                className={`w-full text-left px-4 py-2.5 text-xs font-semibold tracking-wider transition-colors ${promoteFormData.leadType === status
+                                    ? "bg-slate-100 text-[#18254D]"
+                                    : "text-[#18254D] hover:bg-slate-50"
+                                  }`}
+                              >
+                                <div className="flex items-center gap-2">
+                                  {status === "Hot" && (
+                                    <Flame size={12} className="text-[#F43F5E]" />
+                                  )}
+                                  {status === "Warm" && (
+                                    <Sun size={12} className="text-[#F97316]" />
+                                  )}
+                                  {status === "Cold" && (
+                                    <Snowflake size={12} className="text-[#3B82F6]" />
+                                  )}
+                                  <span>{status}</span>
+                                </div>
+                              </button>
+                            ))}
                           </div>
-                          {["Hot", "Warm", "Cold"].map((status) => (
-                            <button
-                              key={`enq-status-${status}`}
-                              type="button"
-                              onClick={() => {
-                                setPromoteFormData({
-                                  ...promoteFormData,
-                                  leadType: status,
-                                });
-                                setIsEnquiryStatusDropdownOpen(false);
-                              }}
-                              className={`w-full text-left px-4 py-2.5 text-xs font-semibold tracking-wider transition-colors ${promoteFormData.leadType === status
-                                  ? "bg-slate-100 text-[#18254D]"
-                                  : "text-[#18254D] hover:bg-slate-50"
-                                }`}
-                            >
-                              <div className="flex items-center gap-2">
-                                {status === "Hot" && (
-                                  <Flame size={12} className="text-[#F43F5E]" />
-                                )}
-                                {status === "Warm" && (
-                                  <Sun size={12} className="text-[#F97316]" />
-                                )}
-                                {status === "Cold" && (
-                                  <Snowflake size={12} className="text-[#3B82F6]" />
-                                )}
-                                <span>{status}</span>
-                              </div>
-                            </button>
-                          ))}
-                        </div>
-                      </>
-                    )}
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
+                      Source <span className="text-rose-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setIsPromoteSourceDropdownOpen(
+                            !isPromoteSourceDropdownOpen,
+                          )
+                        }
+                        className="w-full h-10 flex items-center justify-between px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold shadow-sm hover:border-[#18254D]/30 transition-all text-[#18254D]"
+                      >
+                        <span>
+                          {promoteFormData.source || "Select Source"}
+                        </span>
+                        <ChevronDown
+                          size={16}
+                          className={`text-slate-400 transition-transform ${isPromoteSourceDropdownOpen ? "rotate-180" : ""
+                            }`}
+                        />
+                      </button>
+
+                      {isPromoteSourceDropdownOpen && (
+                        <>
+                          <div
+                            className="fixed inset-0 z-[80]"
+                            onClick={() => setIsPromoteSourceDropdownOpen(false)}
+                          />
+                          <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-pop origin-bottom max-h-48 overflow-y-auto no-scrollbar">
+                            <div className="bg-[#18254D] px-4 py-2.5 border-b border-white/10 sticky top-0 z-10">
+                              <p className="text-[10px] font-bold text-white/50 tracking-wider uppercase">
+                                Select Source
+                              </p>
+                            </div>
+                            {["Meta Ad (Insta/FB)", "LinkedIn", "Referral", "Selyst", "eParivartan", "Web", "Other"].map((source) => (
+                              <button
+                                key={`promote-source-${source}`}
+                                type="button"
+                                onClick={() => {
+                                  setPromoteFormData({
+                                    ...promoteFormData,
+                                    source: source,
+                                  });
+                                  setIsPromoteSourceDropdownOpen(false);
+                                }}
+                                className={`w-full text-left px-4 py-2.5 text-xs font-semibold tracking-wider transition-colors ${promoteFormData.source === source
+                                    ? "bg-slate-100 text-[#18254D]"
+                                    : "text-[#18254D] hover:bg-slate-50"
+                                  }`}
+                              >
+                                {source}
+                              </button>
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
 

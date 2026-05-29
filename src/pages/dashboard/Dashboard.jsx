@@ -23,7 +23,7 @@ const parseLocalDate = (dateStr) => {
 };
 
 // Simple stat card component
-function StatCard({ title, value, trend, trendUp, badge, icon, description, delay = 0, colorClass, data, strokeColor, onClick }) {
+function StatCard({ title, value, trend, trendUp, badge, icon, description, delay = 0, colorClass, data, strokeColor, onClick, infoTooltip }) {
   const colorMap = {
     blue: { bg: "bg-blue-50", text: "text-blue-500", badgeBg: "bg-blue-50", badgeText: "text-blue-600" },
     teal: { bg: "bg-[#F0FDF4]", text: "text-[#16A34A]", badgeBg: "bg-[#DCFCE7]", badgeText: "text-[#16A34A]" },
@@ -35,7 +35,7 @@ function StatCard({ title, value, trend, trendUp, badge, icon, description, dela
   return (
     <div
       onClick={onClick}
-      className={`bg-[#FFFFFF] p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 hover:-translate-y-1 hover:shadow-md transition-all duration-300 relative animate-fade-in-up flex flex-col justify-between ${onClick ? "cursor-pointer" : ""}`}
+      className={`bg-[#FFFFFF] p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 hover:-translate-y-1 hover:shadow-md transition-all duration-300 relative animate-fade-in-up flex flex-col justify-between hover:z-[60] ${onClick ? "cursor-pointer" : ""}`}
       style={{ animationDelay: `${delay}ms` }}
     >
       <div className="flex justify-between items-start mb-4">
@@ -44,7 +44,18 @@ function StatCard({ title, value, trend, trendUp, badge, icon, description, dela
             {icon}
           </div>
           <div>
-            <h3 className="text-slate-500 text-xs font-semibold">{title}</h3>
+            <div className="flex items-center gap-1.5">
+              <h3 className="text-slate-500 text-xs font-semibold">{title}</h3>
+              {infoTooltip && (
+                <div className="relative group/tooltip flex items-center">
+                  <Info size={14} className="text-slate-400 cursor-help hover:text-slate-600 transition-colors" />
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-[200px] bg-slate-800 text-white text-[10px] p-2 rounded-lg opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all z-10 shadow-lg font-medium text-center pointer-events-none">
+                    {infoTooltip}
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-[1px] border-4 border-transparent border-t-slate-800"></div>
+                  </div>
+                </div>
+              )}
+            </div>
             <p className="text-2xl font-bold text-[#18254D] mt-0.5 leading-none">{value}</p>
           </div>
         </div>
@@ -180,7 +191,7 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
   const [isMonthDropdownOpen, setIsMonthDropdownOpen] = useState(false);
   const [showViewAllModal, setShowViewAllModal] = useState(false);
   const [viewAllTab, setViewAllTab] = useState("Overdue");
-  const [activeTaskTab, setActiveTaskTab] = useState("Pending");
+  const [activeTaskTab, setActiveTaskTab] = useState("Overdue");
   const [currentUser, setCurrentUser] = useState(null);
   const dropdownRef = useRef(null);
   const yearDropdownRef = useRef(null);
@@ -887,6 +898,7 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
             colorClass="orange"
             strokeColor="#F97316"
             data={getConversionRateLast6Months()}
+            infoTooltip="Calculated as (Total Clients / Total Enquiries) * 100"
           />
         </div>
 
