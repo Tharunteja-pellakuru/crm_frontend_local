@@ -1842,7 +1842,12 @@ const FollowUpList = ({
                         </button>
 
                         {isProjectDropdownOpen && (
-                          <div className="mt-2 bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden animate-fade-in-up origin-top max-h-80 flex flex-col">
+                          <>
+                            <div
+                              className="fixed inset-0 z-[80] pointer-events-none"
+                              onClick={() => setIsProjectDropdownOpen(false)}
+                            />
+                            <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-bottom max-h-80 flex flex-col">
                               <div className="p-3 border-b border-slate-100 bg-slate-50">
                                 <div className="relative">
                                   <Search
@@ -1916,7 +1921,8 @@ const FollowUpList = ({
                                   </div>
                                 )}
                               </div>
-                          </div>
+                            </div>
+                          </>
                         )}
                       </div>
                     </div>
@@ -1951,7 +1957,12 @@ const FollowUpList = ({
                         </button>
 
                         {isClientDropdownOpen && (
-                          <div className="mt-2 bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden animate-fade-in-up origin-top max-h-80 flex flex-col">
+                          <>
+                            <div
+                              className="fixed inset-0 z-[80] pointer-events-none"
+                              onClick={() => setIsClientDropdownOpen(false)}
+                            />
+                            <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-bottom max-h-80 flex flex-col">
                               <div className="p-3 border-b border-slate-100 bg-slate-50">
                                 <div className="relative">
                                   <Search
@@ -2035,7 +2046,8 @@ const FollowUpList = ({
                                   </div>
                                 )}
                               </div>
-                          </div>
+                            </div>
+                          </>
                         )}
                       </div>
                     </div>

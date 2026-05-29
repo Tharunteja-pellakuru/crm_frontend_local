@@ -157,13 +157,10 @@ const LeadList = ({
 
   const [isTierDropdownOpen, setIsTierDropdownOpen] = useState(false);
   const [isAddStatusDropdownOpen, setIsAddStatusDropdownOpen] = useState(false);
-  const [isAddSourceDropdownOpen, setIsAddSourceDropdownOpen] = useState(false);
   const [isEditCategoryDropdownOpen, setIsEditCategoryDropdownOpen] = useState(false);
-  const [isEditLeadStatusDropdownOpen, setIsEditLeadStatusDropdownOpen] = useState(false);
-  const [isEditLeadSourceDropdownOpen, setIsEditLeadSourceDropdownOpen] = useState(false);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditStatusDropdownOpen, setIsEditStatusDropdownOpen] = useState(false);
   const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
+
   const tierButtonRef = useRef(null);
   const [tierDropdownStyle, setTierDropdownStyle] = useState({});
 
@@ -253,10 +250,10 @@ const LeadList = ({
     countryCode: "",
     country: "",
     leadType: "Hot",
-    source: "",
     notes: "",
     website: "",
   });
+  const [isEditLeadStatusDropdownOpen, setIsEditLeadStatusDropdownOpen] = useState(false);
 
   const [editConvertedData, setEditConvertedData] = useState({
     name: "",
@@ -417,7 +414,6 @@ const LeadList = ({
     projectDescription: "",
     country: "India",
     countryCode: "+91",
-    source: "",
   });
 
   const buildEditLeadFormData = (lead) => {
@@ -434,7 +430,6 @@ const LeadList = ({
       countryCode: dialCode,
       country: lead.country || lead.client_country || countryName || "",
       leadType: lead.leadType || "Hot",
-      source: lead.source || "",
       notes: lead.notes || "",
       website: lead.website || "",
     };
@@ -942,7 +937,7 @@ const LeadList = ({
                         </span>
                       </td>
                       <td className="px-6 py-5">
-                        <div className="text-[12px] font-semibold text-slate-600">{lead.created_by_name || lead.createdByName || "System"}</div>
+                        <div className="text-[12px] font-semibold text-slate-600">{lead.createdByName || "System"}</div>
                       </td>
                       <td className="px-6 py-5 text-right">
                         {/* FIX: added aria-label on every icon button for touch/screen-reader accessibility */}
@@ -1065,7 +1060,7 @@ const LeadList = ({
                   </span>
                 </div>
                 <div className="mb-4 rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-[12px] font-medium text-slate-500">
-                  Created By: <span className="font-semibold text-slate-700">{lead.created_by_name || lead.createdByName || "System"}</span>
+                  Created By: <span className="font-semibold text-slate-700">{lead.createdByName || "System"}</span>
                 </div>
                 <div className="space-y-3 mb-4">
                   {lead.status === "Lead" ? (
@@ -1282,30 +1277,6 @@ const LeadList = ({
                                 {status === "Cold" && <Snowflake size={12} className="text-[#3B82F6]" />}
                                 <span>{status}</span>
                               </div>
-                            </button>
-                          ))}
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">Lead Source</label>
-                  <div className="relative">
-                    <button type="button" onClick={() => setIsAddSourceDropdownOpen(!isAddSourceDropdownOpen)} className="w-full h-10 flex items-center justify-between px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold shadow-sm hover:border-[#18254D]/30 transition-all text-[#18254D]">
-                      <span className={formData.source ? "text-[#18254D]" : "text-slate-400 font-medium"}>{formData.source || "Select Source"}</span>
-                      <ChevronDown size={16} className={`text-slate-400 transition-transform duration-200 ${isAddSourceDropdownOpen ? "rotate-180" : ""}`} />
-                    </button>
-                    {isAddSourceDropdownOpen && (
-                      <>
-                        <div className="fixed inset-0 z-[80]" onClick={() => setIsAddSourceDropdownOpen(false)} />
-                        <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-pop origin-bottom">
-                          <div className="bg-[#18254D] px-4 py-2.5 border-b border-white/10">
-                            <p className="text-[10px] font-bold text-white/50 tracking-wider uppercase">Select Source</p>
-                          </div>
-                          {["Meta Ad (Insta/FB)", "LinkedIn", "Referral", "Selyst", "eParivartan"].map((src) => (
-                            <button key={src} type="button" onClick={() => { setFormData({ ...formData, source: src }); setIsAddSourceDropdownOpen(false); }} className={`w-full text-left px-4 py-2.5 text-xs font-semibold tracking-wider transition-colors ${formData.source === src ? "bg-indigo-50 text-indigo-700" : "text-[#18254D] hover:bg-slate-50"}`}>
-                              {src}
                             </button>
                           ))}
                         </div>
@@ -1637,7 +1608,7 @@ const LeadList = ({
                 if (!isValid) return;
                 if (onEditLead && editingLead) {
                   try {
-                    await onEditLead(editingLead.lead_id, { name: editFormData.name, email: editFormData.email, phone: editFormData.phone, countryCode: editFormData.countryCode, country: editFormData.country, leadType: editFormData.leadType, source: editFormData.source, notes: editFormData.notes, website: editFormData.website });
+                    await onEditLead(editingLead.lead_id, { name: editFormData.name, email: editFormData.email, phone: editFormData.phone, countryCode: editFormData.countryCode, country: editFormData.country, leadType: editFormData.leadType, notes: editFormData.notes, website: editFormData.website });
                     setShowEditModal(false);
                     setEditingLead(null);
                   } catch (error) {
@@ -1683,63 +1654,37 @@ const LeadList = ({
                   <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">Website URL (Optional)</label>
                   <input type="text" placeholder="e.g. www.company.com" className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200" value={editFormData.website} onChange={(e) => setEditFormData({ ...editFormData, website: e.target.value })} />
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">Lead Status</label>
-                    {editingLead?.status === "Converted" ? (
-                      <div className="w-full px-4 py-2.5 bg-slate-100 border border-slate-200 rounded-xl flex items-center justify-between cursor-not-allowed opacity-70">
-                        <span className="text-sm font-semibold text-[#18254D]">{editFormData.leadType || "Converted"}</span>
-                        <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Locked</span>
-                      </div>
-                    ) : (
-                      <div className="relative">
-                        <button type="button" onClick={() => setIsEditLeadStatusDropdownOpen(!isEditLeadStatusDropdownOpen)} className="w-full h-10 flex items-center justify-between px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold shadow-sm hover:border-[#18254D]/30 transition-all text-[#18254D]">
-                          <span className={editFormData.leadType ? "text-[#18254D]" : "text-slate-400 font-medium"}>{editFormData.leadType || "Select Lead Status"}</span>
-                          <ChevronDown size={16} className={`text-slate-400 transition-transform duration-200 ${isEditLeadStatusDropdownOpen ? "rotate-180" : ""}`} />
-                        </button>
-                        {isEditLeadStatusDropdownOpen && (
-                          <>
-                            <div className="fixed inset-0 z-[80]" onClick={() => setIsEditLeadStatusDropdownOpen(false)} />
-                            <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-pop origin-bottom">
-                              <div className="bg-[#18254D] px-4 py-2.5 border-b border-white/10"><p className="text-[10px] font-bold text-white/50 tracking-wider uppercase">Select Status</p></div>
-                              {["Hot", "Warm", "Cold"].map((status) => (
-                                <button key={`edit-lead-status-${status}`} type="button" onClick={() => { setEditFormData({ ...editFormData, leadType: status }); setIsEditLeadStatusDropdownOpen(false); }} className={`w-full text-left px-4 py-2.5 text-xs font-semibold tracking-wider transition-colors flex items-center gap-2 ${editFormData.leadType === status ? "bg-indigo-50 text-indigo-700" : "text-[#18254D] hover:bg-slate-50"}`}>
-                                  {status === "Hot" && <Flame size={12} className="text-[#F43F5E]" />}
-                                  {status === "Warm" && <Sun size={12} className="text-[#F97316]" />}
-                                  {status === "Cold" && <Snowflake size={12} className="text-[#3B82F6]" />}
-                                  <span>{status}</span>
-                                </button>
-                              ))}
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">Lead Source</label>
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">Lead Status</label>
+                  {editingLead?.status === "Converted" ? (
+                    <div className="w-full px-4 py-2.5 bg-slate-100 border border-slate-200 rounded-xl flex items-center justify-between cursor-not-allowed opacity-70">
+                      <span className="text-sm font-semibold text-[#18254D]">{editFormData.leadType || "Converted"}</span>
+                      <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Locked</span>
+                    </div>
+                  ) : (
                     <div className="relative">
-                      <button type="button" onClick={() => setIsEditLeadSourceDropdownOpen(!isEditLeadSourceDropdownOpen)} className="w-full h-10 flex items-center justify-between px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold shadow-sm hover:border-[#18254D]/30 transition-all text-[#18254D]">
-                        <span className={editFormData.source ? "text-[#18254D]" : "text-slate-400 font-medium"}>{editFormData.source || "Select Source"}</span>
-                        <ChevronDown size={16} className={`text-slate-400 transition-transform duration-200 ${isEditLeadSourceDropdownOpen ? "rotate-180" : ""}`} />
+                      <button type="button" onClick={() => setIsEditLeadStatusDropdownOpen(!isEditLeadStatusDropdownOpen)} className="w-full h-10 flex items-center justify-between px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold shadow-sm hover:border-[#18254D]/30 transition-all text-[#18254D]">
+                        <span className={editFormData.leadType ? "text-[#18254D]" : "text-slate-400 font-medium"}>{editFormData.leadType || "Select Lead Status"}</span>
+                        <ChevronDown size={16} className={`text-slate-400 transition-transform duration-200 ${isEditLeadStatusDropdownOpen ? "rotate-180" : ""}`} />
                       </button>
-                      {isEditLeadSourceDropdownOpen && (
+                      {isEditLeadStatusDropdownOpen && (
                         <>
-                          <div className="fixed inset-0 z-[80]" onClick={() => setIsEditLeadSourceDropdownOpen(false)} />
+                          <div className="fixed inset-0 z-[80]" onClick={() => setIsEditLeadStatusDropdownOpen(false)} />
                           <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-pop origin-bottom">
-                            <div className="bg-[#18254D] px-4 py-2.5 border-b border-white/10">
-                              <p className="text-[10px] font-bold text-white/50 tracking-wider uppercase">Select Source</p>
-                            </div>
-                            {["Meta Ad (Insta/FB)", "LinkedIn", "Referral", "Selyst", "eParivartan"].map((src) => (
-                              <button key={src} type="button" onClick={() => { setEditFormData({ ...editFormData, source: src }); setIsEditLeadSourceDropdownOpen(false); }} className={`w-full text-left px-4 py-2.5 text-xs font-semibold tracking-wider transition-colors ${editFormData.source === src ? "bg-indigo-50 text-indigo-700" : "text-[#18254D] hover:bg-slate-50"}`}>
-                                {src}
+                            <div className="bg-[#18254D] px-4 py-2.5 border-b border-white/10"><p className="text-[10px] font-bold text-white/50 tracking-wider uppercase">Select Status</p></div>
+                            {["Hot", "Warm", "Cold"].map((status) => (
+                              <button key={`edit-lead-status-${status}`} type="button" onClick={() => { setEditFormData({ ...editFormData, leadType: status }); setIsEditLeadStatusDropdownOpen(false); }} className={`w-full text-left px-4 py-2.5 text-xs font-semibold tracking-wider transition-colors flex items-center gap-2 ${editFormData.leadType === status ? "bg-indigo-50 text-indigo-700" : "text-[#18254D] hover:bg-slate-50"}`}>
+                                {status === "Hot" && <Flame size={12} className="text-[#F43F5E]" />}
+                                {status === "Warm" && <Sun size={12} className="text-[#F97316]" />}
+                                {status === "Cold" && <Snowflake size={12} className="text-[#3B82F6]" />}
+                                <span>{status}</span>
                               </button>
                             ))}
                           </div>
                         </>
                       )}
                     </div>
-                  </div>
+                  )}
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">Note / Message</label>

@@ -326,7 +326,7 @@ const ProjectOverview = ({
           </div>
           <div>
             <h2 className="text-xl sm:text-[22px] font-medium text-[#18254D] leading-tight mb-0.5">
-              {project?.name || "Untitled Project"}
+              {isEditing ? "Edit Project Details" : "Project details"}
             </h2>
             <p className="text-xs sm:text-[13px] text-slate-500 font-medium">
               Overview of the project progress and timeline
@@ -377,7 +377,7 @@ const ProjectOverview = ({
               {isEditing ? (
                  <input type="text" value={formatBudget(formData.budget, client?.currency)} onChange={(e) => setFormData({ ...formData, budget: parseBudget(e.target.value) })} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 mt-1 text-lg sm:text-xl font-bold text-[#18254D] outline-none focus:border-blue-400" />
               ) : (
-               <p className="text-base sm:text-lg font-bold text-[#18254D] leading-none mt-1">
+                 <p className="text-lg sm:text-2xl font-bold text-[#18254D] leading-none mt-1">
                    {currencySymbol}{formatBudget(formData.budget, client?.currency)}
                  </p>
               )}
@@ -398,7 +398,7 @@ const ProjectOverview = ({
               {isEditing ? (
                  <div className="mt-1"><CustomDropdown label="Status" value={formData.status} field="status" options={["Hold", "In Progress", "Completed"]} /></div>
               ) : (
-               <p className="text-base sm:text-lg font-bold text-[#18254D] leading-none mt-1">
+                 <p className="text-lg sm:text-2xl font-bold text-[#18254D] leading-none mt-1">
                    {formData.status}
                  </p>
               )}
@@ -419,7 +419,7 @@ const ProjectOverview = ({
               {isEditing ? (
                  <div className="mt-1"><CustomDropdown label="Priority" value={formData.priority} field="priority" options={["Low", "Medium", "High"]} /></div>
               ) : (
-               <p className="text-base sm:text-lg font-bold text-[#18254D] leading-none mt-1">
+                 <p className="text-lg sm:text-2xl font-bold text-[#18254D] leading-none mt-1">
                    {formData.priority}
                  </p>
               )}
@@ -440,7 +440,7 @@ const ProjectOverview = ({
               {isEditing ? (
                  <div className="mt-1"><CustomDropdown label="Category" value={formData.category} field="category" options={[1, 2]} /></div>
               ) : (
-               <p className="text-base sm:text-lg font-bold text-[#18254D] leading-none mt-1">
+                 <p className="text-lg sm:text-2xl font-bold text-[#18254D] leading-none mt-1">
                    {CATEGORY_MAP[formData.category] || formData.category}
                  </p>
               )}
