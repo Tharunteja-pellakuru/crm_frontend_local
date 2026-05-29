@@ -760,7 +760,7 @@ const Settings = ({ aiModels = [], onAddAiModel, onUpdateAiModel, onDeleteAiMode
                     {profile?.role !== "Admin" && (
                       <button onClick={() => setShowAddAdminModal(true)}
                         className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-[#18254D] text-white rounded-xl hover:bg-slate-800 transition-all text-[12px] font-bold tracking-wider shadow-sm active:scale-95 group shrink-0">
-                        <Plus size={14} strokeWidth={2.5} className="group-hover:rotate-90 transition-transform" />Add Admin
+                        <Plus size={14} strokeWidth={2.5} className="group-hover:rotate-90 transition-transform" />Add Employee
                       </button>
                     )}
                   </div>
@@ -989,11 +989,11 @@ const Settings = ({ aiModels = [], onAddAiModel, onUpdateAiModel, onDeleteAiMode
 
       {/* Add Admin */}
       {showAddAdminModal && (
-        <ModalShell title="New Admin" subtitle="Create Admin Account" icon={UserPlus} onClose={() => setShowAddAdminModal(false)}
+        <ModalShell title="New Employee" subtitle="Create Employee Account" icon={UserPlus} onClose={() => setShowAddAdminModal(false)}
           footer={
             <div className="flex justify-end">
               <SubmitButton className="w-full sm:w-auto px-6" loading={isSubmitting} loadingText="CREATING..." onClick={handleAddAdmin}>
-                <Check size={14} strokeWidth={2.5} /><span>CREATE ADMIN</span>
+                <Check size={14} strokeWidth={2.5} /><span>CREATE EMPLOYEE</span>
               </SubmitButton>
             </div>
           }
