@@ -1548,16 +1548,16 @@ const FollowUpList = ({
                       <label className="text-[10px] font-black text-slate-400 tracking-[0.18em] uppercase ml-1">
                         Completion Time <span className="text-error">*</span>
                       </label>
-                      <div className="flex gap-2">
+                      <div className="grid grid-cols-3 gap-1.5">
                         {/* Hour */}
-                        <div className="flex-1 relative">
+                        <div className="relative">
                           <button
                             type="button"
                             onClick={() => setIsCompHourOpen(!isCompHourOpen)}
-                            className="w-full flex items-center justify-between px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] shadow-sm hover:bg-white hover:border-[#18254D]/20 transition-all"
+                            className="w-full flex items-center justify-between gap-1 px-3 h-[38px] bg-slate-50 hover:bg-white border border-slate-100 rounded-xl text-[12px] font-bold text-[#18254D] transition-all shadow-sm outline-none hover:border-slate-200"
                           >
                             <span>{completionHour.padStart(2, "0")}</span>
-                            <ChevronDown size={12} />
+                            <ChevronDown size={14} className={`text-slate-400 transition-transform ${isCompHourOpen ? "rotate-180" : ""}`} />
                           </button>
                           {isCompHourOpen && (
                             <div className="absolute bottom-full left-0 right-0 mb-1 bg-white border border-slate-100 rounded-lg shadow-xl z-[100] max-h-32 overflow-y-auto">
@@ -1582,14 +1582,14 @@ const FollowUpList = ({
                           )}
                         </div>
                         {/* Minute */}
-                        <div className="flex-1 relative">
+                        <div className="relative">
                           <button
                             type="button"
                             onClick={() => setIsCompMinOpen(!isCompMinOpen)}
-                            className="w-full flex items-center justify-between px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] shadow-sm hover:bg-white hover:border-[#18254D]/20 transition-all"
+                            className="w-full flex items-center justify-between gap-1 px-3 h-[38px] bg-slate-50 hover:bg-white border border-slate-100 rounded-xl text-[12px] font-bold text-[#18254D] transition-all shadow-sm outline-none hover:border-slate-200"
                           >
                             <span>{completionMinute}</span>
-                            <ChevronDown size={12} />
+                            <ChevronDown size={14} className={`text-slate-400 transition-transform ${isCompMinOpen ? "rotate-180" : ""}`} />
                           </button>
                           {isCompMinOpen && (
                             <div className="absolute bottom-full left-0 right-0 mb-1 bg-white border border-slate-100 rounded-lg shadow-xl z-[100] max-h-32 overflow-y-auto">
@@ -1614,16 +1614,16 @@ const FollowUpList = ({
                           )}
                         </div>
                         {/* Period */}
-                        <div className="w-14 relative">
+                        <div className="relative">
                           <button
                             type="button"
                             onClick={() =>
                               setIsCompPeriodOpen(!isCompPeriodOpen)
                             }
-                            className="w-full flex items-center justify-between px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] shadow-sm hover:bg-white hover:border-[#18254D]/20 transition-all"
+                            className="w-full flex items-center justify-between gap-1 px-3 h-[38px] bg-slate-50 hover:bg-white border border-slate-100 rounded-xl text-[12px] font-bold text-[#18254D] transition-all shadow-sm outline-none hover:border-slate-200"
                           >
                             <span>{completionPeriod}</span>
-                            <ChevronDown size={12} />
+                            <ChevronDown size={14} className={`text-slate-400 transition-transform ${isCompPeriodOpen ? "rotate-180" : ""}`} />
                           </button>
                           {isCompPeriodOpen && (
                             <div className="absolute bottom-full left-0 right-0 mb-1 bg-white border border-slate-100 rounded-lg shadow-xl z-[100]">
@@ -2108,22 +2108,22 @@ const FollowUpList = ({
                         Follow-up Time (12h){" "}
                         <span className="text-error">*</span>
                       </label>
-                      <div className="flex gap-2 relative">
+                      <div className="grid grid-cols-3 gap-1.5 relative">
                         {/* Hour Dropdown */}
-                        <div className="flex-1 relative">
+                        <div className="relative">
                           <button
                             type="button"
                             disabled={formData.followup_status === "completed"}
                             onClick={() =>
                               setIsHourDropdownOpen(!isHourDropdownOpen)
                             }
-                            className={`w-full flex items-center justify-between px-4 py-2.5 border rounded-xl text-sm font-semibold text-[#18254D] shadow-sm transition-all ${formData.followup_status === "completed" ? "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed" : "bg-slate-50 border-slate-200 hover:bg-white hover:border-[#18254D]/20"}`}
+                            className={`w-full flex items-center justify-between gap-1 px-3 h-[38px] border rounded-xl text-[12px] font-bold text-[#18254D] outline-none shadow-sm transition-all ${formData.followup_status === "completed" ? "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed" : "bg-slate-50 border-slate-100 hover:bg-white hover:border-slate-200"}`}
                           >
                             <span>{formData.timeHour.padStart(2, "0")}</span>
                             {formData.followup_status !== "completed" && (
                               <ChevronDown
                                 size={14}
-                                className={`text-slate-400 transition-transform ${isHourDropdownOpen ? "rotate-180" : ""}`}
+                                className={`text-slate-400 transition-transform flex-shrink-0 ${isHourDropdownOpen ? "rotate-180" : ""}`}
                               />
                             )}
                           </button>
@@ -2159,20 +2159,20 @@ const FollowUpList = ({
                         </div>
 
                         {/* Minute Dropdown */}
-                        <div className="flex-1 relative">
+                        <div className="relative">
                           <button
                             type="button"
                             disabled={formData.followup_status === "completed"}
                             onClick={() =>
                               setIsMinuteDropdownOpen(!isMinuteDropdownOpen)
                             }
-                            className={`w-full flex items-center justify-between px-4 py-2.5 border rounded-xl text-sm font-semibold text-[#18254D] shadow-sm transition-all ${formData.followup_status === "completed" ? "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed" : "bg-slate-50 border-slate-200 hover:bg-white hover:border-[#18254D]/20"}`}
+                            className={`w-full flex items-center justify-between gap-1 px-3 h-[38px] border rounded-xl text-[12px] font-bold text-[#18254D] outline-none shadow-sm transition-all ${formData.followup_status === "completed" ? "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed" : "bg-slate-50 border-slate-100 hover:bg-white hover:border-slate-200"}`}
                           >
                             <span>{formData.timeMinute}</span>
                             {formData.followup_status !== "completed" && (
                               <ChevronDown
                                 size={14}
-                                className={`text-slate-400 transition-transform ${isMinuteDropdownOpen ? "rotate-180" : ""}`}
+                                className={`text-slate-400 transition-transform flex-shrink-0 ${isMinuteDropdownOpen ? "rotate-180" : ""}`}
                               />
                             )}
                           </button>
@@ -2209,20 +2209,20 @@ const FollowUpList = ({
                         </div>
 
                         {/* Period Dropdown */}
-                        <div className="w-20 relative">
+                        <div className="relative">
                           <button
                             type="button"
                             disabled={formData.followup_status === "completed"}
                             onClick={() =>
                               setIsPeriodDropdownOpen(!isPeriodDropdownOpen)
                             }
-                            className={`w-full flex items-center justify-between px-4 py-2.5 border rounded-xl text-sm font-semibold text-[#18254D] shadow-sm transition-all ${formData.followup_status === "completed" ? "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed" : "bg-slate-50 border-slate-200 hover:bg-white hover:border-[#18254D]/20"}`}
+                            className={`w-full flex items-center justify-between gap-1 px-3 h-[38px] border rounded-xl text-[12px] font-bold text-[#18254D] outline-none shadow-sm transition-all ${formData.followup_status === "completed" ? "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed" : "bg-slate-50 border-slate-100 hover:bg-white hover:border-slate-200"}`}
                           >
                             <span>{formData.timePeriod}</span>
                             {formData.followup_status !== "completed" && (
                               <ChevronDown
                                 size={14}
-                                className={`text-slate-400 transition-transform ${isPeriodDropdownOpen ? "rotate-180" : ""}`}
+                                className={`text-slate-400 transition-transform flex-shrink-0 ${isPeriodDropdownOpen ? "rotate-180" : ""}`}
                               />
                             )}
                           </button>
@@ -2420,21 +2420,22 @@ const FollowUpList = ({
                           <label className="text-[10px] font-black text-slate-400 tracking-[0.18em] uppercase ml-1">
                             Completion Time
                           </label>
-                          <div className="flex gap-2 relative">
-                            <div className="flex-1 relative">
+                          <div className="grid grid-cols-3 gap-1.5 relative">
+                            {/* Completion Hour */}
+                            <div className="relative">
                               <button
                                 type="button"
                                 onClick={() =>
                                   setIsCompHourOpen(!isCompHourOpen)
                                 }
-                                className="w-full flex items-center justify-between px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] shadow-sm hover:bg-white hover:border-[#18254D]/20 transition-all"
+                                className="w-full flex items-center justify-between gap-1 px-3 h-[38px] bg-slate-50 hover:bg-white border border-slate-100 rounded-xl text-[12px] font-bold text-[#18254D] transition-all shadow-sm outline-none hover:border-slate-200"
                               >
                                 <span>
                                   {formData.completionHour.padStart(2, "0")}
                                 </span>
                                 <ChevronDown
                                   size={14}
-                                  className={`text-slate-400 transition-transform ${isCompHourOpen ? "rotate-180" : ""}`}
+                                  className={`text-slate-400 transition-transform flex-shrink-0 ${isCompHourOpen ? "rotate-180" : ""}`}
                                 />
                               </button>
                               {isCompHourOpen && (
@@ -2468,16 +2469,17 @@ const FollowUpList = ({
                               )}
                             </div>
 
-                            <div className="flex-1 relative">
+                            {/* Completion Minute */}
+                            <div className="relative">
                               <button
                                 type="button"
                                 onClick={() => setIsCompMinOpen(!isCompMinOpen)}
-                                className="w-full flex items-center justify-between px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] shadow-sm hover:bg-white hover:border-[#18254D]/20 transition-all"
+                                className="w-full flex items-center justify-between gap-1 px-3 h-[38px] bg-slate-50 hover:bg-white border border-slate-100 rounded-xl text-[12px] font-bold text-[#18254D] transition-all shadow-sm outline-none hover:border-slate-200"
                               >
                                 <span>{formData.completionMinute}</span>
                                 <ChevronDown
                                   size={14}
-                                  className={`text-slate-400 transition-transform ${isCompMinOpen ? "rotate-180" : ""}`}
+                                  className={`text-slate-400 transition-transform flex-shrink-0 ${isCompMinOpen ? "rotate-180" : ""}`}
                                 />
                               </button>
                               {isCompMinOpen && (
@@ -2513,18 +2515,19 @@ const FollowUpList = ({
                               )}
                             </div>
 
-                            <div className="w-20 relative">
+                            {/* Completion Period */}
+                            <div className="relative">
                               <button
                                 type="button"
                                 onClick={() =>
                                   setIsCompPeriodOpen(!isCompPeriodOpen)
                                 }
-                                className="w-full flex items-center justify-between px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] shadow-sm hover:bg-white hover:border-[#18254D]/20 transition-all"
+                                className="w-full flex items-center justify-between gap-1 px-3 h-[38px] bg-slate-50 hover:bg-white border border-slate-100 rounded-xl text-[12px] font-bold text-[#18254D] transition-all shadow-sm outline-none hover:border-slate-200"
                               >
                                 <span>{formData.completionPeriod}</span>
                                 <ChevronDown
                                   size={14}
-                                  className={`text-slate-400 transition-transform ${isCompPeriodOpen ? "rotate-180" : ""}`}
+                                  className={`text-slate-400 transition-transform flex-shrink-0 ${isCompPeriodOpen ? "rotate-180" : ""}`}
                                 />
                               </button>
                               {isCompPeriodOpen && (
