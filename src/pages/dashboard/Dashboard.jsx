@@ -828,7 +828,7 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
                   {currentUser?.full_name?.split(' ')[0] || 'Anand'}
                 </p>
                 <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider leading-none">
-                  {currentUser?.role || 'Root Admin'}
+                  {currentUser?.role || 'Administrator'}
                 </p>
               </div>
               {currentUser?.image ? (
@@ -1135,7 +1135,8 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
                     axisLine={false}
                     tickLine={false}
                     tick={{ fill: "#64748b", fontSize: 10, fontWeight: 600 }}
-                    width={30}
+                    width={45}
+                    allowDecimals={false}
                   />
                   <YAxis
                     yAxisId="right"

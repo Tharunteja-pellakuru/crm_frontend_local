@@ -799,7 +799,7 @@ const Settings = ({ aiModels = [], onAddAiModel, onUpdateAiModel, onDeleteAiMode
                               {admin.status}
                             </span>
                             <div className="flex justify-end gap-1.5">
-                              {admin.role !== "Root Admin" && (
+                              {admin.role !== "Administrator" && (
                                 <>
                                   <ActionBtn variant="edit" title="Edit Admin" onClick={() => { setEditingAdminId(admin.id); setEditAdminData({ name: admin.name, email: admin.email, role: admin.role, status: admin.status }); }}>
                                     <Pencil size={13} />
@@ -829,7 +829,7 @@ const Settings = ({ aiModels = [], onAddAiModel, onUpdateAiModel, onDeleteAiMode
                                   <p className="text-[11px] text-slate-400 font-medium truncate">{admin.email}</p>
                                 </div>
                               </div>
-                              {admin.role !== "Root Admin" && (
+                              {admin.role !== "Administrator" && (
                                 <div className="flex gap-1.5 shrink-0">
                                   <ActionBtn variant="edit" title="Edit" onClick={() => { setEditingAdminId(admin.id); setEditAdminData({ name: admin.name, email: admin.email, role: admin.role, status: admin.status }); }}><Pencil size={13} /></ActionBtn>
                                   <ActionBtn variant="delete" title="Delete" onClick={() => setAdminToDelete(admin)}><Trash2 size={13} /></ActionBtn>
