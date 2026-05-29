@@ -325,7 +325,7 @@ const ProjectOverview = ({
           </div>
           <div>
             <h2 className="text-xl sm:text-[22px] font-medium text-[#18254D] leading-tight mb-0.5">
-              {isEditing ? "Edit Project Details" : "Project details"}
+              {formData.name}
             </h2>
             <p className="text-xs sm:text-[13px] text-slate-500 font-medium">
               Overview of the project progress and timeline

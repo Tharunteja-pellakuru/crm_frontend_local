@@ -236,7 +236,7 @@ const Settings = ({ aiModels = [], onAddAiModel, onUpdateAiModel, onDeleteAiMode
   const [showAddAdminPwd, setShowAddAdminPwd]     = useState(false);
   const [newAdmin, setNewAdmin]             = useState({ name: "", email: "", password: "", role: "", status: "Active" });
   const [editingAdminId, setEditingAdminId] = useState(null);
-  const [editAdminData, setEditAdminData]   = useState({ name: "", email: "", role: "Admin", status: "Active" });
+  const [editAdminData, setEditAdminData]   = useState({ name: "", email: "", role: "Manager", status: "Active" });
   const [addAdminErrors, setAddAdminErrors] = useState({});
 
   const [showPasswordForm, setShowPasswordForm] = useState(false);
