@@ -283,8 +283,10 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
 
   const leadCount = leads.filter((l) => l.status === "Lead").length;
   const clientCount = clients.filter((c) => c.status === "Active").length;
-  const totalPool = leadCount + clientCount;
-  const engagementRate = totalPool > 0 ? Math.round((clientCount / totalPool) * 100) : 0;
+  const totalEnquiries = enquiries.length;
+  const conversionRate = totalEnquiries > 0
+    ? Math.round((clientCount / totalEnquiries) * 100)
+    : 0;
 
   // Helper for monthly aggregation
   const getLast6MonthsData = (items, dateField) => {
@@ -335,22 +337,31 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
     return data;
   };
 
-  // Get cumulative engagement rate data for trailing 6 months
-  const getEngagementRateLast6Months = () => {
+  // Get cumulative conversion rate data for trailing 6 months
+  const getConversionRateLast6Months = () => {
     const data = [];
     const today = new Date();
-    const activeClients = clients.filter(c => c.status === "Active");
 
     for (let i = 5; i >= 0; i--) {
       const d = new Date();
       d.setMonth(today.getMonth() - i);
-      const targetDate = new Date(d.getFullYear(), d.getMonth() + 1, 0);
+      const year = d.getFullYear();
+      const month = d.getMonth();
 
-      const clientsCount = activeClients.filter(c => parseLocalDate(c.joinedDate) <= targetDate).length;
-      const leadsCount = leads.filter(l => l.status === "Lead" && parseLocalDate(l.joinedDate) <= targetDate).length;
+      const monthEnquiries = enquiries.filter(e => {
+        const ed = parseLocalDate(e.date);
+        return ed.getFullYear() === year && ed.getMonth() === month;
+      }).length;
 
-      const total = clientsCount + leadsCount;
-      const rate = total > 0 ? Math.round((clientsCount / total) * 100) : 0;
+      const monthClients = clients.filter(c => {
+        const cd = parseLocalDate(c.joinedDate);
+        return c.status === "Active" &&
+          cd.getFullYear() === year &&
+          cd.getMonth() === month;
+      }).length;
+
+      const rate = monthEnquiries > 0
+        ? Math.round((monthClients / monthEnquiries) * 100) : 0;
 
       data.push({ value: rate });
     }
@@ -401,38 +412,47 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
     };
   };
 
-  const getEngagementTrendAndBadge = () => {
-    let badge = "Low";
-    if (engagementRate >= 75) badge = "High";
-    else if (engagementRate >= 45) badge = "Medium";
-
-    const activeClients = clients.filter(c => c.status === "Active");
+  const getConversionTrendAndBadge = () => {
     const getDiffDays = (d) => {
       const today = new Date();
       return (today - parseLocalDate(d)) / (1000 * 60 * 60 * 24);
     };
-    const prevLeads = leads.filter(l => l.status === "Lead" && getDiffDays(l.joinedDate) > 7).length;
-    const prevClients = activeClients.filter(c => getDiffDays(c.joinedDate) > 7).length;
-    const prevTotal = prevLeads + prevClients;
-    const prevEngagementRate = prevTotal > 0 ? Math.round((prevClients / prevTotal) * 100) : 0;
 
-    const diff = engagementRate - prevEngagementRate;
-    let trend = undefined;
-    let trendUp = false;
-    if (diff > 0) {
-      trend = `+${diff}% this week`;
-      trendUp = true;
-    } else if (diff < 0) {
-      trend = `${diff}% this week`;
-      trendUp = false;
-    }
+    // Badge based on rate
+    let badge = "Low";
+    if (conversionRate >= 60) badge = "High";
+    else if (conversionRate >= 30) badge = "Medium";
+
+    // This week vs last week
+    const thisWeekEnquiries = enquiries.filter(e => getDiffDays(e.date) <= 7).length;
+    const thisWeekClients = clients.filter(c =>
+      c.status === "Active" && getDiffDays(c.joinedDate) <= 7
+    ).length;
+
+    const lastWeekEnquiries = enquiries.filter(e =>
+      getDiffDays(e.date) > 7 && getDiffDays(e.date) <= 14
+    ).length;
+    const lastWeekClients = clients.filter(c =>
+      c.status === "Active" &&
+      getDiffDays(c.joinedDate) > 7 &&
+      getDiffDays(c.joinedDate) <= 14
+    ).length;
+
+    const thisWeekRate = thisWeekEnquiries > 0
+      ? Math.round((thisWeekClients / thisWeekEnquiries) * 100) : 0;
+    const lastWeekRate = lastWeekEnquiries > 0
+      ? Math.round((lastWeekClients / lastWeekEnquiries) * 100) : 0;
+
+    const diff = thisWeekRate - lastWeekRate;
+    const trend = diff !== 0 ? `${diff > 0 ? "+" : ""}${diff}% this week` : undefined;
+    const trendUp = diff > 0;
 
     return { badge, trend, trendUp };
   };
 
   const leadsInfo = getLeadsTrendAndBadge();
   const clientsInfo = getClientsTrendAndBadge();
-  const engagementInfo = getEngagementTrendAndBadge();
+  const conversionInfo = getConversionTrendAndBadge();
 
 
   // Chart data
@@ -459,11 +479,10 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
           return l.status === "Lead" && d.getFullYear() === yearNum && d.getMonth() === index;
         }).length;
 
-        // Engagement rate: (Clients / (Enquiries + Leads)) * 100
-        const totalPotential = monthlyEnquiries + monthlyLeads;
-        const engagement = totalPotential > 0 ? Math.round((monthlyClients / totalPotential) * 100) : 0;
+        // Conversion rate: (Clients / Enquiries) * 100
+        const conversionRate = monthlyEnquiries > 0 ? Math.round((monthlyClients / monthlyEnquiries) * 100) : 0;
 
-        // Previous year engagement rate from real data
+        // Previous year conversion rate from real data
         const prevMonthlyEnquiries = enquiries.filter(e => {
           const d = new Date(e.date);
           return d.getFullYear() === prevYearNum && d.getMonth() === index;
@@ -476,15 +495,14 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
           const d = new Date(l.joinedDate);
           return l.status === "Lead" && d.getFullYear() === prevYearNum && d.getMonth() === index;
         }).length;
-        const prevTotalPotential = prevMonthlyEnquiries + prevMonthlyLeads;
-        const previousYear = prevTotalPotential > 0 ? Math.round((prevMonthlyClients / prevTotalPotential) * 100) : 0;
+        const previousYear = prevMonthlyEnquiries > 0 ? Math.round((prevMonthlyClients / prevMonthlyEnquiries) * 100) : 0;
 
         return {
           name: month,
           enquiries: monthlyEnquiries,
           clients: monthlyClients,
           leads: monthlyLeads,
-          engagement,
+          conversion: conversionRate,
           previousYear,
         };
       });
@@ -512,10 +530,9 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
         return l.status === "Lead" && d.getFullYear() === yearNum && d.getMonth() === monthIndex && d.getDate() >= startDay && d.getDate() <= endDay;
       }).length;
 
-      const totalPotential = weeklyEnquiries + weeklyLeads;
-      const engagement = totalPotential > 0 ? Math.round((weeklyClients / totalPotential) * 100) : 0;
+      const conversionRate = weeklyEnquiries > 0 ? Math.round((weeklyClients / weeklyEnquiries) * 100) : 0;
 
-      // Previous year engagement rate from real data
+      // Previous year conversion rate from real data
       const prevWeeklyEnquiries = enquiries.filter(e => {
         const d = new Date(e.date);
         return d.getFullYear() === prevYearNum && d.getMonth() === monthIndex && d.getDate() >= startDay && d.getDate() <= endDay;
@@ -528,15 +545,14 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
         const d = new Date(l.joinedDate);
         return l.status === "Lead" && d.getFullYear() === prevYearNum && d.getMonth() === monthIndex && d.getDate() >= startDay && d.getDate() <= endDay;
       }).length;
-      const prevTotalPotential = prevWeeklyEnquiries + prevWeeklyLeads;
-      const previousYear = prevTotalPotential > 0 ? Math.round((prevWeeklyClients / prevTotalPotential) * 100) : 0;
+      const previousYear = prevWeeklyEnquiries > 0 ? Math.round((prevWeeklyClients / prevWeeklyEnquiries) * 100) : 0;
 
       return {
         name: `Week ${week}`,
         enquiries: weeklyEnquiries,
         clients: weeklyClients,
         leads: weeklyLeads,
-        engagement,
+        conversion: conversionRate,
         previousYear,
       };
     });
@@ -861,16 +877,16 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
             onClick={() => onNavigate("clients")}
           />
           <StatCard
-            title="Engagement Rate"
-            value={`${engagementRate}%`}
-            badge={engagementInfo.badge}
-            trend={engagementInfo.trend}
-            trendUp={engagementInfo.trendUp}
-            icon={<Activity size={20} />}
+            title="Conversion Rate"
+            value={`${conversionRate}%`}
+            badge={conversionInfo.badge}
+            trend={conversionInfo.trend}
+            trendUp={conversionInfo.trendUp}
+            icon={<TrendingUp size={20} />}
             delay={300}
             colorClass="orange"
             strokeColor="#F97316"
-            data={getEngagementRateLast6Months()}
+            data={getConversionRateLast6Months()}
           />
         </div>
 
@@ -922,7 +938,7 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
               {displayTasks.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-center p-6">
                   <CheckCircle2 size={32} className="text-slate-200 mb-3" />
-                  <p className="text-[12px] font-bold text-slate-400 tracking-widest uppercase">
+                  <p className="text-[10px] font-bold text-slate-400 tracking-widest uppercase">
                     No Tasks Here
                   </p>
                 </div>
@@ -990,7 +1006,7 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
               <div>
                 <h3 className="text-base font-bold text-primary tracking-tight">
-                  Engagement Rate
+                  Conversion Rate
                 </h3>
               </div>
               <div className="flex flex-wrap items-center gap-3">
@@ -1124,7 +1140,7 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
                       fontSize: "10px",
                     }}
                     formatter={(value, name) => {
-                      if (name === "Engagement Rate %") return [`${value}%`, name];
+                      if (name === "Conversion Rate %") return [`${value}%`, name];
                       return [value, name];
                     }}
                   />
@@ -1163,12 +1179,12 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
                   <Line
                     yAxisId="right"
                     type="monotone"
-                    dataKey="engagement"
+                    dataKey="conversion"
                     stroke="#F97316"
                     strokeWidth={2.5}
                     dot={{ r: 3.5, stroke: "#F97316", strokeWidth: 2, fill: "#FFF" }}
                     activeDot={{ r: 6, fill: "#F97316" }}
-                    name="Engagement Rate %"
+                    name="Conversion Rate %"
                   />
                 </ComposedChart>
               </ResponsiveContainer>
