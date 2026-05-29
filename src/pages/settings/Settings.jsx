@@ -24,12 +24,12 @@ const TABS = [
   { id: "profile",  label: "My Profile",   icon: User,     desc: "Personal info & avatar"   },
   { id: "security", label: "Security",      icon: Shield,   desc: "Password & sessions"      },
   { id: "ai",       label: "AI Settings",   icon: Bot,      desc: "Configure AI models"      },
-  { id: "team",     label: "Admins",        icon: Users,    desc: "Manage team members"      },
+  { id: "team",     label: "Team",        icon: Users,    desc: "Manage team members"      },
   { id: "export",   label: "Data Export",   icon: Database, desc: "Download CRM data"        },
 ];
 
 // ─── CustomDropdown ────────────────────────────────────────────────────────────
-const CustomDropdown = ({ label, value, options, field, icon: Icon, onChange, activeDropdown, setActiveDropdown }) => {
+const CustomDropdown = ({ label, value, options, field, icon: Icon, onChange, activeDropdown, setActiveDropdown, required, error }) => {
   const buttonRef = useRef(null);
   const [dropdownStyles, setDropdownStyles] = useState({});
 
@@ -59,11 +59,13 @@ const CustomDropdown = ({ label, value, options, field, icon: Icon, onChange, ac
 
   return (
     <div className="space-y-1.5">
-      <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">{label}</label>
+      <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
+        {label} {required && <span className="text-rose-500">*</span>}
+      </label>
       <button
         ref={buttonRef} type="button"
         onClick={() => setActiveDropdown(isOpen ? null : field)}
-        className="w-full flex items-center justify-between px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl hover:border-[#18254D]/30 transition-all text-sm font-semibold text-[#18254D] shadow-sm"
+        className={`w-full flex items-center justify-between px-4 py-2.5 bg-slate-50 border rounded-xl hover:border-[#18254D]/30 transition-all text-sm font-semibold text-[#18254D] shadow-sm ${error ? "border-rose-300" : "border-slate-200"}`}
       >
         <div className="flex items-center gap-2 min-w-0">
           {Icon && <Icon size={14} className="text-slate-400 shrink-0" />}
@@ -98,6 +100,7 @@ const CustomDropdown = ({ label, value, options, field, icon: Icon, onChange, ac
         </>,
         document.body,
       )}
+      {error && <p className="text-[10px] text-rose-500 font-medium ml-1">{error}</p>}
     </div>
   );
 };
@@ -231,7 +234,7 @@ const Settings = ({ aiModels = [], onAddAiModel, onUpdateAiModel, onDeleteAiMode
   const [adminToDelete, setAdminToDelete]   = useState(null);
   const [showAddAdminModal, setShowAddAdminModal] = useState(false);
   const [showAddAdminPwd, setShowAddAdminPwd]     = useState(false);
-  const [newAdmin, setNewAdmin]             = useState({ name: "", email: "", password: "", role: "Admin", status: "Active" });
+  const [newAdmin, setNewAdmin]             = useState({ name: "", email: "", password: "", role: "", status: "Active" });
   const [editingAdminId, setEditingAdminId] = useState(null);
   const [editAdminData, setEditAdminData]   = useState({ name: "", email: "", role: "Admin", status: "Active" });
   const [addAdminErrors, setAddAdminErrors] = useState({});
@@ -317,6 +320,7 @@ const Settings = ({ aiModels = [], onAddAiModel, onUpdateAiModel, onDeleteAiMode
     if (!newAdmin.name.trim() || newAdmin.name.trim().length < 2) e.name = "Name must be at least 2 characters";
     if (!newAdmin.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newAdmin.email)) e.email = "Valid email required";
     if (!newAdmin.password || newAdmin.password.length < 8) e.password = "Password must be at least 8 characters";
+    if (!newAdmin.role) e.role = "Role is required";
     setAddAdminErrors(e); return Object.keys(e).length === 0;
   };
 
@@ -587,10 +591,6 @@ const Settings = ({ aiModels = [], onAddAiModel, onUpdateAiModel, onDeleteAiMode
                           <SubmitButton className="w-full sm:w-auto px-8 h-12" loading={isSubmitting} loadingText="SAVING..." onClick={handleProfileSave}>
                             <Save size={15} strokeWidth={2.5} /><span>SAVE CHANGES</span>
                           </SubmitButton>
-                          <button type="button"
-                            onClick={() => { setProfile(JSON.parse(localStorage.getItem("user"))); setSelectedImageFile(null); setIsProfileEditing(false); }}
-                            className="w-full sm:w-auto px-8 h-12 bg-slate-100 text-slate-600 rounded-xl text-xs font-bold tracking-wider hover:bg-slate-200 transition-all active:scale-[0.97] uppercase flex items-center justify-center gap-2 border border-slate-200"
-                          >Cancel</button>
                         </div>
                       )}
                     </div>
@@ -1027,8 +1027,8 @@ const Settings = ({ aiModels = [], onAddAiModel, onUpdateAiModel, onDeleteAiMode
               {addAdminErrors.password ? <p className="text-[10px] text-rose-500 font-medium ml-1">{addAdminErrors.password}</p>
                 : <p className="text-[10px] text-slate-400 font-medium ml-1">Minimum 8 characters required</p>}
             </div>
-            <CustomDropdown label="Role" value={newAdmin.role} field="add_admin_role" icon={Briefcase} options={["BDM", "Admin", "Manager"]}
-              onChange={val => setNewAdmin({ ...newAdmin, role: val })} activeDropdown={activeDropdown} setActiveDropdown={setActiveDropdown} />
+            <CustomDropdown label="Role" value={newAdmin.role} field="add_admin_role" icon={Briefcase} options={profile?.role === "Administrator" ? ["BDM", "Admin", "Manager"] : ["BDM"]}
+              onChange={val => { setNewAdmin({ ...newAdmin, role: val }); if (addAdminErrors.role) setAddAdminErrors({ ...addAdminErrors, role: null }); }} activeDropdown={activeDropdown} setActiveDropdown={setActiveDropdown} required error={addAdminErrors.role} />
             <CustomDropdown label="Status" value={newAdmin.status} field="add_admin_status" icon={Check} options={["Active", "Inactive"]}
               onChange={val => setNewAdmin({ ...newAdmin, status: val })} activeDropdown={activeDropdown} setActiveDropdown={setActiveDropdown} />
           </div>
@@ -1050,7 +1050,7 @@ const Settings = ({ aiModels = [], onAddAiModel, onUpdateAiModel, onDeleteAiMode
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <InputField label="Full Name" required placeholder="Enter full name" value={editAdminData.name} onChange={e => setEditAdminData({ ...editAdminData, name: e.target.value })} />
             <InputField label="Email Address" required type="email" placeholder="Enter email" value={editAdminData.email} onChange={e => setEditAdminData({ ...editAdminData, email: e.target.value })} />
-            <CustomDropdown label="Role" value={editAdminData.role} field="edit_admin_role" icon={Briefcase} options={["BDM", "Admin", "Manager"]}
+            <CustomDropdown label="Role" value={editAdminData.role} field="edit_admin_role" icon={Briefcase} options={profile?.role === "Administrator" ? ["BDM", "Admin", "Manager"] : ["BDM"]}
               onChange={val => setEditAdminData({ ...editAdminData, role: val })} activeDropdown={activeDropdown} setActiveDropdown={setActiveDropdown} />
             <CustomDropdown label="Status" value={editAdminData.status} field="edit_admin_status" icon={Check} options={["Active", "Inactive"]}
               onChange={val => setEditAdminData({ ...editAdminData, status: val })} activeDropdown={activeDropdown} setActiveDropdown={setActiveDropdown} />

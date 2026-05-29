@@ -187,8 +187,15 @@ const Dropdown = ({
                     type="text"
                     placeholder="Search..."
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onKeyDown={(e) => { if (e.key === 'Escape') setIsOpen(false); }}
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      setSearchQuery(e.target.value);
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                    onKeyDown={(e) => {
+                      e.stopPropagation();
+                      if (e.key === 'Escape') setIsOpen(false);
+                    }}
                     autoFocus
                     className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#18254D]/5 focus:border-[#18254D]/30"
                   />
@@ -205,7 +212,7 @@ const Dropdown = ({
                   const isSelected = idx === selectedIndex;
                   return (
                     <button
-                      key={`${label}-${optionValue}`}
+                      key={`${label}-${opt.name || opt.value}-${idx}`}
                       data-index={idx}
                       type="button"
                       onClick={() => { onChange(optionValue); setIsOpen(false); setSelectedIndex(-1); setSearchQuery(""); }}
@@ -264,7 +271,7 @@ const ConversationCard = ({ conv, onAddToCalendar }) => {
   };
 
   return (
-    <div className={`group min-w-full w-full h-[340px] shrink-0 snap-start rounded-2xl p-5 flex flex-col transition-all border ${getCardStyle()}`}>
+    <div className={`group min-w-full w-full h-[420px] shrink-0 snap-start rounded-2xl p-5 flex flex-col transition-all border ${getCardStyle()}`}>
       <div className="flex items-start justify-between mb-4 shrink-0">
         <div className="flex gap-3.5">
           <div className={`w-11 h-11 rounded-[14px] flex items-center justify-center text-white shadow-md shrink-0 ${isFollowup ? "bg-gradient-to-br from-emerald-400 to-emerald-600" : getIconColor()}`}>
@@ -281,6 +288,11 @@ const ConversationCard = ({ conv, onAddToCalendar }) => {
               }`}>
                 {isPending ? "PENDING" : isFollowup ? "COMPLETED" : type}
               </span>
+              {conv.leadName && (
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md border bg-purple-50 text-purple-700 border-purple-200 uppercase tracking-wider flex items-center gap-1">
+                  <User size={10} /> {conv.leadName}
+                </span>
+              )}
               {((isFollowup && conv.completed_by) || conv.completedBy) && (
                 <span className="text-[11px] font-semibold text-slate-500 flex items-center gap-1">
                   <User size={12} /> {conv.completed_by || conv.completedBy}
@@ -315,7 +327,7 @@ const ConversationCard = ({ conv, onAddToCalendar }) => {
         )}
 
         {isFollowup ? (
-          <div className="bg-white rounded-xl p-4 border border-emerald-100 shadow-sm relative overflow-hidden flex-1 flex flex-col">
+          <div className="bg-white rounded-xl p-4 border border-emerald-100 shadow-sm relative overflow-hidden shrink-0">
             <div className="absolute top-0 left-0 bottom-0 w-1 bg-emerald-500"></div>
             <h6 className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mb-2 flex items-center gap-1.5">
               <MessageSquare size={12} /> Conclusion Summary
@@ -329,7 +341,7 @@ const ConversationCard = ({ conv, onAddToCalendar }) => {
             </p>
           </div>
         ) : (
-          <div className="bg-white rounded-xl p-4 border border-slate-100 shadow-sm flex-1 h-full min-h-0">
+          <div className="bg-white rounded-xl p-4 border border-slate-100 shadow-sm shrink-0">
             <p className="text-sm text-[#18254D] font-medium leading-relaxed">
               {conv.description || "No details recorded."}
             </p>
@@ -378,6 +390,7 @@ const ClientDetail = ({
   onOnboardClient,
   onDeleteFollowUp,
   clients = [],
+  leads = [],
 }) => {
   const isLead = client?.isLead || client?.status === "Lead" || client?.status === "Dismissed";
   
@@ -753,16 +766,21 @@ const handleEditFollowUpSubmit = async (e) => {
 
   const clientProjects = projects.filter((p) => p.clientId == clientId);
   const clientProjectIds = clientProjects.map((p) => p.id);
+  const clientLeadIds = [
+    client.lead_id,
+    ...clientProjects.map(p => p.lead_id)
+  ].filter(Boolean).map(String);
+
   const clientActivities = activities.filter(a =>
     a.clientId == clientId ||
-    (client.lead_id && a.clientId == client.lead_id) ||
+    clientLeadIds.includes(String(a.clientId)) ||
     clientProjectIds.includes(a.projectId || a.project_id)
   );
 
   const completedFollowUps = [
     ...followUps.filter((f) =>
       f.clientId == clientId ||
-      (client.lead_id && f.clientId == client.lead_id) ||
+      clientLeadIds.includes(String(f.clientId)) ||
       clientProjectIds.includes(f.projectId || f.project_id)
     ),
     ...clientFollowUps
@@ -774,7 +792,7 @@ const handleEditFollowUpSubmit = async (e) => {
   const upcomingFollowUps = [
     ...followUps.filter((f) =>
       f.clientId == clientId ||
-      (client.lead_id && f.clientId == client.lead_id) ||
+      clientLeadIds.includes(String(f.clientId)) ||
       clientProjectIds.includes(f.projectId || f.project_id)
     ),
     ...clientFollowUps
@@ -813,7 +831,7 @@ const handleEditFollowUpSubmit = async (e) => {
         <div className="w-full h-full relative space-y-6 pb-12">
       {/* Breadcrumbs */}
       <div className="flex items-center gap-2 text-[13px] font-medium text-slate-400 mb-6">
-        <button onClick={onBack} className="hover:text-blue-500 transition-colors">Clients & Leads</button>
+        <button onClick={onBack} className="hover:text-blue-500 transition-colors">{isLead ? "Leads" : "Clients"}</button>
         <ChevronRight size={14} className="text-slate-300" />
         <span className="text-[#18254D] truncate max-w-[200px]">{client.name || "Unknown Client"}</span>
         <ChevronRight size={14} className="text-slate-300" />
@@ -906,10 +924,10 @@ const handleEditFollowUpSubmit = async (e) => {
               <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
             <div className="min-w-0 w-full">
-              <h3 className="text-slate-500 text-[10px] sm:text-xs font-semibold truncate uppercase tracking-wider">
+              <h3 className="text-slate-500 text-[10px] sm:text-xs font-semibold truncate">
                 {isLead ? "Lead Status" : "Client Status"}
               </h3>
-              <p className="text-base sm:text-lg font-bold text-[#18254D] leading-none mt-1">
+              <p className="text-lg sm:text-2xl font-bold text-[#18254D] leading-none mt-1">
                 {isLead ? (client.leadType || "Warm") : (client.clientStatus || client.status || "Active")}
               </p>
             </div>
@@ -941,10 +959,10 @@ const handleEditFollowUpSubmit = async (e) => {
               )}
             </div>
             <div className="min-w-0 w-full">
-              <h3 className="text-slate-500 text-[10px] sm:text-xs font-semibold truncate uppercase tracking-wider">
+              <h3 className="text-slate-500 text-[10px] sm:text-xs font-semibold truncate">
                 {!isLead ? "Billing Currency" : "Source"}
               </h3>
-              <p className="text-base sm:text-lg font-bold text-[#18254D] leading-none mt-1">
+              <p className="text-lg sm:text-2xl font-bold text-[#18254D] leading-none mt-1">
                 {!isLead ? (client.currency || client.client_currency || "N/A") : (client.source || "N/A")}
               </p>
             </div>
@@ -958,10 +976,10 @@ const handleEditFollowUpSubmit = async (e) => {
               <UserCheck className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
             <div className="min-w-0 w-full">
-              <h3 className="text-slate-500 text-[10px] sm:text-xs font-semibold truncate uppercase tracking-wider">
+              <h3 className="text-slate-500 text-[10px] sm:text-xs font-semibold truncate">
                 Created By
               </h3>
-              <p className="text-lg sm:text-xl font-bold text-[#18254D] leading-none mt-1 truncate">
+              <p className="text-lg sm:text-2xl font-bold text-[#18254D] leading-none mt-1 truncate">
                 {client.created_by_name || client.createdByName || "System"}
               </p>
             </div>
@@ -975,10 +993,10 @@ const handleEditFollowUpSubmit = async (e) => {
               <MessageSquare className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
             <div className="min-w-0 w-full">
-              <h3 className="text-slate-500 text-[10px] sm:text-xs font-semibold truncate uppercase tracking-wider">
+              <h3 className="text-slate-500 text-[10px] sm:text-xs font-semibold truncate">
                 Interactions
               </h3>
-              <p className="text-base sm:text-lg font-bold text-[#18254D] leading-none mt-1">
+              <p className="text-lg sm:text-2xl font-bold text-[#18254D] leading-none mt-1">
                 {clientActivities.length + completedFollowUps.length}
               </p>
             </div>
@@ -1120,13 +1138,24 @@ const handleEditFollowUpSubmit = async (e) => {
 
             {(() => {
               const interactions = [
-                ...completedFollowUps.map(fu => ({
-                  ...fu, source: "followup",
-                  originalDescription: fu.description,
-                  description: fu.follow_brief || "No summary provided",
-                  completedBy: fu.completed_by
-                })),
-                ...clientActivities.map(a => ({ ...a, source: "activity", originalDescription: null }))
+                ...completedFollowUps.map(fu => {
+                  const mappedLead = leads.find(l => l.lead_id == fu.clientId || l.id == fu.clientId);
+                  return {
+                    ...fu, source: "followup",
+                    originalDescription: fu.description,
+                    description: fu.follow_brief || "No summary provided",
+                    completedBy: fu.completed_by,
+                    leadName: mappedLead ? mappedLead.name : null
+                  };
+                }),
+                ...clientActivities.map(a => {
+                  const mappedLead = leads.find(l => l.lead_id == a.clientId || l.id == a.clientId);
+                  return {
+                    ...a, source: "activity",
+                    originalDescription: null,
+                    leadName: mappedLead ? mappedLead.name : null
+                  };
+                })
               ].sort((a, b) =>
                 parseLocalDate(b.date || b.completed_at || b.dueDate || b.created_at || b.createdAt) -
                 parseLocalDate(a.date || a.completed_at || a.dueDate || a.created_at || a.createdAt)
@@ -1244,33 +1273,36 @@ const handleEditFollowUpSubmit = async (e) => {
                 <div className="flex items-center gap-1 p-1 bg-slate-50 border border-slate-200 rounded-xl w-full md:w-auto grid grid-cols-3">
                   <button
                     onClick={() => setActiveUpcomingTab("Overdue")}
-                    className={`px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all ${
+                    className={`px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
                       activeUpcomingTab === "Overdue"
-                        ? "bg-white text-slate-800 shadow-sm border border-slate-200"
-                        : "text-slate-500 hover:text-slate-700 border border-transparent"
+                        ? "bg-white text-red-600 shadow-sm border border-red-200"
+                        : "text-slate-500 hover:text-red-500 border border-transparent"
                     }`}
                   >
-                    Overdue
+                    <span>Overdue</span>
+                    <span className={`px-1.5 py-0.5 rounded-md text-[9px] leading-none ${activeUpcomingTab === "Overdue" ? "bg-red-50 text-red-600" : "bg-slate-200/70 text-slate-500"}`}>{overdueFUs.length}</span>
                   </button>
                   <button
                     onClick={() => setActiveUpcomingTab("Today")}
-                    className={`px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all ${
+                    className={`px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
                       activeUpcomingTab === "Today"
-                        ? "bg-white text-slate-800 shadow-sm border border-slate-200"
-                        : "text-slate-500 hover:text-slate-700 border border-transparent"
+                        ? "bg-white text-blue-600 shadow-sm border border-blue-200"
+                        : "text-slate-500 hover:text-blue-500 border border-transparent"
                     }`}
                   >
-                    Today
+                    <span>Today</span>
+                    <span className={`px-1.5 py-0.5 rounded-md text-[9px] leading-none ${activeUpcomingTab === "Today" ? "bg-blue-50 text-blue-600" : "bg-slate-200/70 text-slate-500"}`}>{todayFUs.length}</span>
                   </button>
                   <button
                     onClick={() => setActiveUpcomingTab("Upcoming")}
-                    className={`px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all ${
+                    className={`px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
                       activeUpcomingTab === "Upcoming"
-                        ? "bg-white text-slate-800 shadow-sm border border-slate-200"
-                        : "text-slate-500 hover:text-slate-700 border border-transparent"
+                        ? "bg-white text-amber-600 shadow-sm border border-amber-200"
+                        : "text-slate-500 hover:text-amber-500 border border-transparent"
                     }`}
                   >
-                    Upcoming
+                    <span>Upcoming</span>
+                    <span className={`px-1.5 py-0.5 rounded-md text-[9px] leading-none ${activeUpcomingTab === "Upcoming" ? "bg-amber-50 text-amber-600" : "bg-slate-200/70 text-slate-500"}`}>{futureFUs.length}</span>
                   </button>
                 </div>
                 
@@ -1379,10 +1411,12 @@ const handleEditFollowUpSubmit = async (e) => {
                                 });
                                 setShowEditFollowUpModal(true);
                               }}
-                              className="w-8 h-8 flex items-center justify-center bg-blue-50 text-blue-500 border border-blue-100 hover:bg-blue-100 hover:text-blue-600 rounded-lg transition-colors"
-                              title="Edit Follow-up"
+                              className="group relative w-8 h-8 flex items-center justify-center bg-blue-50 text-blue-500 border border-blue-100 hover:bg-blue-100 hover:text-blue-600 rounded-lg transition-colors"
                             >
                               <Pencil size={14} />
+                              <div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">
+                                Edit Follow-up
+                              </div>
                             </button>
                             <button
                               onClick={(e) => {
@@ -1396,17 +1430,21 @@ const handleEditFollowUpSubmit = async (e) => {
                                 setCompletionBrief("");
                                 setShowCompletionModal(true);
                               }}
-                              className="w-8 h-8 flex items-center justify-center bg-emerald-50 text-emerald-500 border border-emerald-100 hover:bg-emerald-100 hover:text-emerald-600 rounded-lg transition-colors"
-                              title="Mark as Completed"
+                              className="group relative w-8 h-8 flex items-center justify-center bg-emerald-50 text-emerald-500 border border-emerald-100 hover:bg-emerald-100 hover:text-emerald-600 rounded-lg transition-colors"
                             >
                               <CheckCircle2 size={14} />
+                              <div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">
+                                Mark as Completed
+                              </div>
                             </button>
                             <button
                               onClick={(e) => { e.stopPropagation(); handleAddToCalendar(fu); }}
-                              className="w-8 h-8 flex items-center justify-center bg-indigo-50 text-indigo-500 border border-indigo-100 hover:bg-indigo-100 hover:text-indigo-600 rounded-lg transition-colors"
-                              title="Add to Google Calendar"
+                              className="group relative w-8 h-8 flex items-center justify-center bg-indigo-50 text-indigo-500 border border-indigo-100 hover:bg-indigo-100 hover:text-indigo-600 rounded-lg transition-colors"
                             >
                               <Calendar size={14} />
+                              <div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">
+                                Add to Google Calendar
+                              </div>
                             </button>
                             <button
                               onClick={(e) => {
@@ -1415,10 +1453,12 @@ const handleEditFollowUpSubmit = async (e) => {
                                   onDeleteFollowUp && onDeleteFollowUp(fu.id);
                                 }
                               }}
-                              className="w-8 h-8 flex items-center justify-center bg-rose-50 text-rose-500 border border-rose-100 hover:bg-rose-100 hover:text-rose-600 rounded-lg transition-colors"
-                              title="Delete Follow-up"
+                              className="group relative w-8 h-8 flex items-center justify-center bg-rose-50 text-rose-500 border border-rose-100 hover:bg-rose-100 hover:text-rose-600 rounded-lg transition-colors"
                             >
                               <Trash2 size={14} />
+                              <div className="absolute bottom-[calc(100%+8px)] right-0 opacity-0 group-hover:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">
+                                Delete Follow-up
+                              </div>
                             </button>
                           </div>
                         </div>
@@ -2113,7 +2153,8 @@ const handleEditFollowUpSubmit = async (e) => {
                             </div>
                             {clients
                               .filter((c) =>
-                                c.status === "Active" &&
+                                c.isClient &&
+                                (!c.status || c.status.toLowerCase() === "active") &&
                                 (!existingClientSearch ||
                                   c.name?.toLowerCase().includes(existingClientSearch.toLowerCase()) ||
                                   c.company?.toLowerCase().includes(existingClientSearch.toLowerCase()) ||

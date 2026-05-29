@@ -214,8 +214,15 @@ const SearchableDropdown = ({
                   className="w-full pl-9 pr-4 py-2 bg-white border border-slate-100 rounded-2xl text-xs font-medium focus:outline-none focus:border-secondary"
                   placeholder="Type to search..."
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  onKeyDown={handleKeyDown}
+                  onChange={(e) => {
+                    e.stopPropagation();
+                    setSearchTerm(e.target.value);
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                  onKeyDown={(e) => {
+                    e.stopPropagation();
+                    handleKeyDown(e);
+                  }}
                 />
                 {searchTerm && (
                   <button

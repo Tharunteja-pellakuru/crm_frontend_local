@@ -43,6 +43,8 @@ import { extractCountryAndPhone } from "./utils/leadUtils";
 // Simple wrapper for client detail pages
 function ClientDetailWrapper({
   clients,
+  allClients,
+  leads,
   type,
   activities,
   followUps,
@@ -82,6 +84,8 @@ function ClientDetailWrapper({
   return (
     <ClientDetail
       client={client}
+      clients={allClients}
+      leads={leads}
       onBack={() => navigate(`/${type}`)}
       onUpdateClient={onUpdateClient}
       onAddActivity={onAddActivity}
@@ -734,6 +738,7 @@ function AppRoutes() {
               : new Date().toISOString().split("T")[0],
             avatar: `https://picsum.photos/100/100?random=${result.lead?.lead_id || Date.now() % 100}`,
             enquiry_id: result.lead?.enquiry_id || data.enquiry_id,
+            source: result.lead?.source || data.source || "",
           };
 
           setLeads([newLead, ...leads]);
@@ -2345,8 +2350,11 @@ function AppRoutes() {
           element={
             <ClientDetailWrapper
               clients={clients}
+              allClients={clients}
+              leads={leads}
               type="clients"
               activities={activities}
+              followUps={followUps}
               onUpdateClient={handleUpdateClient}
               onAddActivity={handleAddActivity}
               onAddFollowUp={handleAddFollowUp} // Added this
@@ -2367,6 +2375,8 @@ function AppRoutes() {
           element={
             <ClientDetailWrapper
               clients={leads}
+              allClients={clients}
+              leads={leads}
               type="leads"
               activities={activities}
               followUps={followUps}

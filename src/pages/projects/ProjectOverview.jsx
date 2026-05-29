@@ -5,7 +5,6 @@ import { addToGoogleCalendar } from "../../utils/calendar";
 import {
   ArrowLeft,
   Calendar,
-  IndianRupee,
   Pencil,
   Save,
   AlertCircle,
@@ -367,8 +366,8 @@ const ProjectOverview = ({
         {/* Budget */}
         <div className="bg-white p-4 sm:p-5 lg:p-6 rounded-2xl shadow-sm border border-slate-200 hover:-translate-y-1 hover:shadow-md transition-all duration-300">
           <div className="flex items-center gap-2 sm:gap-4">
-            <div className="p-2 sm:p-3 rounded-full bg-emerald-50 text-emerald-500 shrink-0">
-              <IndianRupee className="w-5 h-5 sm:w-6 sm:h-6" />
+            <div className="p-2 sm:p-3 rounded-full bg-emerald-50 text-emerald-500 shrink-0 w-9 h-9 sm:w-12 sm:h-12 flex items-center justify-center">
+              <span className="text-base sm:text-xl font-bold leading-none">{currencySymbol}</span>
             </div>
             <div className="min-w-0 w-full">
               <h3 className="text-slate-500 text-[10px] sm:text-xs font-semibold truncate">

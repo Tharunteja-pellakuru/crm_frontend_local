@@ -59,12 +59,15 @@ import { getAuthHeaders } from "../../utils/auth";
 const getSourceIcon = (source) => {
   if (!source) return <Share2 size={10} />;
   const s = source.toLowerCase();
-  if (s.includes("facebook") || s.includes("fb")) return <Facebook size={10} />;
+  if (s.includes("facebook") || s.includes("fb") || s.includes("meta")) return <Facebook size={10} />;
   if (s.includes("instagram") || s.includes("ig")) return <Instagram size={10} />;
   if (s.includes("twitter") || s.includes("x")) return <Twitter size={10} />;
   if (s.includes("linkedin")) return <Linkedin size={10} />;
   if (s.includes("whatsapp") || s.includes("sms") || s.includes("message")) return <MessageCircle size={10} />;
   if (s.includes("web") || s.includes("site") || s.includes("online")) return <Globe size={10} />;
+  if (s.includes("selyst")) return <Globe size={10} />;
+  if (s.includes("referral")) return <Users size={10} />;
+  if (s.includes("eparivartan")) return <img src={favIcon} alt="eParivartan" className="w-2.5 h-2.5 object-contain" />;
   return <Share2 size={10} />;
 };
 
@@ -1012,7 +1015,7 @@ const EnquiryList = ({
                                       <p className="text-[10px] font-bold text-white/50 tracking-wider uppercase">Select Source</p>
                                     </div>
                                     <div className="max-h-[200px] overflow-y-auto custom-scrollbar p-1.5">
-                                      {["All", "Meta Ad (Insta/FB)", "LinkedIn", "Referral", "Selyst", "eParivartan", "Other"].map((src) => (
+                                      {["All", "Meta Ad (Insta/FB)", "LinkedIn", "Referral", "Selyst", "eParivartan"].map((src) => (
                                         <button
                                           key={src}
                                           type="button"

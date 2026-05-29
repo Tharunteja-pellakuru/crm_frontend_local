@@ -45,6 +45,7 @@ import {
   Twitter,
   Linkedin,
   MessageCircle,
+  Users,
 } from "lucide-react";
 import DatePicker from "../../components/ui/DatePicker";
 import { countries } from "../../utils/countries";
@@ -73,6 +74,7 @@ const getSourceIcon = (source) => {
   if (s.includes("linkedin")) return <Linkedin size={10} />;
   if (s.includes("whatsapp") || s.includes("sms") || s.includes("message")) return <MessageCircle size={10} />;
   if (s.includes("web") || s.includes("site") || s.includes("online") || s.includes("selyst")) return <Globe size={10} />;
+  if (s.includes("referral")) return <Users size={10} />;
   if (s.includes("eparivartan")) return <img src={ParivartanLeaf} alt="eParivartan" className="w-2.5 h-2.5 object-contain" />;
   return <Share2 size={10} />;
 };
@@ -2431,30 +2433,30 @@ const LeadList = ({
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[99999] flex items-center justify-center p-4">
           <div className="absolute inset-0" onClick={() => { setShowDeleteModal(false); setLeadToDelete(null); }} />
           <div className="relative z-10 bg-white w-full max-w-md rounded-3xl shadow-2xl border border-slate-100 overflow-hidden animate-pop flex flex-col max-h-[90dvh]">
-            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 shrink-0">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-[#FFF1F2] text-[#F43F5E] rounded-xl flex items-center justify-center border border-[#FFE4E6] shadow-sm">
-                  <AlertTriangle size={16} />
+            <div className="p-6 sm:p-7 border-b border-slate-50 flex justify-between items-start bg-white shrink-0">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-[#FFF1F2] text-[#F43F5E] rounded-2xl flex items-center justify-center border border-[#FFE4E6] shadow-[0_2px_10px_-4px_rgba(244,63,94,0.3)] shrink-0">
+                  <AlertTriangle size={20} strokeWidth={2.5} />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-[#18254D] tracking-tight">Confirm Deletion</h3>
-                  <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider mt-0.5">This action cannot be undone</p>
+                  <h3 className="text-lg font-bold text-[#18254D] tracking-tight">Confirm Deletion</h3>
+                  <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider mt-1">This action cannot be undone</p>
                 </div>
               </div>
-              <button onClick={() => { setShowDeleteModal(false); setLeadToDelete(null); }} className="p-1.5 hover:bg-slate-200 rounded-xl text-slate-400 transition-all">
-                <X size={18} />
+              <button onClick={() => { setShowDeleteModal(false); setLeadToDelete(null); }} className="p-2 hover:bg-slate-100 rounded-xl text-slate-400 transition-all mt-0.5">
+                <X size={18} strokeWidth={2.5} />
               </button>
             </div>
-            <div className="p-6 space-y-6">
-              <p className="text-slate-600 text-sm font-semibold leading-relaxed">
-                Are you sure you want to <span className="text-[#F43F5E] font-bold underline underline-offset-4">permanently delete</span> the lead <span className="text-[#18254D] font-bold">"{leadToDelete.name}"</span>? All associated data will be removed.
+            <div className="p-6 sm:p-7 pt-5 space-y-7">
+              <p className="text-slate-600 text-[15px] font-medium leading-relaxed">
+                Are you sure you want to <span className="text-[#F43F5E] font-bold underline underline-offset-4 decoration-2 decoration-rose-200">permanently delete</span> the lead <span className="text-[#18254D] font-bold">"{leadToDelete.name}"</span>? All associated data will be removed.
               </p>
-              <div className="flex flex-col sm:flex-row gap-3">
-                <button type="button" onClick={() => { setShowDeleteModal(false); setLeadToDelete(null); }} className="flex-1 h-12 bg-slate-100 text-slate-600 rounded-xl text-xs font-bold tracking-wider hover:bg-slate-200 transition-all active:scale-[0.98] btn-animated">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                <button type="button" onClick={() => { setShowDeleteModal(false); setLeadToDelete(null); }} className="flex-1 h-12 bg-slate-50 text-slate-600 rounded-[14px] text-[13px] font-bold tracking-wide hover:bg-slate-100 transition-all active:scale-[0.98] btn-animated">
                   Cancel
                 </button>
-                <button type="button" onClick={() => { if (onDeleteLead && leadToDelete) onDeleteLead(leadToDelete.lead_id); setShowDeleteModal(false); setLeadToDelete(null); }} className="flex-1 h-12 bg-[#F43F5E] text-white rounded-xl text-xs font-bold tracking-wider shadow-md hover:bg-[#E11D48] transition-all active:scale-[0.98] flex items-center justify-center gap-2 btn-animated">
-                  <Trash2 size={14} /> Delete Lead
+                <button type="button" onClick={() => { if (onDeleteLead && leadToDelete) onDeleteLead(leadToDelete.lead_id); setShowDeleteModal(false); setLeadToDelete(null); }} className="flex-1 h-12 bg-[#F43F5E] text-white rounded-[14px] text-[13px] font-bold tracking-wide shadow-[0_4px_14px_0_rgba(244,63,94,0.39)] hover:bg-[#E11D48] hover:shadow-[0_6px_20px_rgba(244,63,94,0.23)] hover:-translate-y-0.5 transition-all active:scale-[0.98] flex items-center justify-center gap-2 btn-animated">
+                  <Trash2 size={16} strokeWidth={2.5} /> Delete Lead
                 </button>
               </div>
             </div>

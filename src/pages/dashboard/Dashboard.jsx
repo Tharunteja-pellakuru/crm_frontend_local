@@ -613,7 +613,8 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
             {/* Icons Group */}
             <div className="flex items-center gap-4 order-2 lg:order-1">
               {/* App Switcher */}
-              <div className="relative shrink-0 group">
+              {currentUser?.role === 'Administrator' && (
+                <div className="relative shrink-0 group">
                 <button
                   onClick={() => setShowAppSwitcher(!showAppSwitcher)}
                   className={`w-[42px] h-[42px] rounded-full border border-slate-200 bg-white flex items-center justify-center transition-all ${showAppSwitcher
@@ -684,6 +685,7 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
                 document.body
               )}
             </div>
+          )}
 
             {/* Notifications */}
             <div
