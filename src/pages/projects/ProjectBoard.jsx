@@ -1225,7 +1225,7 @@ const ProjectBoard = ({
                           setIsClientDropdownOpen(false);
                         }}
                       />
-                      <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-bottom max-h-[200px] overflow-y-auto custom-scrollbar">
+                      <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-pop origin-top max-h-[200px] overflow-y-auto custom-scrollbar">
                         <div className="bg-[#18254D] px-4 py-2.5 border-b border-white/10 sticky top-0">
                           <p className="text-[10px] font-bold text-white/50 tracking-wider uppercase">
                             Select Client
@@ -1434,7 +1434,7 @@ const ProjectBoard = ({
                             setIsCategoryDropdownOpen(false);
                           }}
                         />
-                        <div className="absolute bottom-full left-0 right-0 max-h-[260px] overflow-y-auto mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-bottom">
+                        <div className="absolute top-full left-0 right-0 max-h-[260px] overflow-y-auto mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-pop origin-top">
                           <div className="bg-[#18254D] px-4 py-2.5 border-b border-white/10">
                             <p className="text-[10px] font-bold text-white/50 tracking-wider uppercase">
                               Select Category
@@ -1496,7 +1496,7 @@ const ProjectBoard = ({
                             setIsStatusDropdownOpen(false);
                           }}
                         />
-                        <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-bottom">
+                        <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-pop origin-top">
                           <div className="bg-[#18254D] px-4 py-2.5 border-b border-white/10">
                             <p className="text-[10px] font-bold text-white/50 tracking-wider uppercase">
                               Select Status
@@ -1559,7 +1559,7 @@ const ProjectBoard = ({
                             setIsPriorityDropdownOpen(false);
                           }}
                         />
-                        <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-bottom">
+                        <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-pop origin-top">
                           <div className="bg-[#18254D] px-4 py-2.5 border-b border-white/10">
                             <p className="text-[10px] font-bold text-white/50 tracking-wider uppercase">
                               Select Priority

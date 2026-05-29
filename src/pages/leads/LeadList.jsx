@@ -39,6 +39,12 @@ import {
   XCircle,
   CheckCircle2,
   Send,
+  Share2,
+  Facebook,
+  Instagram,
+  Twitter,
+  Linkedin,
+  MessageCircle,
 } from "lucide-react";
 import DatePicker from "../../components/ui/DatePicker";
 import { countries } from "../../utils/countries";
@@ -56,6 +62,20 @@ import {
   REVERSE_CATEGORY_MAP,
 } from "../../constants/categoryConstants";
 import { extractCountryAndPhone, sanitizeDialCode } from "../../utils/leadUtils";
+import ParivartanLeaf from "../../assets/Parivartan-Leaf.png";
+
+const getSourceIcon = (source) => {
+  if (!source) return <Share2 size={10} />;
+  const s = source.toLowerCase();
+  if (s.includes("facebook") || s.includes("fb") || s.includes("meta")) return <Facebook size={10} />;
+  if (s.includes("instagram") || s.includes("ig")) return <Instagram size={10} />;
+  if (s.includes("twitter") || s.includes("x")) return <Twitter size={10} />;
+  if (s.includes("linkedin")) return <Linkedin size={10} />;
+  if (s.includes("whatsapp") || s.includes("sms") || s.includes("message")) return <MessageCircle size={10} />;
+  if (s.includes("web") || s.includes("site") || s.includes("online") || s.includes("selyst")) return <Globe size={10} />;
+  if (s.includes("eparivartan")) return <img src={ParivartanLeaf} alt="eParivartan" className="w-2.5 h-2.5 object-contain" />;
+  return <Share2 size={10} />;
+};
 
 const LeadList = ({
   leads,
@@ -157,6 +177,7 @@ const LeadList = ({
 
   const [isTierDropdownOpen, setIsTierDropdownOpen] = useState(false);
   const [isAddStatusDropdownOpen, setIsAddStatusDropdownOpen] = useState(false);
+  const [isAddSourceDropdownOpen, setIsAddSourceDropdownOpen] = useState(false);
   const [isEditCategoryDropdownOpen, setIsEditCategoryDropdownOpen] = useState(false);
   const [isEditStatusDropdownOpen, setIsEditStatusDropdownOpen] = useState(false);
   const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
@@ -254,6 +275,7 @@ const LeadList = ({
     website: "",
   });
   const [isEditLeadStatusDropdownOpen, setIsEditLeadStatusDropdownOpen] = useState(false);
+  const [isEditSourceDropdownOpen, setIsEditSourceDropdownOpen] = useState(false);
 
   const [editConvertedData, setEditConvertedData] = useState({
     name: "",
@@ -414,6 +436,7 @@ const LeadList = ({
     projectDescription: "",
     country: "India",
     countryCode: "+91",
+    source: "",
   });
 
   const buildEditLeadFormData = (lead) => {
@@ -432,6 +455,7 @@ const LeadList = ({
       leadType: lead.leadType || "Hot",
       notes: lead.notes || "",
       website: lead.website || "",
+      source: lead.source || "",
     };
   };
 
@@ -700,7 +724,7 @@ const LeadList = ({
         const submissionData = { ...formData, company: formData.company || "", industry: formData.industry || "Unknown" };
         await onAddLead(submissionData);
         setShowAddModal(false);
-        setFormData({ name: "", company: "", email: "", phone: "", status: "Lead", leadType: "Hot", industry: "", notes: "", projectName: "", projectStatus: "In Progress", projectCategory: 1, projectPriority: "High", projectDescription: "", country: "India", countryCode: "+91" });
+        setFormData({ name: "", company: "", email: "", phone: "", status: "Lead", leadType: "Hot", industry: "", notes: "", projectName: "", projectStatus: "In Progress", projectCategory: 1, projectPriority: "High", projectDescription: "", country: "India", countryCode: "+91", source: "" });
         toast.success("Lead added successfully!");
       }
     } catch (error) {
@@ -911,6 +935,7 @@ const LeadList = ({
                   <th className="px-6 py-5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">Lead Name</th>
                   <th className="px-6 py-5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">Contact Details</th>
                   <th className="px-6 py-5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">Lead Status</th>
+                  <th className="px-6 py-5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">Source</th>
                   <th className="px-6 py-5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">Created By</th>
                   <th className="px-6 py-5 text-right text-[11px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">Actions</th>
                 </tr>
@@ -937,12 +962,19 @@ const LeadList = ({
                         </span>
                       </td>
                       <td className="px-6 py-5">
+                        {lead.source ? (
+                          <span className="text-[10px] font-bold text-[#18254D] bg-slate-100 px-2 py-1 rounded-md uppercase flex items-center gap-1 w-fit border border-slate-200 shadow-sm">{getSourceIcon(lead.source)} {lead.source}</span>
+                        ) : (
+                          <span className="text-[12px] font-semibold text-slate-400">-</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-5">
                         <div className="text-[12px] font-semibold text-slate-600">{lead.createdByName || "System"}</div>
                       </td>
                       <td className="px-6 py-5 text-right">
                         {/* FIX: added aria-label on every icon button for touch/screen-reader accessibility */}
                         <div className="flex justify-end gap-3" onClick={(e) => e.stopPropagation()}>
-                          {lead.status !== "Dismissed" && (
+                          {lead.status !== "Dismissed" && lead.status !== "Converted" && (
                             <button aria-label="Add Follow Up" onClick={(e) => { e.stopPropagation(); handleOpenFollowUpModal(lead); }} className="w-[34px] h-[34px] flex items-center justify-center bg-indigo-50/50 border border-indigo-100 rounded-[10px] text-indigo-500 hover:bg-indigo-100 transition-all active:scale-90 shadow-sm relative group/btn">
                               <BellRing size={16} />
                               <div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity bg-[#18254D] text-white text-[10px] font-bold px-2.5 py-1 rounded-[6px] whitespace-nowrap pointer-events-none z-[100] shadow-md">Add Follow Up</div>
@@ -1059,8 +1091,18 @@ const LeadList = ({
                     {status.icon}{status.label}
                   </span>
                 </div>
-                <div className="mb-4 rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-[12px] font-medium text-slate-500">
-                  Created By: <span className="font-semibold text-slate-700">{lead.createdByName || "System"}</span>
+                <div className="mb-4 rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-[12px] font-medium text-slate-500 flex flex-col gap-1.5">
+                  <div>Created By: <span className="font-semibold text-slate-700">{lead.createdByName || "System"}</span></div>
+                  <div className="flex items-center gap-1.5">
+                    <span>Source:</span>
+                    {lead.source ? (
+                      <span className="text-[10px] font-bold text-[#18254D] bg-white px-2 py-0.5 rounded-md uppercase flex items-center gap-1 w-fit border border-slate-200 shadow-sm">
+                        {getSourceIcon(lead.source)} {lead.source}
+                      </span>
+                    ) : (
+                      <span className="font-semibold text-slate-700">-</span>
+                    )}
+                  </div>
                 </div>
                 <div className="space-y-3 mb-4">
                   {lead.status === "Lead" ? (
@@ -1080,7 +1122,7 @@ const LeadList = ({
                     <span className="truncate">View Details</span> <ChevronRight size={14} className="shrink-0" />
                   </button>
                   <div className="flex items-center gap-2 shrink-0 ml-2" onClick={(e) => e.stopPropagation()}>
-                    {lead.status !== "Dismissed" && (
+                    {lead.status !== "Dismissed" && lead.status !== "Converted" && (
                       <button aria-label="Add Follow Up" onClick={(e) => { e.stopPropagation(); handleOpenFollowUpModal(lead); }} className="p-2 bg-indigo-50 text-indigo-600 border border-indigo-100 rounded-lg hover:bg-indigo-100 transition-all active:scale-90"><BellRing size={16} /></button>
                     )}
                     {leadView === "Converted" ? (
@@ -1254,6 +1296,105 @@ const LeadList = ({
                     value={formData.website || ""}
                     onChange={(e) => setFormData({ ...formData, website: e.target.value })}
                   />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
+                    Source (Optional)
+                  </label>
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setIsAddSourceDropdownOpen(!isAddSourceDropdownOpen)}
+                      className="w-full h-10 flex items-center justify-between px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold shadow-sm hover:border-[#18254D]/30 transition-all text-[#18254D]"
+                    >
+                      <span className={formData.source ? "text-[#18254D]" : "text-slate-400 font-medium"}>
+                        {formData.source || "Select a source..."}
+                      </span>
+                      <ChevronDown
+                        size={16}
+                        className={`text-slate-400 transition-transform duration-200 ${isAddSourceDropdownOpen ? "rotate-180" : ""}`}
+                      />
+                    </button>
+
+                    {isAddSourceDropdownOpen && (
+                      <>
+                        <div
+                          className="fixed inset-0 z-[80]"
+                          onClick={() => setIsAddSourceDropdownOpen(false)}
+                        />
+                        <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-pop origin-bottom">
+                          <div className="bg-[#18254D] px-4 py-2.5 border-b border-white/10">
+                            <p className="text-[10px] font-bold text-white/50 tracking-wider uppercase">
+                              Select Source
+                            </p>
+                          </div>
+                          {/* Meta Ad */}
+                          <button
+                            type="button"
+                            onClick={() => { setFormData({ ...formData, source: "Meta Ad (Insta/FB)" }); setIsAddSourceDropdownOpen(false); }}
+                            className={`w-full text-left px-4 py-2.5 text-xs font-semibold tracking-wider transition-colors ${ formData.source === "Meta Ad (Insta/FB)" ? "bg-slate-100 text-[#18254D]" : "text-[#18254D] hover:bg-slate-50" }`}
+                          >
+                            <div className="flex items-center gap-2.5">
+                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" fill="#E1306C"/>
+                              </svg>
+                              <span>Meta Ad (Insta/FB)</span>
+                            </div>
+                          </button>
+
+                          {/* LinkedIn */}
+                          <button
+                            type="button"
+                            onClick={() => { setFormData({ ...formData, source: "LinkedIn" }); setIsAddSourceDropdownOpen(false); }}
+                            className={`w-full text-left px-4 py-2.5 text-xs font-semibold tracking-wider transition-colors ${ formData.source === "LinkedIn" ? "bg-slate-100 text-[#18254D]" : "text-[#18254D] hover:bg-slate-50" }`}
+                          >
+                            <div className="flex items-center gap-2.5">
+                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" fill="#0077B5"/>
+                              </svg>
+                              <span>LinkedIn</span>
+                            </div>
+                          </button>
+
+                          {/* Referral */}
+                          <button
+                            type="button"
+                            onClick={() => { setFormData({ ...formData, source: "Referral" }); setIsAddSourceDropdownOpen(false); }}
+                            className={`w-full text-left px-4 py-2.5 text-xs font-semibold tracking-wider transition-colors ${ formData.source === "Referral" ? "bg-slate-100 text-[#18254D]" : "text-[#18254D] hover:bg-slate-50" }`}
+                          >
+                            <div className="flex items-center gap-2.5">
+                              <UserPlus size={13} className="text-[#8B5CF6]" />
+                              <span>Referral</span>
+                            </div>
+                          </button>
+
+                          {/* Selyst */}
+                          <button
+                            type="button"
+                            onClick={() => { setFormData({ ...formData, source: "Selyst" }); setIsAddSourceDropdownOpen(false); }}
+                            className={`w-full text-left px-4 py-2.5 text-xs font-semibold tracking-wider transition-colors ${ formData.source === "Selyst" ? "bg-slate-100 text-[#18254D]" : "text-[#18254D] hover:bg-slate-50" }`}
+                          >
+                            <div className="flex items-center gap-2.5">
+                              <Globe size={13} className="text-[#F97316]" />
+                              <span>Selyst</span>
+                            </div>
+                          </button>
+
+                          {/* eParivartan */}
+                          <button
+                            type="button"
+                            onClick={() => { setFormData({ ...formData, source: "eParivartan" }); setIsAddSourceDropdownOpen(false); }}
+                            className={`w-full text-left px-4 py-2.5 text-xs font-semibold tracking-wider transition-colors ${ formData.source === "eParivartan" ? "bg-slate-100 text-[#18254D]" : "text-[#18254D] hover:bg-slate-50" }`}
+                          >
+                            <div className="flex items-center gap-2.5">
+                              <img src={ParivartanLeaf} alt="eParivartan" className="w-3.5 h-3.5 object-contain rounded-sm" />
+                              <span>eParivartan</span>
+                            </div>
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">Lead Status <span className="text-rose-500">*</span></label>
@@ -1608,7 +1749,7 @@ const LeadList = ({
                 if (!isValid) return;
                 if (onEditLead && editingLead) {
                   try {
-                    await onEditLead(editingLead.lead_id, { name: editFormData.name, email: editFormData.email, phone: editFormData.phone, countryCode: editFormData.countryCode, country: editFormData.country, leadType: editFormData.leadType, notes: editFormData.notes, website: editFormData.website });
+                    await onEditLead(editingLead.lead_id, { name: editFormData.name, email: editFormData.email, phone: editFormData.phone, countryCode: editFormData.countryCode, country: editFormData.country, leadType: editFormData.leadType, notes: editFormData.notes, website: editFormData.website, source: editFormData.source });
                     setShowEditModal(false);
                     setEditingLead(null);
                   } catch (error) {
@@ -1653,6 +1794,105 @@ const LeadList = ({
                 <div className="space-y-1.5">
                   <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">Website URL (Optional)</label>
                   <input type="text" placeholder="e.g. www.company.com" className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all duration-200" value={editFormData.website} onChange={(e) => setEditFormData({ ...editFormData, website: e.target.value })} />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">
+                    Source (Optional)
+                  </label>
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setIsEditSourceDropdownOpen(!isEditSourceDropdownOpen)}
+                      className="w-full h-10 flex items-center justify-between px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold shadow-sm hover:border-[#18254D]/30 transition-all text-[#18254D]"
+                    >
+                      <span className={editFormData.source ? "text-[#18254D]" : "text-slate-400 font-medium"}>
+                        {editFormData.source || "Select a source..."}
+                      </span>
+                      <ChevronDown
+                        size={16}
+                        className={`text-slate-400 transition-transform duration-200 ${isEditSourceDropdownOpen ? "rotate-180" : ""}`}
+                      />
+                    </button>
+
+                    {isEditSourceDropdownOpen && (
+                      <>
+                        <div
+                          className="fixed inset-0 z-[80]"
+                          onClick={() => setIsEditSourceDropdownOpen(false)}
+                        />
+                        <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-pop origin-bottom">
+                          <div className="bg-[#18254D] px-4 py-2.5 border-b border-white/10">
+                            <p className="text-[10px] font-bold text-white/50 tracking-wider uppercase">
+                              Select Source
+                            </p>
+                          </div>
+                          {/* Meta Ad */}
+                          <button
+                            type="button"
+                            onClick={() => { setEditFormData({ ...editFormData, source: "Meta Ad (Insta/FB)" }); setIsEditSourceDropdownOpen(false); }}
+                            className={`w-full text-left px-4 py-2.5 text-xs font-semibold tracking-wider transition-colors ${ editFormData.source === "Meta Ad (Insta/FB)" ? "bg-slate-100 text-[#18254D]" : "text-[#18254D] hover:bg-slate-50" }`}
+                          >
+                            <div className="flex items-center gap-2.5">
+                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" fill="#E1306C"/>
+                              </svg>
+                              <span>Meta Ad (Insta/FB)</span>
+                            </div>
+                          </button>
+
+                          {/* LinkedIn */}
+                          <button
+                            type="button"
+                            onClick={() => { setEditFormData({ ...editFormData, source: "LinkedIn" }); setIsEditSourceDropdownOpen(false); }}
+                            className={`w-full text-left px-4 py-2.5 text-xs font-semibold tracking-wider transition-colors ${ editFormData.source === "LinkedIn" ? "bg-slate-100 text-[#18254D]" : "text-[#18254D] hover:bg-slate-50" }`}
+                          >
+                            <div className="flex items-center gap-2.5">
+                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" fill="#0077B5"/>
+                              </svg>
+                              <span>LinkedIn</span>
+                            </div>
+                          </button>
+
+                          {/* Referral */}
+                          <button
+                            type="button"
+                            onClick={() => { setEditFormData({ ...editFormData, source: "Referral" }); setIsEditSourceDropdownOpen(false); }}
+                            className={`w-full text-left px-4 py-2.5 text-xs font-semibold tracking-wider transition-colors ${ editFormData.source === "Referral" ? "bg-slate-100 text-[#18254D]" : "text-[#18254D] hover:bg-slate-50" }`}
+                          >
+                            <div className="flex items-center gap-2.5">
+                              <UserPlus size={13} className="text-[#8B5CF6]" />
+                              <span>Referral</span>
+                            </div>
+                          </button>
+
+                          {/* Selyst */}
+                          <button
+                            type="button"
+                            onClick={() => { setEditFormData({ ...editFormData, source: "Selyst" }); setIsEditSourceDropdownOpen(false); }}
+                            className={`w-full text-left px-4 py-2.5 text-xs font-semibold tracking-wider transition-colors ${ editFormData.source === "Selyst" ? "bg-slate-100 text-[#18254D]" : "text-[#18254D] hover:bg-slate-50" }`}
+                          >
+                            <div className="flex items-center gap-2.5">
+                              <Globe size={13} className="text-[#F97316]" />
+                              <span>Selyst</span>
+                            </div>
+                          </button>
+
+                          {/* eParivartan */}
+                          <button
+                            type="button"
+                            onClick={() => { setEditFormData({ ...editFormData, source: "eParivartan" }); setIsEditSourceDropdownOpen(false); }}
+                            className={`w-full text-left px-4 py-2.5 text-xs font-semibold tracking-wider transition-colors ${ editFormData.source === "eParivartan" ? "bg-slate-100 text-[#18254D]" : "text-[#18254D] hover:bg-slate-50" }`}
+                          >
+                            <div className="flex items-center gap-2.5">
+                              <img src={ParivartanLeaf} alt="eParivartan" className="w-3.5 h-3.5 object-contain rounded-sm" />
+                              <span>eParivartan</span>
+                            </div>
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase ml-1">Lead Status</label>

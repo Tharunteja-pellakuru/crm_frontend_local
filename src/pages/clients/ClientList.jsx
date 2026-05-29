@@ -256,6 +256,23 @@ const ClientList = ({
 
   const handleEditSubmit = async (e) => {
     e.preventDefault();
+
+    if (
+      !validateForm(editFormData, {
+        name: { required: true, minLength: 2, label: "Full Name" },
+        email: { required: true, pattern: /^\S+@\S+\.\S+$/, label: "Email" },
+        phone: { required: true, minLength: 10, label: "Phone Number" },
+        organisationName: { required: true, label: "Organization Name" },
+      })
+    ) {
+      return;
+    }
+
+    if (countryToStates[editFormData.country] && !editFormData.state) {
+      toast.error("Client State is required.");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       await onUpdateClient(editingClient.id, editFormData);
@@ -285,6 +302,11 @@ const ClientList = ({
       })
     )
       return;
+
+    if (countryToStates[onboardingData.country] && !onboardingData.state) {
+      toast.error("Client State is required.");
+      return;
+    }
 
     setIsSubmitting(true);
     try {
@@ -471,6 +493,12 @@ const ClientList = ({
       })
     )
       return;
+
+    if (countryToStates[formData.country] && !formData.state) {
+      toast.error("Client State is required.");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       await onAddClient(formData);
@@ -860,7 +888,10 @@ const ClientList = ({
                     Contact Details
                   </th>
                   <th className="px-6 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">
-                    Client Category
+                    Client Status
+                  </th>
+                  <th className="px-6 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">
+                    Country
                   </th>
                   <th className="px-6 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">
                     Created By
@@ -904,30 +935,14 @@ const ClientList = ({
                       </td>
 
                       <td className="px-6 py-4 border-y border-slate-100">
-                        <div className="flex items-center gap-2">
-                          <div
-                            className={`w-2 h-2 rounded-full ${client.projectCategory === 1 ? "bg-secondary" : client.projectCategory === 2 ? "bg-blue-400" : client.projectCategory === 3 ? "bg-purple-400" : "bg-slate-300"}`}
-                          />
-                          <span className="text-[12px] font-bold text-slate-600">
-                            {(() => {
-                              const catName =
-                                CATEGORY_MAP[client.projectCategory] ||
-                                client.industry ||
-                                "Other";
-                              if (catName === "Other" || catName === "others") {
-                                console.log(
-                                  "Category mismatch for client:",
-                                  client.name,
-                                  {
-                                    projectCategory: client.projectCategory,
-                                    industry: client.industry,
-                                    catName,
-                                  },
-                                );
-                              }
-                              return catName;
-                            })()}
-                          </span>
+                        <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold border flex items-center gap-1.5 shadow-sm transition-all w-fit ${status.className}`}>
+                          {status.icon}{status.label}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 border-y border-slate-100">
+                        <div className="flex items-center gap-1.5 text-[12px] font-bold text-slate-600 bg-slate-50 px-2 py-1 rounded-lg border border-slate-100 w-fit">
+                          <Globe size={12} className="text-slate-400" />
+                          <span className="truncate max-w-[120px]">{client.country || client.client_country || "-"}</span>
                         </div>
                       </td>
                       <td className="px-6 py-4 border-y border-slate-100">
@@ -1114,20 +1129,16 @@ const ClientList = ({
                     <div className="w-10 h-10 shrink-0 rounded-xl bg-[#EFF6FF] text-[#3B82F6] border-[#DBEAFE] flex items-center justify-center font-bold text-lg border shadow-md">
                       {client.name.charAt(0).toUpperCase()}
                     </div>
-                    <div className="min-w-0">
-                      <div className="font-bold text-sm text-[#18254D] truncate">
+                    <div className="min-w-0 flex flex-col items-start gap-1">
+                      <div className="font-bold text-sm text-[#18254D] truncate w-full">
                         {client.name}
                       </div>
-                      <div className="flex items-center gap-1.5 mt-0.5">
-                        <div
-                          className={`w-1.5 h-1.5 rounded-full ${client.projectCategory === 1 ? "bg-secondary" : client.projectCategory === 2 ? "bg-blue-400" : client.projectCategory === 3 ? "bg-purple-400" : "bg-slate-300"}`}
-                        />
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                          {CATEGORY_MAP[client.projectCategory] ||
-                            client.industry ||
-                            "Other"}
-                        </span>
-                      </div>
+                      {(client.country || client.client_country) && (
+                        <div className="flex items-center gap-1 text-[10px] font-bold text-slate-500 bg-slate-50 px-1.5 py-0.5 rounded-md border border-slate-100 w-fit">
+                          <Globe size={10} className="text-slate-400" />
+                          <span className="truncate max-w-[100px]">{client.country || client.client_country}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                   <span

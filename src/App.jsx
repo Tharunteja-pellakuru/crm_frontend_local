@@ -230,6 +230,7 @@ function AppRoutes() {
           country: lead.client_country || lead.country || autoName || "",
           state: lead.client_state || lead.state || "",
           notes: lead.message || "",
+          source: lead.source || "",
           joinedDate: lead.created_at ? lead.created_at.split("T")[0] : new Date().toISOString().split("T")[0],
           lastContact: lead.updated_at ? lead.updated_at.split("T")[0] : new Date().toISOString().split("T")[0],
           avatar: `https://picsum.photos/100/100?random=${lead.lead_id || Math.floor(Math.random() * 100)}`,
@@ -401,6 +402,7 @@ function AppRoutes() {
             country: lead.client_country || lead.country || autoName || "",
             state: lead.client_state || lead.state || "",
             notes: lead.message || "",
+            source: lead.source || "",
             joinedDate: lead.created_at
               ? lead.created_at.split("T")[0]
               : new Date().toISOString().split("T")[0],
