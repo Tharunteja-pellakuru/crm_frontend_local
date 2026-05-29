@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useScrollLock } from "../../hooks/useScrollLock";
 import { Area, Line, ComposedChart, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart } from "recharts";
-import { Users, UserPlus, Clock, CheckCircle2, ChevronRight, ChevronDown, Filter, Calendar, TrendingUp, X, Bell, Info, Inbox, Activity, Mail, ArrowUpRight, ArrowRight, Lightbulb, BarChart2, LayoutGrid, FileText, BarChart3, Grip, Globe } from "lucide-react";
+import { Users, UserPlus, Clock, CheckCircle2, ChevronRight, ChevronDown, AlertCircle, Filter, Calendar, TrendingUp, X, Bell, Info, Inbox, Activity, Mail, ArrowUpRight, ArrowRight, Lightbulb, BarChart2, LayoutGrid, FileText, BarChart3, Grip, Globe } from "lucide-react";
 import { BASE_URL } from "../../constants/config";
 import { addToGoogleCalendar } from "../../utils/calendar";
 import { toast } from "react-hot-toast";
@@ -874,43 +874,46 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
           />
         </div>
 
+
         <div className="flex flex-col lg:flex-row gap-4 md:gap-5 animate-fade-in-up lg:flex-1 lg:min-h-0" style={{ animationDelay: '350ms' }}>
-          <div className="w-full lg:w-[35%] xl:w-[30%] bg-white rounded-[24px] shadow-sm border border-slate-200 flex flex-col min-h-[420px] lg:min-h-0 lg:h-full overflow-hidden">
+          <div className="w-full lg:w-[35%] xl:w-[30%] bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col min-h-[420px] lg:min-h-0 lg:h-full overflow-hidden">
             {/* Header */}
-            <div className="bg-gradient-to-r from-[#0A578E] to-[#15B49F] p-5">
-              <div className="flex flex-row justify-between items-start">
+            <div className="bg-gradient-to-r from-[#0A578E] to-[#15B49F] px-5 py-3.5">
+              <div className="flex flex-row justify-between items-center">
                 <div className="flex gap-3 items-center">
                   <div className="text-white">
                     <CheckCircle2 size={24} strokeWidth={2.5} />
                   </div>
                   <div>
-                    <h3 className="text-[18px] font-extrabold text-white tracking-wide">Tasks</h3>
-                    <p className="text-[13px] text-white/90 font-medium">{displayTasks.length} {activeTaskTab.toLowerCase()}</p>
+                    <h3 className="text-base font-bold text-white tracking-tight">Tasks</h3>
+                    <p className="text-[12px] text-white/90 font-medium">{displayTasks.length} {activeTaskTab.toLowerCase()}</p>
                   </div>
                 </div>
                 <button
                   onClick={() => {
                     onNavigate("followups");
                   }}
-                  className="text-[14px] font-bold text-white hover:text-white/80 flex items-center gap-1 transition-colors"
+                  className="text-[12px] font-bold text-white hover:text-white/80 flex items-center gap-1 transition-colors"
                 >
-                  View all <ChevronRight size={16} strokeWidth={3} />
+                  View all <ChevronRight size={14} strokeWidth={3} />
                 </button>
               </div>
             </div>
 
             {/* Tabs */}
-            <div className="flex items-center gap-3 px-5 py-4 border-b border-slate-100 bg-white">
+            <div className="flex items-center gap-3 px-5 py-3 border-b border-slate-100 bg-white">
               <button
                 onClick={() => setActiveTaskTab("Pending")}
-                className={`px-5 py-2 rounded-xl text-[13px] font-bold transition-all ${activeTaskTab === "Pending" ? "text-white bg-[#15B49F] shadow-sm" : "text-slate-500 bg-slate-50 border border-slate-200 hover:bg-slate-100"}`}
+                className={`px-4 py-1.5 rounded-full text-[11px] font-bold transition-all flex items-center gap-1.5 border ${activeTaskTab === "Pending" ? "bg-[#FFF9ED] text-[#B45309] border-[#FDE68A] shadow-sm" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700"}`}
               >
+                <Clock size={12} />
                 Pending
               </button>
               <button
                 onClick={() => setActiveTaskTab("Overdue")}
-                className={`px-5 py-2 rounded-xl text-[13px] font-bold transition-all ${activeTaskTab === "Overdue" ? "text-white bg-red-500 shadow-sm" : "text-slate-500 bg-slate-50 border border-slate-200 hover:bg-slate-100"}`}
+                className={`px-4 py-1.5 rounded-full text-[11px] font-bold transition-all flex items-center gap-1.5 border ${activeTaskTab === "Overdue" ? "bg-red-50 text-red-600 border-red-200 shadow-sm" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700"}`}
               >
+                <AlertCircle size={12} />
                 Overdue
               </button>
             </div>
@@ -919,7 +922,7 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
               {displayTasks.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-center p-6">
                   <CheckCircle2 size={32} className="text-slate-200 mb-3" />
-                  <p className="text-[14px] font-bold text-slate-400 tracking-wider">
+                  <p className="text-[12px] font-bold text-slate-400 tracking-widest uppercase">
                     No Tasks Here
                   </p>
                 </div>
@@ -948,7 +951,7 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
                         
                         <div className="flex flex-col min-w-0 pr-2">
                           <div className="flex items-center gap-2 mb-1">
-                            <h4 className="text-[15px] font-bold text-[#18254D] truncate group-hover:text-primary transition-colors">
+                            <h4 className="text-[13px] font-bold text-[#18254D] truncate group-hover:text-primary transition-colors">
                               {f.title}
                             </h4>
                             {isOverdue ? (
@@ -958,7 +961,7 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
                             )}
                           </div>
                           
-                          <div className="flex items-center gap-1.5 text-[13px] font-bold">
+                          <div className="flex items-center gap-1.5 text-[11px] font-bold">
                             {client && (
                               <span className="text-slate-500 truncate max-w-[120px]">
                                 {client.name}
