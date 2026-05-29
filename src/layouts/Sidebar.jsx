@@ -259,7 +259,7 @@ function Sidebar({
           <LogOut size={20} strokeWidth={1.8} className="transition-colors" />
           {!isCollapsed && (
             <span className="text-[13.5px] font-medium tracking-wide">
-              Log Out
+              Log Outs
             </span>
           )}
         </button>
