@@ -321,7 +321,7 @@ const ProjectOverview = ({
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 bg-[#18254D] rounded-xl flex items-center justify-center shrink-0 shadow-sm text-white">
+          <div className="w-12 h-12 bg-[#18254D] rounded-full flex items-center justify-center shrink-0 shadow-sm text-white">
              <Briefcase size={20} />
           </div>
           <div>

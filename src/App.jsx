@@ -25,7 +25,6 @@ import EnquiryList from "./pages/enquiries/EnquiryList";
 import FollowUpList from "./pages/followups/FollowUpList";
 import Settings from "./pages/settings/Settings";
 import LoginPage from "./pages/auth/LoginPage";
-import SSODashboard from "./pages/dashboard/SSODashboard";
 import {
   MOCK_CLIENTS,
   MOCK_ENQUIRIES,
@@ -2198,23 +2197,14 @@ function AppRoutes() {
         path="/login"
         element={
           isLoggedIn ? (
-            <Navigate to="/sso-dashboard" replace />
+            <Navigate to="/dashboard" replace />
           ) : (
             <LoginPage onLogin={handleLogin} />
           )
         }
       />
 
-      <Route
-        path="/sso-dashboard"
-        element={
-          isLoggedIn ? (
-            <SSODashboard onLogout={handleLogout} />
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        }
-      />
+
 
       <Route
         element={

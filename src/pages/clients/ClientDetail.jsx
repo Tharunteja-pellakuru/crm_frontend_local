@@ -823,7 +823,7 @@ const handleEditFollowUpSubmit = async (e) => {
       {/* Header */}
       <div className="flex items-center justify-between gap-4 mb-8">
         <div className="flex items-center gap-4 min-w-0">
-          <div className="w-12 h-12 bg-[#18254D] rounded-xl flex items-center justify-center shrink-0 shadow-sm text-white text-xl font-bold">
+          <div className="w-12 h-12 bg-[#18254D] rounded-full flex items-center justify-center shrink-0 shadow-sm text-white text-xl font-bold">
             {client.name?.charAt(0).toUpperCase() || "?"}
           </div>
           <div className="min-w-0">

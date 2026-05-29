@@ -1118,7 +1118,7 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
             </div>
             <div className="flex-1 w-full mt-2 relative" style={{ minWidth: 0 }}>
               <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
-                <ComposedChart data={chartData} margin={{ top: 10, right: 44, left: -20, bottom: 0 }}>
+                <ComposedChart data={chartData} margin={{ top: 10, right: 0, left: -10, bottom: 0 }}>
                   <CartesianGrid
                     strokeDasharray="3 3"
                     vertical={false}
@@ -1135,6 +1135,7 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
                     axisLine={false}
                     tickLine={false}
                     tick={{ fill: "#64748b", fontSize: 10, fontWeight: 600 }}
+                    width={30}
                   />
                   <YAxis
                     yAxisId="right"
@@ -1144,6 +1145,7 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
                     tick={{ fill: "#F97316", fontSize: 10, fontWeight: 600 }}
                     tickFormatter={(v) => `${v}%`}
                     domain={[0, 100]}
+                    width={35}
                   />
                   <Tooltip
                     contentStyle={{
