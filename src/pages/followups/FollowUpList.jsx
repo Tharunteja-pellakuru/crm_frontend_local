@@ -1045,16 +1045,19 @@ const FollowUpList = ({
                   <th className="px-6 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 w-[22%]">
                     Title
                   </th>
-                  <th className="px-6 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 w-[18%]">
+                  <th className="px-6 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 w-[16%]">
                     Lead Name
                   </th>
-                  <th className="px-6 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 w-[14%]">
+                  <th className="px-6 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 w-[10%]">
                     Mode
                   </th>
-                  <th className="px-6 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 w-[16%]">
-                    Due Date
+                  <th className="px-6 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 w-[10%]">
+                    Priority
                   </th>
                   <th className="px-6 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 w-[12%]">
+                    Due Date
+                  </th>
+                  <th className="px-6 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 w-[10%]">
                     Due Time
                   </th>
                   <th className="px-6 py-5 text-right text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 w-[20%]">
@@ -1065,7 +1068,7 @@ const FollowUpList = ({
               <tbody className="divide-y divide-slate-100">
                 {filteredFollowUps.length === 0 ? (
                   <tr>
-                    <td colSpan="6" className="py-16 text-center">
+                    <td colSpan="7" className="py-16 text-center">
                       <div className="flex flex-col items-center justify-center">
                         <Bell size={24} className="text-slate-200 mb-3" />
                         <p className="text-[13px] font-bold text-slate-400 tracking-wider">
@@ -1124,6 +1127,13 @@ const FollowUpList = ({
                               { size: 10, strokeWidth: 2.1 },
                             )}
                             <span className="whitespace-nowrap">{f.followup_mode || "N/A"}</span>
+                          </span>
+                        </td>
+
+                        <td className="p-4 border-y border-slate-100 align-top">
+                          <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.1em] border shadow-sm ${getPriorityBadge(f.priority)}`}>
+                            {React.createElement(getPriorityIcon(f.priority), { size: 10, strokeWidth: 2.2 })}
+                            {f.priority}
                           </span>
                         </td>
 
@@ -1847,7 +1857,7 @@ const FollowUpList = ({
                               className="fixed inset-0 z-[80] pointer-events-none"
                               onClick={() => setIsProjectDropdownOpen(false)}
                             />
-                            <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-bottom max-h-80 flex flex-col">
+                            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in origin-top max-h-80 flex flex-col">
                               <div className="p-3 border-b border-slate-100 bg-slate-50">
                                 <div className="relative">
                                   <Search
@@ -1962,7 +1972,7 @@ const FollowUpList = ({
                               className="fixed inset-0 z-[80] pointer-events-none"
                               onClick={() => setIsClientDropdownOpen(false)}
                             />
-                            <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in-up origin-bottom max-h-80 flex flex-col">
+                            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden z-[90] animate-fade-in origin-top max-h-80 flex flex-col">
                               <div className="p-3 border-b border-slate-100 bg-slate-50">
                                 <div className="relative">
                                   <Search

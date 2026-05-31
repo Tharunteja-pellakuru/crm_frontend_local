@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { toast } from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 import { useScrollLock } from "../../hooks/useScrollLock";
 import { addToGoogleCalendar } from "../../utils/calendar";
 import { validateForm } from "../../utils/validation";
@@ -392,6 +393,7 @@ const ClientDetail = ({
   clients = [],
   leads = [],
 }) => {
+  const navigate = useNavigate();
   const isLead = client?.isLead || client?.status === "Lead" || client?.status === "Dismissed";
   
   const getInitialTab = () => {
@@ -437,11 +439,15 @@ const ClientDetail = ({
     followup_status: "Pending", projectId: "",
   });
 
+  // ── Delete Follow-Up Modal State ─────────────────────────────────────────────
+  const [showDeleteFollowUpModal, setShowDeleteFollowUpModal] = useState(false);
+  const [followUpToDelete, setFollowUpToDelete] = useState(null);
+
   const [onboardingData, setOnboardingData] = useState({
     name: client.name || "",
     email: client.email || "",
     phone: client.phone || "",
-    organisationName: client.organisationName || client.organization || client.company || "",
+    organisationName: getOrganisationName(client) || (client.company && client.website && client.company === client.website.replace(/^https?:\/\//, "").split("/")[0] ? "" : (client.company || "")),
     website: client.website || "",
     clientType: "New",
     status: "Active",
@@ -508,23 +514,30 @@ const ClientDetail = ({
         if (onboardingData.clientType === "Existing") {
           dataToPass.existingClientId = selectedExistingClientId;
         }
-        await onOnboardClient(leadId, dataToPass);
-        toast.success("Lead converted successfully");
-        setShowOnboardModal(false);
-        setOnboardingData({
-          name: "", email: "", phone: "",
-          organisationName: "", website: "",
-          clientType: "New", status: "Active",
-          projectName: "", projectStatus: "In Progress",
-          projectCategory: 1, projectPriority: "High",
-          projectDescription: "", projectBudget: "",
-          country: "India", state: "", currency: "INR",
-          clientStatus: "Active",
-          onboardingDate: new Date().toISOString().split("T")[0],
-          deadline: "", scopeDocument: null,
-        });
-        setSelectedExistingClientId(null);
-        setExistingClientSearch("");
+        const result = await onOnboardClient(leadId, dataToPass);
+        
+        if (result && result.success && result.clientId) {
+          setShowOnboardModal(false);
+          // Redirect to the newly created/existing client's profile
+          setTimeout(() => navigate(`/clients/${result.clientId}`), 100);
+        } else {
+          toast.success("Lead converted successfully");
+          setShowOnboardModal(false);
+          setOnboardingData({
+            name: "", email: "", phone: "",
+            organisationName: "", website: "",
+            clientType: "New", status: "Active",
+            projectName: "", projectStatus: "In Progress",
+            projectCategory: 1, projectPriority: "High",
+            projectDescription: "", projectBudget: "",
+            country: "India", state: "", currency: "INR",
+            clientStatus: "Active",
+            onboardingDate: new Date().toISOString().split("T")[0],
+            deadline: "", scopeDocument: null,
+          });
+          setSelectedExistingClientId(null);
+          setExistingClientSearch("");
+        }
       }
     } catch (error) {
       console.error(error);
@@ -902,7 +915,23 @@ const handleEditFollowUpSubmit = async (e) => {
 
           {isLead && client.status !== "Dismissed" && (
             <button
-              onClick={() => setShowOnboardModal(true)}
+              onClick={() => {
+                const websiteDomain = client.website ? client.website.replace(/^https?:\/\//, "").split("/")[0] : null;
+                const orgNameFallback = (client.company && client.company !== websiteDomain) ? client.company : "";
+                setOnboardingData((prev) => ({
+                  ...prev,
+                  name: client.name || "",
+                  email: client.email || "",
+                  phone: client.phone || "",
+                  organisationName: getOrganisationName(client) || orgNameFallback,
+                  website: client.website || "",
+                  country: client.country || "India",
+                  state: client.state || "",
+                  currency: client.currency || "INR",
+                  projectCategory: client.projectCategory || 1,
+                }));
+                setShowOnboardModal(true);
+              }}
               className="w-[34px] h-[34px] flex items-center justify-center bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-[10px] hover:bg-emerald-100 transition-all active:scale-90 shadow-sm relative group/btn" title="Convert to Client"
             >
               <UserCheck size={16} />
@@ -927,7 +956,7 @@ const handleEditFollowUpSubmit = async (e) => {
               <h3 className="text-slate-500 text-[10px] sm:text-xs font-semibold truncate">
                 {isLead ? "Lead Status" : "Client Status"}
               </h3>
-              <p className="text-lg sm:text-2xl font-bold text-[#18254D] leading-none mt-1">
+              <p className="text-[13px] sm:text-[15px] font-bold text-[#18254D] leading-none mt-1">
                 {isLead ? (client.leadType || "Warm") : (client.clientStatus || client.status || "Active")}
               </p>
             </div>
@@ -962,7 +991,7 @@ const handleEditFollowUpSubmit = async (e) => {
               <h3 className="text-slate-500 text-[10px] sm:text-xs font-semibold truncate">
                 {!isLead ? "Billing Currency" : "Source"}
               </h3>
-              <p className="text-lg sm:text-2xl font-bold text-[#18254D] leading-none mt-1">
+              <p className="text-[13px] sm:text-[15px] font-bold text-[#18254D] leading-none mt-1">
                 {!isLead ? (client.currency || client.client_currency || "N/A") : (client.source || "N/A")}
               </p>
             </div>
@@ -979,7 +1008,7 @@ const handleEditFollowUpSubmit = async (e) => {
               <h3 className="text-slate-500 text-[10px] sm:text-xs font-semibold truncate">
                 Created By
               </h3>
-              <p className="text-lg sm:text-2xl font-bold text-[#18254D] leading-none mt-1 truncate">
+              <p className="text-[13px] sm:text-[15px] font-bold text-[#18254D] leading-none mt-1">
                 {client.created_by_name || client.createdByName || "System"}
               </p>
             </div>
@@ -996,7 +1025,7 @@ const handleEditFollowUpSubmit = async (e) => {
               <h3 className="text-slate-500 text-[10px] sm:text-xs font-semibold truncate">
                 Interactions
               </h3>
-              <p className="text-lg sm:text-2xl font-bold text-[#18254D] leading-none mt-1">
+              <p className="text-[13px] sm:text-[15px] font-bold text-[#18254D] leading-none mt-1">
                 {clientActivities.length + completedFollowUps.length}
               </p>
             </div>
@@ -1449,9 +1478,8 @@ const handleEditFollowUpSubmit = async (e) => {
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                if (window.confirm("Are you sure you want to delete this follow-up?")) {
-                                  onDeleteFollowUp && onDeleteFollowUp(fu.id);
-                                }
+                                setFollowUpToDelete(fu);
+                                setShowDeleteFollowUpModal(true);
                               }}
                               className="group relative w-8 h-8 flex items-center justify-center bg-rose-50 text-rose-500 border border-rose-100 hover:bg-rose-100 hover:text-rose-600 rounded-lg transition-colors"
                             >
@@ -2073,6 +2101,54 @@ const handleEditFollowUpSubmit = async (e) => {
               </div>
 
             </form>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* ── DELETE FOLLOW-UP MODAL ── */}
+      {showDeleteFollowUpModal && createPortal(
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[99999] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+          <div className="absolute inset-0" onClick={() => setShowDeleteFollowUpModal(false)} />
+          <div className="relative z-10 bg-white w-full max-w-md rounded-3xl shadow-2xl border border-slate-100 overflow-hidden animate-pop flex flex-col">
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-rose-50/50 shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-rose-100 text-rose-600 rounded-xl flex items-center justify-center border border-rose-200 shadow-sm">
+                  <Trash2 size={16} strokeWidth={2.5} />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-[#18254D] tracking-tight">Delete Follow-up</h3>
+                  <p className="text-rose-400 text-[10px] font-bold uppercase tracking-wider mt-0.5">Permanent Action</p>
+                </div>
+              </div>
+              <button onClick={() => setShowDeleteFollowUpModal(false)} className="p-1.5 hover:bg-slate-200 rounded-xl text-slate-400 transition-all">
+                <X size={18} />
+              </button>
+            </div>
+            <div className="p-6">
+              <p className="text-sm text-slate-600 font-medium leading-relaxed">
+                Are you sure you want to delete the follow-up <span className="font-bold text-[#18254D]">"{followUpToDelete?.title || followUpToDelete?.followup_mode || "this task"}"</span>? This action cannot be undone.
+              </p>
+            </div>
+            <div className="p-5 border-t border-slate-100 flex items-center justify-end gap-3 bg-slate-50/50">
+              <button
+                onClick={() => setShowDeleteFollowUpModal(false)}
+                className="px-5 py-2.5 text-sm font-bold text-slate-500 hover:text-slate-700 hover:bg-slate-200/50 rounded-xl transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  if (onDeleteFollowUp && followUpToDelete) {
+                    onDeleteFollowUp(followUpToDelete.id);
+                  }
+                  setShowDeleteFollowUpModal(false);
+                }}
+                className="px-6 py-2.5 text-sm font-bold text-white bg-rose-500 hover:bg-rose-600 rounded-xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all"
+              >
+                Delete
+              </button>
+            </div>
           </div>
         </div>,
         document.body

@@ -973,33 +973,33 @@ function Dashboard({ followUps, clients, leads = [], enquiries, aiModels = [], o
                       }}
                       className={`px-5 py-4 flex items-center justify-between border-b border-slate-100 last:border-0 hover:bg-white transition-colors cursor-pointer bg-slate-50/30 group`}
                     >
-                      <div className="flex items-center gap-4 min-w-0">
+                      <div className="flex items-center gap-3 min-w-0">
                         {/* Avatar */}
-                        <div className="w-[46px] h-[46px] rounded-full bg-slate-900 text-white flex items-center justify-center text-[18px] font-bold shrink-0 border-2 border-white shadow-sm">
+                        <div className="w-[36px] h-[36px] rounded-full bg-slate-900 text-white flex items-center justify-center text-[14px] font-bold shrink-0 border-2 border-white shadow-sm">
                           {client ? client.name.charAt(0).toUpperCase() : "T"}
                         </div>
                         
                         <div className="flex flex-col min-w-0 pr-2">
-                          <div className="flex items-center gap-2 mb-1">
-                            <h4 className="text-[13px] font-bold text-[#18254D] truncate group-hover:text-primary transition-colors">
+                          <div className="flex items-center gap-2 mb-0.5">
+                            <h4 className="text-[12px] font-semibold text-[#18254D] truncate group-hover:text-primary transition-colors">
                               {f.title}
                             </h4>
                             {isOverdue ? (
-                              <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-red-100 text-red-600 shrink-0 tracking-wider">OVERDUE</span>
+                              <span className="px-1.5 py-0.5 rounded text-[8px] font-bold bg-red-100 text-red-600 shrink-0 tracking-wider">OVERDUE</span>
                             ) : (
-                              <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-[#18254D] text-white shrink-0 tracking-wider">NEW</span>
+                              <span className="px-1.5 py-0.5 rounded text-[8px] font-bold bg-[#18254D] text-white shrink-0 tracking-wider">NEW</span>
                             )}
                           </div>
                           
-                          <div className="flex items-center gap-1.5 text-[11px] font-bold">
+                          <div className="flex items-center gap-1.5 text-[11px] font-medium">
                             {client && (
                               <span className="text-slate-500 truncate max-w-[120px]">
                                 {client.name}
                               </span>
                             )}
-                            {client && <span className="text-slate-300">•</span>}
-                            <span className={`flex items-center gap-1 ${isOverdue ? "text-red-500" : "text-[#15B49F]"}`}>
-                              <Calendar size={12} strokeWidth={3} />
+                            {client && <span className="text-slate-300 shrink-0">•</span>}
+                            <span className={`flex items-center gap-1 shrink-0 whitespace-nowrap ${isOverdue ? "text-red-500" : "text-[#15B49F]"}`}>
+                              <Calendar size={10} strokeWidth={2.5} />
                               {parseLocalDate(f.dueDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                             </span>
                           </div>

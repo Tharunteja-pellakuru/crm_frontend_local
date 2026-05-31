@@ -850,7 +850,7 @@ function AppRoutes() {
         );
 
         toast.success("Lead converted & project added to existing client!");
-        return { success: true };
+        return { success: true, clientId: data.existingClientId };
       }
 
       // --- NEW CLIENT flow (original) ---
@@ -951,7 +951,7 @@ function AppRoutes() {
       );
 
       toast.success("Lead onboarded successfully!");
-      return { success: true };
+      return { success: true, clientId: newClient.client_id };
     } catch (error) {
       console.error("Conversion error:", error);
       toast.error(error.message || "Failed to convert lead to client");
@@ -1429,6 +1429,25 @@ function AppRoutes() {
             console.error("Failed to sync client record during lead edit:", clientErr);
           }
         }
+      }
+
+      // 4. Sync the changes back to the Enquiry record if one exists
+      if (leadToUpdate.enquiry_id) {
+        setEnquiries((prev) =>
+          prev.map((e) =>
+            e.id == leadToUpdate.enquiry_id
+              ? {
+                  ...e,
+                  name: optimisticLead.name,
+                  email: optimisticLead.email,
+                  phone: optimisticLead.phone,
+                  website: optimisticLead.website,
+                  source: optimisticLead.source,
+                  message: optimisticLead.notes,
+                }
+              : e
+          )
+        );
       }
 
       if (!res.ok) {
@@ -1922,11 +1941,9 @@ function AppRoutes() {
           prev.map((e) => (e.id == updatedEnquiry.id ? updatedEnquiry : e))
         );
 
-        // Sync leads state if this enquiry is Converted
-        if (updatedEnquiry.status === "converted") {
-          await refreshLeads();
-          await refreshClients();
-        }
+        // Sync leads and clients state to ensure any linked entities reflect the updated enquiry details
+        await refreshLeads();
+        await refreshClients();
 
         toast.success("Enquiry updated successfully!");
         return true;

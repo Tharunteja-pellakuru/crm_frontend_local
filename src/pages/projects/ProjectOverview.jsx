@@ -367,7 +367,7 @@ const ProjectOverview = ({
         <div className="bg-white p-4 sm:p-5 lg:p-6 rounded-2xl shadow-sm border border-slate-200 hover:-translate-y-1 hover:shadow-md transition-all duration-300">
           <div className="flex items-center gap-2 sm:gap-4">
             <div className="p-2 sm:p-3 rounded-full bg-emerald-50 text-emerald-500 shrink-0 w-9 h-9 sm:w-12 sm:h-12 flex items-center justify-center">
-              <span className="text-base sm:text-xl font-bold leading-none">{currencySymbol}</span>
+              <span className="text-[14px] sm:text-[16px] font-bold leading-none">{currencySymbol}</span>
             </div>
             <div className="min-w-0 w-full">
               <h3 className="text-slate-500 text-[10px] sm:text-xs font-semibold truncate">
@@ -376,7 +376,7 @@ const ProjectOverview = ({
               {isEditing ? (
                  <input type="text" value={formatBudget(formData.budget, client?.currency)} onChange={(e) => setFormData({ ...formData, budget: parseBudget(e.target.value) })} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 mt-1 text-lg sm:text-xl font-bold text-[#18254D] outline-none focus:border-blue-400" />
               ) : (
-                 <p className="text-lg sm:text-2xl font-bold text-[#18254D] leading-none mt-1">
+                 <p className="text-[13px] sm:text-[15px] font-bold text-[#18254D] leading-none mt-1">
                    {currencySymbol}{formatBudget(formData.budget, client?.currency)}
                  </p>
               )}
@@ -397,7 +397,7 @@ const ProjectOverview = ({
               {isEditing ? (
                  <div className="mt-1"><CustomDropdown label="Status" value={formData.status} field="status" options={["Hold", "In Progress", "Completed"]} /></div>
               ) : (
-                 <p className="text-lg sm:text-2xl font-bold text-[#18254D] leading-none mt-1">
+                 <p className="text-[13px] sm:text-[15px] font-bold text-[#18254D] leading-none mt-1">
                    {formData.status}
                  </p>
               )}
@@ -418,7 +418,7 @@ const ProjectOverview = ({
               {isEditing ? (
                  <div className="mt-1"><CustomDropdown label="Priority" value={formData.priority} field="priority" options={["Low", "Medium", "High"]} /></div>
               ) : (
-                 <p className="text-lg sm:text-2xl font-bold text-[#18254D] leading-none mt-1">
+                 <p className="text-[13px] sm:text-[15px] font-bold text-[#18254D] leading-none mt-1">
                    {formData.priority}
                  </p>
               )}
@@ -439,7 +439,7 @@ const ProjectOverview = ({
               {isEditing ? (
                  <div className="mt-1"><CustomDropdown label="Category" value={formData.category} field="category" options={[1, 2]} /></div>
               ) : (
-                 <p className="text-lg sm:text-2xl font-bold text-[#18254D] leading-none mt-1">
+                 <p className="text-[13px] sm:text-[15px] font-bold text-[#18254D] leading-none mt-1">
                    {CATEGORY_MAP[formData.category] || formData.category}
                  </p>
               )}
