@@ -1962,6 +1962,26 @@ const EnquiryList = ({
                     )}
                   </div>
                 </div>
+
+                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                  <p className="text-[10px] font-black tracking-widest text-slate-400 uppercase mb-2 flex items-center gap-1.5">
+                    <Globe size={12} /> Website URL
+                  </p>
+                  <p className="text-sm font-semibold text-[#18254D] break-all">
+                    {selectedEnquiry.website ? (
+                      <a
+                        href={selectedEnquiry.website.startsWith("http") ? selectedEnquiry.website : `https://${selectedEnquiry.website}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+                      >
+                        {selectedEnquiry.website}
+                      </a>
+                    ) : (
+                      "N/A"
+                    )}
+                  </p>
+                </div>
               </div>
 
               <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">

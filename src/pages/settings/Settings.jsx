@@ -7,7 +7,7 @@ import {
   Users, Plus, Trash2, Edit2, Bot, X, Loader2, Download, Inbox,
   UserPlus, BellRing, FolderKanban, Eye, Key, EyeOff,
   Briefcase, Shield, Database, AlertTriangle, Pencil,
-  Settings as SettingsIcon, Activity, ArrowRight,
+  Settings as SettingsIcon, Activity, ArrowRight, HelpCircle
 } from "lucide-react";
 import { BASE_URL } from "../../constants/config";
 import { getAuthHeaders } from "../../utils/auth";
@@ -26,6 +26,7 @@ const TABS = [
   { id: "ai",       label: "AI Settings",   icon: Bot,      desc: "Configure AI models"      },
   { id: "team",     label: "Team",        icon: Users,    desc: "Manage team members"      },
   { id: "export",   label: "Data Export",   icon: Database, desc: "Download CRM data"        },
+  { id: "helpbot",  label: "HelpBot",       icon: Bot,      desc: "Manage Bot FAQs & settings"},
 ];
 
 // ─── CustomDropdown ────────────────────────────────────────────────────────────
@@ -239,15 +240,99 @@ const Settings = ({ aiModels = [], onAddAiModel, onUpdateAiModel, onDeleteAiMode
   const [editAdminData, setEditAdminData]   = useState({ name: "", email: "", role: "Manager", status: "Active" });
   const [addAdminErrors, setAddAdminErrors] = useState({});
 
+  const [botFaqs, setBotFaqs]               = useState([]);
+  const [botEnabled, setBotEnabled]         = useState(true);
+  const [faqFormData, setFaqFormData]       = useState({ id: null, question: "", answer: "" });
+  const [showFaqModal, setShowFaqModal]     = useState(false);
+  const [faqToDelete, setFaqToDelete]       = useState(null);
+
   const [showPasswordForm, setShowPasswordForm] = useState(false);
   const [passwordData, setPasswordData]     = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
   const [showPwd, setShowPwd]               = useState({ current: false, new: false, confirm: false });
 
   const [showFollowupModal, setShowFollowupModal] = useState(false);
 
-  useScrollLock(showFollowupModal || showAddModelModal || !!editingModelId || showAddAdminModal || !!editingAdminId || showPasswordForm || !!adminToDelete);
+  useScrollLock(showFollowupModal || showAddModelModal || !!editingModelId || showAddAdminModal || !!editingAdminId || showPasswordForm || !!adminToDelete || !!faqToDelete);
 
-  useEffect(() => { if (activeTab === "team") fetchAdmins(); }, [activeTab]);
+  useEffect(() => { 
+    if (activeTab === "team") fetchAdmins(); 
+    if (activeTab === "helpbot") fetchBotData();
+  }, [activeTab]);
+
+  const fetchBotData = async () => {
+    try {
+      const [faqsRes, setRes] = await Promise.all([
+        fetch(`${BASE_URL}/api/bot/faqs`, { headers: getAuthHeaders() }),
+        fetch(`${BASE_URL}/api/bot/settings`, { headers: getAuthHeaders() })
+      ]);
+      if (faqsRes.ok) setBotFaqs(await faqsRes.json());
+      if (setRes.ok) {
+        const settings = await setRes.json();
+        setBotEnabled(settings.bot_enabled === 'true');
+      }
+    } catch (e) {
+      console.error("Failed to load HelpBot data");
+    }
+  };
+
+  const handleToggleBot = async () => {
+    const newVal = !botEnabled;
+    setBotEnabled(newVal);
+    try {
+      await fetch(`${BASE_URL}/api/bot/settings`, {
+        method: "PUT",
+        headers: { ...getAuthHeaders(), "Content-Type": "application/json" },
+        body: JSON.stringify({ setting_key: "bot_enabled", setting_value: newVal ? "true" : "false" })
+      });
+      hotToast.success(`HelpBot is now ${newVal ? 'enabled' : 'disabled'}`);
+      window.dispatchEvent(new CustomEvent('bot_setting_changed', { detail: newVal }));
+    } catch (e) {
+      hotToast.error("Failed to update HelpBot setting");
+      setBotEnabled(!newVal);
+    }
+  };
+
+  const handleSaveFaq = async (e) => {
+    e.preventDefault();
+    try {
+      const isEdit = !!faqFormData.id;
+      const url = isEdit ? `${BASE_URL}/api/bot/faqs/${faqFormData.id}` : `${BASE_URL}/api/bot/faqs`;
+      const res = await fetch(url, {
+        method: isEdit ? "PUT" : "POST",
+        headers: { ...getAuthHeaders(), "Content-Type": "application/json" },
+        body: JSON.stringify(faqFormData)
+      });
+      if (res.ok) {
+        hotToast.success(isEdit ? "FAQ Updated!" : "FAQ Added!");
+        fetchBotData();
+        setShowFaqModal(false);
+        window.dispatchEvent(new Event('faqs_changed'));
+      } else {
+        hotToast.error("Failed to save FAQ");
+      }
+    } catch (e) {
+      hotToast.error("Error saving FAQ");
+    }
+  };
+
+  const handleDeleteFaq = async (id) => {
+    try {
+      const res = await fetch(`${BASE_URL}/api/bot/faqs/${id}`, {
+        method: "DELETE",
+        headers: getAuthHeaders()
+      });
+      if (res.ok) {
+        hotToast.success("FAQ Deleted!");
+        fetchBotData();
+        window.dispatchEvent(new Event('faqs_changed'));
+        setFaqToDelete(null);
+      } else {
+        hotToast.error("Failed to delete FAQ");
+      }
+    } catch (e) {
+      hotToast.error("Error deleting FAQ");
+    }
+  };
 
   const toast = (msg, type = "success") => type === "success" ? hotToast.success(msg) : hotToast.error(msg);
 
@@ -434,7 +519,8 @@ const Settings = ({ aiModels = [], onAddAiModel, onUpdateAiModel, onDeleteAiMode
 
           {/* ── Left Sidebar Nav ─────────────────────────────────────────────── */}
           <div className="w-full lg:w-56 xl:w-64 shrink-0">
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            {/* Desktop Navigation (Cards) */}
+            <div className="hidden lg:block bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
               <div className="px-4 py-3 border-b border-slate-100 bg-slate-50/50">
                 <p className="text-[10px] font-bold text-slate-400 tracking-wider uppercase">Navigation</p>
               </div>
@@ -463,6 +549,25 @@ const Settings = ({ aiModels = [], onAddAiModel, onUpdateAiModel, onDeleteAiMode
                 })}
               </nav>
             </div>
+
+            {/* Mobile Navigation (Chips) */}
+            <div className="lg:hidden flex gap-2.5 overflow-x-auto no-scrollbar pb-1 snap-x">
+              {TABS.map(({ id, label, icon: Icon }) => {
+                const active = activeTab === id;
+                return (
+                  <button key={id} onClick={() => setActiveTab(id)}
+                    className={`snap-start shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-full text-[13px] font-bold transition-all border shadow-sm
+                      ${active 
+                        ? "bg-[#EFF6FF] text-[#2563EB] border-[#3B82F6]" 
+                        : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:border-slate-300"
+                      }`}
+                  >
+                    <Icon size={15} className={active ? "text-[#2563EB]" : "text-slate-500"} />
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {/* ── Right Content ─────────────────────────────────────────────────── */}
@@ -476,7 +581,8 @@ const Settings = ({ aiModels = [], onAddAiModel, onUpdateAiModel, onDeleteAiMode
                   activeTab === "security" ? "bg-emerald-50 text-emerald-600 border border-emerald-100" :
                   activeTab === "ai"       ? "bg-violet-50 text-violet-600 border border-violet-100" :
                   activeTab === "team"     ? "bg-amber-50 text-amber-600 border border-amber-100" :
-                  "bg-slate-50 text-slate-600 border border-slate-200"
+                  activeTab === "helpbot"  ? "bg-fuchsia-50 text-fuchsia-600 border border-fuchsia-100" :
+                  "bg-slate-50 text-slate-500 border border-slate-100"
                 }`}>
                   {activeTabInfo && <activeTabInfo.icon size={16} />}
                 </div>
@@ -854,42 +960,99 @@ const Settings = ({ aiModels = [], onAddAiModel, onUpdateAiModel, onDeleteAiMode
 
               {/* ━━━ EXPORT ━━━ */}
               {activeTab === "export" && (
-                <div className="p-5 sm:p-6 space-y-4">
-                  <div>
-                    <SectionHeading label="Data Export Center" />
-                    <p className="text-sm text-slate-500 font-medium leading-relaxed mt-2">Download your CRM data in Excel format for analysis and reporting.</p>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {[
-                      { type: "enquiries", label: "Enquiries",  desc: "Incoming enquiries before lead conversion.",         icon: Inbox,        tag: "Raw Data",  tagColor: "bg-blue-50 text-blue-600 border-blue-100"        },
-                      { type: "leads",     label: "Leads",       desc: "Converted leads with enquiry & contact details.",    icon: UserPlus,     tag: "Converted", tagColor: "bg-emerald-50 text-emerald-700 border-emerald-100"},
-                      { type: "followups", label: "Follow-ups",  desc: "Follow-up activities with lead & project details.",  icon: BellRing,     tag: "Activity",  tagColor: "bg-violet-50 text-violet-700 border-violet-100"  },
-                      { type: "clients",   label: "Clients",     desc: "Converted businesses with organisation details.",    icon: Users,        tag: "Business",  tagColor: "bg-amber-50 text-amber-700 border-amber-100"     },
-                      { type: "projects",  label: "Projects",    desc: "Active projects with budget, deadlines & clients.",  icon: FolderKanban, tag: "Revenue",   tagColor: "bg-rose-50 text-rose-600 border-rose-100"        },
-                    ].map(({ type, label, desc, icon: Ic, tag, tagColor }) => (
-                      <div key={type} className="bg-white rounded-2xl border border-slate-200 p-4 hover:border-slate-300 hover:shadow-md transition-all flex items-center justify-between gap-4 group">
-                        <div className="flex items-center gap-3 min-w-0">
-                          <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0 group-hover:bg-[#18254D]/5 transition-colors">
-                            <Ic size={17} className="text-[#18254D]" />
+                <div className="space-y-6 animate-fade-in-up">
+                  <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+                    <h3 className="text-[14px] font-bold text-[#18254D] mb-4">Export Records</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                      {["Enquiries", "Leads", "Clients", "Projects", "Follow-ups", "All Data"].map((type) => (
+                        <div key={type} className="flex items-center justify-between p-4 bg-slate-50 border border-slate-100 rounded-xl hover:border-indigo-200 hover:bg-indigo-50/50 transition-colors group">
+                          <div>
+                            <p className="text-xs font-bold text-[#18254D] mb-1">{type}</p>
+                            <p className="text-[10px] text-slate-500">Export as CSV</p>
                           </div>
-                          <div className="min-w-0">
-                            <p className="text-[13px] font-bold text-[#18254D] flex items-center gap-2">
-                              {label}
-                              <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full border shrink-0 hidden sm:inline-flex ${tagColor}`}>{tag}</span>
-                            </p>
-                            <p className="text-[11px] text-slate-400 font-medium leading-relaxed mt-0.5">{desc}</p>
-                          </div>
+                          <button
+                            disabled={exporting[type]}
+                            onClick={() => handleExport(type)}
+                            className="p-2 bg-white text-indigo-600 hover:bg-indigo-600 hover:text-white rounded-lg shadow-sm border border-slate-200 transition-colors disabled:opacity-50"
+                            title={`Download ${type}`}
+                          >
+                            {exporting[type] ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
+                          </button>
                         </div>
-                        <button
-                          onClick={() => type === "followups" ? setShowFollowupModal(true) : handleExport(type, `${type}_export.xlsx`)}
-                          disabled={exportingType === type}
-                          className="w-9 h-9 flex items-center justify-center bg-[#18254D] text-white rounded-xl hover:bg-slate-800 transition-all shadow-sm active:scale-95 disabled:bg-slate-100 disabled:text-slate-400 shrink-0"
-                          title="Download Excel"
-                        >
-                          {exportingType === type ? <Loader2 size={15} className="animate-spin" /> : <Download size={15} />}
-                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* HelpBot Tab */}
+              {activeTab === "helpbot" && (
+                <div className="space-y-6 animate-fade-in-up">
+                  {/* Global Toggle */}
+                  <div className="bg-white p-4 sm:p-6 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                      <h3 className="text-[14px] font-bold text-[#18254D]">HelpBot Visibility</h3>
+                      <p className="text-[11px] text-slate-500 mt-1">Enable or disable the floating HelpBot for all users.</p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                      <input type="checkbox" className="sr-only peer" checked={botEnabled} onChange={handleToggleBot} />
+                      <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                    </label>
+                  </div>
+
+                  {/* FAQ List */}
+                  <div className="bg-white  border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+                    <div className="p-4 sm:p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 bg-slate-50">
+                      <div>
+                        <h3 className="text-[14px] font-bold text-[#18254D]">Manage FAQs</h3>
+                        <p className="text-[11px] text-slate-500 mt-1">Add or edit questions displayed in the HelpBot menu.</p>
                       </div>
-                    ))}
+                      <button
+                        onClick={() => { setFaqFormData({ id: null, question: "", answer: "" }); setShowFaqModal(true); }}
+                        className="flex items-center justify-center gap-2 px-4 py-2 bg-[#18254D] text-white text-[11px] font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-sm shrink-0"
+                      >
+                        <Plus size={14} /> Add FAQ
+                      </button>
+                    </div>
+                    <div className="overflow-x-auto custom-scrollbar">
+                      <table className="w-full min-w-[500px] text-left border-collapse">
+                        <thead>
+                          <tr className="bg-slate-50/50 border-b border-slate-100">
+                            <th className="px-4 sm:px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider w-1/3">Question</th>
+                            <th className="px-4 sm:px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Answer</th>
+                            <th className="px-4 sm:px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider w-[120px] text-right">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                          {botFaqs.length === 0 ? (
+                            <tr>
+                              <td colSpan="3" className="px-4 sm:px-5 py-8 text-center text-slate-400 text-xs">No FAQs found. Add one above.</td>
+                            </tr>
+                          ) : (
+                            botFaqs.map(faq => (
+                              <tr key={faq.id} className="hover:bg-slate-50/50 transition-colors">
+                                <td className="px-4 sm:px-5 py-3 text-xs font-semibold text-slate-700 align-top">{faq.question}</td>
+                                <td className="px-4 sm:px-5 py-3 text-xs text-slate-500 whitespace-pre-wrap align-top">{faq.answer}</td>
+                                <td className="px-4 sm:px-5 py-3 align-top">
+                                  {faq.is_action ? (
+                                    <span className="text-[10px] bg-slate-100 text-slate-500 px-2 py-1 rounded-md font-bold float-right">System</span>
+                                  ) : (
+                                    <div className="flex items-center justify-end gap-1 sm:gap-2">
+                                      <button onClick={() => { setFaqFormData(faq); setShowFaqModal(true); }} className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors" title="Edit">
+                                        <Edit2 size={14} />
+                                      </button>
+                                      <button onClick={() => setFaqToDelete(faq.id)} className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors" title="Delete">
+                                        <Trash2 size={14} />
+                                      </button>
+                                    </div>
+                                  )}
+                                </td>
+                              </tr>
+                            ))
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 </div>
               )}
@@ -1086,6 +1249,85 @@ const Settings = ({ aiModels = [], onAddAiModel, onUpdateAiModel, onDeleteAiMode
           </div>
         </div>,
         document.body,
+      )}
+
+      {/* Delete FAQ Confirm */}
+      {faqToDelete && createPortal(
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[99999] flex items-center justify-center p-4">
+          <div className="absolute inset-0" onClick={() => setFaqToDelete(null)} />
+          <div className="relative z-10 bg-white w-full max-w-md rounded-3xl shadow-2xl border border-slate-100 overflow-hidden animate-pop">
+            <div className="px-5 py-4 sm:px-6 sm:py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-[#FFF1F2] text-[#F43F5E] rounded-xl flex items-center justify-center border border-[#FFE4E6] shadow-sm shrink-0">
+                  <AlertTriangle size={15} />
+                </div>
+                <h3 className="text-[15px] font-bold text-[#18254D]">Delete FAQ</h3>
+              </div>
+              <button onClick={() => setFaqToDelete(null)} className="p-1.5 hover:bg-slate-200 rounded-xl text-slate-400"><X size={18} /></button>
+            </div>
+            <div className="p-5 sm:p-6 space-y-5">
+              <p className="text-sm text-slate-600 font-semibold leading-relaxed">
+                Are you sure you want to delete this FAQ? This cannot be undone.
+              </p>
+              <div className="flex flex-col-reverse sm:flex-row gap-3">
+                <button onClick={() => setFaqToDelete(null)} className="flex-1 h-11 bg-slate-100 text-slate-600 rounded-xl text-xs font-bold tracking-wider hover:bg-slate-200 transition-all active:scale-[0.98] uppercase">Cancel</button>
+                <button onClick={() => handleDeleteFaq(faqToDelete)} className="flex-1 h-11 bg-[#F43F5E] text-white rounded-xl text-xs font-bold tracking-wider hover:bg-[#E11D48] transition-all active:scale-[0.98] flex items-center justify-center gap-2 uppercase shadow-md">
+                  Delete FAQ <Trash2 size={14} />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>,
+        document.body,
+      )}
+
+      {/* FAQ Modal */}
+      {showFaqModal && createPortal(
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[99999] flex items-center justify-center p-4 sm:p-6">
+          <div className="absolute inset-0" onClick={() => setShowFaqModal(false)} />
+          <div className="relative z-10 bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-slate-100 overflow-hidden flex flex-col max-h-[90vh] sm:max-h-[85vh] animate-pop">
+            <div className="px-5 py-4 sm:px-6 sm:py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-[#EEF2FF] text-indigo-600 rounded-xl flex items-center justify-center border border-indigo-100 shadow-sm shrink-0">
+                  <HelpCircle size={15} />
+                </div>
+                <h3 className="text-[15px] sm:text-base font-bold text-[#18254D]">{faqFormData.id ? "Edit FAQ" : "New FAQ"}</h3>
+              </div>
+              <button onClick={() => setShowFaqModal(false)} className="p-1.5 hover:bg-slate-200 rounded-xl text-slate-400 transition-colors"><X size={18} /></button>
+            </div>
+            <form onSubmit={handleSaveFaq} className="p-5 sm:p-6 space-y-4 sm:space-y-5 overflow-y-auto custom-scrollbar">
+              <div className="space-y-1.5 sm:space-y-2">
+                <label className="text-[11px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Question</label>
+                <input 
+                  required
+                  type="text" 
+                  value={faqFormData.question}
+                  onChange={(e) => setFaqFormData({ ...faqFormData, question: e.target.value })}
+                  placeholder="e.g. How do I change my password?"
+                  className="w-full px-4 py-2.5 sm:py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all"
+                />
+              </div>
+              <div className="space-y-1.5 sm:space-y-2">
+                <label className="text-[11px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Answer</label>
+                <textarea 
+                  required
+                  rows="4"
+                  value={faqFormData.answer}
+                  onChange={(e) => setFaqFormData({ ...faqFormData, answer: e.target.value })}
+                  placeholder="Enter the answer..."
+                  className="w-full px-4 py-2.5 sm:py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm sm:text-base font-medium text-[#18254D] placeholder:text-slate-400 focus:bg-white focus:border-[#18254D]/30 focus:ring-4 focus:ring-[#18254D]/5 outline-none transition-all resize-none custom-scrollbar min-h-[120px]"
+                />
+              </div>
+              <div className="flex flex-col-reverse sm:flex-row gap-3 pt-2 sm:pt-4">
+                <button type="button" onClick={() => setShowFaqModal(false)} className="w-full sm:w-auto flex-1 py-3 sm:py-3.5 bg-slate-100 text-slate-600 rounded-xl text-[13px] sm:text-sm font-bold tracking-wider hover:bg-slate-200 transition-all active:scale-[0.98] uppercase flex items-center justify-center">Cancel</button>
+                <button type="submit" className="w-full sm:w-auto flex-1 py-3 sm:py-3.5 bg-[#18254D] text-white rounded-xl text-[13px] sm:text-sm font-bold tracking-wider hover:bg-slate-800 transition-all active:scale-[0.98] flex items-center justify-center gap-2 uppercase shadow-md">
+                  <Save size={16} /> Save FAQ
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>,
+        document.body
       )}
 
       {/* Follow-up Export Type */}

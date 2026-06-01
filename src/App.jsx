@@ -25,6 +25,7 @@ import EnquiryList from "./pages/enquiries/EnquiryList";
 import FollowUpList from "./pages/followups/FollowUpList";
 import Settings from "./pages/settings/Settings";
 import LoginPage from "./pages/auth/LoginPage";
+import HelpBot from "./components/common/HelpBot";
 import {
   MOCK_CLIENTS,
   MOCK_ENQUIRIES,
@@ -479,35 +480,40 @@ function AppRoutes() {
     refreshClients().finally(() => setClientsLoading(false));
   }, [isLoggedIn]);
 
+  const refreshEnquiries = async () => {
+    try {
+      const res = await fetch(`${BASE_URL}/api/get-enquiries`, {
+        headers: getAuthHeaders(),
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      const transformedEnquiries = data.enquiries.map((e) => ({
+        id: e.enquiry_id || e.uuid,
+        name: e.full_name,
+        email: e.email,
+        phone: e.phone_number,
+        website: e.website_url,
+        source: e.source || "",
+        message: e.message,
+        status: e.status?.toLowerCase() || "new",
+        remarks: e.remarks || "",
+        holdReason: e.remarks || "",
+        date: e.created_at || new Date().toISOString(),
+        createdByName: e.created_by_name || null,
+      }));
+      setEnquiries(transformedEnquiries);
+    } catch (e) {
+      console.log("Failed to fetch enquiries");
+    }
+  };
+
   // Fetch enquiries from API
   useEffect(() => {
     if (!isLoggedIn) {
       setEnquiries([]);
       return;
     }
-
-    fetch(`${BASE_URL}/api/get-enquiries`, {
-      headers: getAuthHeaders(),
-    })
-      .then((res) => (res.ok ? res.json() : { enquiries: [] }))
-      .then((data) => {
-        const transformedEnquiries = data.enquiries.map((e) => ({
-          id: e.enquiry_id || e.uuid,
-          name: e.full_name,
-          email: e.email,
-          phone: e.phone_number,
-          website: e.website_url,
-          source: e.source || "",
-          message: e.message,
-          status: e.status?.toLowerCase() || "new",
-          remarks: e.remarks || "",
-          holdReason: e.remarks || "",
-          date: e.created_at || new Date().toISOString(),
-          createdByName: e.created_by_name || null,
-        }));
-        setEnquiries(transformedEnquiries);
-      })
-      .catch(() => console.log("Failed to fetch enquiries"));
+    refreshEnquiries();
   }, [isLoggedIn]);
 
   // Fetch projects from API
@@ -942,6 +948,34 @@ function AppRoutes() {
             }));
             setProjects(transformedProjects);
           });
+
+        // Call HR Portal API to sync project (New Client flow)
+        try {
+          const clientName = newClient.client_name || data.name || "Client Name";
+          const projectType = CATEGORY_MAP[data.projectCategory] || "Tech";
+          const startDate = data.onboardingDate || new Date().toISOString().split("T")[0];
+          const projectStatus = data.projectStatus || "In Progress";
+          const hrStatus = (projectStatus === "In Progress" || projectStatus === "in_progress" || projectStatus === "Active" || projectStatus === "active") ? "active" : projectStatus.toLowerCase();
+
+          fetch("https://hrportal.eparivartan.com/api/v1/projects/create", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              name: data.projectName,
+              type: projectType,
+              description: data.projectDescription || "",
+              status: hrStatus,
+              client: clientName,
+              start_date: startDate
+            })
+          }).catch(err => {
+            console.error("Failed to sync project to HR Portal (New Client flow):", err);
+          });
+        } catch (err) {
+          console.error("Error preparing HR Portal sync payload (New Client flow):", err);
+        }
       }
 
       setLeads((prev) =>
@@ -1674,6 +1708,36 @@ function AppRoutes() {
 
         setProjects([newProject, ...projects]);
         toast.success("Project added successfully!");
+
+        // Call HR Portal API to sync project
+        try {
+          const clientObj = clients.find(c => c.id == data.clientId);
+          const clientName = clientObj ? (clientObj.name || clientObj.company) : "Client Name";
+          const projectType = CATEGORY_MAP[data.projectCategory] || CATEGORY_MAP[data.category] || "Tech";
+          const startDate = data.onboardingDate || new Date().toISOString().split("T")[0];
+          const projectStatus = data.projectStatus || "Planning";
+          const hrStatus = (projectStatus === "In Progress" || projectStatus === "in_progress" || projectStatus === "Active" || projectStatus === "active") ? "active" : projectStatus.toLowerCase();
+
+          fetch("https://hrportal.eparivartan.com/api/v1/projects/create", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              name: data.name,
+              type: projectType,
+              description: data.description || "",
+              status: hrStatus,
+              client: clientName,
+              start_date: startDate
+            })
+          }).catch(err => {
+            console.error("Failed to sync project to HR Portal:", err);
+          });
+        } catch (err) {
+          console.error("Error preparing HR Portal sync payload:", err);
+        }
+
         return newProject;
       } else {
         console.error("Failed to add project:", await res.json());
@@ -2215,8 +2279,10 @@ function AppRoutes() {
   };
 
   return (
-    <Routes>
-      <Route
+    <>
+      {isLoggedIn && <HelpBot onEnquiryCreated={refreshEnquiries} enquiries={enquiries} />}
+      <Routes>
+        <Route
         path="/login"
         element={
           isLoggedIn ? (
@@ -2434,7 +2500,8 @@ function AppRoutes() {
 
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Route>
-    </Routes>
+      </Routes>
+    </>
   );
 }
 
